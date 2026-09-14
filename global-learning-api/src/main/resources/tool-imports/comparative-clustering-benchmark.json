@@ -1,0 +1,125 @@
+{
+  "name": "comparative-clustering-benchmark",
+  "uniqueAppId": "9da0dc07-2e4a-4f2b-ab1e-caffdcafd19a",
+  "slug": "comparative-clustering-benchmark",
+  "type": "EVALUATION",
+  "sourceUrl": "https://gitlab.cosy.bio/cosybio/posymed/apps/comparative-clustering-benchmark",
+  "count": 0,
+  "average": 0.0,
+  "addedToWorkflowCount": 0,
+  "authors": [
+    {
+      "keycloakId": "test"
+    }
+  ],
+  "versions": [
+    {
+      "federatedAppId": 4,
+      "appVersion": "1.0.0",
+      "publishHash": "6f3cc1c5-5868-4d00-95c2-a45698244dc1",
+      "publishInfo": {
+        "commitHash": "25c468314108102f75d31d993ff7ebedc585f270",
+        "filePaths": [
+          "https://gitlab.cosy.bio/cosybio/posymed/apps/comparative-clustering-benchmark/-/blob/25c468314108102f75d31d993ff7ebedc585f270/data/features.csv",
+          "https://gitlab.cosy.bio/cosybio/posymed/apps/comparative-clustering-benchmark/-/blob/25c468314108102f75d31d993ff7ebedc585f270/data/predictions.csv",
+          "https://gitlab.cosy.bio/cosybio/posymed/apps/comparative-clustering-benchmark/-/blob/25c468314108102f75d31d993ff7ebedc585f270/data/ground_truth.csv",
+          "https://gitlab.cosy.bio/cosybio/posymed/apps/comparative-clustering-benchmark/-/blob/25c468314108102f75d31d993ff7ebedc585f270/data/labels.csv",
+          "https://gitlab.cosy.bio/cosybio/posymed/apps/comparative-clustering-benchmark/-/blob/25c468314108102f75d31d993ff7ebedc585f270/data/labels_gaus.csv",
+          "https://gitlab.cosy.bio/cosybio/posymed/apps/comparative-clustering-benchmark/-/blob/25c468314108102f75d31d993ff7ebedc585f270/data/uci_dataset17_encoded.csv"
+        ],
+        "malwareScanResult": {
+          "tool": "clamav",
+          "success": true,
+          "infectedCount": 0,
+          "findings": []
+        },
+        "imageName": "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/comparative-clustering-benchmark:SfWzALCc"
+      },
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "needsHostAccess": false,
+      "certificationLevel": 0,
+      "imageName": "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/comparative-clustering-benchmark:SfWzALCc",
+      "shortDescription": "Compare multiple clustering outputs on the same dataset.",
+      "longDescription": "Benchmark and compare multiple clustering predictions on the same dataset.\n\nThis app evaluates one or more clustering label columns against a shared feature matrix. It computes standard internal clustering metrics and, if ground-truth labels are provided, also computes external agreement metrics.\n\nIt is useful for comparing several clustering outputs side by side, ranking clustering runs by a chosen metric, and evaluating clustering quality with or without true labels.\n\nWhat it does\n------------\nThe app expects:\n- a features table containing samples and feature columns,\n- a predictions table containing one or more clustering label columns,\n- optionally a ground_truth table containing reference labels.\n\nFor each prediction column, the app computes:\n- Silhouette score\n- Davies-Bouldin index\n- Calinski-Harabasz score\n- Adjusted Rand Index (ARI), if ground truth is provided\n- Adjusted Mutual Information (AMI), if ground truth is provided\n\nThe result is a ranking table with one row per prediction column.\n\nInputs\n------\nFeatures:\nTabular input with one sample identifier column, or the sample identifier stored in the dataframe index. All remaining columns are treated as numeric feature columns.\n\nPredictions:\nTabular input with one sample identifier column, or the sample identifier stored in the dataframe index, plus one or more prediction columns. Each prediction column is interpreted as one clustering result to benchmark.\n\nGround truth (optional):\nTabular input with one sample identifier column, or the sample identifier stored in the dataframe index, plus one label column defined by truth_label_column.\n\nHyperparameters\n---------------\nid_column : string, default=sample_id\n    Name of the sample identifier column. If the column does not exist explicitly, the app also accepts it from the dataframe index. For example, if the ID is stored in the index, id_column can be set to index.\n\ntruth_label_column : string, default=true_label\n    Column name in the ground_truth input that contains the reference labels.\n\nsort_by : string, default=silhouette\n    Metric used to sort the output table. Supported values are silhouette, davies_bouldin, calinski_harabasz, adjusted_rand, adjusted_mutual_info, or an empty string for no sorting.\n\n    Note: davies_bouldin is sorted in ascending order because lower is better. All other metrics are sorted in descending order because higher is better.\n\nReturns\n-------\noutput : table\n    A table with one row per prediction column.\n\n    Typical columns include:\n    - model\n    - n_samples\n    - n_clusters\n    - silhouette\n    - davies_bouldin\n    - calinski_harabasz\n    - adjusted_rand\n    - adjusted_mutual_info\n\nAlignment rules\n---------------\nAll inputs are aligned by id_column.\n\nThe app expects:\n- every feature row to have a matching prediction row,\n- every prediction row to have a matching ground-truth row if ground_truth is provided.\n\nIf rows cannot be aligned completely, the app raises an error.\n\nNotes and limitations\n---------------------\nInternal metrics require at least 2 clusters.\nInternal metrics are not defined if there is only one cluster, or if the number of unique cluster labels is greater than or equal to the number of samples. In such cases, the corresponding metric is returned as null.\nFeature columns should be numeric.",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "name": "id_column",
+            "variableName": "id_column",
+            "type": "STRING",
+            "description": "Column name used as unique sample identifier.",
+            "mode": "BOTH",
+            "options": [],
+            "default": "sample_id"
+          },
+          {
+            "name": "truth_label_column",
+            "variableName": "truth_label_column",
+            "type": "STRING",
+            "description": "Default label column name for clustering predictions.",
+            "mode": "BOTH",
+            "options": [],
+            "default": "cluster_label"
+          },
+          {
+            "name": "sort_by",
+            "variableName": "sort_by",
+            "type": "CATEGORICAL",
+            "description": "Metric used to rank clustering models.",
+            "mode": "BOTH",
+            "options": [
+              "silhouette",
+              "davies_bouldin",
+              "calinski_harabasz",
+              "adjusted_rand",
+              "adjusted_mutual_info"
+            ],
+            "default": "silhouette"
+          }
+        ],
+        "input": [
+          {
+            "name": "features",
+            "variableName": "features",
+            "type": "CSV",
+            "description": "Feature table as CSV, including the sample identifier column.",
+            "delimiter": ",",
+            "hasHeader": true,
+            "required": true
+          },
+          {
+            "name": "predictions",
+            "variableName": "predictions",
+            "type": "CSV",
+            "description": "Prediction table as CSV, containing the sample identifier and one or more clustering result columns.",
+            "delimiter": ",",
+            "hasHeader": true,
+            "required": true
+          },
+          {
+            "name": "ground_truth",
+            "variableName": "ground_truth",
+            "type": "CSV",
+            "description": "Optional ground truth table as CSV, containing the sample identifier and true label column.",
+            "delimiter": ",",
+            "hasHeader": true,
+            "required": false
+          }
+        ],
+        "output": [
+          {
+            "name": "output",
+            "variableName": "output",
+            "type": "CSV",
+            "description": "Benchmark scores for all clustering prediction columns as CSV.",
+            "delimiter": ",",
+            "hasHeader": true
+          }
+        ]
+      },
+      "audits": []
+    }
+  ],
+  "hasImage": false
+}

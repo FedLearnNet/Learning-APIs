@@ -1,0 +1,91 @@
+{
+  "name" : "branch-merge-aggregator",
+  "uniqueAppId" : "8b5a0816-df3a-441c-abba-8ee85375374f",
+  "slug" : "branch-merge-aggregator",
+  "type" : "POST_PROCESSING",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/branch-merge-aggregator",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 5,
+    "appVersion" : "1.0.0",
+    "publishHash" : "f25e48d1-1c84-462e-9320-df960d7d4272",
+    "publishInfo" : {
+      "commitHash" : "6932972b3589d07a5bd8eb35b185123d09e5af1e",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/branch-merge-aggregator/-/blob/6932972b3589d07a5bd8eb35b185123d09e5af1e/data/left.csv", "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/branch-merge-aggregator/-/blob/6932972b3589d07a5bd8eb35b185123d09e5af1e/data/iris.csv", "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/branch-merge-aggregator/-/blob/6932972b3589d07a5bd8eb35b185123d09e5af1e/data/right.csv" ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/branch-merge-aggregator:VNVNVvqX"
+    },
+    "changelog" : "Changelog 4.1.0",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/branch-merge-aggregator:VNVNVvqX",
+    "shortDescription" : "Merge two branch outputs into one DataFrame.",
+    "longDescription" : "Merge two input DataFrames into a single output DataFrame.\n\nThis app is a lightweight branch merge utility for workflow pipelines. It accepts two\ninput CSV files, loads them as pandas DataFrames, merges them according to the selected\nmode, and returns the merged result as a single output CSV.\n\n## Supported merge modes\n\n- `concat_columns`: concatenates both inputs column-wise after resetting their indices.\n- `concat_rows`: concatenates both inputs row-wise and reindexes the result.\n- `merge_on_key`: performs a pandas merge using a shared key column and a configurable join strategy.\n\n## Inputs\n\n- `left`: left input CSV, loaded as a pandas DataFrame.\n- `right`: right input CSV, loaded as a pandas DataFrame.\n\n## Hyperparameters\n\n- `mode`: merge mode to use. One of `concat_columns`, `concat_rows`, or `merge_on_key`.\n- `key`: optional merge key column. Required when `mode=merge_on_key`.\n- `how`: join strategy for `merge_on_key`. One of `inner`, `left`, `right`, or `outer`.\n\n## Output\n\n- `output`: merged pandas DataFrame written as CSV.\n\n## Behavior\n\nThe app validates that both inputs are present and are pandas DataFrames.\nThen it applies the selected merge strategy:\n\n- For `concat_rows`, it uses `pd.concat(..., axis=0, ignore_index=True)`.\n- For `concat_columns`, it resets both indices and concatenates with `axis=1`.\n- For `merge_on_key`, it validates the merge key and applies `pd.merge(..., on=key, how=how)`.\n\n## Example\n\n### Column-wise concatenation\n\n- `mode=concat_columns`\n- combines both tables side by side\n\n### Row-wise concatenation\n\n- `mode=concat_rows`\n- stacks both tables vertically\n\n### Key-based merge\n\n- `mode=merge_on_key`\n- `key=id`\n- `how=inner`\n- joins both tables using the shared `id` column",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "mode",
+        "variableName" : "mode",
+        "type" : "CATEGORICAL",
+        "description" : "Merge mode to use for combining the two input DataFrames.",
+        "mode" : "BOTH",
+        "options" : [ "concat_rows", "concat_columns", "merge_on_key" ],
+        "default" : "concat_columns"
+      }, {
+        "name" : "key",
+        "variableName" : "key",
+        "type" : "STRING",
+        "description" : "Column name used as merge key when mode is merge_on_key.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : ""
+      }, {
+        "name" : "how",
+        "variableName" : "how",
+        "type" : "CATEGORICAL",
+        "description" : "Join strategy used when mode is merge_on_key.",
+        "mode" : "BOTH",
+        "options" : [ "inner", "left", "right", "outer" ],
+        "default" : "inner"
+      } ],
+      "input" : [ {
+        "name" : "left",
+        "variableName" : "left",
+        "type" : "CSV",
+        "description" : "Left input DataFrame as CSV.",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "required" : true
+      }, {
+        "name" : "right",
+        "variableName" : "right",
+        "type" : "CSV",
+        "description" : "Right input DataFrame as CSV.",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "output",
+        "variableName" : "output",
+        "type" : "CSV",
+        "description" : "The merged output DataFrame as CSV.",
+        "delimiter" : ",",
+        "hasHeader" : true
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

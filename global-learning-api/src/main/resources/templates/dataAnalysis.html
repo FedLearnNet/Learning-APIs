@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8"/>
+    <style>
+        @page {
+            size: A4;
+            margin: 0mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: #111;
+            font-size: 10.8pt;
+            line-height: 1.38;
+        }
+
+        /* Headings */
+        h1 {
+            font-size: 18pt;
+            margin: 0 0 3mm 0;
+        }
+
+        h2 {
+            font-size: 12.5pt;
+            margin: 8mm 0 3mm 0;
+        }
+
+        h3 {
+            font-size: 10.8pt;
+            margin: 0 0 2mm 0;
+        }
+
+        /* Text helpers */
+        .muted {
+            color: #666;
+            font-size: 9.5pt;
+        }
+
+        .mono {
+            font-family: "Courier New", Courier, monospace;
+            font-size: 9.2pt;
+            white-space: pre-wrap;
+            background: #f6f6f6;
+            border: 1px solid #e9e9e9;
+            padding: 8pt;
+            margin: 2mm 0 0 0;
+        }
+
+        /* Topbar: use table layout instead of flex */
+        .topbar {
+            width: 100%;
+            margin: 0 0 6mm 0;
+            padding: 0 0 4mm 0;
+            border-bottom: 1px solid #e9e9e9;
+        }
+
+        .titleblock {
+            width: 70%;
+        }
+
+        .meta {
+            text-align: right;
+            font-size: 9.5pt;
+            color: #666;
+            white-space: nowrap;
+        }
+
+        /* Cards */
+        .cards {
+            display: block;
+        }
+
+        .card {
+            border: 1px solid #e9e9e9;
+            background: #fafafa;
+            padding: 10pt;
+            margin: 0 0 6mm 0;
+        }
+
+        /* 2-column grid: table-based */
+        .grid-2 {
+            display: table;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 10pt 0;
+        }
+
+        .grid-2 .col {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10.2pt;
+        }
+
+        th,
+        td {
+            padding: 6pt 4pt;
+            vertical-align: top;
+        }
+
+        /* CSS 2.1 doesn't support tr + tr reliably everywhere; keep it simple:
+           apply top border to td inside rows with class "row" (add class in template) */
+        tr.row td {
+            border-top: 1px solid #efefef;
+        }
+
+        th {
+            width: 30%;
+            text-align: left;
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* KPI layout: table-based boxes */
+        .kpi {
+            display: table;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 10pt 6pt;
+        }
+
+        .kpi .box {
+            display: table-cell;
+            border: 1px solid #e9e9e9;
+            background: #fcfcfc;
+            padding: 8pt;
+            width: 25%;
+            vertical-align: top;
+        }
+
+        .kpi .n {
+            font-size: 16pt;
+            font-weight: bold;
+            margin: 0 0 2pt 0;
+        }
+
+        .kpi .l {
+            font-size: 9.2pt;
+            color: #666;
+        }
+
+        /* Run blocks */
+        .run {
+            border-top: 1px solid #e9e9e9;
+            padding-top: 10pt;
+            margin-top: 10pt;
+        }
+
+        /* Replace :first-child with explicit class "run-first" in template */
+        .run-first {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        /* Run header: table layout instead of flex */
+        .run-head {
+            width: 100%;
+            margin: 0 0 6pt 0;
+        }
+
+        .run-head-left {
+            width: 70%;
+        }
+
+        .run-head-right {
+            width: 30%;
+            text-align: right;
+            color: #666;
+            font-size: 9.5pt;
+        }
+
+        /* Tags: pill without border-radius */
+        .tag {
+            display: inline-block;
+            font-size: 9pt;
+            border: 1px solid #e9e9e9;
+            background: #ffffff;
+            padding: 3pt 8pt;
+            color: #333;
+            margin-right: 6pt;
+        }
+
+        /* Files: 2 columns table-based */
+        .files {
+            display: table;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 10pt 8pt;
+            margin: 6pt 0 0 0;
+        }
+
+        .filecard {
+            display: table-cell;
+            width: 50%;
+            border: 1px solid #e9e9e9;
+            background: #ffffff;
+            padding: 8pt;
+            vertical-align: top;
+        }
+
+        .filecard .name {
+            font-weight: bold;
+        }
+
+        .filecard .meta {
+            text-align: left;
+            white-space: normal;
+        }
+
+        /* Images */
+        .img {
+            margin-top: 6pt;
+            height: auto;
+            max-height: 240px;
+            border: 1px solid #e9e9e9;
+        }
+
+        .image-prev{
+            width: 100%;
+            height: auto;
+            max-height: 240px;
+        }
+
+        /* Links */
+        a {
+            color: #111;
+            text-decoration: underline;
+        }
+
+
+        /* Grid wrapper */
+        .param-grid {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Each row is a table */
+        .param-row {
+            display: table;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 3pt 3pt;
+        }
+
+        /* Each cell is half width */
+        .param-cell {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+        }
+
+        /* Invisible filler for odd count */
+        .param-cell-empty {
+            border: none;
+        }
+
+        /* Compact “card” */
+        .param-card {
+            border: 1px solid #e9e9e9;
+            background: #ffffff;
+            padding: 7pt;
+        }
+
+        /* Name: compact + strong */
+        .param-name {
+            font-size: 10pt;
+            font-weight: bold;
+            color: #111;
+            margin: 0 0 2pt 0;
+        }
+
+        .param-name {
+            font-size: 10pt;
+            font-weight: bold;
+            color: #111;
+            margin: 0;
+        }
+
+        /* Description: wraps naturally */
+        .param-desc {
+            font-size: 9pt;
+            color: #666;
+            margin: 0;
+            /* wrapping is default; keep it explicit for PDF engines */
+            white-space: normal;
+        }
+
+        /* Value: compact mono box */
+        .param-value {
+            font-size: 9.2pt;
+            line-height: 1.25;
+            padding: 1pt 6pt;
+            background: #f6f6f6;
+            border: 1px solid #e9e9e9;
+            margin: 0;
+        }
+
+        .file-value {
+            padding: 1pt 6pt;
+            margin-top: 5px;
+            background: #fcfcfc;
+            border: 1px solid #e9e9e9;
+        }
+
+        /* Ensure mono keeps compact height */
+        .param-value.mono {
+            line-height: 1.25;
+        }
+
+        /* Footer */
+        .foot {
+            margin-top: 8mm;
+            padding-top: 4mm;
+            border-top: 1px solid #e9e9e9;
+            font-size: 9.2pt;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Header -->
+<div class="topbar">
+    <div class="titleblock">
+        <h1>{v.meta.title}</h1>
+        <div class="muted">Generated by {v.meta.subtitle ?: "—"}</div>
+    </div>
+    <div class="meta">
+        Generated: {v.meta.generatedAt}<br/>
+        Runs: <strong>{v.overview.totalRuns}</strong> &#160;•&#160;
+        Messages: <strong>{v.overview.totalMessages}</strong> &#160;•&#160;
+        Files: <strong>{v.overview.totalFiles}</strong>
+    </div>
+</div>
+
+<!-- Overview -->
+<div class="card">
+    <h2>Overview</h2>
+
+    <div class="kpi">
+        <div class="box">
+            <div class="n">{v.overview.totalRuns}</div>
+            <div class="l">Runs (Prediction / Workflow)</div>
+        </div>
+        <div class="box">
+            <div class="n">{v.overview.totalMessages}</div>
+            <div class="l">Messages</div>
+            <div class="muted">All chat + system events</div>
+        </div>
+        <div class="box">
+            <div class="n">{v.overview.totalFiles}</div>
+            <div class="l">Artifacts</div>
+            <div class="muted">Input + Output + misc</div>
+        </div>
+        <div class="box">
+            <div class="n">{v.overview.totalRuns}</div>
+            <div class="l">Reproducible units</div>
+            <div class="muted">Hyperparams + Inputs + Outputs</div>
+        </div>
+    </div>
+
+    <div class="muted">
+        Each run below corresponds to prediction or workflow execution.
+        It documents tool identity, configuration and produced artifacts.
+    </div>
+</div>
+
+<!-- Performance summary -->
+{#if v.performance.hasRuntime}
+    <div class="card">
+        <h2>Performance</h2>
+        <div>
+            Runtime across {v.performance.runtimeCount} run(s):
+            <strong>{v.performance.runtimeMean}</strong> &#177; {v.performance.runtimeSd} (mean &#177; SD)
+        </div>
+        <div class="muted" style="margin-top:6pt;">
+            Runtime is the tool's pure scientific compute time.
+            {#if v.performance.overheadEnabled}
+                Per-run startup/teardown overhead is shown in each run's Performance section below.
+            {#else}
+                Runtime overhead reporting is disabled.
+            {/if}
+        </div>
+    </div>
+{/if}
+
+<!-- Runs -->
+<div class="card">
+    <h2>Runs</h2>
+
+    {#if v.runs == null || v.runs.isEmpty}
+        <div class="muted">No prediction/workflow runs found in messages.</div>
+    {#else}
+        {#for r in v.runs}
+            <div class="run">
+
+                <p>{r.toolName}</p>
+                <div class="run-head">
+                    <div>
+                        <span class="tag">#{r_count}</span>
+                        <span class="tag">{r.type}</span>
+                        <span class="tag">{r.name}</span>
+                        {#if r.status != null}<span class="tag">Status: {r.status}</span>{/if}
+                    </div>
+                </div>
+                <span class="muted">{r.toolDescription}</span>
+
+                <div>
+                    <h3>Configuration</h3>
+
+                    {#if r.hyperParamsConfig != null && ! r.hyperParamsConfig.isEmpty}
+
+                        <div class="param-grid">
+                            {#for c in r.hyperParamsConfig}
+                                {#if c_odd}
+                                    <div class="param-row">
+                                {/if}
+
+                                <div class="param-cell">
+                                    <div class="param-card">
+                                        <div class="param-name">{c.name}</div>
+
+                                        {#if c.description != null && ! c.description.isEmpty}
+                                            <div class="param-desc">{c.description}</div>
+                                        {/if}
+
+                                        <div class="param-value mono">{c.value}</div>
+                                    </div>
+                                </div>
+
+                                {#if c_even || c_isLast}
+                                    {#if c_isLast && ! r.hyperParamsEven}
+                                        <div class="param-cell param-cell-empty"></div>
+                                    {/if}
+                                    </div>
+                                {/if}
+                            {/for}
+                        </div>
+
+                    {#else}
+                        <div class="mono">{r.hyperParamsJson}</div>
+                    {/if}
+                </div>
+                <div>
+                    <h3>Inputs</h3>
+
+                    {#if r.inputConfig != null && ! r.inputConfig.isEmpty}
+
+                        <div class="param-grid">
+                            {#for c in r.inputConfig}
+                                {#if c_odd}
+                                    <div class="param-row">
+                                {/if}
+
+                                <div class="param-cell">
+                                    <div class="param-card">
+                                        <div class="param-name">{c.name}</div>
+
+                                        {#if c.description != null && ! c.description.isEmpty}
+                                            <div class="param-desc">{c.description}</div>
+                                        {/if}
+
+                                        {#if c.file != null}
+                                            <div class="file-value">
+                                                <div class="name">{c.file.fileName}</div>
+                                                <div class="muted">{c.file.contentType} • {c.file.sizeBytes} bytes</div>
+                                                {#if c.file.fileContent != null && ! c.file.fileContent.isEmpty}
+                                                    {#if c.file.isImage}
+                                                        <div class="img">
+                                                            <img class="image-prev" src="{c.file.fileContent}"
+                                                                 alt="{c.file.fileName}"/>
+                                                        </div>
+
+                                                    {#else}
+                                                        <div class="param-value mono">{c.file.fileContent}</div>
+                                                    {/if}
+                                                {/if}
+                                                {#if c.file.downloadUrl != null}<a href="{c.file.downloadUrl}">
+                                                        Download</a>{/if}
+                                            </div>
+                                        {#else}
+                                            {#if c.value != null && ! c.value.isEmpty}
+                                                <div class="param-value mono">{c.value}</div>
+                                            {#else}
+                                                <div class="param-value mono">-</div>
+                                            {/if}
+                                        {/if}
+
+                                    </div>
+                                </div>
+
+                                {#if c_even || c_isLast}
+                                    {#if c_isLast && ! r.inputConfigEven}
+                                        <div class="param-cell param-cell-empty"></div>
+                                    {/if}
+                                    </div>
+                                {/if}
+                            {/for}
+                        </div>
+
+                    {#else}
+                        <div class="mono">{r.inputsJson}</div>
+                    {/if}
+                </div>
+
+                <div>
+                    <h3>Result</h3>
+
+                    {#if r.resultConfig != null && ! r.resultConfig.isEmpty}
+
+                        <div class="param-grid">
+                            {#for c in r.resultConfig}
+                                {#if c_odd}
+                                    <div class="param-row">
+                                {/if}
+
+                                <div class="param-cell">
+                                    <div class="param-card">
+                                        <div class="param-name">{c.name}</div>
+
+                                        {#if c.description != null && ! c.description.isEmpty}
+                                            <div class="param-desc">{c.description}</div>
+                                        {/if}
+
+                                        {#if c.file != null}
+                                            <div class="file-value">
+                                                <div class="name">{c.file.fileName}</div>
+                                                <div class="muted">{c.file.contentType} • {c.file.sizeBytes} bytes</div>
+                                                {#if c.file.fileContent != null && ! c.file.fileContent.isEmpty}
+                                                    {#if c.file.isImage}
+                                                        <div class="img" >
+                                                            <img class="image-prev" src="{c.file.fileContent}"
+                                                                 alt="{c.file.fileName}"/>
+                                                        </div>
+
+                                                    {#else}
+                                                        <div class="param-value mono">{c.file.fileContent}</div>
+                                                    {/if}
+                                                {/if}
+
+                                                {#if c.file.downloadUrl != null}<a href="{c.file.downloadUrl}">
+                                                        Download</a>{/if}
+
+
+                                            </div>
+                                        {#else}
+                                            {#if c.value != null && ! c.value.isEmpty}
+                                                <div class="param-value mono">{c.value}</div>
+                                            {#else}
+                                                <div class="param-value mono">-</div>
+                                            {/if}
+                                        {/if}
+
+                                    </div>
+                                </div>
+
+                                {#if c_even || c_isLast}
+                                    {#if c_isLast && ! r.resultConfigEven}
+                                        <div class="param-cell param-cell-empty"></div>
+                                    {/if}
+                                    </div>
+                                {/if}
+                            {/for}
+                        </div>
+
+                    {#else}
+                        <div class="mono">{r.resultJson}</div>
+                    {/if}
+                </div>
+
+                <div style="margin-top:10pt;">
+                    <h3>Performance</h3>
+                    <div>Runtime: <strong>{r.runtimeLabel ?: "—"}</strong></div>
+                    {#if r.hasOverhead}
+                        <table style="margin-top:6pt;">
+                            <tr><th>Metric</th><th>Value</th></tr>
+                            <tr><td class="muted">Runtime</td><td>{r.runtimeLabel ?: "—"}</td></tr>
+                            <tr><td class="muted">Startup overhead</td><td>{r.startupLabel ?: "—"}</td></tr>
+                            <tr><td class="muted">Teardown overhead</td><td>{r.teardownLabel ?: "—"}</td></tr>
+                            <tr><td class="muted">Total overhead</td><td>{r.totalOverheadLabel ?: "—"}</td></tr>
+                            <tr><td class="muted">Wall-clock total</td><td>{r.wallTotalLabel ?: "—"}</td></tr>
+                            <tr><td class="muted">Overhead of total</td><td>{r.overheadPercentLabel ?: "—"}</td></tr>
+                        </table>
+                    {/if}
+                </div>
+
+                {#if r.lastError != "-" || r.lastLog != "-"}
+                    <div style="margin-top:10pt;">
+                        <h3>Runtime Notes</h3>
+                        {#if r.lastError != "-"}
+                            <div class="muted">Last error</div>
+                            <div class="mono">{r.lastError}</div>
+                        {/if}
+                        {#if r.lastLog != "-"}
+                            <div class="muted" style="margin-top:8pt;">Last log</div>
+                            <div class="mono">{r.lastLog}</div>
+                        {/if}
+                    </div>
+                {/if}
+
+            </div>
+        {/for}
+    {/if}
+</div>
+
+<!-- All files table -->
+<div class="card">
+    <h2>All Files</h2>
+    {#if v.allFiles == null || v.allFiles.isEmpty}
+        <div class="muted">No files attached to this analysis.</div>
+    {#else}
+        <table>
+            <tr>
+                <th>File</th>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Link</th>
+            </tr>
+            {#for f in v.allFiles}
+                <tr>
+                    <td>{f.fileName}</td>
+                    <td class="muted">{f.contentType}</td>
+                    <td class="muted">{f.sizeBytes}</td>
+                    <td>
+                        {#if f.downloadUrl != null}
+                            <a href="{f.downloadUrl}">Download</a>
+                        {#else}
+                            <span class="muted">—</span>
+                        {/if}
+                    </td>
+                </tr>
+            {/for}
+        </table>
+    {/if}
+
+    <div class="foot">
+        This report is intended for reproducibility: each run documents tool identity, configuration and produced
+        artifacts
+        in a compact, auditable format.
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+================================================================================
+RUNS
+================================================================================
+{#if v.runs == null || v.runs.isEmpty}
+No prediction/workflow runs found in messages.
+{#else}
+{#for r in v.runs}
+
+--------------------------------------------------------------------------------
+RUN #{r_count}
+Tool: {r.toolName}
+Type: {r.type}
+Name: {r.name}
+{#if r.status != null}Status: {r.status}{/if}
+Description: {r.toolDescription}
+CONFIGURATION
+{#if r.hyperParamsConfig != null && !r.hyperParamsConfig.isEmpty}
+{#for c in r.hyperParamsConfig}
+- {c.name}{#if c.description != null && !c.description.isEmpty} — {c.description}{/if}
+  value:
+  {c.value}
+{/for}
+{#else}
+raw_json:
+{r.hyperParamsJson}
+{/if}
+
+INPUTS
+{#if r.inputConfig != null && !r.inputConfig.isEmpty}
+{#for c in r.inputConfig}
+- {c.name}{#if c.description != null && !c.description.isEmpty} — {c.description}{/if}
+  {#if c.file != null}
+  file:
+    name: {c.file.fileName}
+    type: {c.file.contentType}
+    size_bytes: {c.file.sizeBytes}
+    {#if c.file.downloadUrl != null}download: {c.file.downloadUrl}{#else}download: -{/if}
+    {#if c.file.fileContent != null && !c.file.fileContent.isEmpty}
+    preview:
+      {#if c.file.isImage}
+      [IMAGE_BASE64_OR_DATA_URL_OMITTED]
+      {#else}
+      {c.file.fileContent}
+      {/if}
+    {#else}
+    preview: -
+    {/if}
+  {#else}
+  value:
+  {c.value}
+  {/if}
+{/for}
+{#else}
+raw_json:
+{r.inputsJson}
+{/if}
+
+RESULT
+{#if r.resultConfig != null && !r.resultConfig.isEmpty}
+{#for c in r.resultConfig}
+- {c.name}{#if c.description != null && !c.description.isEmpty} — {c.description}{/if}
+  {#if c.file != null}
+  file:
+    name: {c.file.fileName}
+    type: {c.file.contentType}
+    size_bytes: {c.file.sizeBytes}
+    {#if c.file.downloadUrl != null}download: {c.file.downloadUrl}{#else}download: -{/if}
+    {#if c.file.fileContent != null && !c.file.fileContent.isEmpty}
+    preview:
+      {#if c.file.isImage}
+      [IMAGE_BASE64_OR_DATA_URL_OMITTED]
+      {#else}
+      {c.file.fileContent}
+      {/if}
+    {#else}
+    preview: -
+    {/if}
+  {#else}
+  value:
+  {c.value}
+  {/if}
+{/for}
+{#else}
+raw_json:
+{r.resultJson}
+{/if}
+
+RUNTIME NOTES
+{#if r.lastError != null || r.lastLog != null}
+{#if r.lastError != null}
+last_error:
+{r.lastError}
+{/if}
+{#if r.lastLog != null}
+last_log:
+{r.lastLog}
+{/if}
+{#else}
+-
+{/if}
+
+LLM ACTION HINTS
+- If Status indicates failure OR last_error present: propose debugging / retry steps and required inputs.
+- If outputs exist: propose interpretation + next tool call.
+- If outputs missing: propose which artifact should be produced next.
+
+{/for}
+{/if}

@@ -1,0 +1,116 @@
+{
+  "nodes" : [ {
+    "nodeId" : "938cd20e-2f55-4648-b630-5b958e85c7cb",
+    "appUniqueId" : "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b",
+    "versionPublishHash" : "agglomerative",
+    "position" : {
+      "x" : 600,
+      "y" : 500
+    },
+    "hyperParams" : {
+      "linkage" : "ward",
+      "compute_distances" : "1",
+      "standardize" : "1",
+      "metric" : "euclidean",
+      "use_distance_threshold" : "1",
+      "n_clusters" : 2,
+      "plot_title" : "Agglomerative Clustering Dendrogram",
+      "dendrogram_truncate_mode" : "none",
+      "dendrogram_p" : 30,
+      "distance_threshold" : 0
+    },
+    "hasChildren" : false,
+    "hasParent" : true,
+    "executionOrder" : 2
+  }, {
+    "nodeId" : "57bd8dfc-a1ef-4bdb-bfbb-56bba2e27bf6",
+    "appUniqueId" : "a71e2f25-1d3a-4b0c-9b85-7a2e6c1f4f0e",
+    "versionPublishHash" : "1543c4685ccd1fbdf9ea6d054ab9b5ab1d9903e2",
+    "position" : {
+      "x" : 350,
+      "y" : 100
+    },
+    "hyperParams" : {
+      "dataset_id" : 17
+    },
+    "hasChildren" : true,
+    "hasParent" : false,
+    "executionOrder" : 0
+  }, {
+    "nodeId" : "ee7767ef-87d0-45ca-b960-2749edcc74e8",
+    "appUniqueId" : "b7c4f2a1-1d3e-4b6a-9c2f-7a1e5d0c9b11",
+    "versionPublishHash" : "birch",
+    "position" : {
+      "x" : 50,
+      "y" : 700
+    },
+    "hyperParams" : {
+      "threshold" : 0.5,
+      "branching_factor" : 50,
+      "use_global_clustering" : "1",
+      "n_clusters" : 3,
+      "compute_labels" : "1",
+      "copy" : "1",
+      "standardize" : "1"
+    },
+    "hasChildren" : false,
+    "hasParent" : true,
+    "executionOrder" : 3
+  }, {
+    "nodeId" : "6ad2fff5-0e15-4b66-8700-15b04d9a651d",
+    "appUniqueId" : "8c2e7e45-1b6a-4c6b-9b3e-1c8c2d6b7a10",
+    "versionPublishHash" : "onehot",
+    "position" : {
+      "x" : 100,
+      "y" : 500
+    },
+    "hyperParams" : {
+      "drop_first" : "0",
+      "keep_original" : "0",
+      "bool_to_number" : "1",
+      "columns" : "",
+      "dummy_na" : "0",
+      "handle_unknown" : "ignore",
+      "prefix_sep" : "__"
+    },
+    "hasChildren" : true,
+    "hasParent" : true,
+    "executionOrder" : 1
+  } ],
+  "connections" : [ {
+    "inputId" : "app_6ad2fff5-0e15-4b66-8700-15b04d9a651d_input_features",
+    "outputId" : "app_57bd8dfc-a1ef-4bdb-bfbb-56bba2e27bf6_output_dataset",
+    "inputNodeId" : "6ad2fff5-0e15-4b66-8700-15b04d9a651d",
+    "outputNodeId" : "57bd8dfc-a1ef-4bdb-bfbb-56bba2e27bf6",
+    "inputFileName" : "features.csv",
+    "outputFileName" : "dataset.csv",
+    "inputConfigName" : "features",
+    "outputConfigName" : "dataset",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_ee7767ef-87d0-45ca-b960-2749edcc74e8_input_features",
+    "outputId" : "app_6ad2fff5-0e15-4b66-8700-15b04d9a651d_output_encoded",
+    "inputNodeId" : "ee7767ef-87d0-45ca-b960-2749edcc74e8",
+    "outputNodeId" : "6ad2fff5-0e15-4b66-8700-15b04d9a651d",
+    "inputFileName" : "features.csv",
+    "outputFileName" : "encoded.csv",
+    "inputConfigName" : "features",
+    "outputConfigName" : "encoded",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_938cd20e-2f55-4648-b630-5b958e85c7cb_input_features",
+    "outputId" : "app_57bd8dfc-a1ef-4bdb-bfbb-56bba2e27bf6_output_dataset",
+    "inputNodeId" : "938cd20e-2f55-4648-b630-5b958e85c7cb",
+    "outputNodeId" : "57bd8dfc-a1ef-4bdb-bfbb-56bba2e27bf6",
+    "inputFileName" : "features.csv",
+    "outputFileName" : "dataset.csv",
+    "inputConfigName" : "features",
+    "outputConfigName" : "dataset",
+    "inputConnection" : false
+  } ],
+  "inputs" : [ ],
+  "keycloakId" : "test",
+  "name" : "Shared input with analysis branch",
+  "description" : "Shared input with analysis branch",
+  "publishStatus" : "PUBLISHED"
+}

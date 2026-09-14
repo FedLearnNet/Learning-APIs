@@ -1,0 +1,46 @@
+{
+  "id": 99,
+  "version": 1,
+  "name": "AutoSubImportTest",
+  "description": "Minimal connector fixture for AutoSubscriberBOTest (cohort 4 schema)",
+  "inputConfig": {
+    "mode": "FILE",
+    "fileType": "CSV",
+    "delimiter": ",",
+    "hasHeader": true,
+    "firstSheetOnly": true,
+    "fileId": 999
+  },
+  "transformer": [
+    {
+      "moduleName": "builtin",
+      "methodName": "Replace Value",
+      "parameters": [],
+      "returnKeys": [],
+      "column": "gender",
+      "onRow": false,
+      "inputMapping": {
+        "search": "[VALUE]?",
+        "replace": "[VALUE]null"
+      },
+      "returnMapping": {},
+      "description": "",
+      "appVersionId": null,
+      "appImage": null,
+      "hyperparams": {}
+    }
+  ],
+  "schemaMapping": [
+    {
+      "column": "patient_id",
+      "mapping": "Unique Patient ID",
+      "schemaId": null
+    },
+    {
+      "column": "gender",
+      "mapping": "Gender",
+      "schemaId": 10
+    }
+  ],
+  "mergeConfig": null
+}

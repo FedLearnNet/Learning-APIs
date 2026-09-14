@@ -1,0 +1,123 @@
+{
+  "name" : "Birch",
+  "uniqueAppId" : "b7c4f2a1-1d3e-4b6a-9c2f-7a1e5d0c9b11",
+  "slug" : "birch",
+  "type" : "SELF_LEARNED",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/posymed/apps/birch",
+  "icon" : "https://scikit-learn.org/stable/_static/scikit-learn-logo-small.png",
+  "oldFCVersion" : false,
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 6,
+    "appVersion" : "1.0.0",
+    "publishHash" : "birch",
+    "publishInfo" : {
+      "commitHash" : "ac4bd064d5e4ed1ad430849668133f914777a3c3",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/posymed/apps/birch/-/blob/ac4bd064d5e4ed1ad430849668133f914777a3c3/data/iris.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/birch/-/blob/ac4bd064d5e4ed1ad430849668133f914777a3c3/data/iris_encoded.csv" ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/birch:hJhIoMUs"
+    },
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/birch:hJhIoMUs",
+    "shortDescription" : "Scalable clustering with scikit-learn BIRCH (CF tree), suitable for larger tabular datasets.",
+    "longDescription" : "This app runs scikit-learn's Birch (Balanced Iterative Reducing and Clustering using Hierarchies). It builds a CF tree controlled by threshold and branching_factor and can optionally perform a final global clustering step (n_clusters). Outputs include cluster labels per sample, subcluster centers from the CF tree, and a compact HTML report summarizing parameters and resulting cluster/subcluster statistics.",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "threshold",
+        "variableName" : "threshold",
+        "type" : "FLOAT",
+        "description" : "Radius threshold for merging subclusters (smaller => more clusters/subclusters).",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "default" : "0.5"
+      }, {
+        "name" : "branching_factor",
+        "variableName" : "branching_factor",
+        "type" : "INTEGER",
+        "description" : "Maximum number of CF subclusters in each node of the CF tree.",
+        "options" : [ ],
+        "minValue" : 2.0,
+        "maxValue" : 1000.0,
+        "default" : "50"
+      }, {
+        "name" : "use_global_clustering",
+        "variableName" : "use_global_clustering",
+        "type" : "BOOLEAN",
+        "description" : "If true, run a final global clustering step; if false, set n_clusters=None (no global clustering).",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "n_clusters",
+        "variableName" : "n_clusters",
+        "type" : "INTEGER",
+        "description" : "Number of clusters for the final global clustering step (used only if use_global_clustering=true).",
+        "options" : [ ],
+        "minValue" : 2.0,
+        "maxValue" : 200.0,
+        "default" : "3"
+      }, {
+        "name" : "compute_labels",
+        "variableName" : "compute_labels",
+        "type" : "BOOLEAN",
+        "description" : "Whether to compute labels for each sample after fitting.",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "copy",
+        "variableName" : "copy",
+        "type" : "BOOLEAN",
+        "description" : "Whether to make a copy of the input matrix X before fitting.",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "standardize",
+        "variableName" : "standardize",
+        "type" : "BOOLEAN",
+        "description" : "Standardize features to zero mean / unit variance before clustering (recommended).",
+        "options" : [ ],
+        "default" : "1"
+      } ],
+      "input" : [ {
+        "name" : "features",
+        "variableName" : "features",
+        "type" : "CSV",
+        "description" : "Tabular feature matrix. Rows = samples, columns = numeric features. If you have an ID column, place it as the first column named id; otherwise sample indices will be used.",
+        "tabularSchema" : {
+          "allowOnlyNumbers" : true,
+          "prohibitedNulls" : false
+        },
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "labels",
+        "variableName" : "labels",
+        "type" : "CSV",
+        "description" : "Cluster assignments per sample. Columns: [id?, label]. If no 'id' column was provided, 'index' is used."
+      }, {
+        "name" : "subcluster_centers",
+        "variableName" : "subcluster_centers",
+        "type" : "CSV",
+        "description" : "Centers of BIRCH subclusters (subcluster_centers_). Rows=subclusters, columns=features."
+      }, {
+        "name" : "report",
+        "variableName" : "report",
+        "type" : "HTML",
+        "description" : "Lightweight HTML summary with params, number of subclusters, and cluster size statistics."
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

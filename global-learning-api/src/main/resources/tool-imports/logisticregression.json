@@ -1,0 +1,344 @@
+{
+  "name" : "LogisticRegression",
+  "uniqueAppId" : "a67b810a-6c3c-4f63-a9e4-b56333174591",
+  "slug" : "logisticregression",
+  "type" : "ANALYSIS",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/posymed/apps/logistic-regression",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 12,
+    "appVersion" : "1.0.0",
+    "publishHash" : "6a8ff472-adba-45c1-839b-5c8fdde1ba8f",
+    "publishInfo" : {
+      "commitHash" : "682cd26374c50d7075111e0c3c8a1eb004269105",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/posymed/apps/logistic-regression/-/blob/682cd26374c50d7075111e0c3c8a1eb004269105/data/iris.csv" ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/logisticregression:DgCALdHH",
+        "success" : false,
+        "summary" : {
+          "critical" : 0,
+          "high" : 4,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 4
+        },
+        "rawReport" : {
+          "os-pkgs-wolfi" : [ {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:L"
+              },
+              "bitnami" : {
+                "V40Score" : 7,
+                "V40Vector" : "CVSS:4.0/AV:L/AC:L/AT:P/PR:N/UI:A/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:7867f708ba1dc77a01858dc081252c23050e1bf2ffb2f59fa161031a5263635a"
+            },
+            "PkgID" : "python-3.11@3.11.15-r0",
+            "Title" : "python: cpython: Python: Arbitrary code execution via command injection in webbrowser.open() API",
+            "CweIDs" : [ "CWE-77" ],
+            "Status" : "fixed",
+            "PkgName" : "python-3.11",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-4786",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-4786", "https://github.com/python/cpython/commit/c5767a72838a8dda9d6dc5d3558075b055c56bca", "https://github.com/python/cpython/commit/d22922c8a7958353689dc4763dd72da2dea03fff", "https://github.com/python/cpython/commit/f4654824ae0850ac87227fb270f9057477946769", "https://github.com/python/cpython/issues/148169", "https://github.com/python/cpython/pull/148170", "https://mail.python.org/archives/list/security-announce@python.org/thread/JQDUNJVB4AQNTJECSUKOBDU3XCJIPSE5/", "https://nvd.nist.gov/vuln/detail/CVE-2026-4786", "https://www.cve.org/CVERecord?id=CVE-2026-4786" ],
+            "Description" : "Mitgation of CVE-2026-4519 was incomplete. If the URL contained \"%action\" the mitigation could be bypassed for certain browser types the \"webbrowser.open()\" API could have commands injected into the underlying shell. See CVE-2026-4519 for details.",
+            "Fingerprint" : "sha256:63156cd5d4ffe9fc81b14777bca311affee164fe173f5ee987e3672ed28ecce5",
+            "FixedVersion" : "3.11.15-r2",
+            "PkgIdentifier" : {
+              "UID" : "65011e7730909064",
+              "PURL" : "pkg:apk/wolfi/python-3.11@3.11.15-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-04-13T22:16:30.413Z",
+            "VendorSeverity" : {
+              "redhat" : 3,
+              "bitnami" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-4786",
+            "InstalledVersion" : "3.11.15-r0",
+            "LastModifiedDate" : "2026-04-17T15:18:16.507Z"
+          }, {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 8.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "bitnami" : {
+                "V40Score" : 9.1,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:H/AT:P/PR:N/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:7867f708ba1dc77a01858dc081252c23050e1bf2ffb2f59fa161031a5263635a"
+            },
+            "PkgID" : "python-3.11@3.11.15-r0",
+            "Title" : "python: Python: Arbitrary code execution or information disclosure via use-after-free in decompression modules",
+            "CweIDs" : [ "CWE-416", "CWE-787" ],
+            "Status" : "fixed",
+            "PkgName" : "python-3.11",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-6100",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/04/13/10", "https://access.redhat.com/security/cve/CVE-2026-6100", "https://github.com/python/cpython/commit/47128e64f98c3a20271138a98c2922bea2a3ee0e", "https://github.com/python/cpython/commit/6a5f79c8d7bbf22b083b240910c7a8781a59437d", "https://github.com/python/cpython/commit/8fc66aef6d7b3ae58f43f5c66f9366cc8cbbfcd2", "https://github.com/python/cpython/commit/c3cf71c3366fe49acb776a639405c0eea6169c20", "https://github.com/python/cpython/commit/e20c6c9667c99ecaab96e1a2b3767082841ffc8b", "https://github.com/python/cpython/issues/148395", "https://github.com/python/cpython/pull/148396", "https://mail.python.org/archives/list/security-announce@python.org/thread/HTWB2Z6KT5QQX4RYEZAFININDHNOSIF3/", "https://nvd.nist.gov/vuln/detail/CVE-2026-6100", "https://www.cve.org/CVERecord?id=CVE-2026-6100" ],
+            "Description" : "Use-after-free (UAF) was possible in the `lzma.LZMADecompressor`, `bz2.BZ2Decompressor`, and `gzip.GzipFile` when a memory allocation fails with a `MemoryError` and the decompression instance is re-used. This scenario can be triggered if the process is under memory pressure. The fix cleans up the dangling pointer in this specific error condition.\n\nThe vulnerability is only present if the program re-uses decompressor instances across multiple decompression calls even after a `MemoryError` is raised during decompression. Using the helper functions to one-shot decompress data such as `lzma.decompress()`, `bz2.decompress()`, `gzip.decompress()`, and `zlib.decompress()` are not affected as a new decompressor instance is used per call. If the decompressor instance is not re-used after an error condition, this usage is similarly not vulnerable.",
+            "Fingerprint" : "sha256:035035454aaf5cd02cf1eec1831a8cea1e25b1fc6d8b271777765d756843e39f",
+            "FixedVersion" : "3.11.15-r2",
+            "PkgIdentifier" : {
+              "UID" : "65011e7730909064",
+              "PURL" : "pkg:apk/wolfi/python-3.11@3.11.15-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-04-13T18:16:31.297Z",
+            "VendorSeverity" : {
+              "redhat" : 3,
+              "bitnami" : 4
+            },
+            "VulnerabilityID" : "CVE-2026-6100",
+            "InstalledVersion" : "3.11.15-r0",
+            "LastModifiedDate" : "2026-04-17T15:18:16.507Z"
+          }, {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:L"
+              },
+              "bitnami" : {
+                "V40Score" : 7,
+                "V40Vector" : "CVSS:4.0/AV:L/AC:L/AT:P/PR:N/UI:A/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:7867f708ba1dc77a01858dc081252c23050e1bf2ffb2f59fa161031a5263635a"
+            },
+            "PkgID" : "python-3.11-base@3.11.15-r0",
+            "Title" : "python: cpython: Python: Arbitrary code execution via command injection in webbrowser.open() API",
+            "CweIDs" : [ "CWE-77" ],
+            "Status" : "fixed",
+            "PkgName" : "python-3.11-base",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-4786",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-4786", "https://github.com/python/cpython/commit/c5767a72838a8dda9d6dc5d3558075b055c56bca", "https://github.com/python/cpython/commit/d22922c8a7958353689dc4763dd72da2dea03fff", "https://github.com/python/cpython/commit/f4654824ae0850ac87227fb270f9057477946769", "https://github.com/python/cpython/issues/148169", "https://github.com/python/cpython/pull/148170", "https://mail.python.org/archives/list/security-announce@python.org/thread/JQDUNJVB4AQNTJECSUKOBDU3XCJIPSE5/", "https://nvd.nist.gov/vuln/detail/CVE-2026-4786", "https://www.cve.org/CVERecord?id=CVE-2026-4786" ],
+            "Description" : "Mitgation of CVE-2026-4519 was incomplete. If the URL contained \"%action\" the mitigation could be bypassed for certain browser types the \"webbrowser.open()\" API could have commands injected into the underlying shell. See CVE-2026-4519 for details.",
+            "Fingerprint" : "sha256:1516b2b40221d96446008f1c4309a9502cd5868d461520c204b88b0b482690a5",
+            "FixedVersion" : "3.11.15-r2",
+            "PkgIdentifier" : {
+              "UID" : "432c86a751427c0f",
+              "PURL" : "pkg:apk/wolfi/python-3.11-base@3.11.15-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-04-13T22:16:30.413Z",
+            "VendorSeverity" : {
+              "redhat" : 3,
+              "bitnami" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-4786",
+            "InstalledVersion" : "3.11.15-r0",
+            "LastModifiedDate" : "2026-04-17T15:18:16.507Z"
+          }, {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 8.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "bitnami" : {
+                "V40Score" : 9.1,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:H/AT:P/PR:N/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:7867f708ba1dc77a01858dc081252c23050e1bf2ffb2f59fa161031a5263635a"
+            },
+            "PkgID" : "python-3.11-base@3.11.15-r0",
+            "Title" : "python: Python: Arbitrary code execution or information disclosure via use-after-free in decompression modules",
+            "CweIDs" : [ "CWE-416", "CWE-787" ],
+            "Status" : "fixed",
+            "PkgName" : "python-3.11-base",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-6100",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/04/13/10", "https://access.redhat.com/security/cve/CVE-2026-6100", "https://github.com/python/cpython/commit/47128e64f98c3a20271138a98c2922bea2a3ee0e", "https://github.com/python/cpython/commit/6a5f79c8d7bbf22b083b240910c7a8781a59437d", "https://github.com/python/cpython/commit/8fc66aef6d7b3ae58f43f5c66f9366cc8cbbfcd2", "https://github.com/python/cpython/commit/c3cf71c3366fe49acb776a639405c0eea6169c20", "https://github.com/python/cpython/commit/e20c6c9667c99ecaab96e1a2b3767082841ffc8b", "https://github.com/python/cpython/issues/148395", "https://github.com/python/cpython/pull/148396", "https://mail.python.org/archives/list/security-announce@python.org/thread/HTWB2Z6KT5QQX4RYEZAFININDHNOSIF3/", "https://nvd.nist.gov/vuln/detail/CVE-2026-6100", "https://www.cve.org/CVERecord?id=CVE-2026-6100" ],
+            "Description" : "Use-after-free (UAF) was possible in the `lzma.LZMADecompressor`, `bz2.BZ2Decompressor`, and `gzip.GzipFile` when a memory allocation fails with a `MemoryError` and the decompression instance is re-used. This scenario can be triggered if the process is under memory pressure. The fix cleans up the dangling pointer in this specific error condition.\n\nThe vulnerability is only present if the program re-uses decompressor instances across multiple decompression calls even after a `MemoryError` is raised during decompression. Using the helper functions to one-shot decompress data such as `lzma.decompress()`, `bz2.decompress()`, `gzip.decompress()`, and `zlib.decompress()` are not affected as a new decompressor instance is used per call. If the decompressor instance is not re-used after an error condition, this usage is similarly not vulnerable.",
+            "Fingerprint" : "sha256:be2430c43d2bef0065007b146f4dbb51ae4d5fb856cc3824df5ac158ea0e0de0",
+            "FixedVersion" : "3.11.15-r2",
+            "PkgIdentifier" : {
+              "UID" : "432c86a751427c0f",
+              "PURL" : "pkg:apk/wolfi/python-3.11-base@3.11.15-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-04-13T18:16:31.297Z",
+            "VendorSeverity" : {
+              "redhat" : 3,
+              "bitnami" : 4
+            },
+            "VulnerabilityID" : "CVE-2026-6100",
+            "InstalledVersion" : "3.11.15-r0",
+            "LastModifiedDate" : "2026-04-17T15:18:16.507Z"
+          } ]
+        }
+      },
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/logisticregression:DgCALdHH"
+    },
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/logisticregression:DgCALdHH",
+    "shortDescription" : "Trainable scikit-learn Logistic Regression baseline with built-in explainability.",
+    "longDescription" : "",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "target_column",
+        "variableName" : "target_column",
+        "type" : "STRING",
+        "description" : "Name of the target/label column in the training CSV.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "col_5"
+      }, {
+        "name" : "standardize",
+        "variableName" : "standardize",
+        "type" : "BOOLEAN",
+        "description" : "Standardize numeric features before training and prediction.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "C",
+        "variableName" : "c",
+        "type" : "FLOAT",
+        "description" : "Inverse regularization strength (smaller => stronger regularization).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "default" : "1.0"
+      }, {
+        "name" : "max_iter",
+        "variableName" : "max_iter",
+        "type" : "INTEGER",
+        "description" : "Maximum number of solver iterations.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "maxValue" : 100000.0,
+        "default" : "200"
+      }, {
+        "name" : "solver",
+        "variableName" : "solver",
+        "type" : "CATEGORICAL",
+        "description" : "Optimizer/solver used for Logistic Regression.",
+        "mode" : "BOTH",
+        "options" : [ "lbfgs", "liblinear", "saga", "newton-cg", "sag" ],
+        "default" : "lbfgs"
+      }, {
+        "name" : "multi_class",
+        "variableName" : "multi_class",
+        "type" : "CATEGORICAL",
+        "description" : "Multi-class handling strategy.",
+        "mode" : "BOTH",
+        "options" : [ "auto", "ovr", "multinomial" ],
+        "default" : "auto"
+      }, {
+        "name" : "class_weight",
+        "variableName" : "class_weight",
+        "type" : "CATEGORICAL",
+        "description" : "Class weighting strategy. Use balanced for imbalanced datasets.",
+        "mode" : "BOTH",
+        "options" : [ "balanced", "none" ],
+        "default" : "balanced"
+      }, {
+        "name" : "random_state",
+        "variableName" : "random_state",
+        "type" : "INTEGER",
+        "description" : "Random seed.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "maxValue" : 2.1474836E9,
+        "default" : "42"
+      }, {
+        "name" : "explain_top_k",
+        "variableName" : "explain_top_k",
+        "type" : "INTEGER",
+        "description" : "Number of top positive/negative coefficients per class to show in explanation.html.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "maxValue" : 200.0,
+        "default" : "15"
+      } ],
+      "input" : [ {
+        "name" : "data",
+        "variableName" : "data",
+        "type" : "CSV",
+        "description" : "Training CSV containing numeric features and a target column (target_column). Optional first column 'id'.",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "tabularSchema" : {
+          "allowOnlyNumbers" : false,
+          "prohibitedNulls" : false
+        },
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "explanation",
+        "variableName" : "explanation",
+        "type" : "HTML",
+        "description" : "Human-readable explainability report (top positive/negative coefficients per class).",
+        "mode" : "BOTH"
+      }, {
+        "name" : "report",
+        "variableName" : "report",
+        "type" : "TEXT",
+        "description" : "Small textual run report.",
+        "mode" : "BOTH"
+      }, {
+        "name" : "predictions",
+        "variableName" : "predictions",
+        "type" : "CSV",
+        "description" : "Predictions CSV including label and probabilities for each class (p_<class> columns).",
+        "mode" : "PREDICTION"
+      }, {
+        "name" : "coefficients",
+        "variableName" : "coefficients",
+        "type" : "CSV",
+        "description" : "Long-form coefficient table per class (includes intercept).",
+        "mode" : "BOTH"
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

@@ -1,0 +1,57 @@
+[
+  {
+    "name": "Genomic Variants (VCF)",
+    "variableName": "variants",
+    "type": "TSV",
+    "description": "The Variant Call Format (VCF) is the de facto standard for reporting sequence variants such as SNPs and indels relative to a reference genome. VCF supports structured metadata and a flexible INFO field for rich annotations. See the VCF specification for format details.",
+    "delimiter": "\t",
+    "hasHeader": true,
+    "tabularSchema": {
+      "minColumns": 8,
+      "prohibitedNulls": true,
+      "requiredColumns": ["#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"],
+      "columns": {
+        "#CHROM": { "type": "STRING", "nullable": false },
+        "POS": { "type": "INTEGER", "min": 1, "nullable": false },
+        "ID": { "type": "STRING", "nullable": true },
+        "REF": { "type": "STRING", "nullable": false },
+        "ALT": { "type": "STRING", "nullable": false },
+        "QUAL": { "type": "FLOAT", "nullable": true },
+        "FILTER": { "type": "STRING", "nullable": false },
+        "INFO": { "type": "STRING", "nullable": false }
+      }
+    }
+  },
+  {
+    "name": "Mutation Annotation Format (MAF)",
+    "variableName": "maf",
+    "type": "TSV",
+    "description": "MAF is a cancer genomics tabular format used to describe mutations detected in tumor samples, including gene, coordinate, variant classification and sample barcode. It is widely used by cancer data portals like TCGA.",
+    "delimiter": "\t",
+    "hasHeader": true,
+    "tabularSchema": {
+      "minColumns": 8,
+      "prohibitedNulls": true,
+      "requiredColumns": [
+        "Hugo_Symbol",
+        "Chromosome",
+        "Start_Position",
+        "End_Position",
+        "Variant_Classification",
+        "Variant_Type",
+        "Reference_Allele",
+        "Tumor_Sample_Barcode"
+      ],
+      "columns": {
+        "Hugo_Symbol": { "type": "STRING", "nullable": false },
+        "Chromosome": { "type": "STRING", "nullable": false },
+        "Start_Position": { "type": "INTEGER", "min": 1, "nullable": false },
+        "End_Position": { "type": "INTEGER", "min": 1, "nullable": false },
+        "Variant_Classification": { "type": "STRING", "nullable": false },
+        "Variant_Type": { "type": "STRING", "nullable": false },
+        "Reference_Allele": { "type": "STRING", "nullable": false },
+        "Tumor_Sample_Barcode": { "type": "STRING", "nullable": false }
+      }
+    }
+  }
+]

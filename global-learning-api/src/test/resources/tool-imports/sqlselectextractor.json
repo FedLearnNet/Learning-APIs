@@ -1,0 +1,105 @@
+{
+  "name" : "SqlSelectExtractor",
+  "uniqueAppId" : "6dba94b7-805e-4845-96a7-60c80aa22a49",
+  "slug" : "sqlselectextractor",
+  "type" : "EXTRACTOR",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/sql-select-extractor",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 13,
+    "appVersion" : "1.0.0",
+    "publishHash" : "3d05690f-7704-4572-a90c-aeda9a070232",
+    "publishInfo" : {
+      "commitHash" : "bfe5f8cea0a42e93c4557b31b6411baac2eb1b8a",
+      "filePaths" : [ ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/sqlselectextractor:WzRTvSPK"
+    },
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : true,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/sqlselectextractor:WzRTvSPK",
+    "shortDescription" : "Execute a secure read-only SQL SELECT and export the result as CSV.",
+    "longDescription" : "# SqlSelectExtractor\n\nSqlSelectExtractor is a **Database Adopter** that connects to a configured SQL database and executes\na **single read-only SELECT** statement. The query result is exported as a CSV table.\n\n## What this tool does\n\n- Connects to a database (**postgres**, **mysql**, or **sqlite**).\n- Validates the query to allow **only** `SELECT` or `WITH ... SELECT`.\n- Blocks write/DDL statements and multi-statement execution.\n- Executes the query and exports the result as CSV.\n\n## Security model (SELECT-only)\n\nThe tool rejects queries that:\n\n- do not start with `SELECT` or `WITH`\n- contain write/DDL keywords (e.g., `INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`, `CREATE`,\n  `TRUNCATE`, …)\n- contain risky patterns like `SELECT ... INTO` or `FOR UPDATE`\n- contain multiple statements (only a single optional trailing `;` is allowed)\n\n> Note: This is a pragmatic guardrail, not a formal SQL parser. It is designed to block common\n> unsafe patterns in a simple, maintainable way.\n\n## Configuration (Hyperparameters)\n\n- `sql_distribution`: `postgres` | `mysql` | `sqlite`\n- `host`: database host (ignored for sqlite)\n- `port`: database port (ignored for sqlite)\n- `database`: database name (or sqlite file path / `:memory:`)\n- `username`: DB username\n- `password`: DB password\n- `sql_select`: single SELECT statement\n\n## Outputs\n\n- `dataset` (CSV): query result\n\n## Python dependencies\n\nThis tool uses **pandas** and **SQLAlchemy**. Database drivers depend on your `sql_distribution`:\n\n- Postgres: `psycopg2-binary`\n- MySQL: `pymysql`\n- SQLite: built-in (no extra driver)\n\nA minimal `requirements.txt` looks like:\n\n- pandas\n- sqlalchemy\n- psycopg2-binary\n- pymysql\n\n## Example SQL SELECT\n\nExample (Postgres) to fetch a small subset, can be started with `example-database-compose.yml`\n\n```sql\nSELECT id, patient_code, age, bmi, created_at\nFROM patients\nWHERE age >= 50\nORDER BY created_at DESC LIMIT 10;\n```\n\nExample with aggregation:\n\n```sql\nSELECT COUNT(*) AS n,\n       AVG(age) AS avg_age,\n       AVG(bmi) AS avg_bmi\nFROM patients;\n```\n\n### Suggested config values for the compose setup\n\nUse these hyperparameters against the compose database:\n\n- `sql_distribution`: `postgres`\n- `host`: `postgres` *(if running from another container in same compose network)* **or**\n  `localhost` *(if running locally on your host)*\n- `port`: `5432`\n- `database`: `demo`\n- `username`: `demo`\n- `password`: `demo`\n- `sql_select`: (use one of the examples above)\n\nIf you want, I can also add a second container in the compose that runs your tool image against\n`postgres` automatically (end-to-end smoke test).",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "password",
+        "variableName" : "password",
+        "type" : "STRING",
+        "description" : "Database password (ignored for sqlite unless configured).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "demo"
+      }, {
+        "name" : "sql_select",
+        "variableName" : "sql_select",
+        "type" : "STRING",
+        "description" : "Single SELECT (or WITH ... SELECT) statement. Write/DDL statements are blocked.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "SELECT * FROM patients LIMIT 10"
+      }, {
+        "name" : "sql_distribution",
+        "variableName" : "sql_distribution",
+        "type" : "CATEGORICAL",
+        "description" : "SQL database distribution / dialect to connect to.",
+        "mode" : "BOTH",
+        "options" : [ "postgres", "mysql", "sqlite" ],
+        "default" : "postgres"
+      }, {
+        "name" : "host",
+        "variableName" : "host",
+        "type" : "STRING",
+        "description" : "Database host (ignored for sqlite).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "postgres"
+      }, {
+        "name" : "port",
+        "variableName" : "port",
+        "type" : "INTEGER",
+        "description" : "Database port (ignored for sqlite).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "maxValue" : 65535.0,
+        "default" : "5432"
+      }, {
+        "name" : "database",
+        "variableName" : "database",
+        "type" : "STRING",
+        "description" : "Database name (or sqlite file path / ':memory:' for sqlite).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "demo"
+      }, {
+        "name" : "username",
+        "variableName" : "username",
+        "type" : "STRING",
+        "description" : "Database username (ignored for sqlite unless configured).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "demo"
+      } ],
+      "input" : [ ],
+      "output" : [ {
+        "name" : "dataset",
+        "variableName" : "dataset",
+        "type" : "CSV",
+        "description" : "Query result as a single CSV table."
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

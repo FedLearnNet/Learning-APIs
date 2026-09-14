@@ -1,0 +1,258 @@
+{
+  "name" : "SpectralClustering",
+  "uniqueAppId" : "c1c2c3d4-9a8b-4c6d-8e7f-1a2b3c4d5e6f",
+  "slug" : "spectralclustering",
+  "type" : "SELF_LEARNED",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/posymed/apps/spectral-clustering",
+  "icon" : "https://scikit-learn.org/stable/_static/scikit-learn-logo-small.png",
+  "oldFCVersion" : false,
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 17,
+    "appVersion" : "1.0.0",
+    "publishHash" : "ebacbec150b4f1284fd9a7ad5df06e684b7eca2c",
+    "publishInfo" : {
+      "commitHash" : "47c2ee4c283531acbce656c071cb44da314644b0",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/posymed/apps/spectral-clustering/-/blob/47c2ee4c283531acbce656c071cb44da314644b0/data/iris_encoded.csv" ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/spectralclustering:ZsKVqPCW",
+        "success" : false,
+        "summary" : {
+          "critical" : 0,
+          "high" : 2,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 2
+        },
+        "rawReport" : {
+          "os-pkgs-wolfi" : [ {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:L"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:7867f708ba1dc77a01858dc081252c23050e1bf2ffb2f59fa161031a5263635a"
+            },
+            "PkgID" : "python-3.11@3.11.15-r0",
+            "Title" : "python: Python: Command-line option injection in webbrowser.open() via crafted URLs",
+            "CweIDs" : [ "CWE-20" ],
+            "Status" : "fixed",
+            "PkgName" : "python-3.11",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-4519",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/03/20/1", "https://access.redhat.com/errata/RHSA-2026:6473", "https://access.redhat.com/security/cve/CVE-2026-4519", "https://bugzilla.redhat.com/2449649", "https://bugzilla.redhat.com/show_bug.cgi?id=2449649", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-4519", "https://errata.almalinux.org/8/ALSA-2026-6473.html", "https://errata.rockylinux.org/RLSA-2026:6283", "https://github.com/python/cpython/commit/3681d47a440865aead912a054d4599087b4270dd", "https://github.com/python/cpython/commit/43fe06b96f6a6cf5cfd5bdab20b8649374956866", "https://github.com/python/cpython/commit/591ed890270c5697b013bf637029fb3e6cd2d73e", "https://github.com/python/cpython/commit/594b5a05dc9913880ac92eded440defbf32a28d1", "https://github.com/python/cpython/commit/82a24a4442312bdcfc4c799885e8b3e00990f02b", "https://github.com/python/cpython/commit/89bfb8e5ed3c7caa241028f1a4eac5f6275a46a4", "https://github.com/python/cpython/commit/9669a912a0e329c094e992204d6bdb8787024d76", "https://github.com/python/cpython/commit/96fc5048605863c7b6fd6289643feb0e97edd96c", "https://github.com/python/cpython/commit/ad4d5ba32af4d80b0dfa2ba9d8203bfb219e60a5", "https://github.com/python/cpython/commit/cbba6119391112aba9c5aebf7b94aea447922c48", "https://github.com/python/cpython/commit/cc023511238ad93ecc8796157c6f9139a2bb2932", "https://github.com/python/cpython/commit/ceac1efc66516ac387eef2c9a0ce671895b44f03", "https://github.com/python/cpython/issues/143930", "https://github.com/python/cpython/pull/143931", "https://linux.oracle.com/cve/CVE-2026-4519.html", "https://linux.oracle.com/errata/ELSA-2026-6766.html", "https://mail.python.org/archives/list/security-announce@python.org/thread/AY5NDSS433JK56Q7Q5IS7B37QFZVVOUS/", "https://nvd.nist.gov/vuln/detail/CVE-2026-4519", "https://www.cve.org/CVERecord?id=CVE-2026-4519" ],
+            "Description" : "The webbrowser.open() API would accept leading dashes in the URL which \ncould be handled as command line options for certain web browsers. New \nbehavior rejects leading dashes. Users are recommended to sanitize URLs \nprior to passing to webbrowser.open().",
+            "Fingerprint" : "sha256:db6d6392d0a7d43ea3668d3cfb8c0b6efc2eda66f1c9d07fd57e07845787451c",
+            "FixedVersion" : "3.11.15-r1",
+            "PkgIdentifier" : {
+              "UID" : "65011e7730909064",
+              "PURL" : "pkg:apk/wolfi/python-3.11@3.11.15-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-03-20T15:16:24.057Z",
+            "VendorSeverity" : {
+              "alma" : 3,
+              "azure" : 3,
+              "rocky" : 3,
+              "photon" : 3,
+              "redhat" : 3,
+              "cbl-mariner" : 3,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-4519",
+            "InstalledVersion" : "3.11.15-r0",
+            "LastModifiedDate" : "2026-04-07T18:16:47.223Z"
+          }, {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:L"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:7867f708ba1dc77a01858dc081252c23050e1bf2ffb2f59fa161031a5263635a"
+            },
+            "PkgID" : "python-3.11-base@3.11.15-r0",
+            "Title" : "python: Python: Command-line option injection in webbrowser.open() via crafted URLs",
+            "CweIDs" : [ "CWE-20" ],
+            "Status" : "fixed",
+            "PkgName" : "python-3.11-base",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-4519",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/03/20/1", "https://access.redhat.com/errata/RHSA-2026:6473", "https://access.redhat.com/security/cve/CVE-2026-4519", "https://bugzilla.redhat.com/2449649", "https://bugzilla.redhat.com/show_bug.cgi?id=2449649", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-4519", "https://errata.almalinux.org/8/ALSA-2026-6473.html", "https://errata.rockylinux.org/RLSA-2026:6283", "https://github.com/python/cpython/commit/3681d47a440865aead912a054d4599087b4270dd", "https://github.com/python/cpython/commit/43fe06b96f6a6cf5cfd5bdab20b8649374956866", "https://github.com/python/cpython/commit/591ed890270c5697b013bf637029fb3e6cd2d73e", "https://github.com/python/cpython/commit/594b5a05dc9913880ac92eded440defbf32a28d1", "https://github.com/python/cpython/commit/82a24a4442312bdcfc4c799885e8b3e00990f02b", "https://github.com/python/cpython/commit/89bfb8e5ed3c7caa241028f1a4eac5f6275a46a4", "https://github.com/python/cpython/commit/9669a912a0e329c094e992204d6bdb8787024d76", "https://github.com/python/cpython/commit/96fc5048605863c7b6fd6289643feb0e97edd96c", "https://github.com/python/cpython/commit/ad4d5ba32af4d80b0dfa2ba9d8203bfb219e60a5", "https://github.com/python/cpython/commit/cbba6119391112aba9c5aebf7b94aea447922c48", "https://github.com/python/cpython/commit/cc023511238ad93ecc8796157c6f9139a2bb2932", "https://github.com/python/cpython/commit/ceac1efc66516ac387eef2c9a0ce671895b44f03", "https://github.com/python/cpython/issues/143930", "https://github.com/python/cpython/pull/143931", "https://linux.oracle.com/cve/CVE-2026-4519.html", "https://linux.oracle.com/errata/ELSA-2026-6766.html", "https://mail.python.org/archives/list/security-announce@python.org/thread/AY5NDSS433JK56Q7Q5IS7B37QFZVVOUS/", "https://nvd.nist.gov/vuln/detail/CVE-2026-4519", "https://www.cve.org/CVERecord?id=CVE-2026-4519" ],
+            "Description" : "The webbrowser.open() API would accept leading dashes in the URL which \ncould be handled as command line options for certain web browsers. New \nbehavior rejects leading dashes. Users are recommended to sanitize URLs \nprior to passing to webbrowser.open().",
+            "Fingerprint" : "sha256:5877ee06767fe36fb74a8c4fa38a7420163b7b9acdec5f6c0c21ebfcec8299bd",
+            "FixedVersion" : "3.11.15-r1",
+            "PkgIdentifier" : {
+              "UID" : "432c86a751427c0f",
+              "PURL" : "pkg:apk/wolfi/python-3.11-base@3.11.15-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-03-20T15:16:24.057Z",
+            "VendorSeverity" : {
+              "alma" : 3,
+              "azure" : 3,
+              "rocky" : 3,
+              "photon" : 3,
+              "redhat" : 3,
+              "cbl-mariner" : 3,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-4519",
+            "InstalledVersion" : "3.11.15-r0",
+            "LastModifiedDate" : "2026-04-07T18:16:47.223Z"
+          } ]
+        }
+      },
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/spectralclustering:ZsKVqPCW"
+    },
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/spectralclustering:ZsKVqPCW",
+    "shortDescription" : "Graph-based clustering using scikit-learn SpectralClustering (eigenvectors + k-means).",
+    "longDescription" : "This tool runs SpectralClustering from scikit-learn. It constructs an affinity matrix (e.g., RBF or a k-NN graph), computes a spectral embedding (eigenvectors of the graph Laplacian), and then clusters in the embedding space (typically via k-means). Outputs: cluster labels per sample, optionally the spectral embedding, and an HTML report with parameters and statistics.",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "n_clusters",
+        "variableName" : "n_clusters",
+        "type" : "INTEGER",
+        "description" : "Number of clusters.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 2.0,
+        "maxValue" : 200.0,
+        "default" : "3"
+      }, {
+        "name" : "affinity",
+        "variableName" : "affinity",
+        "type" : "CATEGORICAL",
+        "description" : "Affinity definition: rbf, nearest_neighbors, precomputed (if the input is already an affinity matrix).",
+        "mode" : "BOTH",
+        "options" : [ "rbf", "nearest_neighbors", "precomputed" ],
+        "default" : "rbf"
+      }, {
+        "name" : "gamma",
+        "variableName" : "gamma",
+        "type" : "FLOAT",
+        "description" : "Gamma for the RBF kernel (only if affinity='rbf').",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "default" : "1.0"
+      }, {
+        "name" : "n_neighbors",
+        "variableName" : "n_neighbors",
+        "type" : "INTEGER",
+        "description" : "Number of neighbors for the k-NN graph (only if affinity='nearest_neighbors').",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "maxValue" : 10000.0,
+        "default" : "10"
+      }, {
+        "name" : "assign_labels",
+        "variableName" : "assign_labels",
+        "type" : "CATEGORICAL",
+        "description" : "Clustering in the embedding space: kmeans or discretize.",
+        "mode" : "BOTH",
+        "options" : [ "kmeans", "discretize" ],
+        "default" : "kmeans"
+      }, {
+        "name" : "n_init",
+        "variableName" : "n_init",
+        "type" : "INTEGER",
+        "description" : "Number of k-means initializations (relevant when assign_labels='kmeans').",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "maxValue" : 100.0,
+        "default" : "10"
+      }, {
+        "name" : "eigen_solver",
+        "variableName" : "eigen_solver",
+        "type" : "CATEGORICAL",
+        "description" : "Eigen solver: arpack, lobpcg, amg (amg requires pyamg).",
+        "mode" : "BOTH",
+        "options" : [ "arpack", "lobpcg", "amg" ],
+        "default" : "arpack"
+      }, {
+        "name" : "random_state",
+        "variableName" : "random_state",
+        "type" : "INTEGER",
+        "description" : "Seed for reproducibility (especially for k-means / discretize).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "maxValue" : 2.1474836E9,
+        "default" : "42"
+      }, {
+        "name" : "standardize",
+        "variableName" : "standardize",
+        "type" : "BOOLEAN",
+        "description" : "Standardizes features (zero mean / unit variance) before clustering (recommended).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1"
+      } ],
+      "input" : [ {
+        "name" : "features",
+        "variableName" : "features",
+        "type" : "CSV",
+        "description" : "Tabular feature matrix (or affinity matrix when affinity='precomputed'). If features: rows=samples, columns=numeric features. Optional first column 'id'.",
+        "mode" : "BOTH",
+        "tabularSchema" : {
+          "allowOnlyNumbers" : true,
+          "prohibitedNulls" : false
+        },
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "labels",
+        "variableName" : "labels",
+        "type" : "CSV",
+        "description" : "Cluster assignment per sample. Columns: [id?/index, label].",
+        "mode" : "BOTH"
+      }, {
+        "name" : "embedding",
+        "variableName" : "embedding",
+        "type" : "CSV",
+        "description" : "Spectral embedding (eigenvectors). Rows=samples, columns=components (typically n_clusters). (Only if output_embedding=true).",
+        "mode" : "BOTH"
+      }, {
+        "name" : "report",
+        "variableName" : "report",
+        "type" : "HTML",
+        "description" : "HTML report with parameters, affinity settings, eigen solver, and cluster size statistics.",
+        "mode" : "BOTH"
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

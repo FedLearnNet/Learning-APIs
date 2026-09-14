@@ -1,0 +1,188 @@
+services:
+  local-learning-api-db:
+    image: postgres:18
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: local-learning-management
+      POSTGRES_USER: user
+    volumes:
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./pg_hba.conf:/etc/postgresql/pg_hba.conf
+      - local-learning-api-db-volume:/var/lib/postgresql
+    command: [ "postgres", "-c", "config_file=/etc/postgresql/postgresql.conf" ]
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d local-learning-management" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    labels:
+      # Change to `true` to disable waiting for ports
+      #io.quarkus.devservices.compose.wait_for.ports.disable: true
+      # Or set a custom timeout for port waiting
+      io.quarkus.devservices.compose.wait_for.ports.timeout: "30s"
+    networks:
+      - local-learning-network
+  orch-api:
+    image: gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/orch-api/orch-api:staging
+    user: "0:0"
+    ports:
+      - '8091:8080'
+    env_file:
+      - orch_secrets.env
+    environment:
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://local-learning-api-db:5432/local-learning-management
+      QUARKUS_DATASOURCE_USERNAME: user
+      QUARKUS_DATASOURCE_PASSWORD: password
+      QUARKUS_LOG_CONSOLE_JSON_ENABLED: false
+      CONTAINER_HOST_OVERRIDE: host.docker.internal
+      CONTAINER_NETWORK_CONTROLLER: controller:8001
+      CONTAINER_NETWORK_NAMES: local-learning-network
+      CONTAINER_NETWORK_ALWAYS_BRIDGE: "true"
+      QUARKUS_LOG_CATEGORY_"bio.cosy.featurecloud"_LEVEL: DEBUG
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - orch-data:/mnt/input:rw
+    depends_on:
+      local-learning-api-db:
+        condition: service_healthy
+    labels:
+      # Change to `true` to disable waiting for ports
+      io.quarkus.devservices.compose.wait_for.ports.disable: true
+      # Or set a custom timeout for port waiting
+      #io.quarkus.devservices.compose.wait_for.ports.timeout: "30s"
+    networks:
+      - local-learning-network
+  controller:
+    image: gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/feature-cloud-controller/controller:staging
+    ports:
+      - '8092:8000'
+    profiles:
+      - dev
+    environment:
+      RELAY_ADDRESS_TCP: "host.docker.internal:9161"
+      RELAY_TRUST_CERTIFICATE: "true"
+      RELAY_TLS_MODE: "off"
+      RELAY_MODE: "dev"
+      WORKFLOW_LEARNING_API_WS_ADDRESS: "ws://host.docker.internal:8081"
+      LOG_LEVEL_STDOUT: "DEBUG"
+    labels:
+      # Change to `true` to disable waiting for ports
+      io.quarkus.devservices.compose.wait_for.ports.disable: true
+      # Or set a custom timeout for port waiting
+      #io.quarkus.devservices.compose.wait_for.ports.timeout: "30s"
+    networks:
+      - local-learning-network
+
+  controller-test:
+    image: gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/feature-cloud-controller/controller:staging
+    ports:
+      - '8092:8000'
+    profiles:
+      - test
+    environment:
+      WORKFLOW_LEARNING_API_WS_ADDRESS: "ws://host.docker.internal:8084"
+      LOG_LEVEL_STDOUT: "DEBUG"
+      RELAY_ADDRESS_TCP: "relay-test:9140"
+      RELAY_TRUST_CERTIFICATE: "true"
+    labels:
+      io.quarkus.devservices.compose.wait_for.ports.disable: true
+    networks:
+      - local-learning-network
+  relay-test:
+    image: gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/feature-cloud-controller/controller-relay:staging
+    ports:
+      - '9150:9140'
+      - '9151:9141'
+    profiles:
+      - test
+    environment:
+      CERT_DNS_NAMES: "featurecloud,relay-test"
+    labels:
+      io.quarkus.devservices.compose.wait_for.ports.disable: true
+    networks:
+      - local-learning-network
+
+  # datamodeler-api:
+  #   image: gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/datamodeler-api/datamodeler-api:staging
+  #   pull_policy: always
+  #   environment:
+  #     DEBUG: 1
+  #     DJANGO_NEO4J_BOLT_URL: bolt://neo4j:neo4jpwd@datamodeler-db:7687
+  #     DJANGO_SUPERUSER_USERNAME: admin
+  #     DJANGO_SUPERUSER_PASSWORD: admin
+  #     DJANGO_SUPERUSER_EMAIL: admin@admin.com
+  #   ports:
+  #     - '8093:8000'
+  #   networks:
+  #     - local-learning-network
+  #   depends_on:
+  #     datamodeler-db:
+  #       condition: service_healthy
+
+  # datamodeler-db:
+  #   image: neo4j:5.18.1-enterprise
+  #   ports:
+  #     - "7474:7474"
+  #     - "7687:7687"
+  #   environment:
+  #     NEO4J_AUTH: neo4j/neo4jpwd
+  #     NEO4J_ACCEPT_LICENSE_AGREEMENT: yes
+  #     NEO4J_PLUGINS: '["apoc", "apoc-extended"]'
+  #     NEO4J_dbms_security_procedures_unrestricted: apoc.*,gds.*
+  #     NEO4J_dbms_security_procedures_allowlist: apoc.*,gds.*
+  #     NEO4J_apoc_import_file_enabled: true
+  #     NEO4J_apoc_export_file_enabled: true
+  #     NEO4J_apoc_import_file_use__neo4j__config: true
+  #   volumes:
+  #     - neo4j-data:/data
+  #     - neo4j-import:/var/lib/neo4j/import
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "cypher-shell -u neo4j -p neo4jpwd 'RETURN 1'"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 10
+  #     start_period: 60s
+  #   labels:
+  #     io.quarkus.devservices.compose.wait_for.ports.timeout: "120s"
+  #   networks:
+  #     - local-learning-network
+
+  # # Yes we start a whole new neo4j just to run the init script
+  # # it works which is what matters
+  # # alternatively we could use a custom dockerfile that copies the init script
+  # # We do this to ensure the permissions of the cypher script dont get changed
+  # datamodeler-init:
+  #   image: neo4j:5.18.1-enterprise
+  #   volumes:
+  #     - neo4j-import:/var/lib/neo4j/import
+  #     - ./src/main/resources/schema.cypher:/tmp/schema.cypher:ro
+  #   depends_on:
+  #     datamodeler-db:
+  #       condition: service_healthy
+  #   command: >
+  #     bash -c "
+  #       echo 'Copying schema file...' &&
+  #       cp /tmp/schema.cypher /var/lib/neo4j/import/schema.cypher &&
+  #       echo 'Executing schema script...' &&
+  #       cypher-shell -a bolt://datamodeler-db:7687 -u neo4j -p neo4jpwd --file /var/lib/neo4j/import/schema.cypher &&
+  #       echo 'Schema initialization completed successfully!' &&
+  #       echo 'DONE'
+  #     "
+  #   labels:
+  #     io.quarkus.devservices.compose.wait_for.logs: .*DONE.*
+  #   networks:
+  #     - local-learning-network
+
+volumes:
+  local-learning-api-db-volume:
+  orch-data:
+    name: "orch-data"
+  neo4j-data:
+  neo4j-import:
+
+networks:
+  local-learning-network:
+    name: "local-learning-network"
+    driver: bridge

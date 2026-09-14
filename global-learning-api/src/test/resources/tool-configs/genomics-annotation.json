@@ -1,0 +1,47 @@
+[
+  {
+    "name": "Genomic Intervals (BED)",
+    "variableName": "bed",
+    "type": "TSV",
+    "description": "The Browser Extensible Data (BED) format encodes genomic regions with coordinates and optional annotation columns. It is a simple text format for representing intervals such as genes, peaks or feature regions. ",
+    "delimiter": "\t",
+    "hasHeader": false,
+    "tabularSchema": {
+      "minColumns": 3,
+      "maxColumns": 12,
+      "prohibitedNulls": true,
+      "requiredColumns": ["chrom", "chromStart", "chromEnd"],
+      "columns": {
+        "chrom": { "type": "STRING", "nullable": false },
+        "chromStart": { "type": "INTEGER", "min": 0, "nullable": false },
+        "chromEnd": { "type": "INTEGER", "min": 1, "nullable": false },
+        "strand": { "type": "STRING", "enumValues": ["+", "-", "."], "nullable": true }
+      }
+    }
+  },
+  {
+    "name": "Genome Annotation (GFF3)",
+    "variableName": "gff3",
+    "type": "TSV",
+    "description": "GFF3 is a rich tabular format for genomic feature annotation (e.g., genes, transcripts, exons) with structured attributes. It extends tab-separated values with controlled fields for hierarchical feature relationships.",
+    "delimiter": "\t",
+    "hasHeader": false,
+    "tabularSchema": {
+      "minColumns": 9,
+      "maxColumns": 9,
+      "prohibitedNulls": true,
+      "requiredColumns": ["seqid", "source", "type", "start", "end", "score", "strand", "phase", "attributes"],
+      "columns": {
+        "seqid": { "type": "STRING", "nullable": false },
+        "source": { "type": "STRING", "nullable": false },
+        "type": { "type": "STRING", "nullable": false },
+        "start": { "type": "INTEGER", "min": 1, "nullable": false },
+        "end": { "type": "INTEGER", "min": 1, "nullable": false },
+        "score": { "type": "STRING", "nullable": false },
+        "strand": { "type": "STRING", "enumValues": ["+", "-", "."], "nullable": false },
+        "phase": { "type": "STRING", "enumValues": ["0", "1", "2", "."], "nullable": false },
+        "attributes": { "type": "STRING", "nullable": false }
+      }
+    }
+  }
+]

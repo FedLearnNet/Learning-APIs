@@ -1,0 +1,760 @@
+{
+  "name" : "US130-Hospital Readmission NN",
+  "uniqueAppId" : "c0940e87-a27e-483e-a1b3-fcf7dd865ff4",
+  "slug" : "us130-hospital-readmission-nn",
+  "type" : "ANALYSIS",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/us-130-nn",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 29,
+    "appVersion" : "0.0.0",
+    "publishHash" : "dc3ed48b7004bad180ba806aabd3fe8b8c7582c9",
+    "publishInfo" : {
+      "commitHash" : "dc3ed48b7004bad180ba806aabd3fe8b8c7582c9",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/us-130-nn/-/blob/dc3ed48b7004bad180ba806aabd3fe8b8c7582c9/data/test_us130_wide_c85ce744.csv", "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/us-130-nn/-/blob/dc3ed48b7004bad180ba806aabd3fe8b8c7582c9/data/test_us130_wide.csv" ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us130-hospital-readmission-nn:sqrhCiws",
+        "success" : false,
+        "summary" : {
+          "critical" : 0,
+          "high" : 11,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 11
+        },
+        "rawReport" : {
+          "os-pkgs-wolfi" : [ {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:a14d2bee84b72c0af2141ed8191bc2bb69ab0718126142c1b9a1b937589b1ce3"
+            },
+            "PkgID" : "busybox@1.37.0-r60",
+            "Title" : "busybox: Busybox: Denial of Service via heap overflow in ifsbreakup() function",
+            "CweIDs" : [ "CWE-125", "CWE-122" ],
+            "Status" : "fixed",
+            "PkgName" : "busybox",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-38754",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-38754", "https://busybox.net", "https://lists.busybox.net/pipermail/busybox/2026-June/092353.html", "https://lists.busybox.net/pipermail/busybox/2026-June/092360.html", "https://nvd.nist.gov/vuln/detail/CVE-2026-38754", "https://www.cve.org/CVERecord?id=CVE-2026-38754" ],
+            "Description" : "A heap overflow in the ifsbreakup() function (shell/ash.c) of Busybox v1.38.0 allows attackers to cause a Denial of Service (DoS) via supplying a crafted input.",
+            "Fingerprint" : "sha256:5bc91bee79e1ca234d4f3dc2841a52135587de4028b24bddca3e5c2da93d8b35",
+            "FixedVersion" : "1.38.0-r0",
+            "PkgIdentifier" : {
+              "UID" : "a6628f850ae8aee",
+              "PURL" : "pkg:apk/wolfi/busybox@1.37.0-r60?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-07-15T22:16:47.233Z",
+            "VendorSeverity" : {
+              "azure" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-38754",
+            "InstalledVersion" : "1.37.0-r60",
+            "LastModifiedDate" : "2026-07-22T15:16:54.52Z"
+          }, {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:f83094e3b2f246c2e2c308bdf9271334e08f9768e421f4d597554899a8867878"
+            },
+            "PkgID" : "libcrypto3@3.6.3-r1",
+            "Title" : "openssl: OpenSSL: Denial of Service via unbounded memory growth in QUIC server",
+            "CweIDs" : [ "CWE-770" ],
+            "Status" : "fixed",
+            "PkgName" : "libcrypto3",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-14456",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/08/13/4", "https://access.redhat.com/security/cve/CVE-2026-14456", "https://github.com/openssl/openssl/commit/08e7756c3900bcfd77a720e7b74e27d6e4ed01a9", "https://github.com/openssl/openssl/commit/4084152e040329ca0194c4c1750b9b46d00a5b6b", "https://github.com/openssl/openssl/commit/f2f1465f2d2e5c61dfeac4d20fd093797d821139", "https://nvd.nist.gov/vuln/detail/CVE-2026-14456", "https://openssl-library.org/news/secadv/20260813.txt", "https://ubuntu.com/security/notices/USN-8678-1", "https://www.cve.org/CVERecord?id=CVE-2026-14456" ],
+            "Description" : "Issue summary: When an OpenSSL QUIC server (Listener SSL object) processes\nvalid QUIC Initial packets for unknown destination connection IDs, it\ncan allocate and queue new incoming channels without enforcing any limit.\n\nImpact summary: A remote peer that can make many Initial packets reach the\nserver listener faster than the application accepts connections, can cause the\nmemory allocated to store the per-channel state to grow without any limits,\npotentially making the QUIC listener unavailable and causing Denial of Service.\n\nCWE: CWE-770: Allocation of Resources Without Limits or Throttling\n\nDescription: The function that handles inbound QUIC packets uses\nConnection-Id from the packet header to find an existing connection\n(QUIC channel). If no existing connection is found and the packet\ntype is INITIAL, the function treats the packet as a new connection. It\nallocates a new channel object and inserts it into a queue where it\nwaits to be accepted by the local application with SSL_accept(3ossl).\nThe memory occupied by these initial channel objects may grow\nwithout bounds if the application is not able to call SSL_accept()\nfrequently enough to serve these inbound connection requests.\n\nThe issue is present since OpenSSL 3.5 when the QUIC server implementation\nwas added.\n\nThe fix introduces a limit for pending connections. The default limit is set\nto 256 pending connections (waiting to be accepted by the local application).\nApplications may change the default by calling SSL_set_value_uint(3ossl).\n\nFIPS impact: no\nThe FIPS module is not affected as the QUIC implementation is outside of\nthe OpenSSL FIPS module boundary.",
+            "Fingerprint" : "sha256:9d851e13450f38db096400374370516192ce3b19503c945a2267b677999710cd",
+            "FixedVersion" : "3.6.3-r5",
+            "PkgIdentifier" : {
+              "UID" : "474a2af905b4c1ad",
+              "PURL" : "pkg:apk/wolfi/libcrypto3@3.6.3-r1?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-08-13T15:19:31.82Z",
+            "VendorSeverity" : {
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 3,
+              "ubuntu" : 2
+            },
+            "VulnerabilityID" : "CVE-2026-14456",
+            "InstalledVersion" : "3.6.3-r1",
+            "LastModifiedDate" : "2026-08-28T19:46:29.323Z"
+          }, {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:f83094e3b2f246c2e2c308bdf9271334e08f9768e421f4d597554899a8867878"
+            },
+            "PkgID" : "libssl3@3.6.3-r1",
+            "Title" : "openssl: OpenSSL: Denial of Service via unbounded memory growth in QUIC server",
+            "CweIDs" : [ "CWE-770" ],
+            "Status" : "fixed",
+            "PkgName" : "libssl3",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-14456",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/08/13/4", "https://access.redhat.com/security/cve/CVE-2026-14456", "https://github.com/openssl/openssl/commit/08e7756c3900bcfd77a720e7b74e27d6e4ed01a9", "https://github.com/openssl/openssl/commit/4084152e040329ca0194c4c1750b9b46d00a5b6b", "https://github.com/openssl/openssl/commit/f2f1465f2d2e5c61dfeac4d20fd093797d821139", "https://nvd.nist.gov/vuln/detail/CVE-2026-14456", "https://openssl-library.org/news/secadv/20260813.txt", "https://ubuntu.com/security/notices/USN-8678-1", "https://www.cve.org/CVERecord?id=CVE-2026-14456" ],
+            "Description" : "Issue summary: When an OpenSSL QUIC server (Listener SSL object) processes\nvalid QUIC Initial packets for unknown destination connection IDs, it\ncan allocate and queue new incoming channels without enforcing any limit.\n\nImpact summary: A remote peer that can make many Initial packets reach the\nserver listener faster than the application accepts connections, can cause the\nmemory allocated to store the per-channel state to grow without any limits,\npotentially making the QUIC listener unavailable and causing Denial of Service.\n\nCWE: CWE-770: Allocation of Resources Without Limits or Throttling\n\nDescription: The function that handles inbound QUIC packets uses\nConnection-Id from the packet header to find an existing connection\n(QUIC channel). If no existing connection is found and the packet\ntype is INITIAL, the function treats the packet as a new connection. It\nallocates a new channel object and inserts it into a queue where it\nwaits to be accepted by the local application with SSL_accept(3ossl).\nThe memory occupied by these initial channel objects may grow\nwithout bounds if the application is not able to call SSL_accept()\nfrequently enough to serve these inbound connection requests.\n\nThe issue is present since OpenSSL 3.5 when the QUIC server implementation\nwas added.\n\nThe fix introduces a limit for pending connections. The default limit is set\nto 256 pending connections (waiting to be accepted by the local application).\nApplications may change the default by calling SSL_set_value_uint(3ossl).\n\nFIPS impact: no\nThe FIPS module is not affected as the QUIC implementation is outside of\nthe OpenSSL FIPS module boundary.",
+            "Fingerprint" : "sha256:fcd208ad5b46b30caefd643ed62b66c336f42aa3b57edff01215f54c530a77ca",
+            "FixedVersion" : "3.6.3-r5",
+            "PkgIdentifier" : {
+              "UID" : "a1df5f91364ac8f4",
+              "PURL" : "pkg:apk/wolfi/libssl3@3.6.3-r1?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-08-13T15:19:31.82Z",
+            "VendorSeverity" : {
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 3,
+              "ubuntu" : 2
+            },
+            "VulnerabilityID" : "CVE-2026-14456",
+            "InstalledVersion" : "3.6.3-r1",
+            "LastModifiedDate" : "2026-08-28T19:46:29.323Z"
+          }, {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 7.3,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:U/C:H/I:H/A:N"
+              },
+              "bitnami" : {
+                "V40Score" : 7.8,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:N/SC:H/SI:H/SA:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:b020051a3a8c1ded162ceba6621300419c16332dd6214c6d7556b4de0197c3fa"
+            },
+            "PkgID" : "python-3.11@3.11.15-r6",
+            "Title" : "python: cpython: CPython: tarfile extraction filter bypass allows escaping the destination directory",
+            "CweIDs" : [ "CWE-22", "CWE-59" ],
+            "Status" : "fixed",
+            "PkgName" : "python-3.11",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-11940",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2026:56219", "https://access.redhat.com/errata/RHSA-2026:59009", "https://access.redhat.com/security/cve/CVE-2026-11940", "https://bugzilla.redhat.com/2491848", "https://bugzilla.redhat.com/show_bug.cgi?id=2491848", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-11940", "https://errata.almalinux.org/9/ALSA-2026-59009.html", "https://errata.rockylinux.org/RLSA-2026:56219", "https://github.com/python/cpython/commit/0f852b3f07dd8e71e40326a51c02afbf16a42cc5", "https://github.com/python/cpython/commit/27dd970bf6b17ebca7c8ed486a40ab043ed7af8f", "https://github.com/python/cpython/commit/672825e2f36a57e173959b0d9d409d4560dab8df", "https://github.com/python/cpython/commit/771d12dda5140313db0ac550292987975651bbde", "https://github.com/python/cpython/commit/79c06bd5c6afa3c440d50faf7ee1b147c8832b4c", "https://github.com/python/cpython/commit/be13e86f6b9788a6f4d0419dffef72cbae5865c9", "https://github.com/python/cpython/commit/e5fdbd8d5aa923bd9111b112ea73bd6ec7c47877", "https://github.com/python/cpython/issues/151558", "https://github.com/python/cpython/pull/151559", "https://linux.oracle.com/cve/CVE-2026-11940.html", "https://linux.oracle.com/errata/ELSA-2026-59009.html", "https://mail.python.org/archives/list/security-announce@python.org/thread/LD6QIISNQFQYOIEPJNEUIPV7S3V76FZH/", "https://nvd.nist.gov/vuln/detail/CVE-2026-11940", "https://www.cve.org/CVERecord?id=CVE-2026-11940" ],
+            "Description" : "tarfile.extractall() with the 'data' or 'tar'\n filter could be bypassed by a crafted archive where a hardlink \nreferences a symlink stored at a deeper name than the hardlink itself.  \nThe extraction fallback validated the symlink at it's archived location \nbut recreated it at the hardlink's shallower\npath, letting a relative\n target the filter judged contained escape the destination directory.  \nThis allowed a malicious tar archive to create a symlink pointing \noutside the destination, enabling out-of-destination file reads or \nwrites. This was an incomplete fix of CVE-2025-4330.",
+            "Fingerprint" : "sha256:99d363902998e52f1c29e7015a08d3ede0160960b81868e3c61b2f56edde6474",
+            "FixedVersion" : "3.11.15-r8",
+            "PkgIdentifier" : {
+              "UID" : "98b09d233981c39",
+              "PURL" : "pkg:apk/wolfi/python-3.11@3.11.15-r6?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-06-23T17:16:40.847Z",
+            "VendorSeverity" : {
+              "alma" : 3,
+              "rocky" : 3,
+              "amazon" : 3,
+              "photon" : 4,
+              "redhat" : 3,
+              "bitnami" : 3,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-11940",
+            "InstalledVersion" : "3.11.15-r6",
+            "LastModifiedDate" : "2026-08-13T01:16:51.627Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "bitnami" : {
+                "V40Score" : 8.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:b020051a3a8c1ded162ceba6621300419c16332dd6214c6d7556b4de0197c3fa"
+            },
+            "PkgID" : "python-3.11@3.11.15-r6",
+            "Title" : "python: Python: CPU Denial of Service in HTML parser via repeated unterminated markup declarations",
+            "CweIDs" : [ "CWE-400" ],
+            "Status" : "fixed",
+            "PkgName" : "python-3.11",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-15308",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/07/09/4", "https://access.redhat.com/errata/RHSA-2026:39320", "https://access.redhat.com/errata/RHSA-2026:41949", "https://access.redhat.com/security/cve/CVE-2026-15308", "https://bugzilla.redhat.com/2498608", "https://bugzilla.redhat.com/show_bug.cgi?id=2498608", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-15308", "https://errata.almalinux.org/9/ALSA-2026-41949.html", "https://errata.rockylinux.org/RLSA-2026:39320", "https://github.com/python/cpython/commit/07efb08123ba9367a7107325adb9d5626dca1ca9", "https://github.com/python/cpython/commit/1e7956f1a722df9aabc509c30f8fbdc3a2b4fdc7", "https://github.com/python/cpython/commit/785df8f743800661961528970f8598edcd291c14", "https://github.com/python/cpython/commit/7933f4bf7131aa4140750f9404f5de0aa2969ced", "https://github.com/python/cpython/commit/bcf98ddbc40ec9b3ee87da0124a5660b19b7e606", "https://github.com/python/cpython/commit/c2390b9376e35a701ed3acc597b8fc87546c9b00", "https://github.com/python/cpython/commit/e9f92ac0b298292e7ff998e52cb8ccacfb27a0bd", "https://github.com/python/cpython/issues/153030", "https://github.com/python/cpython/pull/153031", "https://linux.oracle.com/cve/CVE-2026-15308.html", "https://linux.oracle.com/errata/ELSA-2026-41949.html", "https://mail.python.org/archives/list/security-announce@python.org/thread/F6453LWKSHKCTWFLCOURWPLETNUIW2Z5/", "https://nvd.nist.gov/vuln/detail/CVE-2026-15308", "https://www.cve.org/CVERecord?id=CVE-2026-15308" ],
+            "Description" : "The incremental HTML parser (html.parser.HTMLParser) allows for CPU\ndenial-of-service through repeated unterminated markup declarations when\nprocessing uncontrolled data.",
+            "Fingerprint" : "sha256:b05fd6ca346590920b7407a7df8dc6bbe5864f9f5b073cde730bcfea9084c699",
+            "FixedVersion" : "3.11.16-r1",
+            "PkgIdentifier" : {
+              "UID" : "98b09d233981c39",
+              "PURL" : "pkg:apk/wolfi/python-3.11@3.11.15-r6?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-07-09T17:16:58.26Z",
+            "SeveritySource" : "nvd",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 3,
+              "rocky" : 3,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 3,
+              "bitnami" : 3,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-15308",
+            "InstalledVersion" : "3.11.15-r6",
+            "LastModifiedDate" : "2026-08-20T17:02:59.313Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+              },
+              "redhat" : {
+                "V3Score" : 5.4,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:b020051a3a8c1ded162ceba6621300419c16332dd6214c6d7556b4de0197c3fa"
+            },
+            "PkgID" : "python-3.11@3.11.15-r6",
+            "Title" : "cpython: Incomplete control character validation in http.cookies",
+            "CweIDs" : [ "CWE-20", "CWE-116" ],
+            "Status" : "fixed",
+            "PkgName" : "python-3.11",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-3644",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2026:10950", "https://access.redhat.com/errata/RHSA-2026:19177", "https://access.redhat.com/security/cve/CVE-2026-3644", "https://bugzilla.redhat.com/2395108", "https://bugzilla.redhat.com/2408891", "https://bugzilla.redhat.com/2418084", "https://bugzilla.redhat.com/2431366", "https://bugzilla.redhat.com/2431374", "https://bugzilla.redhat.com/2444691", "https://bugzilla.redhat.com/2448168", "https://bugzilla.redhat.com/2448181", "https://bugzilla.redhat.com/2449649", "https://bugzilla.redhat.com/2457409", "https://bugzilla.redhat.com/2457932", "https://bugzilla.redhat.com/2458049", "https://bugzilla.redhat.com/show_bug.cgi?id=2395108", "https://bugzilla.redhat.com/show_bug.cgi?id=2408891", "https://bugzilla.redhat.com/show_bug.cgi?id=2418084", "https://bugzilla.redhat.com/show_bug.cgi?id=2431366", "https://bugzilla.redhat.com/show_bug.cgi?id=2431374", "https://bugzilla.redhat.com/show_bug.cgi?id=2444691", "https://bugzilla.redhat.com/show_bug.cgi?id=2448168", "https://bugzilla.redhat.com/show_bug.cgi?id=2448181", "https://bugzilla.redhat.com/show_bug.cgi?id=2457409", "https://bugzilla.redhat.com/show_bug.cgi?id=2457932", "https://bugzilla.redhat.com/show_bug.cgi?id=2458049", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-13837", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-15282", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-59375", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-6075", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-0672", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-1502", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-2297", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-3644", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-4224", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-4786", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-6100", "https://errata.almalinux.org/9/ALSA-2026-19177.html", "https://errata.rockylinux.org/RLSA-2026:10950", "https://github.com/python/cpython/commit/3974092b037f9a3b000fb15b48ea61ce3b25d330", "https://github.com/python/cpython/commit/556aa098e738b127c714866f819b4abe2f7593d8", "https://github.com/python/cpython/commit/57e88c1cf95e1481b94ae57abe1010469d47a6b4", "https://github.com/python/cpython/commit/62ceb396fcbe69da1ded3702de586f4072b590dd", "https://github.com/python/cpython/commit/d16ecc6c3626f0e2cc8f08c309c83934e8a979dd", "https://github.com/python/cpython/commit/dae4b1a21f8df4570e30986affd61bbe4ade4cef", "https://github.com/python/cpython/issues/145599", "https://github.com/python/cpython/pull/145600", "https://linux.oracle.com/cve/CVE-2026-3644.html", "https://linux.oracle.com/errata/ELSA-2026-19177.html", "https://mail.python.org/archives/list/security-announce@python.org/thread/H6CADMBCDRFGWCMOXWUIHFJNV43GABJ7/", "https://nvd.nist.gov/vuln/detail/CVE-2026-3644", "https://ubuntu.com/security/notices/USN-8509-1", "https://www.cve.org/CVERecord?id=CVE-2026-3644" ],
+            "Description" : "The fix for CVE-2026-0672, which rejected control characters in http.cookies.Morsel, was incomplete. The Morsel.update(), |= operator, and unpickling paths were not patched, allowing control characters to bypass input validation. Additionally, BaseCookie.js_output() lacked the output validation applied to BaseCookie.output().",
+            "Fingerprint" : "sha256:ce90b5c753b34d5939e8abdaed098b7b17e1f9d5cbed402af2ed41e167783578",
+            "FixedVersion" : "3.11.15-r9",
+            "PkgIdentifier" : {
+              "UID" : "98b09d233981c39",
+              "PURL" : "pkg:apk/wolfi/python-3.11@3.11.15-r6?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-03-16T18:16:09.907Z",
+            "SeveritySource" : "nvd",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 3,
+              "azure" : 2,
+              "rocky" : 3,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-3644",
+            "InstalledVersion" : "3.11.15-r6",
+            "LastModifiedDate" : "2026-08-13T01:16:53.12Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 5.9,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "bitnami" : {
+                "V40Score" : 6,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:P/PR:L/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:b020051a3a8c1ded162ceba6621300419c16332dd6214c6d7556b4de0197c3fa"
+            },
+            "PkgID" : "python-3.11@3.11.15-r6",
+            "Title" : "cpython: Stack overflow parsing XML with deeply nested DTD content models",
+            "CweIDs" : [ "CWE-674" ],
+            "Status" : "fixed",
+            "PkgName" : "python-3.11",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-4224",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/03/16/4", "https://access.redhat.com/errata/RHSA-2026:10950", "https://access.redhat.com/errata/RHSA-2026:19177", "https://access.redhat.com/security/cve/CVE-2026-4224", "https://bugzilla.redhat.com/2395108", "https://bugzilla.redhat.com/2408891", "https://bugzilla.redhat.com/2418084", "https://bugzilla.redhat.com/2431366", "https://bugzilla.redhat.com/2431374", "https://bugzilla.redhat.com/2444691", "https://bugzilla.redhat.com/2448168", "https://bugzilla.redhat.com/2448181", "https://bugzilla.redhat.com/2449649", "https://bugzilla.redhat.com/2457409", "https://bugzilla.redhat.com/2457932", "https://bugzilla.redhat.com/2458049", "https://bugzilla.redhat.com/show_bug.cgi?id=2395108", "https://bugzilla.redhat.com/show_bug.cgi?id=2408891", "https://bugzilla.redhat.com/show_bug.cgi?id=2418084", "https://bugzilla.redhat.com/show_bug.cgi?id=2431366", "https://bugzilla.redhat.com/show_bug.cgi?id=2431374", "https://bugzilla.redhat.com/show_bug.cgi?id=2444691", "https://bugzilla.redhat.com/show_bug.cgi?id=2448168", "https://bugzilla.redhat.com/show_bug.cgi?id=2448181", "https://bugzilla.redhat.com/show_bug.cgi?id=2457409", "https://bugzilla.redhat.com/show_bug.cgi?id=2457932", "https://bugzilla.redhat.com/show_bug.cgi?id=2458049", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-13837", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-15282", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-59375", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-6075", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-0672", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-1502", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-2297", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-3644", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-4224", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-4786", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-6100", "https://errata.almalinux.org/9/ALSA-2026-19177.html", "https://errata.rockylinux.org/RLSA-2026:10950", "https://github.com/python/cpython/commit/196edfb06a7458377d4d0f4b3cd41724c1f3bd4a", "https://github.com/python/cpython/commit/24ce88b285f56ee11626cf5e472af3cd8cc7c621", "https://github.com/python/cpython/commit/642865ddf4b232da1f3b1f7abcfa3254c4bfe785", "https://github.com/python/cpython/commit/af856a7177326ac25d9f66cc6dd28b554d914fee", "https://github.com/python/cpython/commit/e0a8a6da90597a924b300debe045cdb4628ee1f3", "https://github.com/python/cpython/commit/eb0e8be3a7e11b87d198a2c3af1ed0eccf532768", "https://github.com/python/cpython/issues/145986", "https://github.com/python/cpython/pull/145987", "https://linux.oracle.com/cve/CVE-2026-4224.html", "https://linux.oracle.com/errata/ELSA-2026-19177.html", "https://mail.python.org/archives/list/security-announce@python.org/thread/5M7CGUW3XBRY7II4DK43KF7NQQ3TPZ6R/", "https://nvd.nist.gov/vuln/detail/CVE-2026-4224", "https://ubuntu.com/security/notices/USN-8509-1", "https://www.cve.org/CVERecord?id=CVE-2026-4224" ],
+            "Description" : "When an Expat parser with a registered ElementDeclHandler parses an inline\ndocument type definition containing a deeply nested content model a C stack\noverflow occurs.",
+            "Fingerprint" : "sha256:fac562a9ba36a82abbfdb5f441d8544b8c4fed94eb6345ba1f8076d278b314dd",
+            "FixedVersion" : "3.11.15-r9",
+            "PkgIdentifier" : {
+              "UID" : "98b09d233981c39",
+              "PURL" : "pkg:apk/wolfi/python-3.11@3.11.15-r6?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-03-16T18:16:10.07Z",
+            "SeveritySource" : "nvd",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 3,
+              "azure" : 2,
+              "rocky" : 3,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "bitnami" : 2,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-4224",
+            "InstalledVersion" : "3.11.15-r6",
+            "LastModifiedDate" : "2026-08-13T01:16:53.273Z"
+          }, {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 7.3,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:U/C:H/I:H/A:N"
+              },
+              "bitnami" : {
+                "V40Score" : 7.8,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:N/SC:H/SI:H/SA:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:b020051a3a8c1ded162ceba6621300419c16332dd6214c6d7556b4de0197c3fa"
+            },
+            "PkgID" : "python-3.11-base@3.11.15-r6",
+            "Title" : "python: cpython: CPython: tarfile extraction filter bypass allows escaping the destination directory",
+            "CweIDs" : [ "CWE-22", "CWE-59" ],
+            "Status" : "fixed",
+            "PkgName" : "python-3.11-base",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-11940",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2026:56219", "https://access.redhat.com/errata/RHSA-2026:59009", "https://access.redhat.com/security/cve/CVE-2026-11940", "https://bugzilla.redhat.com/2491848", "https://bugzilla.redhat.com/show_bug.cgi?id=2491848", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-11940", "https://errata.almalinux.org/9/ALSA-2026-59009.html", "https://errata.rockylinux.org/RLSA-2026:56219", "https://github.com/python/cpython/commit/0f852b3f07dd8e71e40326a51c02afbf16a42cc5", "https://github.com/python/cpython/commit/27dd970bf6b17ebca7c8ed486a40ab043ed7af8f", "https://github.com/python/cpython/commit/672825e2f36a57e173959b0d9d409d4560dab8df", "https://github.com/python/cpython/commit/771d12dda5140313db0ac550292987975651bbde", "https://github.com/python/cpython/commit/79c06bd5c6afa3c440d50faf7ee1b147c8832b4c", "https://github.com/python/cpython/commit/be13e86f6b9788a6f4d0419dffef72cbae5865c9", "https://github.com/python/cpython/commit/e5fdbd8d5aa923bd9111b112ea73bd6ec7c47877", "https://github.com/python/cpython/issues/151558", "https://github.com/python/cpython/pull/151559", "https://linux.oracle.com/cve/CVE-2026-11940.html", "https://linux.oracle.com/errata/ELSA-2026-59009.html", "https://mail.python.org/archives/list/security-announce@python.org/thread/LD6QIISNQFQYOIEPJNEUIPV7S3V76FZH/", "https://nvd.nist.gov/vuln/detail/CVE-2026-11940", "https://www.cve.org/CVERecord?id=CVE-2026-11940" ],
+            "Description" : "tarfile.extractall() with the 'data' or 'tar'\n filter could be bypassed by a crafted archive where a hardlink \nreferences a symlink stored at a deeper name than the hardlink itself.  \nThe extraction fallback validated the symlink at it's archived location \nbut recreated it at the hardlink's shallower\npath, letting a relative\n target the filter judged contained escape the destination directory.  \nThis allowed a malicious tar archive to create a symlink pointing \noutside the destination, enabling out-of-destination file reads or \nwrites. This was an incomplete fix of CVE-2025-4330.",
+            "Fingerprint" : "sha256:5db343957037cc2308f78ab2eae6224d025875896642edeb0acbdd7e03968d28",
+            "FixedVersion" : "3.11.15-r8",
+            "PkgIdentifier" : {
+              "UID" : "f6fefa3d435d7f48",
+              "PURL" : "pkg:apk/wolfi/python-3.11-base@3.11.15-r6?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-06-23T17:16:40.847Z",
+            "VendorSeverity" : {
+              "alma" : 3,
+              "rocky" : 3,
+              "amazon" : 3,
+              "photon" : 4,
+              "redhat" : 3,
+              "bitnami" : 3,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-11940",
+            "InstalledVersion" : "3.11.15-r6",
+            "LastModifiedDate" : "2026-08-13T01:16:51.627Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "bitnami" : {
+                "V40Score" : 8.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:b020051a3a8c1ded162ceba6621300419c16332dd6214c6d7556b4de0197c3fa"
+            },
+            "PkgID" : "python-3.11-base@3.11.15-r6",
+            "Title" : "python: Python: CPU Denial of Service in HTML parser via repeated unterminated markup declarations",
+            "CweIDs" : [ "CWE-400" ],
+            "Status" : "fixed",
+            "PkgName" : "python-3.11-base",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-15308",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/07/09/4", "https://access.redhat.com/errata/RHSA-2026:39320", "https://access.redhat.com/errata/RHSA-2026:41949", "https://access.redhat.com/security/cve/CVE-2026-15308", "https://bugzilla.redhat.com/2498608", "https://bugzilla.redhat.com/show_bug.cgi?id=2498608", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-15308", "https://errata.almalinux.org/9/ALSA-2026-41949.html", "https://errata.rockylinux.org/RLSA-2026:39320", "https://github.com/python/cpython/commit/07efb08123ba9367a7107325adb9d5626dca1ca9", "https://github.com/python/cpython/commit/1e7956f1a722df9aabc509c30f8fbdc3a2b4fdc7", "https://github.com/python/cpython/commit/785df8f743800661961528970f8598edcd291c14", "https://github.com/python/cpython/commit/7933f4bf7131aa4140750f9404f5de0aa2969ced", "https://github.com/python/cpython/commit/bcf98ddbc40ec9b3ee87da0124a5660b19b7e606", "https://github.com/python/cpython/commit/c2390b9376e35a701ed3acc597b8fc87546c9b00", "https://github.com/python/cpython/commit/e9f92ac0b298292e7ff998e52cb8ccacfb27a0bd", "https://github.com/python/cpython/issues/153030", "https://github.com/python/cpython/pull/153031", "https://linux.oracle.com/cve/CVE-2026-15308.html", "https://linux.oracle.com/errata/ELSA-2026-41949.html", "https://mail.python.org/archives/list/security-announce@python.org/thread/F6453LWKSHKCTWFLCOURWPLETNUIW2Z5/", "https://nvd.nist.gov/vuln/detail/CVE-2026-15308", "https://www.cve.org/CVERecord?id=CVE-2026-15308" ],
+            "Description" : "The incremental HTML parser (html.parser.HTMLParser) allows for CPU\ndenial-of-service through repeated unterminated markup declarations when\nprocessing uncontrolled data.",
+            "Fingerprint" : "sha256:00fb1b1382ccc510ca3ee99fd5847afc7b557c7b43427c73cc0fc28aa64f9cd9",
+            "FixedVersion" : "3.11.16-r1",
+            "PkgIdentifier" : {
+              "UID" : "f6fefa3d435d7f48",
+              "PURL" : "pkg:apk/wolfi/python-3.11-base@3.11.15-r6?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-07-09T17:16:58.26Z",
+            "SeveritySource" : "nvd",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 3,
+              "rocky" : 3,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 3,
+              "bitnami" : 3,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-15308",
+            "InstalledVersion" : "3.11.15-r6",
+            "LastModifiedDate" : "2026-08-20T17:02:59.313Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+              },
+              "redhat" : {
+                "V3Score" : 5.4,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:b020051a3a8c1ded162ceba6621300419c16332dd6214c6d7556b4de0197c3fa"
+            },
+            "PkgID" : "python-3.11-base@3.11.15-r6",
+            "Title" : "cpython: Incomplete control character validation in http.cookies",
+            "CweIDs" : [ "CWE-20", "CWE-116" ],
+            "Status" : "fixed",
+            "PkgName" : "python-3.11-base",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-3644",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2026:10950", "https://access.redhat.com/errata/RHSA-2026:19177", "https://access.redhat.com/security/cve/CVE-2026-3644", "https://bugzilla.redhat.com/2395108", "https://bugzilla.redhat.com/2408891", "https://bugzilla.redhat.com/2418084", "https://bugzilla.redhat.com/2431366", "https://bugzilla.redhat.com/2431374", "https://bugzilla.redhat.com/2444691", "https://bugzilla.redhat.com/2448168", "https://bugzilla.redhat.com/2448181", "https://bugzilla.redhat.com/2449649", "https://bugzilla.redhat.com/2457409", "https://bugzilla.redhat.com/2457932", "https://bugzilla.redhat.com/2458049", "https://bugzilla.redhat.com/show_bug.cgi?id=2395108", "https://bugzilla.redhat.com/show_bug.cgi?id=2408891", "https://bugzilla.redhat.com/show_bug.cgi?id=2418084", "https://bugzilla.redhat.com/show_bug.cgi?id=2431366", "https://bugzilla.redhat.com/show_bug.cgi?id=2431374", "https://bugzilla.redhat.com/show_bug.cgi?id=2444691", "https://bugzilla.redhat.com/show_bug.cgi?id=2448168", "https://bugzilla.redhat.com/show_bug.cgi?id=2448181", "https://bugzilla.redhat.com/show_bug.cgi?id=2457409", "https://bugzilla.redhat.com/show_bug.cgi?id=2457932", "https://bugzilla.redhat.com/show_bug.cgi?id=2458049", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-13837", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-15282", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-59375", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-6075", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-0672", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-1502", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-2297", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-3644", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-4224", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-4786", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-6100", "https://errata.almalinux.org/9/ALSA-2026-19177.html", "https://errata.rockylinux.org/RLSA-2026:10950", "https://github.com/python/cpython/commit/3974092b037f9a3b000fb15b48ea61ce3b25d330", "https://github.com/python/cpython/commit/556aa098e738b127c714866f819b4abe2f7593d8", "https://github.com/python/cpython/commit/57e88c1cf95e1481b94ae57abe1010469d47a6b4", "https://github.com/python/cpython/commit/62ceb396fcbe69da1ded3702de586f4072b590dd", "https://github.com/python/cpython/commit/d16ecc6c3626f0e2cc8f08c309c83934e8a979dd", "https://github.com/python/cpython/commit/dae4b1a21f8df4570e30986affd61bbe4ade4cef", "https://github.com/python/cpython/issues/145599", "https://github.com/python/cpython/pull/145600", "https://linux.oracle.com/cve/CVE-2026-3644.html", "https://linux.oracle.com/errata/ELSA-2026-19177.html", "https://mail.python.org/archives/list/security-announce@python.org/thread/H6CADMBCDRFGWCMOXWUIHFJNV43GABJ7/", "https://nvd.nist.gov/vuln/detail/CVE-2026-3644", "https://ubuntu.com/security/notices/USN-8509-1", "https://www.cve.org/CVERecord?id=CVE-2026-3644" ],
+            "Description" : "The fix for CVE-2026-0672, which rejected control characters in http.cookies.Morsel, was incomplete. The Morsel.update(), |= operator, and unpickling paths were not patched, allowing control characters to bypass input validation. Additionally, BaseCookie.js_output() lacked the output validation applied to BaseCookie.output().",
+            "Fingerprint" : "sha256:e0534837078cc3ba10e64f598f90dfdcf45d62978a1ec2375c78c4b61aec69eb",
+            "FixedVersion" : "3.11.15-r9",
+            "PkgIdentifier" : {
+              "UID" : "f6fefa3d435d7f48",
+              "PURL" : "pkg:apk/wolfi/python-3.11-base@3.11.15-r6?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-03-16T18:16:09.907Z",
+            "SeveritySource" : "nvd",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 3,
+              "azure" : 2,
+              "rocky" : 3,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-3644",
+            "InstalledVersion" : "3.11.15-r6",
+            "LastModifiedDate" : "2026-08-13T01:16:53.12Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 5.9,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "bitnami" : {
+                "V40Score" : 6,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:P/PR:L/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:b020051a3a8c1ded162ceba6621300419c16332dd6214c6d7556b4de0197c3fa"
+            },
+            "PkgID" : "python-3.11-base@3.11.15-r6",
+            "Title" : "cpython: Stack overflow parsing XML with deeply nested DTD content models",
+            "CweIDs" : [ "CWE-674" ],
+            "Status" : "fixed",
+            "PkgName" : "python-3.11-base",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-4224",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/03/16/4", "https://access.redhat.com/errata/RHSA-2026:10950", "https://access.redhat.com/errata/RHSA-2026:19177", "https://access.redhat.com/security/cve/CVE-2026-4224", "https://bugzilla.redhat.com/2395108", "https://bugzilla.redhat.com/2408891", "https://bugzilla.redhat.com/2418084", "https://bugzilla.redhat.com/2431366", "https://bugzilla.redhat.com/2431374", "https://bugzilla.redhat.com/2444691", "https://bugzilla.redhat.com/2448168", "https://bugzilla.redhat.com/2448181", "https://bugzilla.redhat.com/2449649", "https://bugzilla.redhat.com/2457409", "https://bugzilla.redhat.com/2457932", "https://bugzilla.redhat.com/2458049", "https://bugzilla.redhat.com/show_bug.cgi?id=2395108", "https://bugzilla.redhat.com/show_bug.cgi?id=2408891", "https://bugzilla.redhat.com/show_bug.cgi?id=2418084", "https://bugzilla.redhat.com/show_bug.cgi?id=2431366", "https://bugzilla.redhat.com/show_bug.cgi?id=2431374", "https://bugzilla.redhat.com/show_bug.cgi?id=2444691", "https://bugzilla.redhat.com/show_bug.cgi?id=2448168", "https://bugzilla.redhat.com/show_bug.cgi?id=2448181", "https://bugzilla.redhat.com/show_bug.cgi?id=2457409", "https://bugzilla.redhat.com/show_bug.cgi?id=2457932", "https://bugzilla.redhat.com/show_bug.cgi?id=2458049", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-13837", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-15282", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-59375", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-6075", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-0672", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-1502", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-2297", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-3644", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-4224", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-4786", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-6100", "https://errata.almalinux.org/9/ALSA-2026-19177.html", "https://errata.rockylinux.org/RLSA-2026:10950", "https://github.com/python/cpython/commit/196edfb06a7458377d4d0f4b3cd41724c1f3bd4a", "https://github.com/python/cpython/commit/24ce88b285f56ee11626cf5e472af3cd8cc7c621", "https://github.com/python/cpython/commit/642865ddf4b232da1f3b1f7abcfa3254c4bfe785", "https://github.com/python/cpython/commit/af856a7177326ac25d9f66cc6dd28b554d914fee", "https://github.com/python/cpython/commit/e0a8a6da90597a924b300debe045cdb4628ee1f3", "https://github.com/python/cpython/commit/eb0e8be3a7e11b87d198a2c3af1ed0eccf532768", "https://github.com/python/cpython/issues/145986", "https://github.com/python/cpython/pull/145987", "https://linux.oracle.com/cve/CVE-2026-4224.html", "https://linux.oracle.com/errata/ELSA-2026-19177.html", "https://mail.python.org/archives/list/security-announce@python.org/thread/5M7CGUW3XBRY7II4DK43KF7NQQ3TPZ6R/", "https://nvd.nist.gov/vuln/detail/CVE-2026-4224", "https://ubuntu.com/security/notices/USN-8509-1", "https://www.cve.org/CVERecord?id=CVE-2026-4224" ],
+            "Description" : "When an Expat parser with a registered ElementDeclHandler parses an inline\ndocument type definition containing a deeply nested content model a C stack\noverflow occurs.",
+            "Fingerprint" : "sha256:4e54f3ce4f02fa03a2b9cff20c570a871d734dad437bae9643c68c13964475aa",
+            "FixedVersion" : "3.11.15-r9",
+            "PkgIdentifier" : {
+              "UID" : "f6fefa3d435d7f48",
+              "PURL" : "pkg:apk/wolfi/python-3.11-base@3.11.15-r6?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-03-16T18:16:10.07Z",
+            "SeveritySource" : "nvd",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 3,
+              "azure" : 2,
+              "rocky" : 3,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "bitnami" : 2,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-4224",
+            "InstalledVersion" : "3.11.15-r6",
+            "LastModifiedDate" : "2026-08-13T01:16:53.273Z"
+          } ]
+        }
+      },
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us130-hospital-readmission-nn:sqrhCiws"
+    },
+    "changelog" : "",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us130-hospital-readmission-nn:sqrhCiws",
+    "shortDescription" : "Predict 30-day hospital readmission for diabetic patients using a federated neural network",
+    "longDescription" : "",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "batch_size",
+        "variableName" : "batch_size",
+        "type" : "STRING",
+        "description" : "MLP batch size.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "10"
+      }, {
+        "name" : "communication_id",
+        "variableName" : "communication_id",
+        "type" : "STRING",
+        "description" : "Base communication id. For multi-round training the app appends -round-N so every round has a unique id.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "hospital-readmission"
+      }, {
+        "name" : "output_filename",
+        "variableName" : "output_filename",
+        "type" : "STRING",
+        "description" : "CSV file written by each client into its local output directory.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "federated_readmission_predictions.csv"
+      }, {
+        "name" : "federated_rounds",
+        "variableName" : "federated_rounds",
+        "type" : "INTEGER",
+        "description" : "Number of federated train/aggregate rounds.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "default" : "10"
+      }, {
+        "name" : "local_max_iter",
+        "variableName" : "local_max_iter",
+        "type" : "INTEGER",
+        "description" : "Local MLP iteration budget per federated round.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "default" : "15"
+      }, {
+        "name" : "random_state",
+        "variableName" : "random_state",
+        "type" : "INTEGER",
+        "description" : "Random seed for reproducibility",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "42"
+      }, {
+        "name" : "test_size",
+        "variableName" : "test_size",
+        "type" : "FLOAT",
+        "description" : "Fraction of data held out for validation",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0.2"
+      }, {
+        "name" : "target_column",
+        "variableName" : "target_column",
+        "type" : "STRING",
+        "description" : "Name of the readmission target column (<30 / >30 / NO)",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "hospital_readmission"
+      }, {
+        "name" : "standardize",
+        "variableName" : "standardize",
+        "type" : "BOOLEAN",
+        "description" : "Reserved for compatibility with the reference app.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0"
+      }, {
+        "name" : "hidden_layer_sizes",
+        "variableName" : "hidden_layer_sizes",
+        "type" : "STRING",
+        "description" : "Comma-separated hidden layer sizes. Default mirrors a simple diabetes NN with 12 hidden units, then 8 hidden units.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "12,8"
+      }, {
+        "name" : "activation",
+        "variableName" : "activation",
+        "type" : "CATEGORICAL",
+        "description" : "MLP activation function.",
+        "mode" : "BOTH",
+        "options" : [ "relu", "tanh", "logistic" ],
+        "default" : "relu"
+      }, {
+        "name" : "max_iter",
+        "variableName" : "max_iter",
+        "type" : "INTEGER",
+        "description" : "Total iteration budget for standalone local baselines.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "150"
+      }, {
+        "name" : "solver",
+        "variableName" : "solver",
+        "type" : "CATEGORICAL",
+        "description" : "MLP optimization algorithm",
+        "mode" : "BOTH",
+        "options" : [ "adam", "sgd" ],
+        "default" : "adam"
+      }, {
+        "name" : "alpha",
+        "variableName" : "alpha",
+        "type" : "FLOAT",
+        "description" : "L2 regularization strength.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0.0001"
+      }, {
+        "name" : "learning_rate_init",
+        "variableName" : "learning_rate_init",
+        "type" : "FLOAT",
+        "description" : "Initial learning rate for adam/sgd.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0.001"
+      }, {
+        "name" : "class_weight",
+        "variableName" : "class_weight",
+        "type" : "CATEGORICAL",
+        "description" : "Class weighting — use 'balanced' to counter the ~11% readmission base rate",
+        "mode" : "BOTH",
+        "options" : [ "balanced", "none" ],
+        "default" : "balanced"
+      } ],
+      "input" : [ {
+        "name" : "data",
+        "variableName" : "data",
+        "type" : "CSV",
+        "description" : "US130 clinics dataset",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "predictions",
+        "variableName" : "predictions",
+        "type" : "CSV",
+        "description" : "Per-patient predicted readmission label and probability (validation split during training, all rows during prediction)",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      }, {
+        "name" : "coefficients",
+        "variableName" : "coefficients",
+        "type" : "CSV",
+        "description" : "Long-form first-layer feature-weight table sorted by magnitude",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      }, {
+        "name" : "explanation",
+        "variableName" : "explanation",
+        "type" : "HTML",
+        "description" : "Interactive report: metrics, confusion matrix, ROC curve, feature importance bar chart",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      }, {
+        "name" : "report",
+        "variableName" : "report",
+        "type" : "TEXT",
+        "description" : "Plain-text training / prediction summary",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

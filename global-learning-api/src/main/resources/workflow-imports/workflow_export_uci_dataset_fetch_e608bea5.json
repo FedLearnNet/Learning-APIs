@@ -1,0 +1,23 @@
+{
+  "nodes" : [ {
+    "nodeId" : "12fd9b04-35a5-442c-a481-06a982ffad62",
+    "appUniqueId" : "a71e2f25-1d3a-4b0c-9b85-7a2e6c1f4f0e",
+    "versionPublishHash" : "1543c4685ccd1fbdf9ea6d054ab9b5ab1d9903e2",
+    "position" : {
+      "x" : 350,
+      "y" : 0
+    },
+    "hyperParams" : {
+      "dataset_id" : 17
+    },
+    "hasChildren" : false,
+    "hasParent" : false,
+    "executionOrder" : 0
+  } ],
+  "connections" : [ ],
+  "inputs" : [ ],
+  "keycloakId" : "test",
+  "name" : "UCI dataset fetch",
+  "description" : "UCI dataset fetch\n",
+  "publishStatus" : "PUBLISHED"
+}

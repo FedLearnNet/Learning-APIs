@@ -1,0 +1,45 @@
+{
+  "nodes" : [ {
+    "nodeId" : "a76b43fc-0ab1-409e-99c3-634c11ba57d5",
+    "appUniqueId" : "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
+    "position" : {
+      "x" : 250,
+      "y" : 300
+    },
+    "hyperParams" : {
+      "shuffle" : "1",
+      "test_size" : 0.25,
+      "random_state" : 42
+    },
+    "hasChildren" : false,
+    "hasParent" : true,
+    "executionOrder" : 0
+  } ],
+  "connections" : [ {
+    "inputId" : "app_a76b43fc-0ab1-409e-99c3-634c11ba57d5_input_input",
+    "outputId" : "INPUT_NODE_b49ac3c4-b159-49f8-aced-8e2ffb3efda5",
+    "inputNodeId" : "a76b43fc-0ab1-409e-99c3-634c11ba57d5",
+    "inputFileName" : "input.csv",
+    "inputConfigName" : "input",
+    "inputConnection" : true
+  } ],
+  "inputs" : [ {
+    "version" : 0,
+    "name" : "Input",
+    "type" : "CSV",
+    "description" : "",
+    "mode" : "TRAINING",
+    "delimiter" : ",",
+    "hasHeader" : false,
+    "required" : false,
+    "nodeId" : "b49ac3c4-b159-49f8-aced-8e2ffb3efda5",
+    "position" : {
+      "x" : 250,
+      "y" : 0
+    }
+  } ],
+  "keycloakId" : "test",
+  "name" : "CSV - Train Test Split",
+  "description" : "CSV to Train Test Split",
+  "publishStatus" : "PUBLISHED"
+}

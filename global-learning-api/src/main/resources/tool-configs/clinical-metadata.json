@@ -1,0 +1,21 @@
+[
+  {
+    "name": "Sample Metadata",
+    "variableName": "sampleMetadata",
+    "type": "CSV",
+    "description": "A flexible CSV format for sample or patient metadata including identifiers, experimental conditions, batches, and tissue types. Used to annotate omics data and enable group comparisons.",
+    "delimiter": ",",
+    "hasHeader": true,
+    "tabularSchema": {
+      "minColumns": 1,
+      "prohibitedNulls": true,
+      "requiredColumns": ["sample_id"],
+      "columns": {
+        "sample_id": { "type": "STRING", "nullable": false },
+        "condition": { "type": "STRING", "nullable": true },
+        "batch": { "type": "STRING", "nullable": true },
+        "tissue": { "type": "STRING", "nullable": true }
+      }
+    }
+  }
+]

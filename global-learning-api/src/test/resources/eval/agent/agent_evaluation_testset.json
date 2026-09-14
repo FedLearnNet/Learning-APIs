@@ -1,0 +1,2401 @@
+[
+  {
+    "topic": "File-aware tool discovery and shortlist selection",
+    "questions": [
+      {
+        "question": "Given the uploaded iris.csv, which PoSyMed tool should I inspect first for clustering support?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should use the uploaded file context, characterize the dataset at a high level, and recommend a suitable clustering-oriented app without claiming execution.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv. Should I start with a simple baseline workflow or with a more biology-aware path?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the file context, compare a simple baseline path with a more domain-aware path, and recommend one path with justification.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Using wine.csv, what is the most interpretable first PoSyMed app to discuss with a non-technical audience if I want a dataset-level explanation rather than a target-dependent predictive model?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should use the file context to recommend an interpretable first app and explain why it suits a non-technical audience.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Given the uploaded zoo.csv, which PoSyMed tool should I inspect first for clustering support?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should use the uploaded file context, characterize the dataset at a high level, and recommend a suitable clustering-oriented app  without claiming execution.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded hepatitis.csv. Should I start with a simple baseline workflow or with a more biology-aware path?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the file context, compare a simple baseline path with a more domain-aware path, and recommend one path with justification.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Using dermatology.csv, what is the most interpretable first app to discuss with a non-technical audience?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should use the file context to recommend an interpretable first app and explain why it suits a non-technical audience.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded zoo.csv. Given that it contains mostly binary features, which PoSyMed app family is best suited to reveal hidden groupings?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should fetch file context, analyze the binary feature structure, query the tool catalog, and recommend a clustering-friendly app family.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded hepatitis.csv. Which PoSyMed tool would help me understand feature importance before building a predictive model?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the file, recognize it as a classification dataset with missing values, and recommend a feature-importance or explainability tool.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Using dermatology.csv, should I run dimensionality reduction before or after selecting a PoSyMed clustering app?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the high-dimensional mixed-type dataset and advise on whether dimensionality reduction is a prerequisite or can be handled by the app itself.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv. Is there a PoSyMed app that can both cluster the data and explain which features drive each cluster?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the dataset, query the catalog for explainable clustering tools, and recommend one that provides feature-level explanations.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv. If my goal is anomaly detection rather than classification, which PoSyMed tool family should I explore?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the file, note it is typically used for classification but reframe for anomaly detection, and recommend a suitable app family.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Using wine.csv, I want to find natural groupings without using the class label. Which PoSyMed app should I try first?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should recognize this as an unsupervised clustering task on numeric features and recommend an appropriate clustering app from the catalog.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded zoo.csv. Can you compare two different PoSyMed app families that could handle this categorical dataset and explain the trade-offs?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the dataset structure, retrieve catalog info on at least two app families, and compare their suitability for categorical data.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded hepatitis.csv. Given the missing values, which PoSyMed workflow path would you recommend: impute-then-model or a tool that handles missingness natively?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should detect missing values in the analysis, compare imputation-based vs native-missingness approaches in the catalog, and recommend a path.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Using dermatology.csv, which PoSyMed app would be most useful for a clinician who wants to understand subgroup patterns across skin disease types?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the multi-class clinical dataset, query tools suited for subgroup discovery, and recommend one with clinical interpretability.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv. Before recommending any app path, ask me whether I care more about explanation or subgroup discovery, and do not choose yet.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should detect the decision ambiguity, ask one targeted clarification question, then recommend a file-aware app path after the user reply.",
+        "hitlAnswer": "Explanation matters more than novelty.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv. Before recommending a clinically understandable workflow, ask whether I should favor robustness or exploratory breadth.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should detect the decision ambiguity, ask one targeted clarification question, then recommend a file-aware app path after the user reply.",
+        "hitlAnswer": "Robustness and clinical explainability matter more.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded wine.csv. Before recommending an app path, ask whether this should be treated as a teaching demo or a serious benchmark baseline.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should detect the decision ambiguity, ask one targeted clarification question, then recommend a file-aware app path after the user reply.",
+        "hitlAnswer": "Treat it as a teaching demo first.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded hepatitis.csv. Before recommending an app path, ask whether I want the simplest workflow or one that better reflects biomedical reasoning.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should detect the decision ambiguity, ask one targeted clarification question, then recommend a file-aware app path after the user reply.",
+        "hitlAnswer": "Prefer the workflow that better reflects biomedical reasoning.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded dermatology.csv. Before recommending anything, ask whether I want a comparison of several tools or one well-justified first choice.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should detect the decision ambiguity, ask one targeted clarification question, then recommend a file-aware app path after the user reply.",
+        "hitlAnswer": "Focus on one well-justified first choice.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "File-aware preprocessing and readiness assessment",
+    "questions": [
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv. Before discussing clustering apps, what preprocessing issue should we discuss first?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should infer the most important likely preprocessing need from the file and propose it as the first discussion point.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "For the uploaded wine.csv, would OneHotEncoding likely be relevant before clustering support?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should assess whether categorical encoding is likely relevant and explain the reasoning.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded zoo.csv. Which preprocessing mistake should I avoid before selecting a clustering app?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should identify a plausible preprocessing risk grounded in the file characteristics and explain it clearly.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded hepatitis.csv. Before discussing clustering apps, what preprocessing issue should we discuss first?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should infer the most important likely preprocessing need from the file and propose it as the first discussion point.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "For the uploaded dermatology.csv, would OneHotEncoding likely be relevant before clustering support?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should assess whether categorical encoding is likely relevant and explain the reasoning.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv. Which preprocessing mistake should I avoid before selecting a clustering app?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should identify a plausible preprocessing risk grounded in the file characteristics and explain it clearly.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded wine.csv. Are there any constant or near-constant columns that should be removed before analysis?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should fetch and analyze the file to check for low-variance or constant columns and advise on removal.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded zoo.csv. Since most features are binary, would standardization or normalization still be necessary before clustering?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the binary-dominated feature set and explain that scaling binary features is unnecessary or even harmful.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded dermatology.csv. How many missing values are there and what imputation strategy would you recommend?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should quantify missing values and recommend an appropriate imputation strategy given the mixed feature types.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv. Is the class distribution balanced enough to proceed directly with a classification workflow?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should check class balance in iris and confirm it is balanced (50/50/50), safe to proceed without resampling.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv. Are there highly correlated feature pairs that could cause issues with certain models?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze correlations among the 30 numeric features and flag highly correlated pairs, advising on whether to remove or keep them.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded hepatitis.csv. Is the target variable suitable for a binary classification workflow or does it need recoding?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should inspect the target column, identify its encoding (DIE/LIVE), and advise if recoding is needed.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Using wine.csv, should I apply log transformation to any of the features before running a clustering app?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze feature distributions for skewness and recommend log transformation where appropriate.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded zoo.csv. The legs column is numeric while others are binary. Should I treat it differently in preprocessing?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should recognize the mixed-type issue and recommend appropriate preprocessing for the numeric legs column alongside binary features.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded dermatology.csv. Which columns contain ordinal data and should they be encoded differently from nominal columns?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should distinguish ordinal from nominal features in the dermatology dataset and advise on appropriate encoding.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded zoo.csv. Before proposing preprocessing support, ask whether I should prioritize categorical handling or just start with a simple baseline.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should ask one decisive clarification when preprocessing priorities are ambiguous, then tailor the preprocessing support path.",
+        "hitlAnswer": "Prioritize categorical handling first.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv. Before proposing preprocessing support, ask whether missing-value handling or model selection is the more urgent discussion.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should ask one decisive clarification when preprocessing priorities are ambiguous, then tailor the preprocessing support path.",
+        "hitlAnswer": "Missing-value and preprocessing discussion should come first.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded hepatitis.csv and the file may be messy. Ask me exactly one short clarification before proposing any preprocessing support, and wait for my answer.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should ask one decisive clarification when preprocessing priorities are ambiguous, then tailor the preprocessing support path.",
+        "hitlAnswer": "Assume there are missing values and mixed feature types.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded dermatology.csv. Before proposing preprocessing support, ask whether I should focus first on normalization assumptions or on explainability.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should ask one decisive clarification when preprocessing priorities are ambiguous, then tailor the preprocessing support path.",
+        "hitlAnswer": "Explainability first, but keep normalization in view.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded wine.csv and need a lightweight preprocessing path for a classroom demo rather than an exhaustive production workflow.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should propose a lightweight preprocessing path grounded in the file and tailored to a classroom demo.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "File-centric next-step planning with targeted HITL",
+    "questions": [
+      {
+        "question": "Analyze the uploaded wine.csv and tell me whether it better supports a simple clustering discussion or a more specialized biomedical discussion.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the file and compare two plausible discussion paths, then recommend one.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Using the uploaded zoo.csv, what should be the next support step after file inspection?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should inspect the file context and recommend one concrete next support step.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded hepatitis.csv. Does this file look ready for direct app selection, or should PoSyMed inspect more before recommending tools?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should assess whether the file is ready for direct app guidance or whether more intermediate inspection is needed.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Analyze the uploaded dermatology.csv and tell me whether it better supports a simple clustering discussion or a more specialized biomedical discussion.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the file and compare two plausible discussion paths, then recommend one.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Using the uploaded iris.csv, what should be the next support step after file inspection?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should inspect the file context and recommend one concrete next support step.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv. Does this file look ready for direct app selection, or should PoSyMed inspect more before recommending tools?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should assess whether the file is ready for direct app guidance or whether more intermediate inspection is needed.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv. After inspecting the file, should the next step be feature selection or directly choosing a clustering app?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the low-dimensional clean dataset and recommend skipping feature selection in favor of direct app selection.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv. What should be the priority: handling feature correlations or selecting a baseline model?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should weigh the impact of correlated features and recommend a practical next step.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Using wine.csv, is the dataset ready for a direct comparison of two PoSyMed clustering apps, or do I need a preparation step first?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should assess readiness and recommend whether preparation is needed before running clustering app comparison.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded zoo.csv. Given the binary nature of most features, what is the logical next step before selecting a tool?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should recognize the binary features and recommend an appropriate next step such as distance metric selection.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded hepatitis.csv. Should I address the missing data first, or can I select a PoSyMed app that handles missingness?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze missingness patterns and check the catalog for tools that handle missing data natively.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Using dermatology.csv, after the initial file inspection, should I merge similar diagnostic categories before proceeding?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the multi-class structure and advise on whether merging categories makes sense for the user's goal.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv. After analyzing the file, plan a two-step workflow: what should step one and step two be?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should propose a concrete two-step plan grounded in the file analysis and available tools.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv. Is this dataset complex enough to justify a multi-step workflow, or can I go straight to a single app?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should evaluate dataset complexity and recommend single-step or multi-step based on the analysis.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Using wine.csv, the file looks clean. Should the next step focus on exploratory visualization or jump directly to model selection?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should consider the dataset properties and recommend whether exploration or direct modeling is the better next step.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv and want you to inspect the file first, but before you recommend the next step ask whether I care more about teaching value or methodological depth.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the uploaded file, detect the decisive ambiguity, ask one clarification, and then recommend the next step.",
+        "hitlAnswer": "Teaching value matters more.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv. Before recommending the next step, ask whether the audience is clinical or technical.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the uploaded file, detect the decisive ambiguity, ask one clarification, and then recommend the next step.",
+        "hitlAnswer": "The audience is clinical.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded wine.csv. Before recommending the next step, ask whether I want a baseline comparison or one recommended app.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the uploaded file, detect the decisive ambiguity, ask one clarification, and then recommend the next step.",
+        "hitlAnswer": "I want a baseline comparison.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded hepatitis.csv. Before recommending the next step, ask whether I care more about explanation or exploratory signal hunting.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the uploaded file, detect the decisive ambiguity, ask one clarification, and then recommend the next step.",
+        "hitlAnswer": "Explanation matters more.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded dermatology.csv. Before recommending the next step, ask whether I want to emphasize data inspection or tool discovery.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the uploaded file, detect the decisive ambiguity, ask one clarification, and then recommend the next step.",
+        "hitlAnswer": "Emphasize tool discovery after a light inspection.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Literature-backed file-aware recommendation",
+    "questions": [
+      {
+        "question": "I uploaded zoo.csv. Can you use the file context to formulate a literature-backed recommendation for the next workflow step?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should use the uploaded file to shape a focused literature-backed recommendation.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Given the uploaded hepatitis.csv, based on the file characteristics, what literature question would best support the next workflow decision?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should derive a focused literature query from the file context and the implied workflow decision.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded dermatology.csv. Using the file context and a brief literature check, should literature search come before or after app shortlist discussion?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should decide whether literature is warranted at this point and justify the ordering.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv. Can you use the file context to formulate a literature-backed recommendation for the next workflow step?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should use the uploaded file to shape a focused literature-backed recommendation.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Given the uploaded breast_cancer_wisconsin.csv, based on the file characteristics, what literature question would best support the next workflow decision?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should derive a focused literature query from the file context and the implied workflow decision.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded wine.csv. Using the file context and a brief literature check, should literature search come before or after app shortlist discussion?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should decide whether literature is warranted at this point and justify the ordering.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv. Is there published work suggesting that certain clustering algorithms work particularly well for small, clean numeric datasets like this?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the dataset, search literature for clustering benchmarks on small numeric datasets, and tie findings to a PoSyMed recommendation.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv. Based on the literature, which feature selection approach is most validated for this type of biomedical tabular data?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the file, search for literature on feature selection for breast cancer datasets, and recommend a validated approach.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Using wine.csv, does the literature support using MOFA or similar multi-omics tools on simple food science datasets?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should assess whether multi-omics tools are appropriate for this dataset based on literature and the file's characteristics.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded zoo.csv. What does the literature say about handling binary-dominant datasets for taxonomic classification?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the binary features, search for relevant literature on binary feature classification, and provide grounded advice.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Given hepatitis.csv, is there evidence in the literature that certain imputation strategies work better for clinical datasets with this pattern of missingness?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the missing data pattern, find literature on imputation for clinical data, and recommend an evidence-based strategy.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded dermatology.csv. Does recent literature recommend any specific approach for multi-class skin disease classification from tabular features?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the multi-class clinical dataset, find relevant literature, and recommend an approach validated for dermatological classification.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded wine.csv. From a literature perspective, is PCA a good preprocessing step before clustering on this kind of chemical analysis data?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the dataset, check literature on PCA for chemical datasets, and give an evidence-based recommendation.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Given the uploaded hepatitis.csv, what does the literature suggest about the minimum sample size needed for reliable classification with this many features?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the feature-to-sample ratio, find literature on sample size requirements, and advise on feasibility.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv. Is there literature evidence that ensemble methods outperform single models on this type of medical dataset?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze the dataset, search literature comparing ensemble vs single models for breast cancer data, and recommend accordingly.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv. Before you search papers or recommend anything, ask whether I care more about clinical explainability or methodological novelty.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should ask one high-value clarification that changes the literature framing, then provide a file-aware literature-backed recommendation.",
+        "hitlAnswer": "Clinical explainability matters more.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv. Before you frame the literature angle, ask whether this is a classroom demo or a methods benchmark.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should ask one high-value clarification that changes the literature framing, then provide a file-aware literature-backed recommendation.",
+        "hitlAnswer": "This is a classroom demo.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded hepatitis.csv and want a literature-backed answer, but before you search papers ask whether I want disease-specific evidence or generic workflow evidence.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should ask one high-value clarification that changes the literature framing, then provide a file-aware literature-backed recommendation.",
+        "hitlAnswer": "I want disease-specific evidence.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded dermatology.csv. Before you frame the literature recommendation, ask whether I prioritize interpretability or robustness.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should ask one high-value clarification that changes the literature framing, then provide a file-aware literature-backed recommendation.",
+        "hitlAnswer": "Robustness first.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded wine.csv. Before you frame the literature need, ask whether I am comparing app families or just justifying one chosen baseline.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "RESEARCH_PAPERS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should ask one high-value clarification that changes the literature framing, then provide a file-aware literature-backed recommendation.",
+        "hitlAnswer": "I am justifying one chosen baseline.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Multi-file comparison and branch selection",
+    "questions": [
+      {
+        "question": "I uploaded both iris.csv and wine.csv. Which file should PoSyMed use as the primary basis for the next recommendation?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should compare the uploaded files and select the stronger primary basis for the next recommendation.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "With both breast_cancer_wisconsin.csv and hepatitis.csv uploaded, should the workflow branch into two possible app paths or stay on one path?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should compare the files and decide whether a single path or branching guidance is more appropriate.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded dermatology.csv and zoo.csv. Which file is safer for a first demonstration and which file is better for a richer discussion?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should assign the two uploaded files to safer versus richer discussion roles with justification.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded both iris.csv and breast_cancer_wisconsin.csv. Which file should PoSyMed use as the primary basis for the next recommendation?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should compare the uploaded files and select the stronger primary basis for the next recommendation.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "With both wine.csv and hepatitis.csv uploaded, should the workflow branch into two possible app paths or stay on one path?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should compare the files and decide whether a single path or branching guidance is more appropriate.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded dermatology.csv and breast_cancer_wisconsin.csv. Which file is safer for a first demonstration and which file is better for a richer discussion?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should assign the two uploaded files to safer versus richer discussion roles with justification.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv and hepatitis.csv. Which dataset is more suitable for a first-time user to explore PoSyMed's clustering capabilities?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should compare both datasets on complexity, missing values, and suitability for beginners, then recommend one.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded wine.csv and zoo.csv. One is fully numeric, the other mostly binary. Which one would better demonstrate a typical PoSyMed workflow?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should contrast the two datasets and recommend which better showcases a typical workflow based on feature types.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded dermatology.csv and hepatitis.csv. Both are clinical datasets. Which one has fewer data quality issues and is safer to model first?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should compare data quality metrics (missing values, feature types) and recommend the cleaner dataset.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv and dermatology.csv. If I only have time for one analysis, which dataset would yield more actionable insights with a single PoSyMed app?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should compare the potential insight value of each dataset given a single-app constraint.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv and wine.csv. Should they share the same preprocessing pipeline or do they need separate handling?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should compare feature characteristics and recommend whether a shared or separate preprocessing pipeline is appropriate.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded zoo.csv and iris.csv. Which dataset would be a better candidate for a PoSyMed subgroup discovery workflow?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should analyze both for subgroup discovery suitability, considering feature types and class structure.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded hepatitis.csv and wine.csv. Can both datasets be analyzed with the same PoSyMed app, or do they need different tools?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should compare both datasets, check tool catalog compatibility, and advise if one tool handles both or if separate tools are needed.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv and zoo.csv. Which dataset is more appropriate for demonstrating feature importance analysis in PoSyMed?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should compare which dataset better demonstrates feature importance given their different feature structures.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded dermatology.csv and wine.csv. If my goal is unsupervised exploration, which dataset provides a richer analysis opportunity?",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should compare both for unsupervised analysis potential considering dimensionality, feature types, and natural structure.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv and breast_cancer_wisconsin.csv, but you should first ask whether I want the easier demo or the more clinically relevant demo.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should compare the uploaded files, ask one clarification that changes the primary-file choice, then recommend the next workflow path.",
+        "hitlAnswer": "I want the more clinically relevant demo.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded wine.csv and hepatitis.csv, but the choice depends on whether I value cleaner structure or stronger biomedical framing.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should compare the uploaded files, ask one clarification that changes the primary-file choice, then recommend the next workflow path.",
+        "hitlAnswer": "Stronger biomedical framing matters more.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded dermatology.csv and zoo.csv, but you need to ask whether interpretability or categorical richness should dominate the recommendation.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should compare the uploaded files, ask one clarification that changes the primary-file choice, then recommend the next workflow path.",
+        "hitlAnswer": "Interpretability should dominate.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv and wine.csv, but the next step depends on whether I want a teaching path or a benchmark path.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should compare the uploaded files, ask one clarification that changes the primary-file choice, then recommend the next workflow path.",
+        "hitlAnswer": "I want a benchmark path.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv and dermatology.csv, but you should ask which audience I have in mind before choosing the primary file.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should compare the uploaded files, ask one clarification that changes the primary-file choice, then recommend the next workflow path.",
+        "hitlAnswer": "The audience is a clinical research group.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          },
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "topic": "Final-answer quality under explicit file grounding",
+    "questions": [
+      {
+        "question": "I uploaded hepatitis.csv. Give me a final recommendation that is grounded in the file, concise, and easy to judge for completeness.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should provide a concise final recommendation grounded in the uploaded file and structured for easy evaluation.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Using the uploaded dermatology.csv, provide a final answer that includes a recommendation, one alternative, and one explicit uncertainty.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should provide a balanced final answer with recommendation, alternative, and uncertainty, all grounded in the file context.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv. Explain the next step and also make clear what the agent cannot do.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should state the next step, explain the boundary of its capabilities, and remain grounded in the file context.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv. Give me a final recommendation that is grounded in the file, concise, and easy to judge for completeness.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should provide a concise final recommendation grounded in the uploaded file and structured for easy evaluation.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "Using the uploaded wine.csv, provide a final answer that includes a recommendation, one alternative, and one explicit uncertainty.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should provide a balanced final answer with recommendation, alternative, and uncertainty, all grounded in the file context.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded zoo.csv. Explain the next step and also make clear what the agent cannot do.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should state the next step, explain the boundary of its capabilities, and remain grounded in the file context.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded wine.csv. Summarize the key dataset characteristics and give a concrete first action I should take in PoSyMed.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should provide a grounded summary of wine.csv characteristics and recommend a specific, actionable first step.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded zoo.csv. Give me a final answer that clearly states what the agent can do for me with this file and what I would need to do manually.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should clearly separate automated capabilities from manual steps the user needs to take.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/zoo.csv",
+            "displayName": "zoo.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded hepatitis.csv. Provide a recommendation that acknowledges the data quality issues and explains how they affect the recommended workflow.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should ground the answer in specific data quality findings and explain their impact on the workflow choice.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv. Give a final recommendation that a biology student with no ML background could follow step by step.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should provide a beginner-friendly, step-by-step recommendation grounded in the iris dataset properties.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv. Provide a final answer that includes both a recommended PoSyMed workflow and the specific limitations of that approach for this dataset.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should recommend a workflow and explicitly state its limitations given the dataset properties.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded dermatology.csv. Give a final recommendation and explicitly cite which file characteristics informed your choice.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should tie the recommendation directly to observed file characteristics like feature count, types, and missing values.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv. Produce a final answer that compares two possible approaches and argues for one, grounded in the dataset profile.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should present two viable approaches, compare them based on the file analysis, and recommend one with justification.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded hepatitis.csv. Give me a one-paragraph final answer that covers: dataset readiness, recommended tool, and expected next steps.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should deliver a concise but complete answer covering all three requested aspects.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv. Give a final answer and explicitly state which of the 30 features are most relevant to your recommendation.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should reference specific features from the dataset analysis in its recommendation.",
+        "hitlAnswer": null,
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded breast_cancer_wisconsin.csv and want a final recommendation, but you should first ask whether the audience is clinical or technical.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should ask one audience or preference clarification before generating the final answer, then produce a grounded and comprehensible recommendation.",
+        "hitlAnswer": "The audience is clinical.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/breast_cancer_wisconsin.csv",
+            "displayName": "breast_cancer_wisconsin.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded iris.csv and want a compact final answer, but you should first ask whether I value teaching clarity or stronger benchmarking logic.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should ask one audience or preference clarification before generating the final answer, then produce a grounded and comprehensible recommendation.",
+        "hitlAnswer": "Teaching clarity matters more.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/iris.csv",
+            "displayName": "iris.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded hepatitis.csv and want a final answer, but you should first ask whether I need one tool recommendation or a comparative shortlist.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should ask one audience or preference clarification before generating the final answer, then produce a grounded and comprehensible recommendation.",
+        "hitlAnswer": "I need a comparative shortlist.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/hepatitis.csv",
+            "displayName": "hepatitis.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded dermatology.csv and want the answer tuned to my audience, so ask whether this is for clinicians or data scientists.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should ask one audience or preference clarification before generating the final answer, then produce a grounded and comprehensible recommendation.",
+        "hitlAnswer": "It is for data scientists.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/dermatology.csv",
+            "displayName": "dermatology.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      },
+      {
+        "question": "I uploaded wine.csv and want a final answer, but you should first ask whether interpretability or breadth matters more.",
+        "neededTools": [
+          "FETCH_DATA",
+          "ANALYZE_DATA",
+          "HUMAN_IN_THE_LOOP",
+          "FETCH_TOOLS",
+          "FINALIZE"
+        ],
+        "expectedAnswer": "The agent should ask one audience or preference clarification before generating the final answer, then produce a grounded and comprehensible recommendation.",
+        "hitlAnswer": "Interpretability matters more.",
+        "requiredFiles": [
+          {
+            "resourcePath": "eval/agent/files/wine.csv",
+            "displayName": "wine.csv",
+            "kind": "TABULAR_CSV",
+            "source": "LOCAL_RESOURCE"
+          }
+        ]
+      }
+    ]
+  }
+]

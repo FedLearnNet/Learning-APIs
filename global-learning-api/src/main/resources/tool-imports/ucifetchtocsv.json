@@ -1,0 +1,65 @@
+{
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "appConfig" : {
+      "hyperparams" : [ {
+        "default" : "17",
+        "description" : "UCI dataset numeric id to fetch via ucimlrepo (e.g., 17 = Breast Cancer Wisconsin Diagnostic).",
+        "maxValue" : 1000000.0,
+        "minValue" : 1.0,
+        "mode" : "BOTH",
+        "name" : "dataset_id",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "dataset_id"
+      } ],
+      "input" : [ ],
+      "output" : [ {
+        "description" : "Single CSV combining features and targets from the fetched UCI dataset.",
+        "mode" : "BOTH",
+        "name" : "dataset",
+        "type" : "CSV",
+        "variableName" : "dataset"
+      }, {
+        "description" : "Small textual report about the fetched dataset and output shape.",
+        "mode" : "BOTH",
+        "name" : "report",
+        "type" : "TEXT",
+        "variableName" : "report"
+      } ]
+    },
+    "appVersion" : "1.0.0",
+    "audits" : [ ],
+    "certificationLevel" : 0,
+    "federatedAppId" : 26,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/ucifetchtocsv:zqhMYTEu",
+    "longDescription" : "# UciFetchToCsv\n\nUciFetchToCsv is a small database adopter tool that fetches a dataset from the UCI Machine Learning Repository via ucimlrepo (by numeric dataset ID) and exports it as a single combined CSV containing features + targets.\n\n## What this tool does\n- Fetches a UCI dataset by ID\nUses ucimlrepo.fetch_ucirepo(id=dataset_id) to retrieve the dataset payload and metadata.\n- Normalizes UCI payloads into tables\nConverts pandas.Series to a one-column DataFrame and passes through DataFrame objects unchanged.\n- Builds one consolidated tabular dataset\n- Reads ds.data.features as the feature matrix (X)\n- Reads ds.data.targets as the target(s) (y)\n- Concatenates horizontally (column-wise) into one table:\nIf feature and target columns overlap in name, target columns are renamed with the prefix:_\n\n## Configuration\n\nHyperparameters\n- dataset_id (INTEGER, default: 17)\nNumeric UCI dataset identifier used by ucimlrepo to fetch the dataset (e.g., 17 = Breast Cancer Wisconsin Diagnostic).\n\nThere are no inputs for this tool.\n\n## Outputs\n- dataset (CSV)\nA single CSV file containing the merged dataset (features + targets).\n- report (TEXT)\nA small human-readable summary including dataset id/name and output shape.\n\n## Notes / Assumptions\n- If a dataset provides only features or only targets, the tool exports whichever exists.\n- If a dataset provides neither features nor targets, the tool raises an error.\n- The tool is designed specifically for producing one flat table suitable for downstream processing and tooling that expects CSV.",
+    "needsHostAccess" : false,
+    "needsInternetAccess" : true,
+    "publishHash" : "1543c4685ccd1fbdf9ea6d054ab9b5ab1d9903e2",
+    "publishInfo" : {
+      "commitHash" : "ba047a3a5612b1221319cf9ac2016aeb67fa24a2",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/posymed/apps/ucimlrepo/-/blob/ba047a3a5612b1221319cf9ac2016aeb67fa24a2/data/uci_dataset17.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/ucimlrepo/-/blob/ba047a3a5612b1221319cf9ac2016aeb67fa24a2/data/uci_dataset.csv" ],
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/ucifetchtocsv:zqhMYTEu",
+      "malwareScanResult" : {
+        "findings" : [ ],
+        "infectedCount" : 0,
+        "success" : true,
+        "tool" : "clamav"
+      }
+    },
+    "shortDescription" : "Fetch a UCI dataset by id via ucimlrepo and export a single combined CSV (features + targets)",
+    "versionPublishStatus" : "PUBLISHED"
+  } ],
+  "average" : 0.0,
+  "count" : 0,
+  "name" : "UciFetchToCsv",
+  "slug" : "ucifetchtocsv",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/posymed/apps/ucimlrepo",
+  "supportsFederatedLearning" : false,
+  "type" : "EXTRACTOR",
+  "uniqueAppId" : "a71e2f25-1d3a-4b0c-9b85-7a2e6c1f4f0e"
+}

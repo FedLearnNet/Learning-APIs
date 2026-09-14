@@ -1,0 +1,14 @@
+APP_ID={id}
+ENABLE_CONFIG_SYNC={config.isConfigSyncEnabled()}
+TRACE_PERFORMANCE={config.isTracePerformance()}
+ENABLE_PROJECT_STARTUP={config.isProjectSetupEnabled()}
+PRIO_LOCAL_CONFIG={config.isPrioLocalConfig()}
+SEND_CONSOLE_LOG={config.isSendConsoleLogs()}
+
+MODEL_DIR=./
+DATA_DIR=./data/
+
+KEYCLOAK__URL=https://staging.featurecloud.ai/feddb/global-auth/realms/FederatedDB_Global
+
+WS_URL=wss://platform.microbaiome.featurecloud.ai/api/testembed/
+HTTP_URL=https://platform.microbaiome.featurecloud.ai/api/testembed/

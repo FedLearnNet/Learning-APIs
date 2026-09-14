@@ -1,0 +1,2554 @@
+{
+  "id": "2c0b5e9d-6345-47db-919b-97ff403c68ff",
+  "label": "Schema",
+  "name": "2026-04us130_diabetes_schema",
+  "description": "Root node of the schema 2026-04us130_diabetes_schema",
+  "type": "ROOT",
+  "parentId": null,
+  "childrenIds": [
+    "aac41f4b-5349-4df6-b951-91ab72c7474d",
+    "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+    "6aa426b5-43c8-42f6-b041-45558078f03d",
+    "35d7fff3-d3ee-4475-b63e-cea79aa629d6",
+    "98f83866-d41a-470a-9f55-0d6922142aee",
+    "993b9b86-8c22-4ad4-9cb4-076ad7d7a751",
+    "4db0818f-41da-4018-a454-f1c83bbe25ea"
+  ],
+  "createdAt": "2026-04-15",
+  "updatedAt": "2026-04-15",
+  "version": 0,
+  "dataTypeId": null,
+  "ontologyId": null,
+  "subscriptions": [
+    "test-user"
+  ],
+  "createdBy": "test-user",
+  "ontology": null,
+  "dataType": null,
+  "children": [
+    {
+      "id": "aac41f4b-5349-4df6-b951-91ab72c7474d",
+      "label": "Schema",
+      "name": "Outcome",
+      "description": "Grouping of Outcome",
+      "type": "GROUP",
+      "parentId": "2c0b5e9d-6345-47db-919b-97ff403c68ff",
+      "childrenIds": [
+        "d67cca7f-2b26-4b5f-a940-af82afbe585c",
+        "cdcc84e1-73c8-4e0f-9d36-67b3b4319de2",
+        "b257f913-914a-46a2-ba03-b3ba320b42c9"
+      ],
+      "createdAt": "2026-04-15",
+      "updatedAt": "2026-04-15",
+      "version": 0,
+      "dataTypeId": null,
+      "ontologyId": null,
+      "subscriptions": null,
+      "createdBy": null,
+      "ontology": null,
+      "dataType": null,
+      "children": [
+        {
+          "id": "d67cca7f-2b26-4b5f-a940-af82afbe585c",
+          "label": "Schema",
+          "name": "Readmitted",
+          "description": "Whether the patient was readmitted",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "aac41f4b-5349-4df6-b951-91ab72c7474d",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "e1bc1404-5f86-4737-a4fa-faf35646ac72",
+          "ontologyId": "4e5a0a06-59d7-4582-be49-53812c52e1de",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "4e5a0a06-59d7-4582-be49-53812c52e1de",
+            "label": "Ontology",
+            "names": [
+              "Hospital Readmission"
+            ],
+            "description": "Ontology Hospital Readmission",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0600032",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "e1bc1404-5f86-4737-a4fa-faf35646ac72",
+            "label": "DataType",
+            "name": "Readmission status",
+            "description": "Datatype Readmission status",
+            "options": [
+              "<30",
+              ">30",
+              "NO"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "cdcc84e1-73c8-4e0f-9d36-67b3b4319de2",
+          "label": "Schema",
+          "name": "Diabetes Med",
+          "description": "Whether any diabetes medication was prescribed",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "aac41f4b-5349-4df6-b951-91ab72c7474d",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "5445b9b1-c29a-413c-bbfa-f6ceae5a0c4c",
+          "ontologyId": "73d47b5c-84f8-4f29-ae3a-7c2562e3fc2e",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "73d47b5c-84f8-4f29-ae3a-7c2562e3fc2e",
+            "label": "Ontology",
+            "names": [
+              "Diabetes Medication Prescribed"
+            ],
+            "description": "Ontology Diabetes Medication Prescribed",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_DIABETES_MED",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "5445b9b1-c29a-413c-bbfa-f6ceae5a0c4c",
+            "label": "DataType",
+            "name": "Diabetes medication indicator",
+            "description": "Datatype Diabetes medication indicator",
+            "options": [
+              "Yes",
+              "No"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "b257f913-914a-46a2-ba03-b3ba320b42c9",
+          "label": "Schema",
+          "name": "Change",
+          "description": "Whether there was a change in diabetes medications",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "aac41f4b-5349-4df6-b951-91ab72c7474d",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "b567d9ab-08af-4df6-99de-7a6777ec1c28",
+          "ontologyId": "23911843-9bbc-41d0-939e-99745d39ab2a",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "23911843-9bbc-41d0-939e-99745d39ab2a",
+            "label": "Ontology",
+            "names": [
+              "Medication Change"
+            ],
+            "description": "Ontology Medication Change",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_CHANGE",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "b567d9ab-08af-4df6-99de-7a6777ec1c28",
+            "label": "DataType",
+            "name": "Medication change indicator",
+            "description": "Datatype Medication change indicator",
+            "options": [
+              "Ch",
+              "No"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        }
+      ],
+      "root": false
+    },
+    {
+      "id": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+      "label": "Schema",
+      "name": "Medication",
+      "description": "Grouping of Medication",
+      "type": "GROUP",
+      "parentId": "2c0b5e9d-6345-47db-919b-97ff403c68ff",
+      "childrenIds": [
+        "e802e337-8b30-4104-a473-b49996c79486",
+        "4be6a06d-2780-4f65-85af-bf77074c3de2",
+        "51035686-71e3-4758-bf93-2035fbc33d96",
+        "5eefd6c8-08a1-4e61-b5d6-bc4f40313ac0",
+        "d2302bcb-95e6-41fd-a515-29dd8dedda5f",
+        "ebba924d-1f9d-403a-be79-bb654e454c20",
+        "7fa753e9-edbf-4d92-8f19-5e5a3596ecb7",
+        "a5601682-d382-4b65-ac9d-94a3d50adb32",
+        "18b9aed9-186a-4396-bbf2-6e1c5a1d71dc",
+        "d643fece-6281-4275-95a7-94041a8cb167",
+        "e6cae1fc-5c7f-4d90-8f75-865446c9724e",
+        "319941f9-1695-4f79-95ef-efd8d04c9dda",
+        "c887db82-8fb4-4c1a-85c8-0e869b1cd7d9",
+        "64620c75-c47e-4c38-8bb1-507aad3c8106",
+        "179f9243-2122-49c2-892c-e0bfa6bf14e3",
+        "6b0f836f-60ec-4b4c-894d-b4751f1322c1",
+        "bdd25ca1-53fe-4e3f-956b-3b130b154b16",
+        "f4007906-b4bd-46fa-832c-e45b5c8f8956",
+        "b7cd1b5c-7a38-425e-9225-15bf44de992d",
+        "c75d1ddc-1300-4e7a-8363-551b523ece24",
+        "b748906c-3f8f-4805-a354-8082d3226ef0",
+        "16c3362e-2f2d-410d-aaf7-4b2441588ad0",
+        "eb191f5b-0c5c-43ee-8551-63718fb34857"
+      ],
+      "createdAt": "2026-04-15",
+      "updatedAt": "2026-04-15",
+      "version": 0,
+      "dataTypeId": null,
+      "ontologyId": null,
+      "subscriptions": null,
+      "createdBy": null,
+      "ontology": null,
+      "dataType": null,
+      "children": [
+        {
+          "id": "e802e337-8b30-4104-a473-b49996c79486",
+          "label": "Schema",
+          "name": "Metformin-Pioglitazone",
+          "description": "Dosage change of metformin-pioglitazone combination",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "ecb53b58-9f99-400c-924a-89287616846a",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "ecb53b58-9f99-400c-924a-89287616846a",
+            "label": "Ontology",
+            "names": [
+              "Metformin-Pioglitazone"
+            ],
+            "description": "Ontology Metformin-Pioglitazone",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_METFORMIN_PIOGLITAZONE",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "4be6a06d-2780-4f65-85af-bf77074c3de2",
+          "label": "Schema",
+          "name": "Metformin-Rosiglitazone",
+          "description": "Dosage change of metformin-rosiglitazone combination",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "31e9ac68-ac16-40fb-8e9b-64e18e4c6201",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "31e9ac68-ac16-40fb-8e9b-64e18e4c6201",
+            "label": "Ontology",
+            "names": [
+              "Metformin-Rosiglitazone"
+            ],
+            "description": "Ontology Metformin-Rosiglitazone",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_METFORMIN_ROSIGLITAZONE",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "51035686-71e3-4758-bf93-2035fbc33d96",
+          "label": "Schema",
+          "name": "Glimepiride-Pioglitazone",
+          "description": "Dosage change of glimepiride-pioglitazone combination",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "ce8f9626-5078-4588-a92b-0b4acc9a65f7",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "ce8f9626-5078-4588-a92b-0b4acc9a65f7",
+            "label": "Ontology",
+            "names": [
+              "Glimepiride-Pioglitazone"
+            ],
+            "description": "Ontology Glimepiride-Pioglitazone",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_GLIMEPIRIDE_PIOGLITAZONE",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "5eefd6c8-08a1-4e61-b5d6-bc4f40313ac0",
+          "label": "Schema",
+          "name": "Glipizide-Metformin",
+          "description": "Dosage change of glipizide-metformin combination",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "334dbd0d-71a4-4b93-bbbc-a7f8efe701a5",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "334dbd0d-71a4-4b93-bbbc-a7f8efe701a5",
+            "label": "Ontology",
+            "names": [
+              "Glipizide-Metformin"
+            ],
+            "description": "Ontology Glipizide-Metformin",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_GLIPIZIDE_METFORMIN",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "d2302bcb-95e6-41fd-a515-29dd8dedda5f",
+          "label": "Schema",
+          "name": "Glyburide-Metformin",
+          "description": "Dosage change of glyburide-metformin combination",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "56899eaf-4e01-4b44-940e-5423e7d167a0",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "56899eaf-4e01-4b44-940e-5423e7d167a0",
+            "label": "Ontology",
+            "names": [
+              "Glyburide-Metformin"
+            ],
+            "description": "Ontology Glyburide-Metformin",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_GLYBURIDE_METFORMIN",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "ebba924d-1f9d-403a-be79-bb654e454c20",
+          "label": "Schema",
+          "name": "Insulin",
+          "description": "Dosage change of insulin",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "e97478d5-70c8-4cba-a511-8cc3de658a42",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "e97478d5-70c8-4cba-a511-8cc3de658a42",
+            "label": "Ontology",
+            "names": [
+              "Insulin"
+            ],
+            "description": "Ontology Insulin",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0021641",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "7fa753e9-edbf-4d92-8f19-5e5a3596ecb7",
+          "label": "Schema",
+          "name": "Citoglipton",
+          "description": "Dosage change of citoglipton",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "9b856f02-c774-4971-9117-5fed93e5de50",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "9b856f02-c774-4971-9117-5fed93e5de50",
+            "label": "Ontology",
+            "names": [
+              "Citoglipton"
+            ],
+            "description": "Ontology Citoglipton",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_CITOGLIPTON",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "a5601682-d382-4b65-ac9d-94a3d50adb32",
+          "label": "Schema",
+          "name": "Examide",
+          "description": "Dosage change of examide",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "e7d6cb9a-c46a-4ddb-9656-7ac8fc4cfb96",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "e7d6cb9a-c46a-4ddb-9656-7ac8fc4cfb96",
+            "label": "Ontology",
+            "names": [
+              "Examide"
+            ],
+            "description": "Ontology Examide",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_EXAMIDE",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "18b9aed9-186a-4396-bbf2-6e1c5a1d71dc",
+          "label": "Schema",
+          "name": "Tolazamide",
+          "description": "Dosage change of tolazamide",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "bc5d0fc2-75f3-497c-b029-b9911e739765",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "bc5d0fc2-75f3-497c-b029-b9911e739765",
+            "label": "Ontology",
+            "names": [
+              "Tolazamide"
+            ],
+            "description": "Ontology Tolazamide",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0040370",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "d643fece-6281-4275-95a7-94041a8cb167",
+          "label": "Schema",
+          "name": "Troglitazone",
+          "description": "Dosage change of troglitazone",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "ffc69612-7ed3-4405-88cb-57307119850f",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "ffc69612-7ed3-4405-88cb-57307119850f",
+            "label": "Ontology",
+            "names": [
+              "Troglitazone"
+            ],
+            "description": "Ontology Troglitazone",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0077013",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "e6cae1fc-5c7f-4d90-8f75-865446c9724e",
+          "label": "Schema",
+          "name": "Miglitol",
+          "description": "Dosage change of miglitol",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "09459cf9-f484-4303-ad7d-fd0f98f838e1",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "09459cf9-f484-4303-ad7d-fd0f98f838e1",
+            "label": "Ontology",
+            "names": [
+              "Miglitol"
+            ],
+            "description": "Ontology Miglitol",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0076353",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "319941f9-1695-4f79-95ef-efd8d04c9dda",
+          "label": "Schema",
+          "name": "Acarbose",
+          "description": "Dosage change of acarbose",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "37770c07-cfd8-4b00-b4ac-e5937efdab68",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "37770c07-cfd8-4b00-b4ac-e5937efdab68",
+            "label": "Ontology",
+            "names": [
+              "Acarbose"
+            ],
+            "description": "Ontology Acarbose",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0050207",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "c887db82-8fb4-4c1a-85c8-0e869b1cd7d9",
+          "label": "Schema",
+          "name": "Rosiglitazone",
+          "description": "Dosage change of rosiglitazone",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "e97e2084-ff51-49ce-9660-fdc045119b4b",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "e97e2084-ff51-49ce-9660-fdc045119b4b",
+            "label": "Ontology",
+            "names": [
+              "Rosiglitazone"
+            ],
+            "description": "Ontology Rosiglitazone",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0105083",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "64620c75-c47e-4c38-8bb1-507aad3c8106",
+          "label": "Schema",
+          "name": "Pioglitazone",
+          "description": "Dosage change of pioglitazone",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "2241c6db-b896-4572-a34e-f131cdd3d6cd",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "2241c6db-b896-4572-a34e-f131cdd3d6cd",
+            "label": "Ontology",
+            "names": [
+              "Pioglitazone"
+            ],
+            "description": "Ontology Pioglitazone",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0071097",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "179f9243-2122-49c2-892c-e0bfa6bf14e3",
+          "label": "Schema",
+          "name": "Tolbutamide",
+          "description": "Dosage change of tolbutamide",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "33de3002-19ae-48b3-8985-8a5605bcc1cc",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "33de3002-19ae-48b3-8985-8a5605bcc1cc",
+            "label": "Ontology",
+            "names": [
+              "Tolbutamide"
+            ],
+            "description": "Ontology Tolbutamide",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0040374",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "6b0f836f-60ec-4b4c-894d-b4751f1322c1",
+          "label": "Schema",
+          "name": "Glyburide",
+          "description": "Dosage change of glyburide",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "75057491-dc1b-4008-ab5b-1a391de947f4",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "75057491-dc1b-4008-ab5b-1a391de947f4",
+            "label": "Ontology",
+            "names": [
+              "Glyburide"
+            ],
+            "description": "Ontology Glyburide",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0017655",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "bdd25ca1-53fe-4e3f-956b-3b130b154b16",
+          "label": "Schema",
+          "name": "Glipizide",
+          "description": "Dosage change of glipizide",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "e9af261b-76a4-4d00-9fb9-9f62b044ba71",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "e9af261b-76a4-4d00-9fb9-9f62b044ba71",
+            "label": "Ontology",
+            "names": [
+              "Glipizide"
+            ],
+            "description": "Ontology Glipizide",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0017654",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "f4007906-b4bd-46fa-832c-e45b5c8f8956",
+          "label": "Schema",
+          "name": "Acetohexamide",
+          "description": "Dosage change of acetohexamide",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "520c8b8e-7e87-4dce-8816-cb1ce710c886",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "520c8b8e-7e87-4dce-8816-cb1ce710c886",
+            "label": "Ontology",
+            "names": [
+              "Acetohexamide"
+            ],
+            "description": "Ontology Acetohexamide",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0000959",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "b7cd1b5c-7a38-425e-9225-15bf44de992d",
+          "label": "Schema",
+          "name": "Glimepiride",
+          "description": "Dosage change of glimepiride",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "730c617a-7f17-46cc-b4ef-7d5ec0ca6734",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "730c617a-7f17-46cc-b4ef-7d5ec0ca6734",
+            "label": "Ontology",
+            "names": [
+              "Glimepiride"
+            ],
+            "description": "Ontology Glimepiride",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0061323",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "c75d1ddc-1300-4e7a-8363-551b523ece24",
+          "label": "Schema",
+          "name": "Chlorpropamide",
+          "description": "Dosage change of chlorpropamide",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "1080d357-6d0e-4d85-b85c-6e29d5a39535",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "1080d357-6d0e-4d85-b85c-6e29d5a39535",
+            "label": "Ontology",
+            "names": [
+              "Chlorpropamide"
+            ],
+            "description": "Ontology Chlorpropamide",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0008295",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "b748906c-3f8f-4805-a354-8082d3226ef0",
+          "label": "Schema",
+          "name": "Nateglinide",
+          "description": "Dosage change of nateglinide",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "5ce8ede1-fab9-491d-91b5-7ad30e66ccb4",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "5ce8ede1-fab9-491d-91b5-7ad30e66ccb4",
+            "label": "Ontology",
+            "names": [
+              "Nateglinide"
+            ],
+            "description": "Ontology Nateglinide",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0525625",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "16c3362e-2f2d-410d-aaf7-4b2441588ad0",
+          "label": "Schema",
+          "name": "Repaglinide",
+          "description": "Dosage change of repaglinide",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "514197b6-bb61-4652-94ff-1b3d27796610",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "514197b6-bb61-4652-94ff-1b3d27796610",
+            "label": "Ontology",
+            "names": [
+              "Repaglinide"
+            ],
+            "description": "Ontology Repaglinide",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0246811",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "eb191f5b-0c5c-43ee-8551-63718fb34857",
+          "label": "Schema",
+          "name": "Metformin",
+          "description": "Dosage change of metformin",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "200be2d6-c2bd-48d6-8e72-87e29fa9ae8a",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a95b9349-8a30-4771-af5d-7b1480b89967",
+          "ontologyId": "e8fe3c27-6ef4-4451-b155-34387f6b7f48",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "e8fe3c27-6ef4-4451-b155-34387f6b7f48",
+            "label": "Ontology",
+            "names": [
+              "Metformin"
+            ],
+            "description": "Ontology Metformin",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0025598",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a95b9349-8a30-4771-af5d-7b1480b89967",
+            "label": "DataType",
+            "name": "Drug dosage change",
+            "description": "Datatype Drug dosage change",
+            "options": [
+              "No",
+              "Steady",
+              "Up",
+              "Down"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        }
+      ],
+      "root": false
+    },
+    {
+      "id": "6aa426b5-43c8-42f6-b041-45558078f03d",
+      "label": "Schema",
+      "name": "Lab Results",
+      "description": "Grouping of Lab Results",
+      "type": "GROUP",
+      "parentId": "2c0b5e9d-6345-47db-919b-97ff403c68ff",
+      "childrenIds": [
+        "64eddc1b-395d-4ce3-98d2-53b131ed09f1",
+        "95c25b4e-1c46-4d05-9e79-d418320476f2"
+      ],
+      "createdAt": "2026-04-15",
+      "updatedAt": "2026-04-15",
+      "version": 0,
+      "dataTypeId": null,
+      "ontologyId": null,
+      "subscriptions": null,
+      "createdBy": null,
+      "ontology": null,
+      "dataType": null,
+      "children": [
+        {
+          "id": "64eddc1b-395d-4ce3-98d2-53b131ed09f1",
+          "label": "Schema",
+          "name": "A1C Result",
+          "description": "Result of HbA1c test",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "6aa426b5-43c8-42f6-b041-45558078f03d",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "3defd045-1ede-419f-91da-584f374aa309",
+          "ontologyId": "7780ea8e-d77e-4312-9761-c49c09874487",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "7780ea8e-d77e-4312-9761-c49c09874487",
+            "label": "Ontology",
+            "names": [
+              "HbA1c"
+            ],
+            "description": "Ontology HbA1c",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0019018",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "3defd045-1ede-419f-91da-584f374aa309",
+            "label": "DataType",
+            "name": "HbA1c test result",
+            "description": "Datatype HbA1c test result",
+            "options": [
+              "None",
+              ">7",
+              ">8",
+              "Norm"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "95c25b4e-1c46-4d05-9e79-d418320476f2",
+          "label": "Schema",
+          "name": "Max Glu Serum",
+          "description": "Result of glucose serum test",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "6aa426b5-43c8-42f6-b041-45558078f03d",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "e58c8c2c-9b94-4159-93e6-4dc6e0f9956f",
+          "ontologyId": "1a292e75-06bd-4cb1-9716-0a94d3acddbd",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "1a292e75-06bd-4cb1-9716-0a94d3acddbd",
+            "label": "Ontology",
+            "names": [
+              "Maximum Glucose Serum"
+            ],
+            "description": "Ontology Maximum Glucose Serum",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_MAX_GLU_SERUM",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "e58c8c2c-9b94-4159-93e6-4dc6e0f9956f",
+            "label": "DataType",
+            "name": "Glucose serum level",
+            "description": "Datatype Glucose serum level",
+            "options": [
+              "None",
+              ">200",
+              ">300",
+              "Norm"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        }
+      ],
+      "root": false
+    },
+    {
+      "id": "35d7fff3-d3ee-4475-b63e-cea79aa629d6",
+      "label": "Schema",
+      "name": "Diagnoses",
+      "description": "Grouping of Diagnoses",
+      "type": "GROUP",
+      "parentId": "2c0b5e9d-6345-47db-919b-97ff403c68ff",
+      "childrenIds": [
+        "4cff9bfd-37c8-4bd9-a684-309f8c2505c6",
+        "c0e08166-f60e-4ef1-be44-4bfacd73dbce",
+        "ba9396b4-cb2a-4c98-b540-52f98845a558"
+      ],
+      "createdAt": "2026-04-15",
+      "updatedAt": "2026-04-15",
+      "version": 0,
+      "dataTypeId": null,
+      "ontologyId": null,
+      "subscriptions": null,
+      "createdBy": null,
+      "ontology": null,
+      "dataType": null,
+      "children": [
+        {
+          "id": "4cff9bfd-37c8-4bd9-a684-309f8c2505c6",
+          "label": "Schema",
+          "name": "Diag 3",
+          "description": "Additional secondary diagnosis ICD-9 code",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "35d7fff3-d3ee-4475-b63e-cea79aa629d6",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "5b16623c-1f24-4290-9183-cf28d1bd109e",
+          "ontologyId": "6db89b4a-1e34-496b-a2db-4dc10cf56c1b",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "6db89b4a-1e34-496b-a2db-4dc10cf56c1b",
+            "label": "Ontology",
+            "names": [
+              "Tertiary Diagnosis"
+            ],
+            "description": "Ontology Tertiary Diagnosis",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_DIAG_3",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "5b16623c-1f24-4290-9183-cf28d1bd109e",
+            "label": "DataType",
+            "name": "generic string",
+            "description": "Datatype generic string",
+            "options": [],
+            "validations": [],
+            "type": "STRING",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "c0e08166-f60e-4ef1-be44-4bfacd73dbce",
+          "label": "Schema",
+          "name": "Diag 2",
+          "description": "Secondary diagnosis ICD-9 code",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "35d7fff3-d3ee-4475-b63e-cea79aa629d6",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "5b16623c-1f24-4290-9183-cf28d1bd109e",
+          "ontologyId": "49c406d3-77c4-4f7f-9e06-83f131d3437e",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "49c406d3-77c4-4f7f-9e06-83f131d3437e",
+            "label": "Ontology",
+            "names": [
+              "Secondary Diagnosis"
+            ],
+            "description": "Ontology Secondary Diagnosis",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_DIAG_2",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "5b16623c-1f24-4290-9183-cf28d1bd109e",
+            "label": "DataType",
+            "name": "generic string",
+            "description": "Datatype generic string",
+            "options": [],
+            "validations": [],
+            "type": "STRING",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "ba9396b4-cb2a-4c98-b540-52f98845a558",
+          "label": "Schema",
+          "name": "Diag 1",
+          "description": "Primary diagnosis ICD-9 code",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "35d7fff3-d3ee-4475-b63e-cea79aa629d6",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "5b16623c-1f24-4290-9183-cf28d1bd109e",
+          "ontologyId": "c5d38d58-0f5e-4368-8ac0-344971fd0102",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "c5d38d58-0f5e-4368-8ac0-344971fd0102",
+            "label": "Ontology",
+            "names": [
+              "Primary Diagnosis"
+            ],
+            "description": "Ontology Primary Diagnosis",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_DIAG_1",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "5b16623c-1f24-4290-9183-cf28d1bd109e",
+            "label": "DataType",
+            "name": "generic string",
+            "description": "Datatype generic string",
+            "options": [],
+            "validations": [],
+            "type": "STRING",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        }
+      ],
+      "root": false
+    },
+    {
+      "id": "98f83866-d41a-470a-9f55-0d6922142aee",
+      "label": "Schema",
+      "name": "Clinical Counts",
+      "description": "Grouping of Clinical Counts",
+      "type": "GROUP",
+      "parentId": "2c0b5e9d-6345-47db-919b-97ff403c68ff",
+      "childrenIds": [
+        "3ccae869-0c43-4b75-93dc-22bb8ea9dcf3",
+        "3796f051-1cf4-416a-a8a0-f0593c94bd35",
+        "8cd0a329-b59c-46bf-8efd-e751b4e3ced9",
+        "f4084a82-4934-4beb-a8b6-b17aa68d0135",
+        "1102f804-6a25-40ab-abd7-b4fa988d5085",
+        "cf5d4c6d-c5b3-448d-a897-c5a580793f42",
+        "550d70e1-bf3c-4fb7-be0d-67b5ef4b105c"
+      ],
+      "createdAt": "2026-04-15",
+      "updatedAt": "2026-04-15",
+      "version": 0,
+      "dataTypeId": null,
+      "ontologyId": null,
+      "subscriptions": null,
+      "createdBy": null,
+      "ontology": null,
+      "dataType": null,
+      "children": [
+        {
+          "id": "3ccae869-0c43-4b75-93dc-22bb8ea9dcf3",
+          "label": "Schema",
+          "name": "Number Inpatient",
+          "description": "Number of inpatient visits in the year before the encounter",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "98f83866-d41a-470a-9f55-0d6922142aee",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+          "ontologyId": "cd35d91d-ebd8-46eb-a42d-ce2210ea7353",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "cd35d91d-ebd8-46eb-a42d-ce2210ea7353",
+            "label": "Ontology",
+            "names": [
+              "Number of Inpatient Visits"
+            ],
+            "description": "Ontology Number of Inpatient Visits",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_NUMBER_INPATIENT",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+            "label": "DataType",
+            "name": "generic integer",
+            "description": "Datatype generic integer",
+            "options": [],
+            "validations": [],
+            "type": "INT",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "3796f051-1cf4-416a-a8a0-f0593c94bd35",
+          "label": "Schema",
+          "name": "Number Emergency",
+          "description": "Number of emergency visits in the year before the encounter",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "98f83866-d41a-470a-9f55-0d6922142aee",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+          "ontologyId": "0f964a49-35b2-4156-a4d4-8e9af8f5dc12",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "0f964a49-35b2-4156-a4d4-8e9af8f5dc12",
+            "label": "Ontology",
+            "names": [
+              "Number of Emergency Visits"
+            ],
+            "description": "Ontology Number of Emergency Visits",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_NUMBER_EMERGENCY",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+            "label": "DataType",
+            "name": "generic integer",
+            "description": "Datatype generic integer",
+            "options": [],
+            "validations": [],
+            "type": "INT",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "8cd0a329-b59c-46bf-8efd-e751b4e3ced9",
+          "label": "Schema",
+          "name": "Number Outpatient",
+          "description": "Number of outpatient visits in the year before the encounter",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "98f83866-d41a-470a-9f55-0d6922142aee",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+          "ontologyId": "735d2c5c-bec9-4143-bd91-af735d4e3234",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "735d2c5c-bec9-4143-bd91-af735d4e3234",
+            "label": "Ontology",
+            "names": [
+              "Number of Outpatient Visits"
+            ],
+            "description": "Ontology Number of Outpatient Visits",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_NUMBER_OUTPATIENT",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+            "label": "DataType",
+            "name": "generic integer",
+            "description": "Datatype generic integer",
+            "options": [],
+            "validations": [],
+            "type": "INT",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "f4084a82-4934-4beb-a8b6-b17aa68d0135",
+          "label": "Schema",
+          "name": "Number Diagnoses",
+          "description": "Number of diagnoses entered for the encounter",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "98f83866-d41a-470a-9f55-0d6922142aee",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+          "ontologyId": "544b7f13-37eb-4056-9fd4-3180656437c5",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "544b7f13-37eb-4056-9fd4-3180656437c5",
+            "label": "Ontology",
+            "names": [
+              "Number of Diagnoses"
+            ],
+            "description": "Ontology Number of Diagnoses",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_NUMBER_DIAGNOSES",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+            "label": "DataType",
+            "name": "generic integer",
+            "description": "Datatype generic integer",
+            "options": [],
+            "validations": [],
+            "type": "INT",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "1102f804-6a25-40ab-abd7-b4fa988d5085",
+          "label": "Schema",
+          "name": "Num Medications",
+          "description": "Number of distinct generic medications administered",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "98f83866-d41a-470a-9f55-0d6922142aee",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+          "ontologyId": "36ed5767-397e-4cde-a156-532627512574",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "36ed5767-397e-4cde-a156-532627512574",
+            "label": "Ontology",
+            "names": [
+              "Number of Medications"
+            ],
+            "description": "Ontology Number of Medications",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_NUM_MEDICATIONS",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+            "label": "DataType",
+            "name": "generic integer",
+            "description": "Datatype generic integer",
+            "options": [],
+            "validations": [],
+            "type": "INT",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "cf5d4c6d-c5b3-448d-a897-c5a580793f42",
+          "label": "Schema",
+          "name": "Num Procedures",
+          "description": "Number of non-lab procedures during the encounter",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "98f83866-d41a-470a-9f55-0d6922142aee",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+          "ontologyId": "cb020ad0-12a6-4105-b12a-d34f9cd12065",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "cb020ad0-12a6-4105-b12a-d34f9cd12065",
+            "label": "Ontology",
+            "names": [
+              "Number of Procedures"
+            ],
+            "description": "Ontology Number of Procedures",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_NUM_PROCEDURES",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+            "label": "DataType",
+            "name": "generic integer",
+            "description": "Datatype generic integer",
+            "options": [],
+            "validations": [],
+            "type": "INT",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "550d70e1-bf3c-4fb7-be0d-67b5ef4b105c",
+          "label": "Schema",
+          "name": "Num Lab Procedures",
+          "description": "Number of lab procedures during the encounter",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "98f83866-d41a-470a-9f55-0d6922142aee",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+          "ontologyId": "dd3cb0b7-5f3b-443d-ad58-93545d0f7898",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "dd3cb0b7-5f3b-443d-ad58-93545d0f7898",
+            "label": "Ontology",
+            "names": [
+              "Number of Lab Procedures"
+            ],
+            "description": "Ontology Number of Lab Procedures",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_NUM_LAB_PROCEDURES",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+            "label": "DataType",
+            "name": "generic integer",
+            "description": "Datatype generic integer",
+            "options": [],
+            "validations": [],
+            "type": "INT",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        }
+      ],
+      "root": false
+    },
+    {
+      "id": "993b9b86-8c22-4ad4-9cb4-076ad7d7a751",
+      "label": "Schema",
+      "name": "Encounter",
+      "description": "Grouping of Encounter",
+      "type": "GROUP",
+      "parentId": "2c0b5e9d-6345-47db-919b-97ff403c68ff",
+      "childrenIds": [
+        "f537f0ed-5a83-4eed-aed0-ec0bed6f6014",
+        "1837cad4-dee5-4f64-801a-188acad42a2a",
+        "23abe243-2a3a-43cc-8f9c-4f0bc9e5b148",
+        "f993f8b4-813e-464e-bf7c-4c4a3aaecd01",
+        "3d73064e-19d0-4ddb-9322-bd12f0eabb79",
+        "ada8aee2-e641-4d39-83d4-5bd32acfd5b7",
+        "48cd283a-d16c-427e-a5b5-a641eaaa3b62",
+        "88791e35-2a62-455f-830f-f5d826b88ebc"
+      ],
+      "createdAt": "2026-04-15",
+      "updatedAt": "2026-04-15",
+      "version": 0,
+      "dataTypeId": null,
+      "ontologyId": null,
+      "subscriptions": null,
+      "createdBy": null,
+      "ontology": null,
+      "dataType": null,
+      "children": [
+        {
+          "id": "f537f0ed-5a83-4eed-aed0-ec0bed6f6014",
+          "label": "Schema",
+          "name": "Medical Specialty",
+          "description": "Specialty of the admitting physician",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "993b9b86-8c22-4ad4-9cb4-076ad7d7a751",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "5b16623c-1f24-4290-9183-cf28d1bd109e",
+          "ontologyId": "77658409-2b18-4573-90dc-32ccab3bbb17",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "77658409-2b18-4573-90dc-32ccab3bbb17",
+            "label": "Ontology",
+            "names": [
+              "Medical Specialty"
+            ],
+            "description": "Ontology Medical Specialty",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0037778",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "5b16623c-1f24-4290-9183-cf28d1bd109e",
+            "label": "DataType",
+            "name": "generic string",
+            "description": "Datatype generic string",
+            "options": [],
+            "validations": [],
+            "type": "STRING",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "1837cad4-dee5-4f64-801a-188acad42a2a",
+          "label": "Schema",
+          "name": "Payer Code",
+          "description": "Code for the payer",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "993b9b86-8c22-4ad4-9cb4-076ad7d7a751",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "5b16623c-1f24-4290-9183-cf28d1bd109e",
+          "ontologyId": "742b6db2-f2ce-4bab-81bf-61c71feb47f8",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "742b6db2-f2ce-4bab-81bf-61c71feb47f8",
+            "label": "Ontology",
+            "names": [
+              "Payer Code"
+            ],
+            "description": "Ontology Payer Code",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_PAYER_CODE",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "5b16623c-1f24-4290-9183-cf28d1bd109e",
+            "label": "DataType",
+            "name": "generic string",
+            "description": "Datatype generic string",
+            "options": [],
+            "validations": [],
+            "type": "STRING",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "23abe243-2a3a-43cc-8f9c-4f0bc9e5b148",
+          "label": "Schema",
+          "name": "Time in Hospital",
+          "description": "Number of days between admission and discharge",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "993b9b86-8c22-4ad4-9cb4-076ad7d7a751",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+          "ontologyId": "a53bf241-cdd5-4882-87b8-d108743db09f",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "a53bf241-cdd5-4882-87b8-d108743db09f",
+            "label": "Ontology",
+            "names": [
+              "Length of Stay"
+            ],
+            "description": "Ontology Length of Stay",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0420382",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+            "label": "DataType",
+            "name": "generic integer",
+            "description": "Datatype generic integer",
+            "options": [],
+            "validations": [],
+            "type": "INT",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "f993f8b4-813e-464e-bf7c-4c4a3aaecd01",
+          "label": "Schema",
+          "name": "Admission Source",
+          "description": "Integer identifier for the admission source",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "993b9b86-8c22-4ad4-9cb4-076ad7d7a751",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+          "ontologyId": "b662b693-7513-42f4-ac91-e47ef8adf830",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "b662b693-7513-42f4-ac91-e47ef8adf830",
+            "label": "Ontology",
+            "names": [
+              "Admission Source"
+            ],
+            "description": "Ontology Admission Source",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_ADMISSION_SOURCE",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+            "label": "DataType",
+            "name": "generic integer",
+            "description": "Datatype generic integer",
+            "options": [],
+            "validations": [],
+            "type": "INT",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "3d73064e-19d0-4ddb-9322-bd12f0eabb79",
+          "label": "Schema",
+          "name": "Discharge Disposition",
+          "description": "Integer identifier for the discharge disposition",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "993b9b86-8c22-4ad4-9cb4-076ad7d7a751",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+          "ontologyId": "c0d6b797-b991-4045-aa82-a8469d380920",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "c0d6b797-b991-4045-aa82-a8469d380920",
+            "label": "Ontology",
+            "names": [
+              "Discharge Disposition"
+            ],
+            "description": "Ontology Discharge Disposition",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_DISCHARGE_DISPOSITION",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+            "label": "DataType",
+            "name": "generic integer",
+            "description": "Datatype generic integer",
+            "options": [],
+            "validations": [],
+            "type": "INT",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "ada8aee2-e641-4d39-83d4-5bd32acfd5b7",
+          "label": "Schema",
+          "name": "Admission Type",
+          "description": "Integer identifier for the type of admission",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "993b9b86-8c22-4ad4-9cb4-076ad7d7a751",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+          "ontologyId": "ae4cc1e6-5417-4508-819f-25c6a97554ac",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "ae4cc1e6-5417-4508-819f-25c6a97554ac",
+            "label": "Ontology",
+            "names": [
+              "Admission Type"
+            ],
+            "description": "Ontology Admission Type",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0809949",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+            "label": "DataType",
+            "name": "generic integer",
+            "description": "Datatype generic integer",
+            "options": [],
+            "validations": [],
+            "type": "INT",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "48cd283a-d16c-427e-a5b5-a641eaaa3b62",
+          "label": "Schema",
+          "name": "Patient Number",
+          "description": "Unique identifier of a patient",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "993b9b86-8c22-4ad4-9cb4-076ad7d7a751",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+          "ontologyId": "c97300d0-8bcf-4253-8059-171177d25bdb",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "c97300d0-8bcf-4253-8059-171177d25bdb",
+            "label": "Ontology",
+            "names": [
+              "Patient Number"
+            ],
+            "description": "Ontology Patient Number",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_PATIENT_NBR",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+            "label": "DataType",
+            "name": "generic integer",
+            "description": "Datatype generic integer",
+            "options": [],
+            "validations": [],
+            "type": "INT",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "88791e35-2a62-455f-830f-f5d826b88ebc",
+          "label": "Schema",
+          "name": "Encounter ID",
+          "description": "Unique identifier of an encounter",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "993b9b86-8c22-4ad4-9cb4-076ad7d7a751",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+          "ontologyId": "4315ef7f-bd02-4e0e-970c-be527e0523ea",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "4315ef7f-bd02-4e0e-970c-be527e0523ea",
+            "label": "Ontology",
+            "names": [
+              "Encounter Identifier"
+            ],
+            "description": "Ontology Encounter Identifier",
+            "codes": null,
+            "sabs": null,
+            "cui": "CUSTOM_ENCOUNTER_ID",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "97f56aae-c5d7-45fa-befe-70f6e59c0f2c",
+            "label": "DataType",
+            "name": "generic integer",
+            "description": "Datatype generic integer",
+            "options": [],
+            "validations": [],
+            "type": "INT",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        }
+      ],
+      "root": false
+    },
+    {
+      "id": "4db0818f-41da-4018-a454-f1c83bbe25ea",
+      "label": "Schema",
+      "name": "Demographics",
+      "description": "Grouping of Demographics",
+      "type": "GROUP",
+      "parentId": "2c0b5e9d-6345-47db-919b-97ff403c68ff",
+      "childrenIds": [
+        "9fe11a12-8df4-4c2a-822c-9a20a71c5de6",
+        "b0186b47-cd06-47ed-92c8-849cc1325094",
+        "45a856e6-a1a0-4e32-8189-8cfdaf499321",
+        "72d1c14b-a66f-40fa-912d-078d63ed2835"
+      ],
+      "createdAt": "2026-04-15",
+      "updatedAt": "2026-04-15",
+      "version": 0,
+      "dataTypeId": null,
+      "ontologyId": null,
+      "subscriptions": null,
+      "createdBy": null,
+      "ontology": null,
+      "dataType": null,
+      "children": [
+        {
+          "id": "9fe11a12-8df4-4c2a-822c-9a20a71c5de6",
+          "label": "Schema",
+          "name": "Weight",
+          "description": "Weight in pounds",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "4db0818f-41da-4018-a454-f1c83bbe25ea",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "a4761d86-97bc-46d0-bf5f-1823f801f781",
+          "ontologyId": "31d7f003-bac3-4406-b522-7d9a52997872",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "31d7f003-bac3-4406-b522-7d9a52997872",
+            "label": "Ontology",
+            "names": [
+              "Body Weight"
+            ],
+            "description": "Ontology Body Weight",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0005910",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "a4761d86-97bc-46d0-bf5f-1823f801f781",
+            "label": "DataType",
+            "name": "Weight bracket",
+            "description": "Datatype Weight bracket",
+            "options": [
+              "[0-25)",
+              "[25-50)",
+              "[50-75)",
+              "[75-100)",
+              "[100-125)",
+              "[125-150)",
+              "[150-175)",
+              "[175-200)",
+              "[200-225)",
+              "[225-250)",
+              "[250-275)",
+              "[275-300)",
+              ">300"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "b0186b47-cd06-47ed-92c8-849cc1325094",
+          "label": "Schema",
+          "name": "Age",
+          "description": "Age group in 10-year intervals",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "4db0818f-41da-4018-a454-f1c83bbe25ea",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "7068d866-3dc7-41aa-90c0-5b0f320889cf",
+          "ontologyId": "cf02f403-8515-43e3-a85c-34c46c5d6a0d",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "cf02f403-8515-43e3-a85c-34c46c5d6a0d",
+            "label": "Ontology",
+            "names": [
+              "Age"
+            ],
+            "description": "Ontology Age",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0001779",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "7068d866-3dc7-41aa-90c0-5b0f320889cf",
+            "label": "DataType",
+            "name": "Age group bracket",
+            "description": "Datatype Age group bracket",
+            "options": [
+              "[0-10)",
+              "[10-20)",
+              "[20-30)",
+              "[30-40)",
+              "[40-50)",
+              "[50-60)",
+              "[60-70)",
+              "[70-80)",
+              "[80-90)",
+              "[90-100)"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "45a856e6-a1a0-4e32-8189-8cfdaf499321",
+          "label": "Schema",
+          "name": "Gender",
+          "description": "Gender of the patient",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "4db0818f-41da-4018-a454-f1c83bbe25ea",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "1db1b706-0ac1-4c2e-8b3f-d48b24fa74ae",
+          "ontologyId": "f8a64821-f093-40bc-8dca-afa0255b9170",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "f8a64821-f093-40bc-8dca-afa0255b9170",
+            "label": "Ontology",
+            "names": [
+              "Sex assigned at birth"
+            ],
+            "description": "Ontology Sex assigned at birth",
+            "codes": null,
+            "sabs": null,
+            "cui": "C4019318",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "1db1b706-0ac1-4c2e-8b3f-d48b24fa74ae",
+            "label": "DataType",
+            "name": "Gender or sex",
+            "description": "Datatype Gender or sex",
+            "options": [
+              "Female",
+              "Male"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        },
+        {
+          "id": "72d1c14b-a66f-40fa-912d-078d63ed2835",
+          "label": "Schema",
+          "name": "Race",
+          "description": "Race of the patient",
+          "type": "ATOMIC_ATTRIBUTE",
+          "parentId": "4db0818f-41da-4018-a454-f1c83bbe25ea",
+          "childrenIds": [],
+          "createdAt": "2026-04-15",
+          "updatedAt": "2026-04-15",
+          "version": 0,
+          "dataTypeId": "98713ed8-e947-4a5f-becc-a99fc4f53364",
+          "ontologyId": "76943cff-5dc1-46ee-8f90-d8f13ffac0c9",
+          "subscriptions": null,
+          "createdBy": null,
+          "ontology": {
+            "id": "76943cff-5dc1-46ee-8f90-d8f13ffac0c9",
+            "label": "Ontology",
+            "names": [
+              "Race"
+            ],
+            "description": "Ontology Race",
+            "codes": null,
+            "sabs": null,
+            "cui": "C0034510",
+            "auis": null,
+            "lat": null
+          },
+          "dataType": {
+            "id": "98713ed8-e947-4a5f-becc-a99fc4f53364",
+            "label": "DataType",
+            "name": "Race or Ethnicity custom categories",
+            "description": "Datatype Race or Ethnicity custom categories",
+            "options": [
+              "Caucasian",
+              "AfricanAmerican",
+              "Hispanic",
+              "Asian",
+              "Other"
+            ],
+            "validations": [],
+            "type": "CATEGORICAL",
+            "ontologyIds": [],
+            "schemaIds": [],
+            "allowNullValues": false
+          },
+          "children": [],
+          "root": false
+        }
+      ],
+      "root": false
+    }
+  ],
+  "root": true
+}

@@ -1,0 +1,292 @@
+{
+  "name" : "Patient UMAP Export",
+  "uniqueAppId" : "2da36c29-47c9-5f16-a58a-a21cd304b807",
+  "slug" : "patient-umap-export",
+  "type" : "EXPORT",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/patient-export-umap",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 17,
+    "appVersion" : "1.0.0",
+    "publishHash" : "d787be87-5e1b-5009-8f96-08176f0a4c34",
+    "publishInfo" : {
+      "commitHash" : "9a8c1713849141a952e6241afe44ea66e30192a0",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/patient-export-umap/-/blob/9a8c1713849141a952e6241afe44ea66e30192a0/data/patient_export_sample.csv" ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/patient-umap-export:jEQwmDAw",
+        "success" : false,
+        "summary" : {
+          "critical" : 0,
+          "high" : 2,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 2
+        },
+        "rawReport" : {
+          "lang-pkgs-python-pkg" : [ {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:fe88c2f47c73d32878a15ece053f6f344e8e764f9caab1230b17753c606f83a3"
+            },
+            "PkgID" : "msgpack@1.1.2",
+            "Title" : "MessagePack for Python: Out-of-bounds read / crash on Unpacker reuse after a caught error",
+            "Status" : "fixed",
+            "PkgName" : "msgpack",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://github.com/advisories/GHSA-6v7p-g79w-8964",
+            "References" : [ "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/2c56ddb5d0025ed481d962c0f5d62d19dec7476d", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.1", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-6v7p-g79w-8964" ],
+            "Description" : "### Impact\n\nIf the Unpacker is used repeatedly after an error occurs, the process may crash with a SEGV.\n\nIf the Unpacker is used repeatedly to unpack untrusted input from external sources, it may be vulnerable to a DoS attack.\n\n### Patches\n\nv1.2.1\n\n### Workarounds\n\nUsers should create a new Unpacker instead of reusing the same Unpacker after an error occurs.\n\nApplying the above patch can prevent SEGV, but reusing the Streaming Unpacker after it has encountered an error will not yield correct data. If an error occurs during Streaming Unpacking, the Stream and Streaming Unpacker should be discarded.\n\nTherefore, this is not just a workaround but the correct solution. The above patch only prevents crashes from incorrect usage.",
+            "Fingerprint" : "sha256:4796c7844b28302889cd1c271d82f8ff0ddfe21955c560d7b234cd8cc17b7906",
+            "FixedVersion" : "1.2.1",
+            "PkgIdentifier" : {
+              "UID" : "f7dd9267d9d4da19",
+              "PURL" : "pkg:pypi/msgpack@1.1.2",
+              "BOMRef" : "pkg:pypi/msgpack@1.1.2"
+            },
+            "PublishedDate" : "2026-06-19T21:42:55Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "ghsa" : 3
+            },
+            "VulnerabilityID" : "GHSA-6v7p-g79w-8964",
+            "InstalledVersion" : "1.1.2",
+            "LastModifiedDate" : "2026-06-19T21:42:55Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 8.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "ghsa" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              },
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:L"
+              },
+              "bitnami" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:fe88c2f47c73d32878a15ece053f6f344e8e764f9caab1230b17753c606f83a3"
+            },
+            "PkgID" : "setuptools@70.3.0",
+            "Title" : "setuptools: Path Traversal Vulnerability in setuptools PackageIndex",
+            "CweIDs" : [ "CWE-22" ],
+            "Status" : "fixed",
+            "PkgName" : "setuptools",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-5rjg-fvgr-3xxf" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:13578", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/9/ALSA-2025-13578.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
+            "Fingerprint" : "sha256:e0c5560739f6f0d78e5497045f9d6d54e73e4f696347b12657be9b74cfff7f73",
+            "FixedVersion" : "78.1.1",
+            "PkgIdentifier" : {
+              "UID" : "c5eccaa7d8e0c308",
+              "PURL" : "pkg:pypi/setuptools@70.3.0",
+              "BOMRef" : "pkg:pypi/setuptools@70.3.0"
+            },
+            "PublishedDate" : "2025-05-17T16:15:19.11Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 2,
+              "ghsa" : 3,
+              "azure" : 3,
+              "rocky" : 2,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "bitnami" : 3,
+              "oracle-oval" : 2
+            },
+            "VulnerabilityID" : "CVE-2025-47273",
+            "InstalledVersion" : "70.3.0",
+            "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
+          } ]
+        }
+      },
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/patient-umap-export:jEQwmDAw"
+    },
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/patient-umap-export:jEQwmDAw",
+    "shortDescription" : "Embed the patients of a cohort export with UMAP and plot them as an interactive scatter plot.",
+    "longDescription" : "# Patient UMAP Export\n\nPatient UMAP Export is an **Export app**. It receives the patient data export of a cohort,\nembeds every patient in two dimensions with [UMAP](https://umap-learn.readthedocs.io/) and\nrenders the result as an interactive scatter plot.\n\nIt is started from the cohort overview: **Export → App-based export**, pick this app, adjust\nthe hyperparameters and press **Export**. The plot and tables are shown in the dialog once the\nrun has finished and can be downloaded from there.\n\n## What this tool does\n\n1. **Pivot** – the export arrives in long format (one row per stored value). It is pivoted to\n   one row per patient and one column per feature. The feature label is the export feature\n   name, or `ontologyId:datatypeId` when no feature selection was configured.\n   When a patient holds several values for a feature (e.g. one per visit), `aggregation`\n   decides which one is used.\n2. **Type and encode** – a feature is numeric when at least 90 % of its values parse as\n   numbers (`true/false/yes/no` count as 1/0). Numeric features are median-imputed,\n   categorical features one-hot encoded. Features are dropped when they are too sparse\n   (`min_feature_coverage`), constant, or have more than `max_categories` values.\n3. **Scale** – optional standardisation to zero mean and unit variance.\n4. **Embed** – UMAP with the configured neighbourhood, distance and metric.\n5. **Plot** – a self-contained HTML page (inline SVG, no scripts or external assets). Hover a\n   point to see the patient id and colour value.\n\nA table that already has one row per patient (a native wide-format export) is accepted as well;\nits `patientId` column (or the first column) is used as the patient id.\n\n## Configuration (Hyperparameters)\n\n| Name | Default | Description |\n|---|---|---|\n| `n_neighbors` | 15 | Local neighbourhood size; capped at patients − 1 |\n| `min_dist` | 0.1 | Minimum distance between embedded points |\n| `metric` | euclidean | `euclidean`, `manhattan`, `cosine`, `correlation`, `chebyshev` |\n| `random_state` | 42 | Seed; negative for a faster, non-deterministic run |\n| `aggregation` | last | `last` / `first` (by visit timestamp) or `mean` |\n| `min_feature_coverage` | 0.5 | Share of patients that need a value for a feature |\n| `include_categorical` | true | One-hot encode non-numeric features |\n| `max_categories` | 20 | Drop categorical features with more values |\n| `scale` | true | Standardise features before embedding |\n| `color_by` | *(empty)* | Feature to colour the points by |\n| `exclude_color_feature` | true | Leave the `color_by` feature out of the embedding |\n\nWith `exclude_color_feature` enabled the plot answers *\"do the other features separate this\nlabel?\"*, e.g. colour by diagnosis without the diagnosis shaping the embedding.\n\n## Input\n\n- `input` (CSV, required): the patient data export.\n\n## Outputs\n\n- `plot` (HTML): interactive UMAP scatter plot.\n- `embedding` (CSV): `patientId`, `umap_1`, `umap_2` and the `color_by` feature if set.\n- `feature_report` (CSV): every feature with its kind, coverage, number of model columns and\n  the reason it was dropped.\n\nThe UMAP axes have no unit; only distances between points carry meaning.\n\n## Development\n\n```bash\npython -m venv .venv && .venv/bin/pip install -r requirements-dev.txt\n.venv/bin/pytest\n```\n\n`data/patient_export_sample.csv` is a small synthetic export in the format the local learning\nAPI produces.\n",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "n_neighbors",
+        "variableName" : "n_neighbors",
+        "type" : "INTEGER",
+        "description" : "Size of the local neighbourhood UMAP looks at. Small values emphasise local structure, large values the global picture. Capped at the number of patients minus one.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 2.0,
+        "maxValue" : 200.0,
+        "default" : "15"
+      }, {
+        "name" : "min_dist",
+        "variableName" : "min_dist",
+        "type" : "FLOAT",
+        "description" : "Minimum distance between embedded points. Small values give tighter clusters.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "maxValue" : 1.0,
+        "default" : "0.1"
+      }, {
+        "name" : "metric",
+        "variableName" : "metric",
+        "type" : "CATEGORICAL",
+        "description" : "Distance metric in feature space.",
+        "mode" : "BOTH",
+        "options" : [ "euclidean", "manhattan", "cosine", "correlation", "chebyshev" ],
+        "default" : "euclidean"
+      }, {
+        "name" : "random_state",
+        "variableName" : "random_state",
+        "type" : "INTEGER",
+        "description" : "Seed for a reproducible embedding. A negative value gives a faster, non-deterministic run.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : -1.0,
+        "maxValue" : 2.1474836E9,
+        "default" : "42"
+      }, {
+        "name" : "aggregation",
+        "variableName" : "aggregation",
+        "type" : "CATEGORICAL",
+        "description" : "Value used when a patient has several values for one feature (e.g. one per visit). last/first go by visit timestamp; mean averages numeric values.",
+        "mode" : "BOTH",
+        "options" : [ "last", "first", "mean" ],
+        "default" : "last"
+      }, {
+        "name" : "min_feature_coverage",
+        "variableName" : "min_feature_coverage",
+        "type" : "FLOAT",
+        "description" : "Share of patients that need a value for a feature to be used. Missing numeric values are imputed with the median.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "maxValue" : 1.0,
+        "default" : "0.5"
+      }, {
+        "name" : "include_categorical",
+        "variableName" : "include_categorical",
+        "type" : "BOOLEAN",
+        "description" : "One-hot encode non-numeric features instead of dropping them.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "true"
+      }, {
+        "name" : "max_categories",
+        "variableName" : "max_categories",
+        "type" : "INTEGER",
+        "description" : "Categorical features with more distinct values than this are dropped.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 2.0,
+        "maxValue" : 500.0,
+        "default" : "20"
+      }, {
+        "name" : "scale",
+        "variableName" : "scale",
+        "type" : "BOOLEAN",
+        "description" : "Standardise every feature to zero mean and unit variance before embedding.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "true"
+      }, {
+        "name" : "color_by",
+        "variableName" : "color_by",
+        "type" : "STRING",
+        "description" : "Feature name to colour the points by (e.g. a diagnosis or age). Leave empty for no colouring.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : ""
+      }, {
+        "name" : "exclude_color_feature",
+        "variableName" : "exclude_color_feature",
+        "type" : "BOOLEAN",
+        "description" : "Leave the color_by feature out of the embedding, so the plot shows whether the other features separate it.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "true"
+      } ],
+      "input" : [ {
+        "name" : "input",
+        "variableName" : "input",
+        "type" : "CSV",
+        "description" : "Patient data export in long format (patientId, name or ontologyId/datatypeId, value, visit columns). A table with one row per patient is accepted as well.",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "plot",
+        "variableName" : "plot",
+        "type" : "HTML",
+        "description" : "Interactive UMAP scatter plot, one point per patient.",
+        "mode" : "BOTH"
+      }, {
+        "name" : "embedding",
+        "variableName" : "embedding",
+        "type" : "CSV",
+        "description" : "UMAP coordinates per patient (patientId, umap_1, umap_2 and the color_by feature if set).",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "tabularSchema" : {
+          "requiredColumns" : [ "patientId", "umap_1", "umap_2" ]
+        }
+      }, {
+        "name" : "feature_report",
+        "variableName" : "feature_report",
+        "type" : "CSV",
+        "description" : "Every exported feature with its type, coverage and whether it was used.",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

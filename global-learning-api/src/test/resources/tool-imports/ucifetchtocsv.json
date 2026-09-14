@@ -1,0 +1,65 @@
+{
+  "name" : "UciFetchToCsv",
+  "uniqueAppId" : "a71e2f25-1d3a-4b0c-9b85-7a2e6c1f4f0e",
+  "slug" : "ucifetchtocsv",
+  "type" : "EXTRACTOR",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/posymed/apps/ucimlrepo",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 18,
+    "appVersion" : "1.0.0",
+    "publishHash" : "1543c4685ccd1fbdf9ea6d054ab9b5ab1d9903e2",
+    "publishInfo" : {
+      "commitHash" : "be150c60c64eb8d7c74d67ce13ddcc73492e83ea",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/posymed/apps/ucimlrepo/-/blob/be150c60c64eb8d7c74d67ce13ddcc73492e83ea/data/uci_dataset17.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/ucimlrepo/-/blob/be150c60c64eb8d7c74d67ce13ddcc73492e83ea/data/uci_dataset.csv" ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/ucifetchtocsv:AYtgxlFs"
+    },
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : true,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/ucifetchtocsv:AYtgxlFs",
+    "shortDescription" : "Fetch a UCI dataset by id via ucimlrepo and export a single combined CSV (features + targets).",
+    "longDescription" : "# UciFetchToCsv\n\nUciFetchToCsv is a small database adopter tool that fetches a dataset from the UCI Machine Learning Repository via ucimlrepo (by numeric dataset ID) and exports it as a single combined CSV containing features + targets.\n\n## What this tool does\n- Fetches a UCI dataset by ID\nUses ucimlrepo.fetch_ucirepo(id=dataset_id) to retrieve the dataset payload and metadata.\n- Normalizes UCI payloads into tables\nConverts pandas.Series to a one-column DataFrame and passes through DataFrame objects unchanged.\n- Builds one consolidated tabular dataset\n- Reads ds.data.features as the feature matrix (X)\n- Reads ds.data.targets as the target(s) (y)\n- Concatenates horizontally (column-wise) into one table:\nIf feature and target columns overlap in name, target columns are renamed with the prefix:_\n\n## Configuration\n\nHyperparameters\n- dataset_id (INTEGER, default: 17)\nNumeric UCI dataset identifier used by ucimlrepo to fetch the dataset (e.g., 17 = Breast Cancer Wisconsin Diagnostic).\n\nThere are no inputs for this tool.\n\n## Outputs\n- dataset (CSV)\nA single CSV file containing the merged dataset (features + targets).\n- report (TEXT)\nA small human-readable summary including dataset id/name and output shape.\n\n## Notes / Assumptions\n- If a dataset provides only features or only targets, the tool exports whichever exists.\n- If a dataset provides neither features nor targets, the tool raises an error.\n- The tool is designed specifically for producing one flat table suitable for downstream processing and tooling that expects CSV.",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "dataset_id",
+        "variableName" : "dataset_id",
+        "type" : "INTEGER",
+        "description" : "UCI dataset numeric id to fetch via ucimlrepo (e.g., 17 = Breast Cancer Wisconsin Diagnostic).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "maxValue" : 1000000.0,
+        "default" : "17"
+      } ],
+      "input" : [ ],
+      "output" : [ {
+        "name" : "dataset",
+        "variableName" : "dataset",
+        "type" : "CSV",
+        "description" : "Single CSV combining features and targets from the fetched UCI dataset.",
+        "mode" : "BOTH"
+      }, {
+        "name" : "report",
+        "variableName" : "report",
+        "type" : "TEXT",
+        "description" : "Small textual report about the fetched dataset and output shape.",
+        "mode" : "BOTH"
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

@@ -1,0 +1,31 @@
+[
+  {
+    "name": "Protein Interactions (PSI-MI TAB)",
+    "variableName": "ppi",
+    "type": "TSV",
+    "description": "PSI-MI TAB is a standardized flat file format for protein–protein interaction data defined by the Human Proteome Organisation PSI-MI standard. Each row encodes an interaction pair with identifiers, detection method, publication references and taxonomy.",
+    "delimiter": "\t",
+    "hasHeader": true,
+    "tabularSchema": {
+      "minColumns": 15,
+      "maxColumns": 15,
+      "prohibitedNulls": true,
+      "requiredColumns": [
+        "InteractorA_ID",
+        "InteractorB_ID",
+        "DetectionMethod",
+        "Publication_ID",
+        "Taxid_A",
+        "Taxid_B",
+        "InteractionType"
+      ],
+      "columns": {
+        "InteractorA_ID": { "type": "STRING", "nullable": false },
+        "InteractorB_ID": { "type": "STRING", "nullable": false },
+        "Taxid_A": { "type": "STRING", "nullable": false },
+        "Taxid_B": { "type": "STRING", "nullable": false },
+        "InteractionType": { "type": "STRING", "nullable": false }
+      }
+    }
+  }
+]

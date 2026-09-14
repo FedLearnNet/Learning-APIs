@@ -1,0 +1,161 @@
+{
+  "name" : "Dysregnet",
+  "uniqueAppId" : "b7d9f3e4-6a2c-4f8e-9b5d-7e3a1c8f4b2d",
+  "slug" : "dysregnet",
+  "type" : "SELF_LEARNED",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-dysregnet",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 8,
+    "appVersion" : "1.0.0",
+    "publishHash" : "5bc9f74dd93464ccc83cd119d6ed8dfc7b15082d",
+    "publishInfo" : {
+      "commitHash" : "d91bba290bf3f2dfbe8bcb856571cb8b292ffae9",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-dysregnet/-/blob/d91bba290bf3f2dfbe8bcb856571cb8b292ffae9/data/expr.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-dysregnet/-/blob/d91bba290bf3f2dfbe8bcb856571cb8b292ffae9/data/expr_control.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-dysregnet/-/blob/d91bba290bf3f2dfbe8bcb856571cb8b292ffae9/data/clinical.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-dysregnet/-/blob/d91bba290bf3f2dfbe8bcb856571cb8b292ffae9/data/preprocessing.ipynb", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-dysregnet/-/blob/d91bba290bf3f2dfbe8bcb856571cb8b292ffae9/data/expr_case.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-dysregnet/-/blob/d91bba290bf3f2dfbe8bcb856571cb8b292ffae9/data/meta.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-dysregnet/-/blob/d91bba290bf3f2dfbe8bcb856571cb8b292ffae9/data/HTRIdb_data.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-dysregnet/-/blob/d91bba290bf3f2dfbe8bcb856571cb8b292ffae9/data/grn.csv" ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/dysregnet:yOdBQdbU"
+    },
+    "changelog" : "Changelog 1.0.0",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/dysregnet:yOdBQdbU",
+    "shortDescription" : "DysRegNet is a computational method for identifying dysregulated gene regulatory\n        interactions by comparing gene expression patterns between case and control samples.\n        The algorithm integrates gene expression data with prior knowledge of gene regulatory\n        networks to identify interactions that show significantly different regulatory\n        patterns between conditions.",
+    "longDescription" : "# DysRegNet: Patient-specific and Confounder-aware Dysregulated Network Inference\n\n## Overview\n\n**DysRegNet** is a Python package designed to infer **patient-specific regulatory alterations** (dysregulations) from gene expression profiles. It employs **linear models** to correct for confounders and uses **residual-derived z-scores** to assess the statistical significance of observed changes.\n\nBy modeling both biological and technical variables (e.g., age, sex, condition), DysRegNet provides interpretable, condition-aware results with enhanced biological relevance.\n\n---\n\n## Key Features\n\n- Models regulatory networks based on gene expression and TF-target pairs\n- Corrects for confounding variables using linear regression\n- Applies Bonferroni correction and R²-based filtering\n- Supports normality testing and directionality constraints\n- Outputs statistically significant dysregulations per patient\n\n---\n\n## Configuration\n\n### Hyperparameters\n\n| Name                | Type    | Default     | Description                                                                 |\n|---------------------|---------|-------------|-----------------------------------------------------------------------------|\n| `zscoring`          | BOOLEAN | `'false'`   | Apply z-score normalization to expression values                            |\n| `bonferroni_alpha`  | FLOAT   | `'0.01'`    | Bonferroni-corrected significance level                                     |\n| `r2_threshold`      | FLOAT   | `'0.2'`     | R² threshold for filtering (set `null` to disable)                          |\n| `normaltest`        | BOOLEAN | `'false'`   | Perform D’Agostino-Pearson normality test on residuals                      |\n| `normaltest_alpha`  | FLOAT   | `'0.001'`   | Significance level for normality test                                       |\n| `direction_condition` | BOOLEAN | `'false'` | Enforce directionality condition when assessing dysregulation               |\n| `con_cov`           | STRING  | `'birth_days_to'` | Comma-separated list of continuous covariates (must match meta column names) |\n| `cat_cov`           | STRING  | `'race,gender'`   | Comma-separated list of categorical covariates (must match meta column names) |\n| `con_col`           | STRING  | `'sample_type'`   | Column name in meta indicating the condition                                |\n\n---\n\n### Input\n\n| Name   | Type | Description                                                                                       | Required |\n|--------|------|---------------------------------------------------------------------------------------------------|----------|\n| `grn`  | CSV  | Gene regulatory network with two columns: `['TF', 'target']`                                      | `true`   |\n| `meta` | CSV  | Metadata file: samples as rows, columns as covariates and condition labels                        | `true`   |\n| `expr` | CSV  | Expression matrix: patients as rows (first column = IDs), genes as columns                        | `true`   |\n\n---\n\n### Output\n\n| Name                | Type   | Description                                                    |\n|---------------------|--------|----------------------------------------------------------------|\n| `adjacency_heatmap` | IMAGE | Heatmap showing strength distribution of regulatory interactions |\n| `pvalue_distribution` | IMAGE | Heatmap of p-values for top interactions                    |\n| `top_interactions`  | IMAGE | Table of top 20 strongest dysregulated interactions            |\n| `results`           | CSV    | Complete analysis result table                                 |\n\n---\n\n##  Source\n\nThe latest version of **DysRegNet** is available at:\n\n🔗 **[PyPI Package](https://pypi.org/project/dysregnet/)**\n        ",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "zscoring",
+        "variableName" : "zscoring",
+        "type" : "BOOLEAN",
+        "description" : "Apply z-score normalization to expression values before analysis.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "false"
+      }, {
+        "name" : "bonferroni_alpha",
+        "variableName" : "bonferroni_alpha",
+        "type" : "FLOAT",
+        "description" : "Bonferroni-corrected significance level (alpha).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "default" : "0.01"
+      }, {
+        "name" : "r2_threshold",
+        "variableName" : "r2_threshold",
+        "type" : "FLOAT",
+        "description" : "R² threshold for filtering; set to null to disable.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0.2"
+      }, {
+        "name" : "normaltest",
+        "variableName" : "normaltest",
+        "type" : "BOOLEAN",
+        "description" : "Perform D'Agostino-Pearson normality test on residuals.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "false"
+      }, {
+        "name" : "normaltest_alpha",
+        "variableName" : "normaltest_alpha",
+        "type" : "FLOAT",
+        "description" : "Alpha level for the normality test.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0.001"
+      }, {
+        "name" : "direction_condition",
+        "variableName" : "direction_condition",
+        "type" : "BOOLEAN",
+        "description" : "Enforce directionality condition when assessing dysregulation.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "false"
+      }, {
+        "name" : "con_cov",
+        "variableName" : "con_cov",
+        "type" : "STRING",
+        "description" : "List of continuous covariates. They should match the name of their columns in the meta Dataframe, separated by commas.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "birth_days_to"
+      }, {
+        "name" : "cat_cov",
+        "variableName" : "cat_cov",
+        "type" : "STRING",
+        "description" : "List of categorical variable names. They should match the name of their columns in the meta Dataframe, separated by commas.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "race,gender"
+      }, {
+        "name" : "con_col",
+        "variableName" : "con_col",
+        "type" : "STRING",
+        "description" : "Column name for the condition in the meta DataFrame.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "sample_type"
+      } ],
+      "input" : [ {
+        "name" : "grn",
+        "variableName" : "grn",
+        "type" : "CSV",
+        "description" : "Gene Regulatory Network (GRN) with two columns in the following order ['TF', 'target'].",
+        "mode" : "BOTH",
+        "required" : true
+      }, {
+        "name" : "meta",
+        "variableName" : "meta",
+        "type" : "CSV",
+        "description" : "Gene expression matrix in the format patients as rows (first column - patients/samples ids), and genes as columns",
+        "mode" : "BOTH",
+        "required" : true
+      }, {
+        "name" : "expr",
+        "variableName" : "expr",
+        "type" : "CSV",
+        "description" : "Gene expression matrix in the format - patients as rows (first column - patients/samples ids), and genes as columns.",
+        "mode" : "BOTH",
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "adjacency_heatmap",
+        "variableName" : "adjacency_heatmap",
+        "type" : "IMAGE",
+        "description" : "Distribution of non-zero values (representing interaction strengths)",
+        "mode" : "BOTH"
+      }, {
+        "name" : "pvalue_distribution",
+        "variableName" : "pvalue_distribution",
+        "type" : "IMAGE",
+        "description" : "Heatmap of results matrix (sample of top interactions)",
+        "mode" : "BOTH"
+      }, {
+        "name" : "top_interactions",
+        "variableName" : "top_interactions",
+        "type" : "IMAGE",
+        "description" : "Top 20 Strongest Regulatory Interactions",
+        "mode" : "BOTH"
+      }, {
+        "name" : "results",
+        "variableName" : "results",
+        "type" : "CSV",
+        "description" : "Results of the analysis in CSV format",
+        "mode" : "BOTH"
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

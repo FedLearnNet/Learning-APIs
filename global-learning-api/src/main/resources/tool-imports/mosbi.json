@@ -1,0 +1,117 @@
+{
+  "name" : "Mosbi",
+  "uniqueAppId" : "b9f2c5e8-6d3a-4f7e-8b5c-9e4a2d7f6c1b",
+  "slug" : "mosbi",
+  "type" : "SELF_LEARNED",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-mosbi",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 14,
+    "appVersion" : "1.0.0",
+    "publishHash" : "684195f47b4b470a8efb79b99ae0d93f55c13e9d",
+    "publishInfo" : {
+      "commitHash" : "5ea2f7189904aa191bca9d2477c48781e00e07d3",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-mosbi/-/blob/5ea2f7189904aa191bca9d2477c48781e00e07d3/data/A.n_genes%3D500%2Cm%3D4%2Cstd%3D1%2Coverlap%3Dno.exprs_z.tsv" ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/mosbi:eGBfBxWv"
+    },
+    "changelog" : "Changelog 1.0.0",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/mosbi:eGBfBxWv",
+    "shortDescription" : "MoSBi (Molecular Signature identification using Biclustering) is a comprehensive\n        framework for identifying biclusters in molecular data. It uses multiple biclustering\n        algorithms and provides robust methods for evaluating and visualizing the results.",
+    "longDescription" : "# MoSBi: Molecular Signature Identification using Biclustering\n## Overview\n\n**MoSBi** (Molecular Signature Identification from Biclustering) is an ensemble-based biclustering framework tailored for molecular omics data. It standardizes the output of various biclustering algorithms and merges their results to compute robust **ensemble biclusters**.\n\nMoSBi constructs **similarity networks** of biclusters across algorithms, filters them using a custom **error model**, and applies **Louvain modularity** to extract bicluster communities. These communities can then be interpreted as stable molecular signatures.\n\nAdditionally, MoSBi includes network visualization tools that offer an intuitive and scalable representation of results.\n\n---\n\n## Key Features\n\n- Unified interface for biclustering results\n- Multi-algorithm ensemble computation\n- Similarity network construction and filtering\n- Louvain-based community detection\n- Visualization of results with heatmaps and network plots\n- Easily extensible to new biclustering algorithms\n\n---\n\n## Configuration\n\n### Hyperparameters\n\n| Name               | Type       | Default     | Description                                                                 |\n|--------------------|------------|-------------|-----------------------------------------------------------------------------|\n| `n_randomizations` | INTEGER    | `'5'`       | Number of randomizations for cut-off estimation                             |\n| `margin`           | CATEGORICAL| `both`      | Margin for similarity computation (`row`, `column`, `mean`, `both`)         |\n| `metric`           | CATEGORICAL| `Bray-Curtis` | Similarity metric (`Bray-Curtis`, `Jaccard`, `Overlap Coefficient`, `Fowlkes-Mallows`) |\n| `n_steps`          | INTEGER    | `'100'`     | Number of points where the cut-off is evaluated                             |\n| `sn_ratio`         | BOOLEAN    | `'true'`    | Compute signal-to-noise ratio if `true`, else use error threshold           |\n\n---\n\n### Input\n\n| Name  | Type | Description | Required |\n|--------|------|-------------|----------|\n| `data` | CSV  | TSV file     | `false`  |\n\n---\n\n### Output\n\n| Name                 | Type   | Description              |\n|----------------------|--------|--------------------------|\n| `adjacency_heatmap`  | STRING | Adjacency heatmap file   |\n| `histograms`         | STRING | Histogram visualizations |\n| `network_by_algorithm` | STRING | Network structure by algorithm |\n| `network_plot`       | STRING | Final network plot       |\n\n---\n\n## More\n\nYou can find all information at:\n\n🔗 **[Tool](https://exbio.wzw.tum.de/mosbi/)**\n        ",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "n_randomizations",
+        "variableName" : "n_randomizations",
+        "type" : "INTEGER",
+        "description" : "Number of randomizations for cut-off estimation.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "default" : "5"
+      }, {
+        "name" : "margin",
+        "variableName" : "margin",
+        "type" : "CATEGORICAL",
+        "description" : "Margin for similarity computation",
+        "mode" : "BOTH",
+        "options" : [ "row", "column", "mean", "both" ],
+        "default" : "both"
+      }, {
+        "name" : "metric",
+        "variableName" : "metric",
+        "type" : "CATEGORICAL",
+        "description" : "Similarity metric",
+        "mode" : "BOTH",
+        "options" : [ "Bray-Curtis", "Jaccard", "Overlap Coefficient", "Fowlkes-Mallows" ],
+        "default" : "Bray-Curtis"
+      }, {
+        "name" : "n_steps",
+        "variableName" : "n_steps",
+        "type" : "INTEGER",
+        "description" : "Number of points where the cut-off is evaluated",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "default" : "100"
+      }, {
+        "name" : "sn_ratio",
+        "variableName" : "sn_ratio",
+        "type" : "BOOLEAN",
+        "description" : "Compute signal-to-noise ratio if True, else use error_threshold",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "true"
+      } ],
+      "input" : [ {
+        "name" : "data",
+        "variableName" : "data",
+        "type" : "TSV",
+        "description" : "",
+        "mode" : "BOTH",
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "adjacency_heatmap",
+        "variableName" : "adjacency_heatmap",
+        "type" : "IMAGE",
+        "description" : "output",
+        "mode" : "BOTH"
+      }, {
+        "name" : "histograms",
+        "variableName" : "histograms",
+        "type" : "IMAGE",
+        "description" : "output",
+        "mode" : "BOTH"
+      }, {
+        "name" : "network_by_algorithm",
+        "variableName" : "network_by_algorithm",
+        "type" : "IMAGE",
+        "description" : "output",
+        "mode" : "BOTH"
+      }, {
+        "name" : "network_plot",
+        "variableName" : "network_plot",
+        "type" : "IMAGE",
+        "description" : "output",
+        "mode" : "BOTH"
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

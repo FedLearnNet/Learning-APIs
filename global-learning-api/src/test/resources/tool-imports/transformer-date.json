@@ -1,0 +1,73 @@
+{
+  "name" : "Transformer Date",
+  "uniqueAppId" : "3309a3f7-8d53-41ad-a76f-96febe9919ea ",
+  "slug" : "transformer-date",
+  "type" : "DATA_TRANSFORMATION",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/transformer-date",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 13,
+    "appVersion" : "1.0.0",
+    "publishHash" : "90483ecb-334c-42fe-8386-3cf0a15f82b4",
+    "publishInfo" : {
+      "commitHash" : "0893421b02cc75349c58cb28335f9fe9bf31e4d8",
+      "filePaths" : [ ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/transformer-split-rows:wwiOcOAl"
+    },
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/transformer-split-rows:wwiOcOAl",
+    "shortDescription" : "Split two rows using a delimiter.",
+    "longDescription" : "# Transformer Combine Rows\n\nTransformer Split Rows expands a CSV table by splitting delimited cell values into multiple rows.\nIt is the inverse operation of Transformer Combine Rows: instead of aggregating many rows into one,\nit takes delimited values (e.g., \"a,b,c\") and normalizes them back into row-wise form. This is\nuseful when previously combined columns (codes/labels/IDs) must be processed as individual records\nagain.\n\n## Core behavior\n\n- Reads an input CSV table.\n- If the first column is named id (case-insensitive), it is treated as an identifier column and is\n  preserved.\n- For every other column:\n- values from all rows are converted to string form (implementation-dependent),\n- then concatenated using the configured delimiter.\n- Produces a single-row output CSV.\n\n## Hyperparameter\n\n- delimiter (STRING): Separator used when concatenating values (e.g., \",\", \";\", \"|\", \"\\n\").\n\n## Input\n\n- table (CSV, required): Tabular input whose rows will be combined.\n\n## Output\n\n- combined (CSV): One-row table containing concatenated column values.\n\n## Notes / assumptions\n\n- Null/empty handling depends on the implementation (e.g., whether NaNs become empty strings or \"\n  nan\").\n- Non-string values are typically stringified before concatenation.",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "columns",
+        "variableName" : "columns",
+        "type" : "STRING",
+        "description" : "Delimiter used to split values when expanding into rows",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "|"
+      } ],
+      "input" : [ {
+        "name" : "input",
+        "variableName" : "input",
+        "type" : "CSV",
+        "description" : "Input row schema. Input dictionary containing a 'value' key with the string to split",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "tabularSchema" : {
+          "requiredColumns" : [ "value" ]
+        },
+        "required" : false
+      } ],
+      "output" : [ {
+        "name" : "output",
+        "variableName" : "output",
+        "type" : "CSV",
+        "description" : "Output row schema. Input dictionary containing a 'value' key with the string to split",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "tabularSchema" : {
+          "requiredColumns" : [ "b", "a" ]
+        }
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

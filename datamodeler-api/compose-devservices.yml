@@ -1,0 +1,15 @@
+services:
+  neo4j:
+    image: neo4j:latest
+    container_name: neo4j
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    volumes:
+      - neo4j_data_logs_dummy:/data
+      - neo4j_data_logs_dummy:/logs
+    ports:
+      - "7474:7474" # HTTP
+      - "7687:7687" # Bolt
+
+volumes:
+  neo4j_data_logs_dummy:

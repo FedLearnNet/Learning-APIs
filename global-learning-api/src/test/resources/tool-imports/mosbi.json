@@ -1,0 +1,1343 @@
+{
+  "id": 13,
+  "createdAt": "2026-02-22T14:28:01Z",
+  "updatedAt": "2026-02-22T14:28:01Z",
+  "version": 0,
+  "name": "Mosbi",
+  "uniqueAppId": "b9f2c5e8-6d3a-4f7e-8b5c-9e4a2d7f6c1b",
+  "slug": "mosbi",
+  "publishInfo": {
+    "commitHash": "684195f47b4b470a8efb79b99ae0d93f55c13e9d",
+    "filePaths": [
+      "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-mosbi/-/blob/684195f47b4b470a8efb79b99ae0d93f55c13e9d/data/A.n_genes%3D500%2Cm%3D4%2Cstd%3D1%2Coverlap%3Dno.exprs_z.tsv"
+    ],
+    "vulnerabilityScanResult": {
+      "tool": "trivy",
+      "target": "gitlab.cosy.bio:5050/cosybio/posymed/apps/posymed-mosbi/model:latest",
+      "success": false,
+      "summary": {
+        "critical": 0,
+        "high": 5,
+        "medium": 0,
+        "low": 0,
+        "unknown": 0,
+        "num": 5
+      },
+      "rawReport": {
+        "os-pkgs-ubuntu": [
+          {
+            "CVSS": {
+              "nvd": {
+                "V3Score": 7,
+                "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "redhat": {
+                "V3Score": 7.8,
+                "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:N"
+              }
+            },
+            "Layer": {
+              "DiffID": "sha256:ab34259f9ca5d315bec1b17d9f1ca272e84dedd964a8988695daf0ec3e0bbc2e"
+            },
+            "PkgID": "gpgv@2.4.4-2ubuntu17.3",
+            "Title": "GnuPG: GnuPG: Information disclosure and potential arbitrary code execution via out-of-bounds write",
+            "CweIDs": [
+              "CWE-675",
+              "CWE-787"
+            ],
+            "Status": "fixed",
+            "PkgName": "gpgv",
+            "Severity": "HIGH",
+            "DataSource": {
+              "ID": "ubuntu",
+              "URL": "https://git.launchpad.net/ubuntu-cve-tracker",
+              "Name": "Ubuntu CVE Tracker"
+            },
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-68973",
+            "References": [
+              "http://www.openwall.com/lists/oss-security/2025/12/29/11",
+              "https://access.redhat.com/errata/RHSA-2026:0719",
+              "https://access.redhat.com/security/cve/CVE-2025-68973",
+              "https://bugzilla.redhat.com/2425966",
+              "https://bugzilla.redhat.com/show_bug.cgi?id=2425966",
+              "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-68973",
+              "https://dev.gnupg.org/T7906",
+              "https://dev.gnupg.org/T8001",
+              "https://errata.almalinux.org/9/ALSA-2026-0719.html",
+              "https://errata.rockylinux.org/RLSA-2026:0719",
+              "https://github.com/gpg/gnupg/blob/ff30683418695f5d2cc9e6cf8c9418e09378ebe4/g10/armor.c#L1305-L1306",
+              "https://github.com/gpg/gnupg/commit/115d138ba599328005c5321c0ef9f00355838ca9",
+              "https://github.com/gpg/gnupg/commit/115d138ba599328005c5321c0ef9f00355838ca9 (gnupg-2.5.14)",
+              "https://github.com/gpg/gnupg/commit/1e929abd20fa2e4be3797a137caca63a971d5372 (gnupg-2.2.51)",
+              "https://github.com/gpg/gnupg/commit/4ecc5122f20e10c17172ed72f4fa46c784b5fb48 (gnupg-2.4.9)",
+              "https://github.com/gpg/gnupg/compare/gnupg-2.2.50...gnupg-2.2.51",
+              "https://gpg.fail/memcpy",
+              "https://linux.oracle.com/cve/CVE-2025-68973.html",
+              "https://linux.oracle.com/errata/ELSA-2026-1677.html",
+              "https://lists.debian.org/debian-lts-announce/2026/01/msg00008.html",
+              "https://media.ccc.de/v/39c3-to-sign-or-not-to-sign-practical-vulnerabilities-i",
+              "https://news.ycombinator.com/item?id=46403200",
+              "https://nvd.nist.gov/vuln/detail/CVE-2025-68973",
+              "https://ubuntu.com/security/notices/USN-7946-1",
+              "https://ubuntu.com/security/notices/USN-7946-2",
+              "https://www.cve.org/CVERecord?id=CVE-2025-68973",
+              "https://www.openwall.com/lists/oss-security/2025/12/28/5"
+            ],
+            "Description": "In GnuPG before 2.4.9, armor_filter in g10/armor.c has two increments of an index variable where one is intended, leading to an out-of-bounds write for crafted input. (For ExtendedLTS, 2.2.51 and later are fixed versions.)",
+            "Fingerprint": "sha256:62a89a77a917d9c19aa6530fb478f5acd14df7eda23f81ffc7dc9658d1a5a458",
+            "FixedVersion": "2.4.4-2ubuntu17.4",
+            "PkgIdentifier": {
+              "UID": "9fbfcca6d0a5167a",
+              "PURL": "pkg:deb/ubuntu/gpgv@2.4.4-2ubuntu17.3?arch=arm64&distro=ubuntu-24.04"
+            },
+            "PublishedDate": "2025-12-28T17:16:01.5Z",
+            "SeveritySource": "ubuntu",
+            "VendorSeverity": {
+              "nvd": 3,
+              "alma": 3,
+              "azure": 3,
+              "rocky": 3,
+              "amazon": 3,
+              "photon": 3,
+              "redhat": 3,
+              "ubuntu": 3,
+              "oracle-oval": 3
+            },
+            "VulnerabilityID": "CVE-2025-68973",
+            "InstalledVersion": "2.4.4-2ubuntu17.3",
+            "LastModifiedDate": "2026-01-14T19:16:46.857Z"
+          },
+          {
+            "CVSS": {
+              "nvd": {
+                "V3Score": 7.8,
+                "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "redhat": {
+                "V3Score": 7,
+                "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              }
+            },
+            "Layer": {
+              "DiffID": "sha256:216ad1bf0ee575e645c87141569b300cd81eeb45e18adf310d8822913609acba"
+            },
+            "PkgID": "linux-libc-dev@6.8.0-87.88",
+            "Title": "kernel: KVM: arm64: Tear down vGIC on failed vCPU creation",
+            "CweIDs": [
+              "CWE-416"
+            ],
+            "Status": "fixed",
+            "PkgName": "linux-libc-dev",
+            "Severity": "HIGH",
+            "DataSource": {
+              "ID": "ubuntu",
+              "URL": "https://git.launchpad.net/ubuntu-cve-tracker",
+              "Name": "Ubuntu CVE Tracker"
+            },
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-37849",
+            "References": [
+              "https://access.redhat.com/security/cve/CVE-2025-37849",
+              "https://git.kernel.org/linus/250f25367b58d8c65a1b060a2dda037eea09a672 (6.15-rc1)",
+              "https://git.kernel.org/stable/c/07476e0d932afc53c05468076393ac35d0b4999e",
+              "https://git.kernel.org/stable/c/2480326eba8ae9ccc5e4c3c2dc8d407db68e3c52",
+              "https://git.kernel.org/stable/c/250f25367b58d8c65a1b060a2dda037eea09a672",
+              "https://git.kernel.org/stable/c/5085e02362b9948f82fceca979b8f8e12acb1cc5",
+              "https://git.kernel.org/stable/c/c322789613407647a05ff5c451a7bf545fb34e73",
+              "https://git.kernel.org/stable/c/f1e9087abaeedec9bf2894a282ee4f0d8383f299",
+              "https://linux.oracle.com/cve/CVE-2025-37849.html",
+              "https://linux.oracle.com/errata/ELSA-2025-20530.html",
+              "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+              "https://lore.kernel.org/linux-cve-announce/2025050918-CVE-2025-37849-2a30@gregkh/T",
+              "https://nvd.nist.gov/vuln/detail/CVE-2025-37849",
+              "https://ubuntu.com/security/notices/USN-7594-1",
+              "https://ubuntu.com/security/notices/USN-7594-2",
+              "https://ubuntu.com/security/notices/USN-7594-3",
+              "https://ubuntu.com/security/notices/USN-8028-1",
+              "https://ubuntu.com/security/notices/USN-8028-2",
+              "https://ubuntu.com/security/notices/USN-8028-3",
+              "https://ubuntu.com/security/notices/USN-8028-4",
+              "https://ubuntu.com/security/notices/USN-8028-5",
+              "https://ubuntu.com/security/notices/USN-8028-6",
+              "https://ubuntu.com/security/notices/USN-8028-7",
+              "https://ubuntu.com/security/notices/USN-8031-1",
+              "https://ubuntu.com/security/notices/USN-8031-2",
+              "https://ubuntu.com/security/notices/USN-8031-3",
+              "https://ubuntu.com/security/notices/USN-8052-1",
+              "https://www.cve.org/CVERecord?id=CVE-2025-37849"
+            ],
+            "Description": "In the Linux kernel, the following vulnerability has been resolved:\n\nKVM: arm64: Tear down vGIC on failed vCPU creation\n\nIf kvm_arch_vcpu_create() fails to share the vCPU page with the\nhypervisor, we propagate the error back to the ioctl but leave the\nvGIC vCPU data initialised. Note only does this leak the corresponding\nmemory when the vCPU is destroyed but it can also lead to use-after-free\nif the redistributor device handling tries to walk into the vCPU.\n\nAdd the missing cleanup to kvm_arch_vcpu_create(), ensuring that the\nvGIC vCPU structures are destroyed on error.",
+            "Fingerprint": "sha256:ad3bebdc5cf57f0a622f99d864ed9852c5ff6afc1fa3570716b68ff4aed03d8e",
+            "FixedVersion": "6.8.0-100.100",
+            "PkgIdentifier": {
+              "UID": "6c19f803cfbe507b",
+              "PURL": "pkg:deb/ubuntu/linux-libc-dev@6.8.0-87.88?arch=arm64&distro=ubuntu-24.04"
+            },
+            "PublishedDate": "2025-05-09T07:16:05.76Z",
+            "SeveritySource": "ubuntu",
+            "VendorSeverity": {
+              "nvd": 3,
+              "azure": 2,
+              "amazon": 3,
+              "photon": 3,
+              "redhat": 2,
+              "ubuntu": 3,
+              "oracle-oval": 3
+            },
+            "VulnerabilityID": "CVE-2025-37849",
+            "InstalledVersion": "6.8.0-87.88",
+            "LastModifiedDate": "2025-11-17T12:54:15.827Z"
+          },
+          {
+            "CVSS": {
+              "nvd": {
+                "V3Score": 4.7,
+                "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer": {
+              "DiffID": "sha256:216ad1bf0ee575e645c87141569b300cd81eeb45e18adf310d8822913609acba"
+            },
+            "PkgID": "linux-libc-dev@6.8.0-87.88",
+            "Title": "kernel: ksmbd: fix Preauh_HashValue race condition",
+            "CweIDs": [
+              "CWE-362"
+            ],
+            "Status": "fixed",
+            "PkgName": "linux-libc-dev",
+            "Severity": "HIGH",
+            "DataSource": {
+              "ID": "ubuntu",
+              "URL": "https://git.launchpad.net/ubuntu-cve-tracker",
+              "Name": "Ubuntu CVE Tracker"
+            },
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-38561",
+            "References": [
+              "https://access.redhat.com/security/cve/CVE-2025-38561",
+              "https://git.kernel.org/linus/44a3059c4c8cc635a1fb2afd692d0730ca1ba4b6 (6.17-rc1)",
+              "https://git.kernel.org/stable/c/44a3059c4c8cc635a1fb2afd692d0730ca1ba4b6",
+              "https://git.kernel.org/stable/c/6613887da1d18dd2ecfd6c6148a873c4d903ebdc",
+              "https://git.kernel.org/stable/c/7d7c0c5304c88bcbd7a85e9bcd61d27e998ba5fc",
+              "https://git.kernel.org/stable/c/b69fd87076daa66f3d186bd421a7b0ee0cb45829",
+              "https://git.kernel.org/stable/c/edeecc7871e8fc0878d53ce286c75040a0e38f6c",
+              "https://git.kernel.org/stable/c/fbf5c0845ed15122a770bca9be1d9b60b470d3aa",
+              "https://lists.debian.org/debian-lts-announce/2025/10/msg00008.html",
+              "https://lore.kernel.org/linux-cve-announce/2025081907-CVE-2025-38561-0f75@gregkh/T",
+              "https://nvd.nist.gov/vuln/detail/CVE-2025-38561",
+              "https://ubuntu.com/security/notices/USN-7879-1",
+              "https://ubuntu.com/security/notices/USN-7879-2",
+              "https://ubuntu.com/security/notices/USN-7879-3",
+              "https://ubuntu.com/security/notices/USN-7879-4",
+              "https://ubuntu.com/security/notices/USN-7880-1",
+              "https://ubuntu.com/security/notices/USN-7934-1",
+              "https://ubuntu.com/security/notices/USN-8013-1",
+              "https://ubuntu.com/security/notices/USN-8013-2",
+              "https://ubuntu.com/security/notices/USN-8013-3",
+              "https://ubuntu.com/security/notices/USN-8013-4",
+              "https://ubuntu.com/security/notices/USN-8015-1",
+              "https://ubuntu.com/security/notices/USN-8015-2",
+              "https://ubuntu.com/security/notices/USN-8015-3",
+              "https://ubuntu.com/security/notices/USN-8015-4",
+              "https://ubuntu.com/security/notices/USN-8015-5",
+              "https://ubuntu.com/security/notices/USN-8016-1",
+              "https://www.cve.org/CVERecord?id=CVE-2025-38561",
+              "https://www.zerodayinitiative.com/advisories/ZDI-25-916/"
+            ],
+            "Description": "In the Linux kernel, the following vulnerability has been resolved:\n\nksmbd: fix Preauh_HashValue race condition\n\nIf client send multiple session setup requests to ksmbd,\nPreauh_HashValue race condition could happen.\nThere is no need to free sess->Preauh_HashValue at session setup phase.\nIt can be freed together with session at connection termination phase.",
+            "Fingerprint": "sha256:b2e7af7d962ad4a3f7f56791d831bd5a3d942710ef10347c5a2bc559030e3ddf",
+            "FixedVersion": "6.8.0-94.96",
+            "PkgIdentifier": {
+              "UID": "6c19f803cfbe507b",
+              "PURL": "pkg:deb/ubuntu/linux-libc-dev@6.8.0-87.88?arch=arm64&distro=ubuntu-24.04"
+            },
+            "PublishedDate": "2025-08-19T17:15:32.503Z",
+            "SeveritySource": "ubuntu",
+            "VendorSeverity": {
+              "nvd": 2,
+              "photon": 2,
+              "ubuntu": 3
+            },
+            "VulnerabilityID": "CVE-2025-38561",
+            "InstalledVersion": "6.8.0-87.88",
+            "LastModifiedDate": "2026-01-07T20:41:54.54Z"
+          },
+          {
+            "CVSS": {
+              "nvd": {
+                "V3Score": 7.8,
+                "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "redhat": {
+                "V3Score": 7,
+                "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              }
+            },
+            "Layer": {
+              "DiffID": "sha256:216ad1bf0ee575e645c87141569b300cd81eeb45e18adf310d8822913609acba"
+            },
+            "PkgID": "linux-libc-dev@6.8.0-87.88",
+            "Title": "kernel: net: appletalk: Fix use-after-free in AARP proxy probe",
+            "CweIDs": [
+              "CWE-416"
+            ],
+            "Status": "fixed",
+            "PkgName": "linux-libc-dev",
+            "Severity": "HIGH",
+            "DataSource": {
+              "ID": "ubuntu",
+              "URL": "https://git.launchpad.net/ubuntu-cve-tracker",
+              "Name": "Ubuntu CVE Tracker"
+            },
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-38666",
+            "References": [
+              "https://access.redhat.com/security/cve/CVE-2025-38666",
+              "https://git.kernel.org/linus/6c4a92d07b0850342d3becf2e608f805e972467c (6.16)",
+              "https://git.kernel.org/stable/c/186942d19c0222617ef61f50e1dba91e269a5963",
+              "https://git.kernel.org/stable/c/2a6209e4649d45fd85d4193abc481911858ffc6f",
+              "https://git.kernel.org/stable/c/5f02ea0f63dd38c41539ea290fcc1693c73aa8e5",
+              "https://git.kernel.org/stable/c/6c4a92d07b0850342d3becf2e608f805e972467c",
+              "https://git.kernel.org/stable/c/82d19a70ced28b17a38ebf1b6978c6c7db894979",
+              "https://git.kernel.org/stable/c/b35694ffabb2af308a1f725d70f60fd8a47d1f3e",
+              "https://git.kernel.org/stable/c/e4f1564c5b699eb89b3040688fd6b4e57922f1f6",
+              "https://git.kernel.org/stable/c/f90b6bb203f3f38bf2b3d976113d51571df9a482",
+              "https://linux.oracle.com/cve/CVE-2025-38666.html",
+              "https://linux.oracle.com/errata/ELSA-2025-20663.html",
+              "https://lists.debian.org/debian-lts-announce/2025/10/msg00007.html",
+              "https://lists.debian.org/debian-lts-announce/2025/10/msg00008.html",
+              "https://lore.kernel.org/linux-cve-announce/2025082200-CVE-2025-38666-3167@gregkh/T",
+              "https://nvd.nist.gov/vuln/detail/CVE-2025-38666",
+              "https://ubuntu.com/security/notices/USN-7879-1",
+              "https://ubuntu.com/security/notices/USN-7879-2",
+              "https://ubuntu.com/security/notices/USN-7879-3",
+              "https://ubuntu.com/security/notices/USN-7879-4",
+              "https://ubuntu.com/security/notices/USN-7880-1",
+              "https://ubuntu.com/security/notices/USN-7907-1",
+              "https://ubuntu.com/security/notices/USN-7907-2",
+              "https://ubuntu.com/security/notices/USN-7907-3",
+              "https://ubuntu.com/security/notices/USN-7907-4",
+              "https://ubuntu.com/security/notices/USN-7907-5",
+              "https://ubuntu.com/security/notices/USN-7909-1",
+              "https://ubuntu.com/security/notices/USN-7909-2",
+              "https://ubuntu.com/security/notices/USN-7909-3",
+              "https://ubuntu.com/security/notices/USN-7909-4",
+              "https://ubuntu.com/security/notices/USN-7909-5",
+              "https://ubuntu.com/security/notices/USN-7910-1",
+              "https://ubuntu.com/security/notices/USN-7910-2",
+              "https://ubuntu.com/security/notices/USN-7922-1",
+              "https://ubuntu.com/security/notices/USN-7922-2",
+              "https://ubuntu.com/security/notices/USN-7922-3",
+              "https://ubuntu.com/security/notices/USN-7922-4",
+              "https://ubuntu.com/security/notices/USN-7922-5",
+              "https://ubuntu.com/security/notices/USN-7930-1",
+              "https://ubuntu.com/security/notices/USN-7930-2",
+              "https://ubuntu.com/security/notices/USN-7931-1",
+              "https://ubuntu.com/security/notices/USN-7931-2",
+              "https://ubuntu.com/security/notices/USN-7931-3",
+              "https://ubuntu.com/security/notices/USN-7931-4",
+              "https://ubuntu.com/security/notices/USN-7931-5",
+              "https://ubuntu.com/security/notices/USN-7933-1",
+              "https://ubuntu.com/security/notices/USN-7934-1",
+              "https://ubuntu.com/security/notices/USN-7935-1",
+              "https://ubuntu.com/security/notices/USN-7937-1",
+              "https://ubuntu.com/security/notices/USN-7938-1",
+              "https://ubuntu.com/security/notices/USN-7939-1",
+              "https://ubuntu.com/security/notices/USN-7939-2",
+              "https://ubuntu.com/security/notices/USN-7940-1",
+              "https://ubuntu.com/security/notices/USN-7940-2",
+              "https://www.cve.org/CVERecord?id=CVE-2025-38666"
+            ],
+            "Description": "In the Linux kernel, the following vulnerability has been resolved:\n\nnet: appletalk: Fix use-after-free in AARP proxy probe\n\nThe AARP proxy‐probe routine (aarp_proxy_probe_network) sends a probe,\nreleases the aarp_lock, sleeps, then re-acquires the lock.  During that\nwindow an expire timer thread (__aarp_expire_timer) can remove and\nkfree() the same entry, leading to a use-after-free.\n\nrace condition:\n\n         cpu 0                          |            cpu 1\n    atalk_sendmsg()                     |   atif_proxy_probe_device()\n    aarp_send_ddp()                     |   aarp_proxy_probe_network()\n    mod_timer()                         |   lock(aarp_lock) // LOCK!!\n    timeout around 200ms                |   alloc(aarp_entry)\n    and then call                       |   proxies[hash] = aarp_entry\n    aarp_expire_timeout()               |   aarp_send_probe()\n                                        |   unlock(aarp_lock) // UNLOCK!!\n    lock(aarp_lock) // LOCK!!           |   msleep(100);\n    __aarp_expire_timer(&proxies[ct])   |\n    free(aarp_entry)                    |\n    unlock(aarp_lock) // UNLOCK!!       |\n                                        |   lock(aarp_lock) // LOCK!!\n                                        |   UAF aarp_entry !!\n\n==================================================================\nBUG: KASAN: slab-use-after-free in aarp_proxy_probe_network+0x560/0x630 net/appletalk/aarp.c:493\nRead of size 4 at addr ffff8880123aa360 by task repro/13278\n\nCPU: 3 UID: 0 PID: 13278 Comm: repro Not tainted 6.15.2 #3 PREEMPT(full)\nCall Trace:\n <TASK>\n __dump_stack lib/dump_stack.c:94 [inline]\n dump_stack_lvl+0x116/0x1b0 lib/dump_stack.c:120\n print_address_description mm/kasan/report.c:408 [inline]\n print_report+0xc1/0x630 mm/kasan/report.c:521\n kasan_report+0xca/0x100 mm/kasan/report.c:634\n aarp_proxy_probe_network+0x560/0x630 net/appletalk/aarp.c:493\n atif_proxy_probe_device net/appletalk/ddp.c:332 [inline]\n atif_ioctl+0xb58/0x16c0 net/appletalk/ddp.c:857\n atalk_ioctl+0x198/0x2f0 net/appletalk/ddp.c:1818\n sock_do_ioctl+0xdc/0x260 net/socket.c:1190\n sock_ioctl+0x239/0x6a0 net/socket.c:1311\n vfs_ioctl fs/ioctl.c:51 [inline]\n __do_sys_ioctl fs/ioctl.c:906 [inline]\n __se_sys_ioctl fs/ioctl.c:892 [inline]\n __x64_sys_ioctl+0x194/0x200 fs/ioctl.c:892\n do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]\n do_syscall_64+0xcb/0x250 arch/x86/entry/syscall_64.c:94\n entry_SYSCALL_64_after_hwframe+0x77/0x7f\n </TASK>\n\nAllocated:\n aarp_alloc net/appletalk/aarp.c:382 [inline]\n aarp_proxy_probe_network+0xd8/0x630 net/appletalk/aarp.c:468\n atif_proxy_probe_device net/appletalk/ddp.c:332 [inline]\n atif_ioctl+0xb58/0x16c0 net/appletalk/ddp.c:857\n atalk_ioctl+0x198/0x2f0 net/appletalk/ddp.c:1818\n\nFreed:\n kfree+0x148/0x4d0 mm/slub.c:4841\n __aarp_expire net/appletalk/aarp.c:90 [inline]\n __aarp_expire_timer net/appletalk/aarp.c:261 [inline]\n aarp_expire_timeout+0x480/0x6e0 net/appletalk/aarp.c:317\n\nThe buggy address belongs to the object at ffff8880123aa300\n which belongs to the cache kmalloc-192 of size 192\nThe buggy address is located 96 bytes inside of\n freed 192-byte region [ffff8880123aa300, ffff8880123aa3c0)\n\nMemory state around the buggy address:\n ffff8880123aa200: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n ffff8880123aa280: 00 00 00 00 fc fc fc fc fc fc fc fc fc fc fc fc\n>ffff8880123aa300: fa fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb\n                                                       ^\n ffff8880123aa380: fb fb fb fb fb fb fb fb fc fc fc fc fc fc fc fc\n ffff8880123aa400: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n==================================================================",
+            "Fingerprint": "sha256:528a8680721abbba438f860ddb13bfa1fe736401c20838f32b236d506baa0120",
+            "FixedVersion": "6.8.0-90.91",
+            "PkgIdentifier": {
+              "UID": "6c19f803cfbe507b",
+              "PURL": "pkg:deb/ubuntu/linux-libc-dev@6.8.0-87.88?arch=arm64&distro=ubuntu-24.04"
+            },
+            "PublishedDate": "2025-08-22T16:15:42Z",
+            "SeveritySource": "ubuntu",
+            "VendorSeverity": {
+              "nvd": 3,
+              "azure": 3,
+              "photon": 3,
+              "redhat": 2,
+              "ubuntu": 3,
+              "oracle-oval": 3
+            },
+            "VulnerabilityID": "CVE-2025-38666",
+            "InstalledVersion": "6.8.0-87.88",
+            "LastModifiedDate": "2026-01-07T17:31:53.137Z"
+          },
+          {
+            "CVSS": {
+              "nvd": {
+                "V3Score": 5.5,
+                "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat": {
+                "V3Score": 7.3,
+                "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:H"
+              }
+            },
+            "Layer": {
+              "DiffID": "sha256:216ad1bf0ee575e645c87141569b300cd81eeb45e18adf310d8822913609acba"
+            },
+            "PkgID": "linux-libc-dev@6.8.0-87.88",
+            "Title": "kernel: io_uring/futex: ensure io_futex_wait() cleans up properly on failure",
+            "CweIDs": [
+              "CWE-416",
+              "CWE-672"
+            ],
+            "Status": "fixed",
+            "PkgName": "linux-libc-dev",
+            "Severity": "HIGH",
+            "DataSource": {
+              "ID": "ubuntu",
+              "URL": "https://git.launchpad.net/ubuntu-cve-tracker",
+              "Name": "Ubuntu CVE Tracker"
+            },
+            "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-39698",
+            "References": [
+              "https://access.redhat.com/errata/RHSA-2025:16880",
+              "https://access.redhat.com/security/cve/CVE-2025-39698",
+              "https://bugzilla.redhat.com/2383916",
+              "https://bugzilla.redhat.com/2388928",
+              "https://bugzilla.redhat.com/2393166",
+              "https://bugzilla.redhat.com/2393511",
+              "https://bugzilla.redhat.com/2393519",
+              "https://bugzilla.redhat.com/show_bug.cgi?id=2383916",
+              "https://bugzilla.redhat.com/show_bug.cgi?id=2388928",
+              "https://bugzilla.redhat.com/show_bug.cgi?id=2393166",
+              "https://bugzilla.redhat.com/show_bug.cgi?id=2393511",
+              "https://bugzilla.redhat.com/show_bug.cgi?id=2393519",
+              "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-38472",
+              "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-38527",
+              "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-38718",
+              "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-39682",
+              "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-39698",
+              "https://errata.almalinux.org/9/ALSA-2025-16880.html",
+              "https://errata.rockylinux.org/RLSA-2025:16880",
+              "https://git.kernel.org/linus/508c1314b342b78591f51c4b5dadee31a88335df (6.17-rc3)",
+              "https://git.kernel.org/stable/c/508c1314b342b78591f51c4b5dadee31a88335df",
+              "https://git.kernel.org/stable/c/d34c04152df517c59979b4bf2a47f491e06d3256",
+              "https://git.kernel.org/stable/c/d9f93172820a53ab42c4b0e5e65291f4f9d00ad2",
+              "https://linux.oracle.com/cve/CVE-2025-39698.html",
+              "https://linux.oracle.com/errata/ELSA-2025-25754.html",
+              "https://lore.kernel.org/linux-cve-announce/2025090548-CVE-2025-39698-41e0@gregkh/T",
+              "https://nvd.nist.gov/vuln/detail/CVE-2025-39698",
+              "https://ubuntu.com/security/notices/USN-8015-1",
+              "https://ubuntu.com/security/notices/USN-8015-2",
+              "https://ubuntu.com/security/notices/USN-8015-3",
+              "https://ubuntu.com/security/notices/USN-8015-4",
+              "https://ubuntu.com/security/notices/USN-8015-5",
+              "https://ubuntu.com/security/notices/USN-8016-1",
+              "https://www.cve.org/CVERecord?id=CVE-2025-39698",
+              "https://www.zerodayinitiative.com/advisories/ZDI-25-915/"
+            ],
+            "Description": "In the Linux kernel, the following vulnerability has been resolved:\n\nio_uring/futex: ensure io_futex_wait() cleans up properly on failure\n\nThe io_futex_data is allocated upfront and assigned to the io_kiocb\nasync_data field, but the request isn't marked with REQ_F_ASYNC_DATA\nat that point. Those two should always go together, as the flag tells\nio_uring whether the field is valid or not.\n\nAdditionally, on failure cleanup, the futex handler frees the data but\ndoes not clear ->async_data. Clear the data and the flag in the error\npath as well.\n\nThanks to Trend Micro Zero Day Initiative and particularly ReDress for\nreporting this.",
+            "Fingerprint": "sha256:bd0b3d0adb992dfa343858a43f80fa5f55f1785cd94e1122ed2bc9a3924c3d1d",
+            "FixedVersion": "6.8.0-94.96",
+            "PkgIdentifier": {
+              "UID": "6c19f803cfbe507b",
+              "PURL": "pkg:deb/ubuntu/linux-libc-dev@6.8.0-87.88?arch=arm64&distro=ubuntu-24.04"
+            },
+            "PublishedDate": "2025-09-05T18:15:46.743Z",
+            "SeveritySource": "ubuntu",
+            "VendorSeverity": {
+              "nvd": 2,
+              "alma": 2,
+              "rocky": 2,
+              "amazon": 3,
+              "redhat": 2,
+              "ubuntu": 3,
+              "oracle-oval": 3
+            },
+            "VulnerabilityID": "CVE-2025-39698",
+            "InstalledVersion": "6.8.0-87.88",
+            "LastModifiedDate": "2025-11-25T21:31:12.1Z"
+          }
+        ]
+      }
+    },
+    "malwareScanResult": {
+      "tool": "clamav",
+      "success": true,
+      "infectedCount": 0,
+      "findings": []
+    },
+    "imageName": "gitlab.cosy.bio:5050/cosybio/posymed/apps/posymed-mosbi/model:latest"
+  },
+  "shortDescription": "MoSBi (Molecular Signature identification using Biclustering) is a comprehensive\n        framework for identifying biclusters in molecular data. It uses multiple biclustering\n        algorithms and provides robust methods for evaluating and visualizing the results.",
+  "longDescription": "# MoSBi: Molecular Signature Identification using Biclustering\n## Overview\n\n**MoSBi** (Molecular Signature Identification from Biclustering) is an ensemble-based biclustering framework tailored for molecular omics data. It standardizes the output of various biclustering algorithms and merges their results to compute robust **ensemble biclusters**.\n\nMoSBi constructs **similarity networks** of biclusters across algorithms, filters them using a custom **error model**, and applies **Louvain modularity** to extract bicluster communities. These communities can then be interpreted as stable molecular signatures.\n\nAdditionally, MoSBi includes network visualization tools that offer an intuitive and scalable representation of results.\n\n---\n\n## Key Features\n\n- Unified interface for biclustering results\n- Multi-algorithm ensemble computation\n- Similarity network construction and filtering\n- Louvain-based community detection\n- Visualization of results with heatmaps and network plots\n- Easily extensible to new biclustering algorithms\n\n---\n\n## Configuration\n\n### Hyperparameters\n\n| Name               | Type       | Default     | Description                                                                 |\n|--------------------|------------|-------------|-----------------------------------------------------------------------------|\n| `n_randomizations` | INTEGER    | `'5'`       | Number of randomizations for cut-off estimation                             |\n| `margin`           | CATEGORICAL| `both`      | Margin for similarity computation (`row`, `column`, `mean`, `both`)         |\n| `metric`           | CATEGORICAL| `Bray-Curtis` | Similarity metric (`Bray-Curtis`, `Jaccard`, `Overlap Coefficient`, `Fowlkes-Mallows`) |\n| `n_steps`          | INTEGER    | `'100'`     | Number of points where the cut-off is evaluated                             |\n| `sn_ratio`         | BOOLEAN    | `'true'`    | Compute signal-to-noise ratio if `true`, else use error threshold           |\n\n---\n\n### Input\n\n| Name  | Type | Description | Required |\n|--------|------|-------------|----------|\n| `data` | CSV  | TSV file     | `false`  |\n\n---\n\n### Output\n\n| Name                 | Type   | Description              |\n|----------------------|--------|--------------------------|\n| `adjacency_heatmap`  | STRING | Adjacency heatmap file   |\n| `histograms`         | STRING | Histogram visualizations |\n| `network_by_algorithm` | STRING | Network structure by algorithm |\n| `network_plot`       | STRING | Final network plot       |\n\n---\n\n## More\n\nYou can find all information at:\n\n\uD83D\uDD17 **[Tool](https://exbio.wzw.tum.de/mosbi/)**\n        ",
+  "needsInternetAccess": false,
+  "type": "SELF_LEARNED",
+  "imageName": "gitlab.cosy.bio:5050/cosybio/posymed/apps/posymed-mosbi/model:latest",
+  "publishStatus": "PUBLISHED",
+  "sourceUrl": "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-mosbi",
+  "tags": [],
+  "icon": null,
+  "certificationLevel": 0,
+  "latestUnpublishedVersionId": 17,
+  "latestVersionId": 17,
+  "latestVersion": "1.0.0",
+  "oldFCVersion": null,
+  "count": 0,
+  "average": 0.0,
+  "addedToWorkflowCount": 0,
+  "lastAddedToWorkflow": null,
+  "appConfig": {
+    "hyperparams": [
+      {
+        "id": 49,
+        "createdAt": "2026-02-22T14:28:01Z",
+        "updatedAt": "2026-02-22T14:28:01Z",
+        "version": 0,
+        "name": "n_randomizations",
+        "variableName": "n_randomizations",
+        "type": "INTEGER",
+        "description": "Number of randomizations for cut-off estimation.",
+        "mode": null,
+        "options": [],
+        "minValue": 1.0,
+        "maxValue": null,
+        "pattern": null,
+        "default": "5"
+      },
+      {
+        "id": 50,
+        "createdAt": "2026-02-22T14:28:01Z",
+        "updatedAt": "2026-02-22T14:28:01Z",
+        "version": 0,
+        "name": "margin",
+        "variableName": "margin",
+        "type": "CATEGORICAL",
+        "description": "Margin for similarity computation",
+        "mode": null,
+        "options": [
+          "row",
+          "column",
+          "mean",
+          "both"
+        ],
+        "minValue": null,
+        "maxValue": null,
+        "pattern": null,
+        "default": "both"
+      },
+      {
+        "id": 51,
+        "createdAt": "2026-02-22T14:28:01Z",
+        "updatedAt": "2026-02-22T14:28:01Z",
+        "version": 0,
+        "name": "metric",
+        "variableName": "metric",
+        "type": "CATEGORICAL",
+        "description": "Similarity metric",
+        "mode": null,
+        "options": [
+          "Bray-Curtis",
+          "Jaccard",
+          "Overlap Coefficient",
+          "Fowlkes-Mallows"
+        ],
+        "minValue": null,
+        "maxValue": null,
+        "pattern": null,
+        "default": "Bray-Curtis"
+      },
+      {
+        "id": 52,
+        "createdAt": "2026-02-22T14:28:01Z",
+        "updatedAt": "2026-02-22T14:28:01Z",
+        "version": 0,
+        "name": "n_steps",
+        "variableName": "n_steps",
+        "type": "INTEGER",
+        "description": "Number of points where the cut-off is evaluated",
+        "mode": null,
+        "options": [],
+        "minValue": 1.0,
+        "maxValue": null,
+        "pattern": null,
+        "default": "100"
+      },
+      {
+        "id": 53,
+        "createdAt": "2026-02-22T14:28:01Z",
+        "updatedAt": "2026-02-22T14:28:01Z",
+        "version": 0,
+        "name": "sn_ratio",
+        "variableName": "sn_ratio",
+        "type": "BOOLEAN",
+        "description": "Compute signal-to-noise ratio if True, else use error_threshold",
+        "mode": null,
+        "options": [],
+        "minValue": null,
+        "maxValue": null,
+        "pattern": null,
+        "default": "true"
+      }
+    ],
+    "input": [
+      {
+        "id": 16,
+        "createdAt": "2026-02-22T14:28:01Z",
+        "updatedAt": "2026-02-22T14:28:01Z",
+        "version": 0,
+        "name": "data",
+        "variableName": "data",
+        "type": "TSV",
+        "description": "",
+        "mode": null,
+        "delimiter": null,
+        "hasHeader": null,
+        "minValue": null,
+        "maxValue": null,
+        "shape": null,
+        "tabularSchema": null,
+        "required": true
+      }
+    ],
+    "output": [
+      {
+        "id": 17,
+        "createdAt": "2026-02-22T14:28:01Z",
+        "updatedAt": "2026-02-22T14:28:01Z",
+        "version": 0,
+        "name": "adjacency_heatmap",
+        "variableName": "adjacency_heatmap",
+        "type": "IMAGE",
+        "description": "output",
+        "mode": null,
+        "delimiter": null,
+        "hasHeader": null,
+        "minValue": null,
+        "maxValue": null,
+        "shape": null,
+        "tabularSchema": null
+      },
+      {
+        "id": 18,
+        "createdAt": "2026-02-22T14:28:01Z",
+        "updatedAt": "2026-02-22T14:28:01Z",
+        "version": 0,
+        "name": "histograms",
+        "variableName": "histograms",
+        "type": "IMAGE",
+        "description": "output",
+        "mode": null,
+        "delimiter": null,
+        "hasHeader": null,
+        "minValue": null,
+        "maxValue": null,
+        "shape": null,
+        "tabularSchema": null
+      },
+      {
+        "id": 19,
+        "createdAt": "2026-02-22T14:28:01Z",
+        "updatedAt": "2026-02-22T14:28:01Z",
+        "version": 0,
+        "name": "network_by_algorithm",
+        "variableName": "network_by_algorithm",
+        "type": "IMAGE",
+        "description": "output",
+        "mode": null,
+        "delimiter": null,
+        "hasHeader": null,
+        "minValue": null,
+        "maxValue": null,
+        "shape": null,
+        "tabularSchema": null
+      },
+      {
+        "id": 20,
+        "createdAt": "2026-02-22T14:28:01Z",
+        "updatedAt": "2026-02-22T14:28:01Z",
+        "version": 0,
+        "name": "network_plot",
+        "variableName": "network_plot",
+        "type": "IMAGE",
+        "description": "output",
+        "mode": null,
+        "delimiter": null,
+        "hasHeader": null,
+        "minValue": null,
+        "maxValue": null,
+        "shape": null,
+        "tabularSchema": null
+      }
+    ]
+  },
+  "authors": [
+    {
+      "id": 13,
+      "createdAt": "2026-02-22T14:28:01Z",
+      "updatedAt": "2026-02-22T14:28:01Z",
+      "version": 0,
+      "keycloakId": "test",
+      "federatedAppId": 13
+    }
+  ],
+  "versions": [
+    {
+      "id": 17,
+      "createdAt": "2026-02-22T14:28:01Z",
+      "updatedAt": "2026-02-22T14:40:42Z",
+      "version": 1,
+      "federatedAppId": 13,
+      "appVersion": "1.0.0",
+      "publishHash": "684195f47b4b470a8efb79b99ae0d93f55c13e9d",
+      "publishInfo": {
+        "commitHash": "684195f47b4b470a8efb79b99ae0d93f55c13e9d",
+        "filePaths": [
+          "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-mosbi/-/blob/684195f47b4b470a8efb79b99ae0d93f55c13e9d/data/A.n_genes%3D500%2Cm%3D4%2Cstd%3D1%2Coverlap%3Dno.exprs_z.tsv"
+        ],
+        "vulnerabilityScanResult": {
+          "tool": "trivy",
+          "target": "gitlab.cosy.bio:5050/cosybio/posymed/apps/posymed-mosbi/model:latest",
+          "success": false,
+          "summary": {
+            "critical": 0,
+            "high": 5,
+            "medium": 0,
+            "low": 0,
+            "unknown": 0,
+            "num": 5
+          },
+          "rawReport": {
+            "os-pkgs-ubuntu": [
+              {
+                "CVSS": {
+                  "nvd": {
+                    "V3Score": 7,
+                    "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"
+                  },
+                  "redhat": {
+                    "V3Score": 7.8,
+                    "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:N"
+                  }
+                },
+                "Layer": {
+                  "DiffID": "sha256:ab34259f9ca5d315bec1b17d9f1ca272e84dedd964a8988695daf0ec3e0bbc2e"
+                },
+                "PkgID": "gpgv@2.4.4-2ubuntu17.3",
+                "Title": "GnuPG: GnuPG: Information disclosure and potential arbitrary code execution via out-of-bounds write",
+                "CweIDs": [
+                  "CWE-675",
+                  "CWE-787"
+                ],
+                "Status": "fixed",
+                "PkgName": "gpgv",
+                "Severity": "HIGH",
+                "DataSource": {
+                  "ID": "ubuntu",
+                  "URL": "https://git.launchpad.net/ubuntu-cve-tracker",
+                  "Name": "Ubuntu CVE Tracker"
+                },
+                "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-68973",
+                "References": [
+                  "http://www.openwall.com/lists/oss-security/2025/12/29/11",
+                  "https://access.redhat.com/errata/RHSA-2026:0719",
+                  "https://access.redhat.com/security/cve/CVE-2025-68973",
+                  "https://bugzilla.redhat.com/2425966",
+                  "https://bugzilla.redhat.com/show_bug.cgi?id=2425966",
+                  "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-68973",
+                  "https://dev.gnupg.org/T7906",
+                  "https://dev.gnupg.org/T8001",
+                  "https://errata.almalinux.org/9/ALSA-2026-0719.html",
+                  "https://errata.rockylinux.org/RLSA-2026:0719",
+                  "https://github.com/gpg/gnupg/blob/ff30683418695f5d2cc9e6cf8c9418e09378ebe4/g10/armor.c#L1305-L1306",
+                  "https://github.com/gpg/gnupg/commit/115d138ba599328005c5321c0ef9f00355838ca9",
+                  "https://github.com/gpg/gnupg/commit/115d138ba599328005c5321c0ef9f00355838ca9 (gnupg-2.5.14)",
+                  "https://github.com/gpg/gnupg/commit/1e929abd20fa2e4be3797a137caca63a971d5372 (gnupg-2.2.51)",
+                  "https://github.com/gpg/gnupg/commit/4ecc5122f20e10c17172ed72f4fa46c784b5fb48 (gnupg-2.4.9)",
+                  "https://github.com/gpg/gnupg/compare/gnupg-2.2.50...gnupg-2.2.51",
+                  "https://gpg.fail/memcpy",
+                  "https://linux.oracle.com/cve/CVE-2025-68973.html",
+                  "https://linux.oracle.com/errata/ELSA-2026-1677.html",
+                  "https://lists.debian.org/debian-lts-announce/2026/01/msg00008.html",
+                  "https://media.ccc.de/v/39c3-to-sign-or-not-to-sign-practical-vulnerabilities-i",
+                  "https://news.ycombinator.com/item?id=46403200",
+                  "https://nvd.nist.gov/vuln/detail/CVE-2025-68973",
+                  "https://ubuntu.com/security/notices/USN-7946-1",
+                  "https://ubuntu.com/security/notices/USN-7946-2",
+                  "https://www.cve.org/CVERecord?id=CVE-2025-68973",
+                  "https://www.openwall.com/lists/oss-security/2025/12/28/5"
+                ],
+                "Description": "In GnuPG before 2.4.9, armor_filter in g10/armor.c has two increments of an index variable where one is intended, leading to an out-of-bounds write for crafted input. (For ExtendedLTS, 2.2.51 and later are fixed versions.)",
+                "Fingerprint": "sha256:62a89a77a917d9c19aa6530fb478f5acd14df7eda23f81ffc7dc9658d1a5a458",
+                "FixedVersion": "2.4.4-2ubuntu17.4",
+                "PkgIdentifier": {
+                  "UID": "9fbfcca6d0a5167a",
+                  "PURL": "pkg:deb/ubuntu/gpgv@2.4.4-2ubuntu17.3?arch=arm64&distro=ubuntu-24.04"
+                },
+                "PublishedDate": "2025-12-28T17:16:01.5Z",
+                "SeveritySource": "ubuntu",
+                "VendorSeverity": {
+                  "nvd": 3,
+                  "alma": 3,
+                  "azure": 3,
+                  "rocky": 3,
+                  "amazon": 3,
+                  "photon": 3,
+                  "redhat": 3,
+                  "ubuntu": 3,
+                  "oracle-oval": 3
+                },
+                "VulnerabilityID": "CVE-2025-68973",
+                "InstalledVersion": "2.4.4-2ubuntu17.3",
+                "LastModifiedDate": "2026-01-14T19:16:46.857Z"
+              },
+              {
+                "CVSS": {
+                  "nvd": {
+                    "V3Score": 7.8,
+                    "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+                  },
+                  "redhat": {
+                    "V3Score": 7,
+                    "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"
+                  }
+                },
+                "Layer": {
+                  "DiffID": "sha256:216ad1bf0ee575e645c87141569b300cd81eeb45e18adf310d8822913609acba"
+                },
+                "PkgID": "linux-libc-dev@6.8.0-87.88",
+                "Title": "kernel: KVM: arm64: Tear down vGIC on failed vCPU creation",
+                "CweIDs": [
+                  "CWE-416"
+                ],
+                "Status": "fixed",
+                "PkgName": "linux-libc-dev",
+                "Severity": "HIGH",
+                "DataSource": {
+                  "ID": "ubuntu",
+                  "URL": "https://git.launchpad.net/ubuntu-cve-tracker",
+                  "Name": "Ubuntu CVE Tracker"
+                },
+                "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-37849",
+                "References": [
+                  "https://access.redhat.com/security/cve/CVE-2025-37849",
+                  "https://git.kernel.org/linus/250f25367b58d8c65a1b060a2dda037eea09a672 (6.15-rc1)",
+                  "https://git.kernel.org/stable/c/07476e0d932afc53c05468076393ac35d0b4999e",
+                  "https://git.kernel.org/stable/c/2480326eba8ae9ccc5e4c3c2dc8d407db68e3c52",
+                  "https://git.kernel.org/stable/c/250f25367b58d8c65a1b060a2dda037eea09a672",
+                  "https://git.kernel.org/stable/c/5085e02362b9948f82fceca979b8f8e12acb1cc5",
+                  "https://git.kernel.org/stable/c/c322789613407647a05ff5c451a7bf545fb34e73",
+                  "https://git.kernel.org/stable/c/f1e9087abaeedec9bf2894a282ee4f0d8383f299",
+                  "https://linux.oracle.com/cve/CVE-2025-37849.html",
+                  "https://linux.oracle.com/errata/ELSA-2025-20530.html",
+                  "https://lists.debian.org/debian-lts-announce/2025/05/msg00045.html",
+                  "https://lore.kernel.org/linux-cve-announce/2025050918-CVE-2025-37849-2a30@gregkh/T",
+                  "https://nvd.nist.gov/vuln/detail/CVE-2025-37849",
+                  "https://ubuntu.com/security/notices/USN-7594-1",
+                  "https://ubuntu.com/security/notices/USN-7594-2",
+                  "https://ubuntu.com/security/notices/USN-7594-3",
+                  "https://ubuntu.com/security/notices/USN-8028-1",
+                  "https://ubuntu.com/security/notices/USN-8028-2",
+                  "https://ubuntu.com/security/notices/USN-8028-3",
+                  "https://ubuntu.com/security/notices/USN-8028-4",
+                  "https://ubuntu.com/security/notices/USN-8028-5",
+                  "https://ubuntu.com/security/notices/USN-8028-6",
+                  "https://ubuntu.com/security/notices/USN-8028-7",
+                  "https://ubuntu.com/security/notices/USN-8031-1",
+                  "https://ubuntu.com/security/notices/USN-8031-2",
+                  "https://ubuntu.com/security/notices/USN-8031-3",
+                  "https://ubuntu.com/security/notices/USN-8052-1",
+                  "https://www.cve.org/CVERecord?id=CVE-2025-37849"
+                ],
+                "Description": "In the Linux kernel, the following vulnerability has been resolved:\n\nKVM: arm64: Tear down vGIC on failed vCPU creation\n\nIf kvm_arch_vcpu_create() fails to share the vCPU page with the\nhypervisor, we propagate the error back to the ioctl but leave the\nvGIC vCPU data initialised. Note only does this leak the corresponding\nmemory when the vCPU is destroyed but it can also lead to use-after-free\nif the redistributor device handling tries to walk into the vCPU.\n\nAdd the missing cleanup to kvm_arch_vcpu_create(), ensuring that the\nvGIC vCPU structures are destroyed on error.",
+                "Fingerprint": "sha256:ad3bebdc5cf57f0a622f99d864ed9852c5ff6afc1fa3570716b68ff4aed03d8e",
+                "FixedVersion": "6.8.0-100.100",
+                "PkgIdentifier": {
+                  "UID": "6c19f803cfbe507b",
+                  "PURL": "pkg:deb/ubuntu/linux-libc-dev@6.8.0-87.88?arch=arm64&distro=ubuntu-24.04"
+                },
+                "PublishedDate": "2025-05-09T07:16:05.76Z",
+                "SeveritySource": "ubuntu",
+                "VendorSeverity": {
+                  "nvd": 3,
+                  "azure": 2,
+                  "amazon": 3,
+                  "photon": 3,
+                  "redhat": 2,
+                  "ubuntu": 3,
+                  "oracle-oval": 3
+                },
+                "VulnerabilityID": "CVE-2025-37849",
+                "InstalledVersion": "6.8.0-87.88",
+                "LastModifiedDate": "2025-11-17T12:54:15.827Z"
+              },
+              {
+                "CVSS": {
+                  "nvd": {
+                    "V3Score": 4.7,
+                    "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:H"
+                  }
+                },
+                "Layer": {
+                  "DiffID": "sha256:216ad1bf0ee575e645c87141569b300cd81eeb45e18adf310d8822913609acba"
+                },
+                "PkgID": "linux-libc-dev@6.8.0-87.88",
+                "Title": "kernel: ksmbd: fix Preauh_HashValue race condition",
+                "CweIDs": [
+                  "CWE-362"
+                ],
+                "Status": "fixed",
+                "PkgName": "linux-libc-dev",
+                "Severity": "HIGH",
+                "DataSource": {
+                  "ID": "ubuntu",
+                  "URL": "https://git.launchpad.net/ubuntu-cve-tracker",
+                  "Name": "Ubuntu CVE Tracker"
+                },
+                "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-38561",
+                "References": [
+                  "https://access.redhat.com/security/cve/CVE-2025-38561",
+                  "https://git.kernel.org/linus/44a3059c4c8cc635a1fb2afd692d0730ca1ba4b6 (6.17-rc1)",
+                  "https://git.kernel.org/stable/c/44a3059c4c8cc635a1fb2afd692d0730ca1ba4b6",
+                  "https://git.kernel.org/stable/c/6613887da1d18dd2ecfd6c6148a873c4d903ebdc",
+                  "https://git.kernel.org/stable/c/7d7c0c5304c88bcbd7a85e9bcd61d27e998ba5fc",
+                  "https://git.kernel.org/stable/c/b69fd87076daa66f3d186bd421a7b0ee0cb45829",
+                  "https://git.kernel.org/stable/c/edeecc7871e8fc0878d53ce286c75040a0e38f6c",
+                  "https://git.kernel.org/stable/c/fbf5c0845ed15122a770bca9be1d9b60b470d3aa",
+                  "https://lists.debian.org/debian-lts-announce/2025/10/msg00008.html",
+                  "https://lore.kernel.org/linux-cve-announce/2025081907-CVE-2025-38561-0f75@gregkh/T",
+                  "https://nvd.nist.gov/vuln/detail/CVE-2025-38561",
+                  "https://ubuntu.com/security/notices/USN-7879-1",
+                  "https://ubuntu.com/security/notices/USN-7879-2",
+                  "https://ubuntu.com/security/notices/USN-7879-3",
+                  "https://ubuntu.com/security/notices/USN-7879-4",
+                  "https://ubuntu.com/security/notices/USN-7880-1",
+                  "https://ubuntu.com/security/notices/USN-7934-1",
+                  "https://ubuntu.com/security/notices/USN-8013-1",
+                  "https://ubuntu.com/security/notices/USN-8013-2",
+                  "https://ubuntu.com/security/notices/USN-8013-3",
+                  "https://ubuntu.com/security/notices/USN-8013-4",
+                  "https://ubuntu.com/security/notices/USN-8015-1",
+                  "https://ubuntu.com/security/notices/USN-8015-2",
+                  "https://ubuntu.com/security/notices/USN-8015-3",
+                  "https://ubuntu.com/security/notices/USN-8015-4",
+                  "https://ubuntu.com/security/notices/USN-8015-5",
+                  "https://ubuntu.com/security/notices/USN-8016-1",
+                  "https://www.cve.org/CVERecord?id=CVE-2025-38561",
+                  "https://www.zerodayinitiative.com/advisories/ZDI-25-916/"
+                ],
+                "Description": "In the Linux kernel, the following vulnerability has been resolved:\n\nksmbd: fix Preauh_HashValue race condition\n\nIf client send multiple session setup requests to ksmbd,\nPreauh_HashValue race condition could happen.\nThere is no need to free sess->Preauh_HashValue at session setup phase.\nIt can be freed together with session at connection termination phase.",
+                "Fingerprint": "sha256:b2e7af7d962ad4a3f7f56791d831bd5a3d942710ef10347c5a2bc559030e3ddf",
+                "FixedVersion": "6.8.0-94.96",
+                "PkgIdentifier": {
+                  "UID": "6c19f803cfbe507b",
+                  "PURL": "pkg:deb/ubuntu/linux-libc-dev@6.8.0-87.88?arch=arm64&distro=ubuntu-24.04"
+                },
+                "PublishedDate": "2025-08-19T17:15:32.503Z",
+                "SeveritySource": "ubuntu",
+                "VendorSeverity": {
+                  "nvd": 2,
+                  "photon": 2,
+                  "ubuntu": 3
+                },
+                "VulnerabilityID": "CVE-2025-38561",
+                "InstalledVersion": "6.8.0-87.88",
+                "LastModifiedDate": "2026-01-07T20:41:54.54Z"
+              },
+              {
+                "CVSS": {
+                  "nvd": {
+                    "V3Score": 7.8,
+                    "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+                  },
+                  "redhat": {
+                    "V3Score": 7,
+                    "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"
+                  }
+                },
+                "Layer": {
+                  "DiffID": "sha256:216ad1bf0ee575e645c87141569b300cd81eeb45e18adf310d8822913609acba"
+                },
+                "PkgID": "linux-libc-dev@6.8.0-87.88",
+                "Title": "kernel: net: appletalk: Fix use-after-free in AARP proxy probe",
+                "CweIDs": [
+                  "CWE-416"
+                ],
+                "Status": "fixed",
+                "PkgName": "linux-libc-dev",
+                "Severity": "HIGH",
+                "DataSource": {
+                  "ID": "ubuntu",
+                  "URL": "https://git.launchpad.net/ubuntu-cve-tracker",
+                  "Name": "Ubuntu CVE Tracker"
+                },
+                "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-38666",
+                "References": [
+                  "https://access.redhat.com/security/cve/CVE-2025-38666",
+                  "https://git.kernel.org/linus/6c4a92d07b0850342d3becf2e608f805e972467c (6.16)",
+                  "https://git.kernel.org/stable/c/186942d19c0222617ef61f50e1dba91e269a5963",
+                  "https://git.kernel.org/stable/c/2a6209e4649d45fd85d4193abc481911858ffc6f",
+                  "https://git.kernel.org/stable/c/5f02ea0f63dd38c41539ea290fcc1693c73aa8e5",
+                  "https://git.kernel.org/stable/c/6c4a92d07b0850342d3becf2e608f805e972467c",
+                  "https://git.kernel.org/stable/c/82d19a70ced28b17a38ebf1b6978c6c7db894979",
+                  "https://git.kernel.org/stable/c/b35694ffabb2af308a1f725d70f60fd8a47d1f3e",
+                  "https://git.kernel.org/stable/c/e4f1564c5b699eb89b3040688fd6b4e57922f1f6",
+                  "https://git.kernel.org/stable/c/f90b6bb203f3f38bf2b3d976113d51571df9a482",
+                  "https://linux.oracle.com/cve/CVE-2025-38666.html",
+                  "https://linux.oracle.com/errata/ELSA-2025-20663.html",
+                  "https://lists.debian.org/debian-lts-announce/2025/10/msg00007.html",
+                  "https://lists.debian.org/debian-lts-announce/2025/10/msg00008.html",
+                  "https://lore.kernel.org/linux-cve-announce/2025082200-CVE-2025-38666-3167@gregkh/T",
+                  "https://nvd.nist.gov/vuln/detail/CVE-2025-38666",
+                  "https://ubuntu.com/security/notices/USN-7879-1",
+                  "https://ubuntu.com/security/notices/USN-7879-2",
+                  "https://ubuntu.com/security/notices/USN-7879-3",
+                  "https://ubuntu.com/security/notices/USN-7879-4",
+                  "https://ubuntu.com/security/notices/USN-7880-1",
+                  "https://ubuntu.com/security/notices/USN-7907-1",
+                  "https://ubuntu.com/security/notices/USN-7907-2",
+                  "https://ubuntu.com/security/notices/USN-7907-3",
+                  "https://ubuntu.com/security/notices/USN-7907-4",
+                  "https://ubuntu.com/security/notices/USN-7907-5",
+                  "https://ubuntu.com/security/notices/USN-7909-1",
+                  "https://ubuntu.com/security/notices/USN-7909-2",
+                  "https://ubuntu.com/security/notices/USN-7909-3",
+                  "https://ubuntu.com/security/notices/USN-7909-4",
+                  "https://ubuntu.com/security/notices/USN-7909-5",
+                  "https://ubuntu.com/security/notices/USN-7910-1",
+                  "https://ubuntu.com/security/notices/USN-7910-2",
+                  "https://ubuntu.com/security/notices/USN-7922-1",
+                  "https://ubuntu.com/security/notices/USN-7922-2",
+                  "https://ubuntu.com/security/notices/USN-7922-3",
+                  "https://ubuntu.com/security/notices/USN-7922-4",
+                  "https://ubuntu.com/security/notices/USN-7922-5",
+                  "https://ubuntu.com/security/notices/USN-7930-1",
+                  "https://ubuntu.com/security/notices/USN-7930-2",
+                  "https://ubuntu.com/security/notices/USN-7931-1",
+                  "https://ubuntu.com/security/notices/USN-7931-2",
+                  "https://ubuntu.com/security/notices/USN-7931-3",
+                  "https://ubuntu.com/security/notices/USN-7931-4",
+                  "https://ubuntu.com/security/notices/USN-7931-5",
+                  "https://ubuntu.com/security/notices/USN-7933-1",
+                  "https://ubuntu.com/security/notices/USN-7934-1",
+                  "https://ubuntu.com/security/notices/USN-7935-1",
+                  "https://ubuntu.com/security/notices/USN-7937-1",
+                  "https://ubuntu.com/security/notices/USN-7938-1",
+                  "https://ubuntu.com/security/notices/USN-7939-1",
+                  "https://ubuntu.com/security/notices/USN-7939-2",
+                  "https://ubuntu.com/security/notices/USN-7940-1",
+                  "https://ubuntu.com/security/notices/USN-7940-2",
+                  "https://www.cve.org/CVERecord?id=CVE-2025-38666"
+                ],
+                "Description": "In the Linux kernel, the following vulnerability has been resolved:\n\nnet: appletalk: Fix use-after-free in AARP proxy probe\n\nThe AARP proxy‐probe routine (aarp_proxy_probe_network) sends a probe,\nreleases the aarp_lock, sleeps, then re-acquires the lock.  During that\nwindow an expire timer thread (__aarp_expire_timer) can remove and\nkfree() the same entry, leading to a use-after-free.\n\nrace condition:\n\n         cpu 0                          |            cpu 1\n    atalk_sendmsg()                     |   atif_proxy_probe_device()\n    aarp_send_ddp()                     |   aarp_proxy_probe_network()\n    mod_timer()                         |   lock(aarp_lock) // LOCK!!\n    timeout around 200ms                |   alloc(aarp_entry)\n    and then call                       |   proxies[hash] = aarp_entry\n    aarp_expire_timeout()               |   aarp_send_probe()\n                                        |   unlock(aarp_lock) // UNLOCK!!\n    lock(aarp_lock) // LOCK!!           |   msleep(100);\n    __aarp_expire_timer(&proxies[ct])   |\n    free(aarp_entry)                    |\n    unlock(aarp_lock) // UNLOCK!!       |\n                                        |   lock(aarp_lock) // LOCK!!\n                                        |   UAF aarp_entry !!\n\n==================================================================\nBUG: KASAN: slab-use-after-free in aarp_proxy_probe_network+0x560/0x630 net/appletalk/aarp.c:493\nRead of size 4 at addr ffff8880123aa360 by task repro/13278\n\nCPU: 3 UID: 0 PID: 13278 Comm: repro Not tainted 6.15.2 #3 PREEMPT(full)\nCall Trace:\n <TASK>\n __dump_stack lib/dump_stack.c:94 [inline]\n dump_stack_lvl+0x116/0x1b0 lib/dump_stack.c:120\n print_address_description mm/kasan/report.c:408 [inline]\n print_report+0xc1/0x630 mm/kasan/report.c:521\n kasan_report+0xca/0x100 mm/kasan/report.c:634\n aarp_proxy_probe_network+0x560/0x630 net/appletalk/aarp.c:493\n atif_proxy_probe_device net/appletalk/ddp.c:332 [inline]\n atif_ioctl+0xb58/0x16c0 net/appletalk/ddp.c:857\n atalk_ioctl+0x198/0x2f0 net/appletalk/ddp.c:1818\n sock_do_ioctl+0xdc/0x260 net/socket.c:1190\n sock_ioctl+0x239/0x6a0 net/socket.c:1311\n vfs_ioctl fs/ioctl.c:51 [inline]\n __do_sys_ioctl fs/ioctl.c:906 [inline]\n __se_sys_ioctl fs/ioctl.c:892 [inline]\n __x64_sys_ioctl+0x194/0x200 fs/ioctl.c:892\n do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]\n do_syscall_64+0xcb/0x250 arch/x86/entry/syscall_64.c:94\n entry_SYSCALL_64_after_hwframe+0x77/0x7f\n </TASK>\n\nAllocated:\n aarp_alloc net/appletalk/aarp.c:382 [inline]\n aarp_proxy_probe_network+0xd8/0x630 net/appletalk/aarp.c:468\n atif_proxy_probe_device net/appletalk/ddp.c:332 [inline]\n atif_ioctl+0xb58/0x16c0 net/appletalk/ddp.c:857\n atalk_ioctl+0x198/0x2f0 net/appletalk/ddp.c:1818\n\nFreed:\n kfree+0x148/0x4d0 mm/slub.c:4841\n __aarp_expire net/appletalk/aarp.c:90 [inline]\n __aarp_expire_timer net/appletalk/aarp.c:261 [inline]\n aarp_expire_timeout+0x480/0x6e0 net/appletalk/aarp.c:317\n\nThe buggy address belongs to the object at ffff8880123aa300\n which belongs to the cache kmalloc-192 of size 192\nThe buggy address is located 96 bytes inside of\n freed 192-byte region [ffff8880123aa300, ffff8880123aa3c0)\n\nMemory state around the buggy address:\n ffff8880123aa200: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n ffff8880123aa280: 00 00 00 00 fc fc fc fc fc fc fc fc fc fc fc fc\n>ffff8880123aa300: fa fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb\n                                                       ^\n ffff8880123aa380: fb fb fb fb fb fb fb fb fc fc fc fc fc fc fc fc\n ffff8880123aa400: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n==================================================================",
+                "Fingerprint": "sha256:528a8680721abbba438f860ddb13bfa1fe736401c20838f32b236d506baa0120",
+                "FixedVersion": "6.8.0-90.91",
+                "PkgIdentifier": {
+                  "UID": "6c19f803cfbe507b",
+                  "PURL": "pkg:deb/ubuntu/linux-libc-dev@6.8.0-87.88?arch=arm64&distro=ubuntu-24.04"
+                },
+                "PublishedDate": "2025-08-22T16:15:42Z",
+                "SeveritySource": "ubuntu",
+                "VendorSeverity": {
+                  "nvd": 3,
+                  "azure": 3,
+                  "photon": 3,
+                  "redhat": 2,
+                  "ubuntu": 3,
+                  "oracle-oval": 3
+                },
+                "VulnerabilityID": "CVE-2025-38666",
+                "InstalledVersion": "6.8.0-87.88",
+                "LastModifiedDate": "2026-01-07T17:31:53.137Z"
+              },
+              {
+                "CVSS": {
+                  "nvd": {
+                    "V3Score": 5.5,
+                    "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
+                  },
+                  "redhat": {
+                    "V3Score": 7.3,
+                    "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:H"
+                  }
+                },
+                "Layer": {
+                  "DiffID": "sha256:216ad1bf0ee575e645c87141569b300cd81eeb45e18adf310d8822913609acba"
+                },
+                "PkgID": "linux-libc-dev@6.8.0-87.88",
+                "Title": "kernel: io_uring/futex: ensure io_futex_wait() cleans up properly on failure",
+                "CweIDs": [
+                  "CWE-416",
+                  "CWE-672"
+                ],
+                "Status": "fixed",
+                "PkgName": "linux-libc-dev",
+                "Severity": "HIGH",
+                "DataSource": {
+                  "ID": "ubuntu",
+                  "URL": "https://git.launchpad.net/ubuntu-cve-tracker",
+                  "Name": "Ubuntu CVE Tracker"
+                },
+                "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-39698",
+                "References": [
+                  "https://access.redhat.com/errata/RHSA-2025:16880",
+                  "https://access.redhat.com/security/cve/CVE-2025-39698",
+                  "https://bugzilla.redhat.com/2383916",
+                  "https://bugzilla.redhat.com/2388928",
+                  "https://bugzilla.redhat.com/2393166",
+                  "https://bugzilla.redhat.com/2393511",
+                  "https://bugzilla.redhat.com/2393519",
+                  "https://bugzilla.redhat.com/show_bug.cgi?id=2383916",
+                  "https://bugzilla.redhat.com/show_bug.cgi?id=2388928",
+                  "https://bugzilla.redhat.com/show_bug.cgi?id=2393166",
+                  "https://bugzilla.redhat.com/show_bug.cgi?id=2393511",
+                  "https://bugzilla.redhat.com/show_bug.cgi?id=2393519",
+                  "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-38472",
+                  "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-38527",
+                  "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-38718",
+                  "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-39682",
+                  "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-39698",
+                  "https://errata.almalinux.org/9/ALSA-2025-16880.html",
+                  "https://errata.rockylinux.org/RLSA-2025:16880",
+                  "https://git.kernel.org/linus/508c1314b342b78591f51c4b5dadee31a88335df (6.17-rc3)",
+                  "https://git.kernel.org/stable/c/508c1314b342b78591f51c4b5dadee31a88335df",
+                  "https://git.kernel.org/stable/c/d34c04152df517c59979b4bf2a47f491e06d3256",
+                  "https://git.kernel.org/stable/c/d9f93172820a53ab42c4b0e5e65291f4f9d00ad2",
+                  "https://linux.oracle.com/cve/CVE-2025-39698.html",
+                  "https://linux.oracle.com/errata/ELSA-2025-25754.html",
+                  "https://lore.kernel.org/linux-cve-announce/2025090548-CVE-2025-39698-41e0@gregkh/T",
+                  "https://nvd.nist.gov/vuln/detail/CVE-2025-39698",
+                  "https://ubuntu.com/security/notices/USN-8015-1",
+                  "https://ubuntu.com/security/notices/USN-8015-2",
+                  "https://ubuntu.com/security/notices/USN-8015-3",
+                  "https://ubuntu.com/security/notices/USN-8015-4",
+                  "https://ubuntu.com/security/notices/USN-8015-5",
+                  "https://ubuntu.com/security/notices/USN-8016-1",
+                  "https://www.cve.org/CVERecord?id=CVE-2025-39698",
+                  "https://www.zerodayinitiative.com/advisories/ZDI-25-915/"
+                ],
+                "Description": "In the Linux kernel, the following vulnerability has been resolved:\n\nio_uring/futex: ensure io_futex_wait() cleans up properly on failure\n\nThe io_futex_data is allocated upfront and assigned to the io_kiocb\nasync_data field, but the request isn't marked with REQ_F_ASYNC_DATA\nat that point. Those two should always go together, as the flag tells\nio_uring whether the field is valid or not.\n\nAdditionally, on failure cleanup, the futex handler frees the data but\ndoes not clear ->async_data. Clear the data and the flag in the error\npath as well.\n\nThanks to Trend Micro Zero Day Initiative and particularly ReDress for\nreporting this.",
+                "Fingerprint": "sha256:bd0b3d0adb992dfa343858a43f80fa5f55f1785cd94e1122ed2bc9a3924c3d1d",
+                "FixedVersion": "6.8.0-94.96",
+                "PkgIdentifier": {
+                  "UID": "6c19f803cfbe507b",
+                  "PURL": "pkg:deb/ubuntu/linux-libc-dev@6.8.0-87.88?arch=arm64&distro=ubuntu-24.04"
+                },
+                "PublishedDate": "2025-09-05T18:15:46.743Z",
+                "SeveritySource": "ubuntu",
+                "VendorSeverity": {
+                  "nvd": 2,
+                  "alma": 2,
+                  "rocky": 2,
+                  "amazon": 3,
+                  "redhat": 2,
+                  "ubuntu": 3,
+                  "oracle-oval": 3
+                },
+                "VulnerabilityID": "CVE-2025-39698",
+                "InstalledVersion": "6.8.0-87.88",
+                "LastModifiedDate": "2025-11-25T21:31:12.1Z"
+              }
+            ]
+          }
+        },
+        "malwareScanResult": {
+          "tool": "clamav",
+          "success": true,
+          "infectedCount": 0,
+          "findings": []
+        },
+        "imageName": "gitlab.cosy.bio:5050/cosybio/posymed/apps/posymed-mosbi/model:latest"
+      },
+      "changelog": "Changelog 1.0.0",
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "certificationLevel": 0,
+      "imageName": "gitlab.cosy.bio:5050/cosybio/posymed/apps/posymed-mosbi/model:latest",
+      "shortDescription": "MoSBi (Molecular Signature identification using Biclustering) is a comprehensive\n        framework for identifying biclusters in molecular data. It uses multiple biclustering\n        algorithms and provides robust methods for evaluating and visualizing the results.",
+      "longDescription": "# MoSBi: Molecular Signature Identification using Biclustering\n## Overview\n\n**MoSBi** (Molecular Signature Identification from Biclustering) is an ensemble-based biclustering framework tailored for molecular omics data. It standardizes the output of various biclustering algorithms and merges their results to compute robust **ensemble biclusters**.\n\nMoSBi constructs **similarity networks** of biclusters across algorithms, filters them using a custom **error model**, and applies **Louvain modularity** to extract bicluster communities. These communities can then be interpreted as stable molecular signatures.\n\nAdditionally, MoSBi includes network visualization tools that offer an intuitive and scalable representation of results.\n\n---\n\n## Key Features\n\n- Unified interface for biclustering results\n- Multi-algorithm ensemble computation\n- Similarity network construction and filtering\n- Louvain-based community detection\n- Visualization of results with heatmaps and network plots\n- Easily extensible to new biclustering algorithms\n\n---\n\n## Configuration\n\n### Hyperparameters\n\n| Name               | Type       | Default     | Description                                                                 |\n|--------------------|------------|-------------|-----------------------------------------------------------------------------|\n| `n_randomizations` | INTEGER    | `'5'`       | Number of randomizations for cut-off estimation                             |\n| `margin`           | CATEGORICAL| `both`      | Margin for similarity computation (`row`, `column`, `mean`, `both`)         |\n| `metric`           | CATEGORICAL| `Bray-Curtis` | Similarity metric (`Bray-Curtis`, `Jaccard`, `Overlap Coefficient`, `Fowlkes-Mallows`) |\n| `n_steps`          | INTEGER    | `'100'`     | Number of points where the cut-off is evaluated                             |\n| `sn_ratio`         | BOOLEAN    | `'true'`    | Compute signal-to-noise ratio if `true`, else use error threshold           |\n\n---\n\n### Input\n\n| Name  | Type | Description | Required |\n|--------|------|-------------|----------|\n| `data` | CSV  | TSV file     | `false`  |\n\n---\n\n### Output\n\n| Name                 | Type   | Description              |\n|----------------------|--------|--------------------------|\n| `adjacency_heatmap`  | STRING | Adjacency heatmap file   |\n| `histograms`         | STRING | Histogram visualizations |\n| `network_by_algorithm` | STRING | Network structure by algorithm |\n| `network_plot`       | STRING | Final network plot       |\n\n---\n\n## More\n\nYou can find all information at:\n\n\uD83D\uDD17 **[Tool](https://exbio.wzw.tum.de/mosbi/)**\n        ",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "id": 49,
+            "createdAt": "2026-02-22T14:28:01Z",
+            "updatedAt": "2026-02-22T14:28:01Z",
+            "version": 0,
+            "name": "n_randomizations",
+            "variableName": "n_randomizations",
+            "type": "INTEGER",
+            "description": "Number of randomizations for cut-off estimation.",
+            "mode": null,
+            "options": [],
+            "minValue": 1.0,
+            "maxValue": null,
+            "pattern": null,
+            "default": "5"
+          },
+          {
+            "id": 50,
+            "createdAt": "2026-02-22T14:28:01Z",
+            "updatedAt": "2026-02-22T14:28:01Z",
+            "version": 0,
+            "name": "margin",
+            "variableName": "margin",
+            "type": "CATEGORICAL",
+            "description": "Margin for similarity computation",
+            "mode": null,
+            "options": [
+              "row",
+              "column",
+              "mean",
+              "both"
+            ],
+            "minValue": null,
+            "maxValue": null,
+            "pattern": null,
+            "default": "both"
+          },
+          {
+            "id": 51,
+            "createdAt": "2026-02-22T14:28:01Z",
+            "updatedAt": "2026-02-22T14:28:01Z",
+            "version": 0,
+            "name": "metric",
+            "variableName": "metric",
+            "type": "CATEGORICAL",
+            "description": "Similarity metric",
+            "mode": null,
+            "options": [
+              "Bray-Curtis",
+              "Jaccard",
+              "Overlap Coefficient",
+              "Fowlkes-Mallows"
+            ],
+            "minValue": null,
+            "maxValue": null,
+            "pattern": null,
+            "default": "Bray-Curtis"
+          },
+          {
+            "id": 52,
+            "createdAt": "2026-02-22T14:28:01Z",
+            "updatedAt": "2026-02-22T14:28:01Z",
+            "version": 0,
+            "name": "n_steps",
+            "variableName": "n_steps",
+            "type": "INTEGER",
+            "description": "Number of points where the cut-off is evaluated",
+            "mode": null,
+            "options": [],
+            "minValue": 1.0,
+            "maxValue": null,
+            "pattern": null,
+            "default": "100"
+          },
+          {
+            "id": 53,
+            "createdAt": "2026-02-22T14:28:01Z",
+            "updatedAt": "2026-02-22T14:28:01Z",
+            "version": 0,
+            "name": "sn_ratio",
+            "variableName": "sn_ratio",
+            "type": "BOOLEAN",
+            "description": "Compute signal-to-noise ratio if True, else use error_threshold",
+            "mode": null,
+            "options": [],
+            "minValue": null,
+            "maxValue": null,
+            "pattern": null,
+            "default": "true"
+          }
+        ],
+        "input": [
+          {
+            "id": 16,
+            "createdAt": "2026-02-22T14:28:01Z",
+            "updatedAt": "2026-02-22T14:28:01Z",
+            "version": 0,
+            "name": "data",
+            "variableName": "data",
+            "type": "TSV",
+            "description": "",
+            "mode": null,
+            "delimiter": null,
+            "hasHeader": null,
+            "minValue": null,
+            "maxValue": null,
+            "shape": null,
+            "tabularSchema": null,
+            "required": true
+          }
+        ],
+        "output": [
+          {
+            "id": 17,
+            "createdAt": "2026-02-22T14:28:01Z",
+            "updatedAt": "2026-02-22T14:28:01Z",
+            "version": 0,
+            "name": "adjacency_heatmap",
+            "variableName": "adjacency_heatmap",
+            "type": "IMAGE",
+            "description": "output",
+            "mode": null,
+            "delimiter": null,
+            "hasHeader": null,
+            "minValue": null,
+            "maxValue": null,
+            "shape": null,
+            "tabularSchema": null
+          },
+          {
+            "id": 18,
+            "createdAt": "2026-02-22T14:28:01Z",
+            "updatedAt": "2026-02-22T14:28:01Z",
+            "version": 0,
+            "name": "histograms",
+            "variableName": "histograms",
+            "type": "IMAGE",
+            "description": "output",
+            "mode": null,
+            "delimiter": null,
+            "hasHeader": null,
+            "minValue": null,
+            "maxValue": null,
+            "shape": null,
+            "tabularSchema": null
+          },
+          {
+            "id": 19,
+            "createdAt": "2026-02-22T14:28:01Z",
+            "updatedAt": "2026-02-22T14:28:01Z",
+            "version": 0,
+            "name": "network_by_algorithm",
+            "variableName": "network_by_algorithm",
+            "type": "IMAGE",
+            "description": "output",
+            "mode": null,
+            "delimiter": null,
+            "hasHeader": null,
+            "minValue": null,
+            "maxValue": null,
+            "shape": null,
+            "tabularSchema": null
+          },
+          {
+            "id": 20,
+            "createdAt": "2026-02-22T14:28:01Z",
+            "updatedAt": "2026-02-22T14:28:01Z",
+            "version": 0,
+            "name": "network_plot",
+            "variableName": "network_plot",
+            "type": "IMAGE",
+            "description": "output",
+            "mode": null,
+            "delimiter": null,
+            "hasHeader": null,
+            "minValue": null,
+            "maxValue": null,
+            "shape": null,
+            "tabularSchema": null
+          }
+        ]
+      },
+      "audits": []
+    }
+  ],
+  "hasImage": true
+}

@@ -1,0 +1,191 @@
+{
+  "name" : "Transformer Split Rows",
+  "uniqueAppId" : "adc00c97-2b33-482c-ab8c-d036b24a3706",
+  "slug" : "transformer-split-rows",
+  "type" : "DATA_TRANSFORMATION",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/transformer-split-rows",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 24,
+    "appVersion" : "1.0.0",
+    "publishHash" : "6421f34e-8c10-4cc0-b46f-5266ba7977b2",
+    "publishInfo" : {
+      "commitHash" : "f7086068e2b7a44fe2333a1aaa8907f3b6b303c9",
+      "filePaths" : [ ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/transformer-split-rows:vElEmkSt",
+        "success" : false,
+        "summary" : {
+          "critical" : 0,
+          "high" : 2,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 2
+        },
+        "rawReport" : {
+          "lang-pkgs-python-pkg" : [ {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:0566f5f0b71c39893af89f38b3ff2d70836b0097ef0a4aa0fad3954d60fb0d94"
+            },
+            "PkgID" : "msgpack@1.1.2",
+            "Title" : "MessagePack for Python: Out-of-bounds read / crash on Unpacker reuse after a caught error",
+            "Status" : "fixed",
+            "PkgName" : "msgpack",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://github.com/advisories/GHSA-6v7p-g79w-8964",
+            "References" : [ "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/2c56ddb5d0025ed481d962c0f5d62d19dec7476d", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.1", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-6v7p-g79w-8964" ],
+            "Description" : "### Impact\n\nIf the Unpacker is used repeatedly after an error occurs, the process may crash with a SEGV.\n\nIf the Unpacker is used repeatedly to unpack untrusted input from external sources, it may be vulnerable to a DoS attack.\n\n### Patches\n\nv1.2.1\n\n### Workarounds\n\nUsers should create a new Unpacker instead of reusing the same Unpacker after an error occurs.\n\nApplying the above patch can prevent SEGV, but reusing the Streaming Unpacker after it has encountered an error will not yield correct data. If an error occurs during Streaming Unpacking, the Stream and Streaming Unpacker should be discarded.\n\nTherefore, this is not just a workaround but the correct solution. The above patch only prevents crashes from incorrect usage.",
+            "Fingerprint" : "sha256:6680efdeb985c7326ea486011ddb11c1a77351845b017a319460b8777b10ad8b",
+            "FixedVersion" : "1.2.1",
+            "PkgIdentifier" : {
+              "UID" : "f7dd9267d9d4da19",
+              "PURL" : "pkg:pypi/msgpack@1.1.2",
+              "BOMRef" : "pkg:pypi/msgpack@1.1.2"
+            },
+            "PublishedDate" : "2026-06-19T21:42:55Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "ghsa" : 3
+            },
+            "VulnerabilityID" : "GHSA-6v7p-g79w-8964",
+            "InstalledVersion" : "1.1.2",
+            "LastModifiedDate" : "2026-06-19T21:42:55Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 8.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "ghsa" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              },
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:L"
+              },
+              "bitnami" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:0566f5f0b71c39893af89f38b3ff2d70836b0097ef0a4aa0fad3954d60fb0d94"
+            },
+            "PkgID" : "setuptools@70.3.0",
+            "Title" : "setuptools: Path Traversal Vulnerability in setuptools PackageIndex",
+            "CweIDs" : [ "CWE-22" ],
+            "Status" : "fixed",
+            "PkgName" : "setuptools",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-5rjg-fvgr-3xxf" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:13578", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/9/ALSA-2025-13578.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
+            "Fingerprint" : "sha256:b21b4ca9a9a1c35dbb574f25d63c5df9d96231f362e7fab47d843097a37fee8f",
+            "FixedVersion" : "78.1.1",
+            "PkgIdentifier" : {
+              "UID" : "c5eccaa7d8e0c308",
+              "PURL" : "pkg:pypi/setuptools@70.3.0",
+              "BOMRef" : "pkg:pypi/setuptools@70.3.0"
+            },
+            "PublishedDate" : "2025-05-17T16:15:19.11Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 2,
+              "ghsa" : 3,
+              "azure" : 3,
+              "rocky" : 2,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "bitnami" : 3,
+              "oracle-oval" : 2
+            },
+            "VulnerabilityID" : "CVE-2025-47273",
+            "InstalledVersion" : "70.3.0",
+            "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
+          } ]
+        }
+      },
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/transformer-split-rows:vElEmkSt"
+    },
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/transformer-split-rows:vElEmkSt",
+    "shortDescription" : "Split two rows using a delimiter.",
+    "longDescription" : "# Transformer Combine Rows\n\nTransformer Split Rows expands a CSV table by splitting delimited cell values into multiple rows.\nIt is the inverse operation of Transformer Combine Rows: instead of aggregating many rows into one,\nit takes delimited values (e.g., \"a,b,c\") and normalizes them back into row-wise form. This is\nuseful when previously combined columns (codes/labels/IDs) must be processed as individual records\nagain.\n\n## Core behavior\n\n- Reads an input CSV table.\n- If the first column is named id (case-insensitive), it is treated as an identifier column and is\n  preserved.\n- For every other column:\n- values from all rows are converted to string form (implementation-dependent),\n- then concatenated using the configured delimiter.\n- Produces a single-row output CSV.\n\n## Hyperparameter\n\n- delimiter (STRING): Separator used when concatenating values (e.g., \",\", \";\", \"|\", \"\\n\").\n\n## Input\n\n- table (CSV, required): Tabular input whose rows will be combined.\n\n## Output\n\n- combined (CSV): One-row table containing concatenated column values.\n\n## Notes / assumptions\n\n- Null/empty handling depends on the implementation (e.g., whether NaNs become empty strings or \"\n  nan\").\n- Non-string values are typically stringified before concatenation.",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "columns",
+        "variableName" : "columns",
+        "type" : "STRING",
+        "description" : "Delimiter used to split values when expanding into rows",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "|"
+      } ],
+      "input" : [ {
+        "name" : "input",
+        "variableName" : "input",
+        "type" : "CSV",
+        "description" : "Input row schema. Input dictionary containing a 'value' key with the string to split",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "tabularSchema" : {
+          "requiredColumns" : [ "value" ]
+        },
+        "required" : false
+      } ],
+      "output" : [ {
+        "name" : "output",
+        "variableName" : "output",
+        "type" : "CSV",
+        "description" : "Output row schema. Input dictionary containing a 'value' key with the string to split",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "tabularSchema" : {
+          "requiredColumns" : [ "b", "a" ]
+        }
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

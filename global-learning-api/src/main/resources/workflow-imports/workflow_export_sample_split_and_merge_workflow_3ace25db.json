@@ -1,0 +1,185 @@
+{
+  "nodes" : [ {
+    "nodeId" : "5db57a16-cc68-4e93-9233-cdbd98dbdb14",
+    "appUniqueId" : "911f4fbd-976b-4354-8479-eb885c5a1fc2",
+    "versionPublishHash" : "gmm",
+    "position" : {
+      "x" : 700,
+      "y" : 1000
+    },
+    "hyperParams" : {
+      "n_components" : 3,
+      "covariance_type" : "full",
+      "tol" : 0.001,
+      "reg_covar" : 1.0E-6,
+      "max_iter" : 100,
+      "n_init" : 1,
+      "init_params" : "kmeans",
+      "random_state" : 42,
+      "warm_start" : "0",
+      "compute_labels" : "1",
+      "standardize" : "1",
+      "output_probabilities" : "1"
+    },
+    "hasChildren" : true,
+    "hasParent" : true,
+    "executionOrder" : 3
+  }, {
+    "nodeId" : "ff5ac6d4-4305-4b6d-9ebc-6f8814df5585",
+    "appUniqueId" : "911f4fbd-976b-4354-8479-eb885c5a1fc2",
+    "versionPublishHash" : "gmm",
+    "position" : {
+      "x" : 150,
+      "y" : 1000
+    },
+    "hyperParams" : {
+      "n_components" : 3,
+      "covariance_type" : "full",
+      "tol" : 0.001,
+      "reg_covar" : 1.0E-6,
+      "max_iter" : 100,
+      "n_init" : 1,
+      "init_params" : "kmeans",
+      "random_state" : 42,
+      "warm_start" : "0",
+      "compute_labels" : "1",
+      "standardize" : "1",
+      "output_probabilities" : "1"
+    },
+    "hasChildren" : true,
+    "hasParent" : true,
+    "executionOrder" : 4
+  }, {
+    "nodeId" : "7da2ef07-1b88-4244-b69c-45f76a811fc9",
+    "appUniqueId" : "a71e2f25-1d3a-4b0c-9b85-7a2e6c1f4f0e",
+    "versionPublishHash" : "1543c4685ccd1fbdf9ea6d054ab9b5ab1d9903e2",
+    "position" : {
+      "x" : 300,
+      "y" : 100
+    },
+    "hyperParams" : {
+      "dataset_id" : 17
+    },
+    "hasChildren" : true,
+    "hasParent" : false,
+    "executionOrder" : 0
+  }, {
+    "nodeId" : "6454becb-c220-4eea-964e-a5bbb1bb730c",
+    "appUniqueId" : "8c2e7e45-1b6a-4c6b-9b3e-1c8c2d6b7a10",
+    "versionPublishHash" : "onehot",
+    "position" : {
+      "x" : 300,
+      "y" : 400
+    },
+    "hyperParams" : {
+      "drop_first" : "0",
+      "keep_original" : "0",
+      "bool_to_number" : "1",
+      "columns" : "",
+      "dummy_na" : "0",
+      "handle_unknown" : "ignore",
+      "prefix_sep" : "__"
+    },
+    "hasChildren" : true,
+    "hasParent" : true,
+    "executionOrder" : 1
+  }, {
+    "nodeId" : "67cba8c5-67be-4b88-be5a-c89b0d6483da",
+    "appUniqueId" : "8b5a0816-df3a-441c-abba-8ee85375374f",
+    "versionPublishHash" : "f25e48d1-1c84-462e-9320-df960d7d4272",
+    "position" : {
+      "x" : 450,
+      "y" : 1400
+    },
+    "hyperParams" : {
+      "mode" : "concat_columns",
+      "key" : "",
+      "how" : "inner"
+    },
+    "hasChildren" : false,
+    "hasParent" : true,
+    "executionOrder" : 5
+  }, {
+    "nodeId" : "d9da72b6-4c15-45e5-900b-6a33cef468e2",
+    "appUniqueId" : "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
+    "versionPublishHash" : "d79380765e11b21a15886658f3dcaec913a2d77e",
+    "position" : {
+      "x" : 300,
+      "y" : 700
+    },
+    "hyperParams" : {
+      "shuffle" : "1",
+      "test_size" : 0.25,
+      "random_state" : 42
+    },
+    "hasChildren" : true,
+    "hasParent" : true,
+    "executionOrder" : 2
+  } ],
+  "connections" : [ {
+    "inputId" : "app_ff5ac6d4-4305-4b6d-9ebc-6f8814df5585_input_features",
+    "outputId" : "app_d9da72b6-4c15-45e5-900b-6a33cef468e2_output_test",
+    "inputNodeId" : "ff5ac6d4-4305-4b6d-9ebc-6f8814df5585",
+    "outputNodeId" : "d9da72b6-4c15-45e5-900b-6a33cef468e2",
+    "inputFileName" : "features.csv",
+    "outputFileName" : "test.csv",
+    "inputConfigName" : "features",
+    "outputConfigName" : "test",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_5db57a16-cc68-4e93-9233-cdbd98dbdb14_input_features",
+    "outputId" : "app_d9da72b6-4c15-45e5-900b-6a33cef468e2_output_train",
+    "inputNodeId" : "5db57a16-cc68-4e93-9233-cdbd98dbdb14",
+    "outputNodeId" : "d9da72b6-4c15-45e5-900b-6a33cef468e2",
+    "inputFileName" : "features.csv",
+    "outputFileName" : "train.csv",
+    "inputConfigName" : "features",
+    "outputConfigName" : "train",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_6454becb-c220-4eea-964e-a5bbb1bb730c_input_features",
+    "outputId" : "app_7da2ef07-1b88-4244-b69c-45f76a811fc9_output_dataset",
+    "inputNodeId" : "6454becb-c220-4eea-964e-a5bbb1bb730c",
+    "outputNodeId" : "7da2ef07-1b88-4244-b69c-45f76a811fc9",
+    "inputFileName" : "features.csv",
+    "outputFileName" : "dataset.csv",
+    "inputConfigName" : "features",
+    "outputConfigName" : "dataset",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_d9da72b6-4c15-45e5-900b-6a33cef468e2_input_input",
+    "outputId" : "app_6454becb-c220-4eea-964e-a5bbb1bb730c_output_encoded",
+    "inputNodeId" : "d9da72b6-4c15-45e5-900b-6a33cef468e2",
+    "outputNodeId" : "6454becb-c220-4eea-964e-a5bbb1bb730c",
+    "inputFileName" : "input.csv",
+    "outputFileName" : "encoded.csv",
+    "inputConfigName" : "input",
+    "outputConfigName" : "encoded",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_67cba8c5-67be-4b88-be5a-c89b0d6483da_input_left",
+    "outputId" : "app_ff5ac6d4-4305-4b6d-9ebc-6f8814df5585_output_labels",
+    "inputNodeId" : "67cba8c5-67be-4b88-be5a-c89b0d6483da",
+    "outputNodeId" : "ff5ac6d4-4305-4b6d-9ebc-6f8814df5585",
+    "inputFileName" : "left.csv",
+    "outputFileName" : "labels.csv",
+    "inputConfigName" : "left",
+    "outputConfigName" : "labels",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_67cba8c5-67be-4b88-be5a-c89b0d6483da_input_right",
+    "outputId" : "app_5db57a16-cc68-4e93-9233-cdbd98dbdb14_output_labels",
+    "inputNodeId" : "67cba8c5-67be-4b88-be5a-c89b0d6483da",
+    "outputNodeId" : "5db57a16-cc68-4e93-9233-cdbd98dbdb14",
+    "inputFileName" : "right.csv",
+    "outputFileName" : "labels.csv",
+    "inputConfigName" : "right",
+    "outputConfigName" : "labels",
+    "inputConnection" : false
+  } ],
+  "inputs" : [ ],
+  "keycloakId" : "test",
+  "name" : "Sample split-and-merge workflow",
+  "description" : "Sample split-and-merge workflow",
+  "publishStatus" : "PUBLISHED"
+}

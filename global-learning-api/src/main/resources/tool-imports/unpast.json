@@ -1,0 +1,150 @@
+{
+  "name" : "Unpast",
+  "uniqueAppId" : "a3f5e8b2-4c1d-4e9a-8f2b-3d6a5c9e7b1f",
+  "slug" : "unpast",
+  "type" : "SELF_LEARNED",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-unpast",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 23,
+    "appVersion" : "1.0.0",
+    "publishHash" : "0b79ed73897d91f1b9aeec11051e1283f62691bbs",
+    "publishInfo" : {
+      "commitHash" : "b160bc75c90e3c123f01a1e50addfff576ebcf13",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-unpast/-/blob/b160bc75c90e3c123f01a1e50addfff576ebcf13/data/A.n_genes%3D500%2Cm%3D4%2Cstd%3D1%2Coverlap%3Dno.exprs_z.tsv", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-unpast/-/blob/b160bc75c90e3c123f01a1e50addfff576ebcf13/data/test_unpast.tsv", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-unpast/-/blob/b160bc75c90e3c123f01a1e50addfff576ebcf13/data/exprs.csv" ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/unpast:zwdrBnsC",
+        "success" : false,
+        "summary" : {
+          "critical" : 0,
+          "high" : 0,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 0
+        },
+        "rawReport" : { }
+      },
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/unpast:zwdrBnsC"
+    },
+    "changelog" : "Changelog 1.0.0",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/unpast:zwdrBnsC",
+    "shortDescription" : "UnPaSt: Unsupervised Patient Stratification",
+    "longDescription" : "# UnPaSt: Unsupervised Patient Stratification\n## Overview\n\n**UnPaSt** (Unsupervised Patient Stratification) is a method for identifying **biologically significant differentially expressed biclusters**. It has demonstrated superior recovery of known **PAM50 breast cancer subtypes** compared to other biclustering methods.\n\nThis example runs UnPaSt on a subset of 200 randomly selected samples from the **TCGA-BRCA** dataset, providing a reproducible workflow to explore cancer subtype discovery via biclustering.\n\n---\n\n## Key Features\n\n- Unsupervised bicluster detection from gene expression data\n- Flexible binarization and clustering methods\n- Support for WGCNA and Louvain clustering\n- Bidirectional regulation detection\n- Outlier z-score capping\n- Reproducible with random seed support\n\n---\n\n## Configuration\n\n### Hyperparameters\n\n| Name                     | Type        | Default     | Description                                                                 |\n|--------------------------|-------------|-------------|-----------------------------------------------------------------------------|\n| `binarization_method`    | CATEGORICAL | `kmeans`    | Method used for binarization (`kmeans`, `Ward`, `GMM`)                      |\n| `p_value`                | FLOAT       | `'0.05'`    | p-value threshold for binarization in (0, 1]                                |\n| `clustering_method`      | CATEGORICAL | `WGCNA`     | Clustering method (`WGCNA`, `Louvain`)                                      |\n| `deep_split`             | INTEGER     | `'2'`       | Depth of splitting (WGCNA only)                                             |\n| `dynamic_tree_cut`       | FLOAT       | `'0.5'`     | Threshold for dynamic tree cut [0, 1] (WGCNA only)                          |\n| `ceiling`                | INTEGER     | `'3'`       | Ceiling for z-scores to reduce outliers (0 or positive integer)             |\n| `bidirectional`          | BOOLEAN     | `'true'`    | Detect both up- and down-regulated biclusters                               |\n| `seed`                   | INTEGER     | `'42'`      | Random seed for reproducibility                                             |\n| `similarity_cutoff_mode` | CATEGORICAL | `automatic` | Mode for similarity cutoff in Louvain clustering (`automatic`, `manual`)    |\n| `similarity_cutoff_value`| FLOAT       | `'0.5'`     | Similarity cutoff value (used only if mode is `manual`)                     |\n\n---\n\n### Input\n\n| Name   | Type | Description                                                                                   | Required |\n|--------|------|-----------------------------------------------------------------------------------------------|----------|\n| `data` | TSV  | Expression matrix with **features as rows** (e.g., genes) and **samples as columns**          | `true`   |\n\n---\n\n### Output\n\n| Name        | Type | Description                                           |\n|-------------|------|-------------------------------------------------------|\n| `outputFile`| CSV  | TSV file containing the identified biclusters         |\n\n---\n\n## More Information\n\n🔗 **[Tool](https://apps.cosy.bio/unpast/)**\n\n---\n        ",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "binarization_method",
+        "variableName" : "binarization_method",
+        "type" : "CATEGORICAL",
+        "description" : "The method used for binarization.",
+        "mode" : "BOTH",
+        "options" : [ "kmeans", "Ward", "GMM" ],
+        "default" : "kmeans"
+      }, {
+        "name" : "p_value",
+        "variableName" : "p_value",
+        "type" : "FLOAT",
+        "description" : "The p-value threshold for binarization. Must be in (0, 1].",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "maxValue" : 1.0,
+        "default" : "0.05"
+      }, {
+        "name" : "clustering_method",
+        "variableName" : "clustering_method",
+        "type" : "CATEGORICAL",
+        "description" : "The clustering method to use.",
+        "mode" : "BOTH",
+        "options" : [ "WGCNA", "Louvain" ],
+        "default" : "WGCNA"
+      }, {
+        "name" : "deep_split",
+        "variableName" : "deep_split",
+        "type" : "INTEGER",
+        "description" : "The depth of splitting in the clustering process (used for 'WGCNA').",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "maxValue" : 4.0,
+        "default" : "2"
+      }, {
+        "name" : "dynamic_tree_cut",
+        "variableName" : "dynamic_tree_cut",
+        "type" : "FLOAT",
+        "description" : "Threshold value for dynamic tree cut (used for 'WGCNA'). Must be in [0, 1].",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "maxValue" : 1.0,
+        "default" : "0.5"
+      }, {
+        "name" : "ceiling",
+        "variableName" : "ceiling",
+        "type" : "INTEGER",
+        "description" : "Ceiling for z-scores to reduce outliers. Must be 0 or a positive integer.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "default" : "3"
+      }, {
+        "name" : "bidirectional",
+        "variableName" : "bidirectional",
+        "type" : "BOOLEAN",
+        "description" : "Whether to find biclusters that are both up- and down-regulated.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "true"
+      }, {
+        "name" : "seed",
+        "variableName" : "seed",
+        "type" : "INTEGER",
+        "description" : "Random seed for reproducibility.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "42"
+      }, {
+        "name" : "similarity_cutoff_mode",
+        "variableName" : "similarity_cutoff_mode",
+        "type" : "CATEGORICAL",
+        "description" : "Mode for similarity cutoff in 'Louvain' clustering.",
+        "mode" : "BOTH",
+        "options" : [ "automatic", "manual" ],
+        "default" : "automatic"
+      } ],
+      "input" : [ {
+        "name" : "data",
+        "variableName" : "data",
+        "type" : "TSV",
+        "description" : "",
+        "mode" : "BOTH",
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "cluster",
+        "variableName" : "cluster",
+        "type" : "TSV",
+        "description" : "output",
+        "mode" : "BOTH"
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

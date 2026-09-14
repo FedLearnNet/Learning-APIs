@@ -1,0 +1,118 @@
+{
+  "name" : "OneHotEncoding",
+  "uniqueAppId" : "8c2e7e45-1b6a-4c6b-9b3e-1c8c2d6b7a10",
+  "slug" : "onehotencoding",
+  "type" : "SELF_LEARNED",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/posymed/apps/onehotencoding",
+  "icon" : "https://pandas.pydata.org/static/img/pandas_white.svg",
+  "oldFCVersion" : false,
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 11,
+    "appVersion" : "1.0.0",
+    "publishHash" : "onehot",
+    "publishInfo" : {
+      "commitHash" : "1deee0ca9ce7f8527dd0db4d8860d288cc6cc785",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/posymed/apps/onehotencoding/-/blob/1deee0ca9ce7f8527dd0db4d8860d288cc6cc785/data/uci_dataset17.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/onehotencoding/-/blob/1deee0ca9ce7f8527dd0db4d8860d288cc6cc785/data/iris.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/onehotencoding/-/blob/1deee0ca9ce7f8527dd0db4d8860d288cc6cc785/data/iris_encoded.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/onehotencoding/-/blob/1deee0ca9ce7f8527dd0db4d8860d288cc6cc785/data/uci_dataset17_encoded.csv" ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/onehotencoding:IlsFFIPO"
+    },
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/onehotencoding:IlsFFIPO",
+    "shortDescription" : "CSV-to-CSV one-hot encoding using pandas only.",
+    "longDescription" : "# OneHotEncoding\n\nOneHotEncoding is a lightweight CSV → CSV preprocessing tool that performs pandas-only one-hot encoding on categorical columns, producing a tabular output suitable for downstream ML workflows.\n\nIt is designed to be simple, dependency-minimal (just pandas), and configurable for common encoding variants (drop-first, NaN dummies, custom prefix separator, etc.).\n\n## What this tool does\n- Reads an input CSV table (features) and produces an encoded CSV (encoded) with the same number of rows and additional dummy columns.\n- Preserves an optional identifier column\n- If the first column is named id (case-insensitive), it is treated as an identifier and kept as the first column in the output.\n- All other columns are treated as feature columns.\n- Selects which columns to encode\n- If columns is provided (comma-separated list), only those columns are encoded.\n- If columns is empty, the tool automatically selects:\n- all object and category dtype columns\n- boolean columns only if bool_to_number = false (otherwise booleans are handled separately)\n- Generates dummy variables using pandas.get_dummies\n- Adds one dummy column per category value per encoded feature (or k-1 if drop_first=true).\n- Dummy column naming is controlled by prefix_sep (default: __), e.g. color__red.\n- Optional behaviors\n- drop_first: drop the first category per feature (reduces multicollinearity by producing k-1 dummies).\n- dummy_na: create a dedicated dummy column for missing values (NaN) in encoded columns.\n- keep_original: keep original categorical columns alongside the generated dummies (otherwise they are replaced by dummies).\n- Emits basic metrics\n- n_rows, n_cols, and n_encoded_input_cols are sent as metrics after encoding.\n\n## Configuration\n\nHyperparameters\n- columns (STRING, default: \"\")\nComma-separated list of columns to one-hot encode.\nIf empty: auto-detect categorical columns (object/category; plus bool if bool_to_number=false).\n- drop_first (BOOLEAN, default: 0)\nIf true, drop the first category per encoded feature (k-1 dummies).\n- bool_to_number (BOOLEAN, default: 1)\nIf true, boolean columns are converted to numeric 0/1 instead of being one-hot encoded.\n- dummy_na (BOOLEAN, default: 0)\nIf true, include a dummy column for missing values in encoded columns.\n- handle_unknown (CATEGORICAL, default: ignore)\nPresent for API consistency. Note: pandas.get_dummies encodes categories observed in the input; it does not implement a “future unknown category” handling mode like some sklearn encoders.\n- prefix_sep (STRING, default: \"__\")\nSeparator between the source column name and category in dummy column names (e.g., city__Berlin).\n- keep_original (BOOLEAN, default: 0)\nIf true, original categorical columns are retained in addition to the dummy columns.\n\n## Inputs\n- features (CSV, required)\nInput table. May contain numeric and categorical columns.\nIf the first column is named id, it is preserved as an identifier column.\n\n## Outputs\n- encoded (CSV)\nOne-hot encoded table with the same rows and additional dummy columns.\n\n",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "drop_first",
+        "variableName" : "drop_first",
+        "type" : "BOOLEAN",
+        "description" : "If true, drop the first category per feature (k-1 dummies).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0"
+      }, {
+        "name" : "keep_original",
+        "variableName" : "keep_original",
+        "type" : "BOOLEAN",
+        "description" : "If true, keep original categorical columns in addition to dummy columns.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0"
+      }, {
+        "name" : "bool_to_number",
+        "variableName" : "bool_to_number",
+        "type" : "BOOLEAN",
+        "description" : "If true, convert boolean columns to numeric 0/1 instead of one-hot encoding them.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "columns",
+        "variableName" : "columns",
+        "type" : "STRING",
+        "description" : "Comma-separated list of columns to one-hot encode. If empty, all object/category/bool columns are encoded.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : ""
+      }, {
+        "name" : "dummy_na",
+        "variableName" : "dummy_na",
+        "type" : "BOOLEAN",
+        "description" : "If true, create a dedicated dummy column for NaN values in encoded columns.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0"
+      }, {
+        "name" : "handle_unknown",
+        "variableName" : "handle_unknown",
+        "type" : "CATEGORICAL",
+        "description" : "How to handle unknown categories. Kept for consistency; pandas.get_dummies encodes categories present in the input.",
+        "mode" : "BOTH",
+        "options" : [ "ignore", "error" ],
+        "default" : "ignore"
+      }, {
+        "name" : "prefix_sep",
+        "variableName" : "prefix_sep",
+        "type" : "STRING",
+        "description" : "Separator between column name and category in generated dummy column names.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "__"
+      } ],
+      "input" : [ {
+        "name" : "features",
+        "variableName" : "features",
+        "type" : "CSV",
+        "description" : "Input CSV table. Optional first column named 'id' (kept as identifier). Other columns can be numeric or categorical.",
+        "mode" : "BOTH",
+        "tabularSchema" : {
+          "allowOnlyNumbers" : false,
+          "prohibitedNulls" : false
+        },
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "encoded",
+        "variableName" : "encoded",
+        "type" : "CSV",
+        "description" : "One-hot encoded CSV (same rows; additional dummy columns).",
+        "mode" : "BOTH"
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

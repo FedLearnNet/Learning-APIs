@@ -1,0 +1,83 @@
+{
+  "nodes" : [ {
+    "nodeId" : "15e52440-66b3-482c-9040-da38a63f7d59",
+    "appUniqueId" : "8c2e7e45-1b6a-4c6b-9b3e-1c8c2d6b7a10",
+    "versionPublishHash" : "onehot",
+    "position" : {
+      "x" : 150,
+      "y" : 200
+    },
+    "hyperParams" : {
+      "drop_first" : "0",
+      "keep_original" : "0",
+      "bool_to_number" : "1",
+      "columns" : "variety",
+      "dummy_na" : "0",
+      "handle_unknown" : "ignore",
+      "prefix_sep" : "__"
+    },
+    "hasChildren" : true,
+    "hasParent" : true,
+    "executionOrder" : 0
+  }, {
+    "nodeId" : "100c189f-c435-4cfa-89a6-621e368e8c72",
+    "appUniqueId" : "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b",
+    "versionPublishHash" : "agglomerative",
+    "position" : {
+      "x" : 150,
+      "y" : 500
+    },
+    "hyperParams" : {
+      "linkage" : "ward",
+      "compute_distances" : "1",
+      "standardize" : "1",
+      "metric" : "euclidean",
+      "use_distance_threshold" : "1",
+      "n_clusters" : 2,
+      "plot_title" : "Agglomerative Clustering Dendrogram",
+      "dendrogram_truncate_mode" : "none",
+      "dendrogram_p" : 30,
+      "distance_threshold" : 0
+    },
+    "hasChildren" : false,
+    "hasParent" : true,
+    "executionOrder" : 1
+  } ],
+  "connections" : [ {
+    "inputId" : "app_100c189f-c435-4cfa-89a6-621e368e8c72_input_features",
+    "outputId" : "app_15e52440-66b3-482c-9040-da38a63f7d59_output_encoded",
+    "inputNodeId" : "100c189f-c435-4cfa-89a6-621e368e8c72",
+    "outputNodeId" : "15e52440-66b3-482c-9040-da38a63f7d59",
+    "inputFileName" : "features.csv",
+    "outputFileName" : "encoded.csv",
+    "inputConfigName" : "features",
+    "outputConfigName" : "encoded",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_15e52440-66b3-482c-9040-da38a63f7d59_input_features",
+    "outputId" : "INPUT_NODE_43f0613a-b56d-46d0-b0cf-6ecff45146fe",
+    "inputNodeId" : "15e52440-66b3-482c-9040-da38a63f7d59",
+    "inputFileName" : "features.csv",
+    "inputConfigName" : "features",
+    "inputConnection" : true
+  } ],
+  "inputs" : [ {
+    "version" : 0,
+    "name" : "Iris",
+    "type" : "CSV",
+    "description" : "",
+    "mode" : "TRAINING",
+    "delimiter" : ",",
+    "hasHeader" : false,
+    "required" : false,
+    "nodeId" : "43f0613a-b56d-46d0-b0cf-6ecff45146fe",
+    "position" : {
+      "x" : 150,
+      "y" : 0
+    }
+  } ],
+  "keycloakId" : "test",
+  "name" : "CSV encode to cluster ",
+  "description" : "Input dataset will be one hot encoded and used for cluster",
+  "publishStatus" : "PUBLISHED"
+}

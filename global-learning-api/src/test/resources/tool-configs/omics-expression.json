@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Gene Expression Matrix",
+    "variableName": "expressionMatrix",
+    "type": "TSV",
+    "description": "Standard tabular gene expression matrix where each row represents a gene/feature and each column a sample. This format is widely used in RNA-seq and microarray analyses to represent normalized or raw counts for statistical comparison between conditions.",
+    "delimiter": "\t",
+    "hasHeader": true,
+    "tabularSchema": {
+      "minColumns": 2,
+      "allowOnlyNumbers": true,
+      "prohibitedNulls": true,
+      "requiredColumns": ["GeneID"],
+      "columns": {
+        "GeneID": {
+          "type": "STRING",
+          "nullable": false,
+          "description": "Gene identifier (z.B. Ensembl, Entrez, Symbol)"
+        }
+      }
+    }
+  },
+  {
+    "name": "Differential Expression Results",
+    "variableName": "deResults",
+    "type": "TSV",
+    "description": "Tabular results from differential expression analysis (e.g., DESeq2, edgeR, limma) summarizing effect sizes and significance metrics per gene. Useful for downstream pathway analysis or ranking features by expression change.f",
+    "delimiter": "\t",
+    "hasHeader": true,
+    "tabularSchema": {
+      "minColumns": 4,
+      "prohibitedNulls": true,
+      "requiredColumns": ["gene_id", "log2FoldChange", "pvalue", "padj"],
+      "columns": {
+        "gene_id": { "type": "STRING", "nullable": false },
+        "log2FoldChange": { "type": "FLOAT", "nullable": false },
+        "pvalue": { "type": "FLOAT", "min": 0, "max": 1, "nullable": false },
+        "padj": { "type": "FLOAT", "min": 0, "max": 1, "nullable": false }
+      }
+    }
+  }
+]

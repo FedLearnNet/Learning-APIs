@@ -1,0 +1,108 @@
+{
+  "name" : "Bicon",
+  "uniqueAppId" : "44b843bd-921c-4a75-a627-2cd6d99c6a93",
+  "slug" : "bicon",
+  "type" : "SELF_LEARNED",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-bicon",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 25,
+    "appVersion" : "1.0.0",
+    "publishHash" : "0c7a23b5a75a35e546226c0f145c52f9759ff798a612651a62992f9baf8e8235",
+    "publishInfo" : {
+      "commitHash" : "8327151697f2940873440aa5a4bce55f5c95e17b",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-bicon/-/blob/8327151697f2940873440aa5a4bce55f5c95e17b/data/expr.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-bicon/-/blob/8327151697f2940873440aa5a4bce55f5c95e17b/data/net.tsv" ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/bicon2:zEmAwFIM"
+    },
+    "changelog" : "",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/bicon2:zEmAwFIM",
+    "shortDescription" : "Biclustering Constrained by Networks (BiCoN): Network-constrained biclustering of patients and omics data",
+    "longDescription" : "# Posymed-BiCoN\n\nNetwork-constrained biclustering for patient stratification in precision medicine.\n\n## What it does\nBiCoN identifies patient subgroups with similar gene expression patterns in functionally related genes, enabling personalized treatment strategies by finding molecular subtypes within patient populations.\n\n## Input Data\n- **Gene Expression** (`expr.csv`): Genes as rows, samples as columns\n- **Network Data** (`net.tsv`): Gene interaction network in TSV format\n\n## Hyperparameters\n- `l_g_min`: Minimum subnetwork size (default: 10)\n- `l_g_max`: Maximum subnetwork size (default: 15) \n- `max_iter`: Maximum search iterations (default: 15)\n\n## Output Files\n- `results.csv`: Patient stratification results\n- `gene_clusters.csv`: Identified gene clusters\n- `gene_correlation_matrix.csv`: Gene correlation data\n- `gene_correlation_heatmap.png`: Visual heatmap of gene correlations\n- `heatmap_data.json`: JSON data for frontend heatmap integration\n- `analysis_summary.txt`: Summary statistics and parameters\n\n## Interpretation\n- **Patient Clusters**: Groups of patients with similar molecular profiles\n- **Gene Sets**: Functionally related genes driving patient stratification\n- **Correlation Matrix**: Strength of gene-gene relationships\n- Use cluster assignments for treatment selection or clinical trial design\n\n",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "l_g_min",
+        "variableName" : "l_g_min",
+        "type" : "INTEGER",
+        "description" : "Minimum size of subnetwork for biclustering",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "default" : "10"
+      }, {
+        "name" : "l_g_max",
+        "variableName" : "l_g_max",
+        "type" : "INTEGER",
+        "description" : "Maximum size of subnetwork for biclustering",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "default" : "15"
+      }, {
+        "name" : "max_iter",
+        "variableName" : "max_iter",
+        "type" : "INTEGER",
+        "description" : "Maximum number of iterations for the search algorithm",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "default" : "15"
+      } ],
+      "input" : [ {
+        "name" : "net",
+        "variableName" : "net",
+        "type" : "CSV",
+        "description" : "Network data file (TSV format) containing gene interactions",
+        "delimiter" : "/t",
+        "hasHeader" : true,
+        "required" : true
+      }, {
+        "name" : "expr",
+        "variableName" : "expr",
+        "type" : "CSV",
+        "description" : "Gene expression data file (CSV format) with genes as rows and samples as columns",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "cluster_map",
+        "variableName" : "cluster_map",
+        "type" : "STRING",
+        "description" : "Cluster map visualization showing patient stratification",
+        "delimiter" : ",",
+        "hasHeader" : true
+      }, {
+        "name" : "network",
+        "variableName" : "network",
+        "type" : "STRING",
+        "description" : "Network visualization showing identified subnetworks",
+        "delimiter" : ",",
+        "hasHeader" : true
+      }, {
+        "name" : "result",
+        "variableName" : "result",
+        "type" : "CSV",
+        "description" : "Results file containing biclustering analysis results",
+        "delimiter" : ",",
+        "hasHeader" : true
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

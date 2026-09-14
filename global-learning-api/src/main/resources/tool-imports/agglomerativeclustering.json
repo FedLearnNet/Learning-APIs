@@ -1,0 +1,148 @@
+{
+  "name" : "AgglomerativeClustering",
+  "uniqueAppId" : "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b",
+  "slug" : "agglomerativeclustering",
+  "type" : "SELF_LEARNED",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/posymed/apps/agglomerative-clustering",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 3,
+    "appVersion" : "5.0.1",
+    "publishHash" : "agglomerative",
+    "publishInfo" : {
+      "commitHash" : "67603f1194032757e816813c7a061920abc10198",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/posymed/apps/agglomerative-clustering/-/blob/67603f1194032757e816813c7a061920abc10198/data/iris.csv" ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/agglomerativeclustering:frUQFtzd"
+    },
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/agglomerativeclustering:frUQFtzd",
+    "shortDescription" : "Hierarchical (Agglomerative) clustering with a\n    publication-ready dendrogram",
+    "longDescription" : "This app runs scikit-learn's AgglomerativeClustering and renders a SciPy dendrogram.\nBy default it computes the full tree (distance_threshold=0, n_clusters=None) to mirror the official example,\nthen optionally cuts the tree by distance or to a fixed number of clusters. Outputs include cluster labels,\na SciPy-compatible linkage matrix, a base64 PNG dendrogram, and a compact HTML report.",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "linkage",
+        "variableName" : "linkage",
+        "type" : "CATEGORICAL",
+        "description" : "Linkage strategy for hierarchical merges. Note: 'ward' requires metric='euclidean'.",
+        "mode" : "BOTH",
+        "options" : [ "ward", "complete", "average", "single" ],
+        "default" : "ward"
+      }, {
+        "name" : "compute_distances",
+        "variableName" : "compute_distances",
+        "type" : "BOOLEAN",
+        "description" : "Store distances between merged clusters (needed for plotting an accurate dendrogram in some settings).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "standardize",
+        "variableName" : "standardize",
+        "type" : "BOOLEAN",
+        "description" : "Standardize features to zero mean / unit variance before clustering (recommended).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "metric",
+        "variableName" : "metric",
+        "type" : "CATEGORICAL",
+        "description" : "Distance metric for clustering (ignored when linkage='ward', which always uses euclidean).",
+        "mode" : "BOTH",
+        "options" : [ "euclidean", "manhattan", "cosine" ],
+        "default" : "euclidean"
+      }, {
+        "name" : "use_distance_threshold",
+        "variableName" : "use_distance_threshold",
+        "type" : "BOOLEAN",
+        "description" : "If true, build the full tree with distance_threshold=0 and n_clusters=None to enable a dendrogram.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "n_clusters",
+        "variableName" : "n_clusters",
+        "type" : "INTEGER",
+        "description" : "Number of clusters to cut the tree into (used only if use_distance_threshold=false).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 2.0,
+        "maxValue" : 200.0,
+        "default" : "2"
+      }, {
+        "name" : "plot_title",
+        "variableName" : "plot_title",
+        "type" : "STRING",
+        "description" : "Title text for the dendrogram.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "pattern" : "^.{0,120}$",
+        "default" : "Agglomerative Clustering Dendrogram"
+      }, {
+        "name" : "dendrogram_truncate_mode",
+        "variableName" : "dendrogram_truncate_mode",
+        "type" : "CATEGORICAL",
+        "description" : "Truncation mode for the dendrogram plot. 'none' shows the full tree; 'lastp' keeps the last P leaves; 'level' shows the last P merging levels.",
+        "mode" : "BOTH",
+        "options" : [ "none", "lastp", "level" ],
+        "default" : "none"
+      }, {
+        "name" : "dendrogram_p",
+        "variableName" : "dendrogram_p",
+        "type" : "INTEGER",
+        "description" : "Parameter P for truncate_mode 'lastp' or 'level' (ignored when truncate_mode='none').",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "maxValue" : 10000.0,
+        "default" : "30"
+      }, {
+        "name" : "distance_threshold",
+        "variableName" : "distance_threshold",
+        "type" : "FLOAT",
+        "description" : "Height at which to cut the dendrogram to form clusters (used only if use_distance_threshold=true). Set to 0.0 to compute the full tree like in the scikit-learn example.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "default" : "0.0"
+      } ],
+      "input" : [ {
+        "name" : "features",
+        "variableName" : "features",
+        "type" : "CSV",
+        "description" : "Tabular feature matrix. Rows = samples, columns = numeric features. If you have an ID column, place it as the first column named id; otherwise sample indices will be used.",
+        "mode" : "BOTH",
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "dendrogram_png",
+        "variableName" : "dendrogram_png",
+        "type" : "IMAGE",
+        "description" : "Base64-encoded PNG image of the dendrogram plot.",
+        "mode" : "BOTH"
+      }, {
+        "name" : "report",
+        "variableName" : "report",
+        "type" : "TEXT",
+        "description" : "Lightweight HTML summary with params, cluster counts, and an embedded dendrogram image.",
+        "mode" : "BOTH"
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

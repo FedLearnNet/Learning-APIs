@@ -1,0 +1,103 @@
+{
+  "name" : "clusteval",
+  "uniqueAppId" : "dc7f8a8e-8cb8-49d8-b9c0-1f73f481e939",
+  "slug" : "clusteval",
+  "type" : "EVALUATION",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-clusteval",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [
+    {
+    "federatedAppId" : 20,
+    "appVersion" : "1.0.0",
+    "publishHash" : "9664ba49de3bb587766ef0fe1d6b824a653d422dcb894e4229436f0c1af65ca9",
+    "publishInfo" : {
+      "commitHash" : "b2e8e00f6c5676cb6138bd90e3dc8afb32375330",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-clusteval/-/blob/b2e8e00f6c5676cb6138bd90e3dc8afb32375330/data/gene_expression.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-clusteval/-/blob/b2e8e00f6c5676cb6138bd90e3dc8afb32375330/data/X.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-clusteval/-/blob/b2e8e00f6c5676cb6138bd90e3dc8afb32375330/data/data_gen.ipynb" ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/clusteval:iHcndgNo"
+    },
+    "changelog" : "",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/clusteval:iHcndgNo",
+    "shortDescription" : "ClustEval: Clustering Evaluation and Analysis Tool",
+    "longDescription" : "# Posymed ClustEval\n\nA federated learning application for clustering evaluation and analysis of biomedical data, built on the Posymed platform.\n\n## Overview\n\nThis application provides clustering evaluation capabilities using various algorithms and evaluation methods. It's designed to work within the Posymed federated learning ecosystem and follows the same architectural patterns as other Posymed applications.\n\n## Features\n\n- **Multiple Clustering Algorithms**: Support for agglomerative, k-means, DBSCAN, and HDBSCAN clustering\n- **Evaluation Methods**: Silhouette analysis, Davies-Bouldin index, and derivative-based evaluation\n- **Linkage Options**: Single, Ward, and complete linkage for hierarchical clustering\n- **Visualization**: Automatic generation of clustering evaluation plots, silhouette plots, and scatter plots\n- **Federated Learning Ready**: Built with pyfedappwrap for seamless integration into federated learning workflows\n\n## Configuration\n\nThe application is configured through `model.yml` with the following hyperparameters:\n\n- `clustering_algorithm`: Algorithm to use (default: \"agglomerative\")\n- `evaluation_method`: Evaluation method (default: \"silhouette\")\n- `linkage`: Linkage method for hierarchical clustering (default: \"ward\")\n- `max_clusters`: Maximum number of clusters to evaluate (default: -1 for no restriction)\n\n## Input/Output\n\n### Input\n- `expression_data`: Gene expression data in TSV format\n\n### Output\n- `cluster_scores`: Plot showing clustering evaluation scores\n- `silhouette_plot`: Silhouette analysis visualization\n- `scatter_plot`: Scatter plot of clustered data\n\n## Installation\n\n### Using Docker (Recommended)\n\n```bash\ndocker build -t posymed-clusteval .\ndocker run -p 8000:8000 posymed-clusteval\n```\n\n### Local Installation\n\n```bash\npip install -r requirements.txt\npip install git+https://github.com/FeatureCloud/pyfedappwrap.git\npython main.py\n```\n\n## Usage\n\n1. Prepare your gene expression data in TSV format with genes as rows and samples as columns\n2. Configure the clustering parameters in `model.yml`\n3. Run the application using Docker or locally\n4. The application will generate clustering evaluation plots and analysis results\n\n## Dependencies\n\n- Python 3.11+\n- clusteval: Core clustering evaluation library\n- scikit-learn: Machine learning algorithms\n- pandas: Data manipulation\n- matplotlib: Plotting and visualization\n- pyfedappwrap: Federated learning framework\n\n## Architecture\n\nThis application follows the Posymed architecture pattern:\n\n- `app.py`: Main application logic with BaseApp inheritance\n- `model.py`: Core clustering evaluation functionality and parameter definitions\n- `main.py`: Application entry point and engine initialization\n- `model.yml`: Configuration and hyperparameter definitions\n\n## License\n\nThis project is part of the Posymed ecosystem and follows the same licensing terms.",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "clustering_algorithm",
+        "variableName" : "clustering_algorithm",
+        "type" : "CATEGORICAL",
+        "description" : "Clustering algorithm to use.",
+        "mode" : "BOTH",
+        "options" : [ "agglomerative", "kmeans", "dbscan", "hdbscan" ],
+        "default" : "agglomerative"
+      }, {
+        "name" : "evaluation_method",
+        "variableName" : "evaluation_method",
+        "type" : "CATEGORICAL",
+        "description" : "Evaluation method for clustering.",
+        "mode" : "BOTH",
+        "options" : [ "silhouette", "dbindex", "derivative" ],
+        "default" : "silhouette"
+      }, {
+        "name" : "linkage",
+        "variableName" : "linkage",
+        "type" : "CATEGORICAL",
+        "description" : "Linkage method for hierarchical clustering.",
+        "mode" : "BOTH",
+        "options" : [ "single", "ward", "complete" ],
+        "default" : "ward"
+      }, {
+        "name" : "max_clusters",
+        "variableName" : "max_clusters",
+        "type" : "INTEGER",
+        "description" : "Maximum number of clusters (-1 for no restriction).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : -1.0,
+        "default" : "25"
+      } ],
+      "input" : [ {
+        "name" : "data",
+        "variableName" : "data",
+        "type" : "CSV",
+        "description" : "Data in CSV format",
+        "hasHeader" : true,
+        "tabularSchema" : {
+          "allowOnlyNumbers" : true,
+          "prohibitedNulls" : true
+        },
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "cluster_scores",
+        "variableName" : "cluster_scores",
+        "type" : "IMAGE",
+        "description" : "Clustering evaluation scores plot."
+      }, {
+        "name" : "silhouette_plot",
+        "variableName" : "silhouette_plot",
+        "type" : "IMAGE",
+        "description" : "Silhouette analysis plot."
+      }, {
+        "name" : "scatter_plot",
+        "variableName" : "scatter_plot",
+        "type" : "IMAGE",
+        "description" : "Scatter plot of clustered data."
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

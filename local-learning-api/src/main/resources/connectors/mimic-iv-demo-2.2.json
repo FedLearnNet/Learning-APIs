@@ -1,0 +1,1814 @@
+{
+  "name": "mimic iv",
+  "description": "MIMIC-IV clinical database v2.2 harmonized onto the federated diabetes schema",
+  "inputConfig": {
+    "mode": "FILE",
+    "fileType": "MULTIPLE_CSV_ZIP",
+    "delimiter": ",",
+    "mergeType": null,
+    "extractSheets": null,
+    "file": null,
+    "fileId": null,
+    "hasSupportFile": false,
+    "customDelimiter": null,
+    "hasHeader": true,
+    "specificSheets": null,
+    "firstSheetOnly": false,
+    "deleteUnneededFileAfterSuccess": false,
+    "fileExists": false
+  },
+  "uploadInfo": {
+    "0": {
+      "renamedColumns": null,
+      "deletedColumns": null,
+      "columns": null,
+      "lastUploaded": null
+    }
+  },
+  "schemaMapping": [
+    {
+      "column": "subject_id",
+      "mapping": "Unique Patient ID",
+      "schemaId": null,
+      "visitTimestampMapping": null,
+      "visitIdMapping": null,
+      "timestampFormat": null,
+      "valueMappingConfig": null
+    },
+    {
+      "column": "patient_nbr",
+      "mapping": "Encounter.Patient Number",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "gender",
+      "mapping": "Demographics.Gender",
+      "schemaId": null,
+      "visitTimestampMapping": null,
+      "visitIdMapping": null,
+      "timestampFormat": null,
+      "valueMappingConfig": null
+    },
+    {
+      "column": "race",
+      "mapping": "Demographics.Race",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "anchor_age",
+      "mapping": "Demographics.Age",
+      "schemaId": null,
+      "visitTimestampMapping": null,
+      "visitIdMapping": null,
+      "timestampFormat": null,
+      "valueMappingConfig": null
+    },
+    {
+      "column": "weight_lbs",
+      "mapping": "Demographics.Weight",
+      "schemaId": null,
+      "visitTimestampMapping": null,
+      "visitIdMapping": null,
+      "timestampFormat": null,
+      "valueMappingConfig": null
+    },
+    {
+      "column": "admissions::hadm_id",
+      "mapping": "Encounter.Encounter ID",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "admission_type",
+      "mapping": "Encounter.Admission Type",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "admission_location",
+      "mapping": "Encounter.Admission Source",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "discharge_location",
+      "mapping": "Encounter.Discharge Disposition",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "time_in_hospital",
+      "mapping": "Encounter.Time in Hospital",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "insurance",
+      "mapping": "Encounter.Payer Code",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "curr_service",
+      "mapping": "Encounter.Medical Specialty",
+      "schemaId": null,
+      "visitTimestampMapping": "transfertime",
+      "visitIdMapping": "services::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "num_lab_procedures",
+      "mapping": "Clinical Counts.Num Lab Procedures",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "num_procedures",
+      "mapping": "Clinical Counts.Num Procedures",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "num_medications",
+      "mapping": "Clinical Counts.Num Medications",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "number_diagnoses",
+      "mapping": "Clinical Counts.Number Diagnoses",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "number_outpatient",
+      "mapping": "Clinical Counts.Number Outpatient",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "number_emergency",
+      "mapping": "Clinical Counts.Number Emergency",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "number_inpatient",
+      "mapping": "Clinical Counts.Number Inpatient",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "diag_1",
+      "mapping": "Diagnoses.Diag 1",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "diag_2",
+      "mapping": "Diagnoses.Diag 2",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "diag_3",
+      "mapping": "Diagnoses.Diag 3",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "a1c_result",
+      "mapping": "Lab Results.A1C Result",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "max_glu_serum",
+      "mapping": "Lab Results.Max Glu Serum",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_metformin",
+      "mapping": "Medication.Metformin",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_repaglinide",
+      "mapping": "Medication.Repaglinide",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_nateglinide",
+      "mapping": "Medication.Nateglinide",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_chlorpropamide",
+      "mapping": "Medication.Chlorpropamide",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_glimepiride",
+      "mapping": "Medication.Glimepiride",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_acetohexamide",
+      "mapping": "Medication.Acetohexamide",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_glipizide",
+      "mapping": "Medication.Glipizide",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_glyburide",
+      "mapping": "Medication.Glyburide",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_tolbutamide",
+      "mapping": "Medication.Tolbutamide",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_pioglitazone",
+      "mapping": "Medication.Pioglitazone",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_rosiglitazone",
+      "mapping": "Medication.Rosiglitazone",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_acarbose",
+      "mapping": "Medication.Acarbose",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_miglitol",
+      "mapping": "Medication.Miglitol",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_troglitazone",
+      "mapping": "Medication.Troglitazone",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_tolazamide",
+      "mapping": "Medication.Tolazamide",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_examide",
+      "mapping": "Medication.Examide",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_citoglipton",
+      "mapping": "Medication.Citoglipton",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_insulin",
+      "mapping": "Medication.Insulin",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_glyburide_metformin",
+      "mapping": "Medication.Glyburide-Metformin",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_glipizide_metformin",
+      "mapping": "Medication.Glipizide-Metformin",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_glimepiride_pioglitazone",
+      "mapping": "Medication.Glimepiride-Pioglitazone",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_metformin_rosiglitazone",
+      "mapping": "Medication.Metformin-Rosiglitazone",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_metformin_pioglitazone",
+      "mapping": "Medication.Metformin-Pioglitazone",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "med_change",
+      "mapping": "Outcome.Change",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "diabetes_med",
+      "mapping": "Outcome.Diabetes Med",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    },
+    {
+      "column": "readmitted",
+      "mapping": "Outcome.Readmitted",
+      "schemaId": null,
+      "visitTimestampMapping": "admittime",
+      "visitIdMapping": "admissions::hadm_id",
+      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
+      "valueMappingConfig": null
+    }
+  ],
+  "transformer": [
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Value Aggregate",
+      "column": "",
+      "inputMapping": {
+        "value": "subject_id",
+        "group": "admissions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "patient_nbr"
+      },
+      "hyperparams": {
+        "aggregate": "FIRST",
+        "write": "GROUP",
+        "default": "",
+        "decimals": 2
+      },
+      "position": 1,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Generic Value Mapper",
+      "column": "gender",
+      "inputMapping": {
+        "map": "[VALUE]{\"M\": \"Male\", \"F\": \"Female\"}"
+      },
+      "returnMapping": {},
+      "hyperparams": {},
+      "position": 2,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Generic Value Mapper",
+      "column": "race",
+      "inputMapping": {
+        "map": "[VALUE]{\"WHITE\": \"Caucasian\", \"WHITE - BRAZILIAN\": \"Caucasian\", \"WHITE - OTHER EUROPEAN\": \"Caucasian\", \"WHITE - EASTERN EUROPEAN\": \"Caucasian\", \"WHITE - RUSSIAN\": \"Caucasian\", \"PORTUGUESE\": \"Caucasian\", \"BLACK/AFRICAN AMERICAN\": \"AfricanAmerican\", \"BLACK/AFRICAN\": \"AfricanAmerican\", \"BLACK/CAPE VERDEAN\": \"AfricanAmerican\", \"BLACK/CARIBBEAN ISLAND\": \"AfricanAmerican\", \"HISPANIC OR LATINO\": \"Hispanic\", \"HISPANIC/LATINO - CENTRAL AMERICAN\": \"Hispanic\", \"HISPANIC/LATINO - COLUMBIAN\": \"Hispanic\", \"HISPANIC/LATINO - CUBAN\": \"Hispanic\", \"HISPANIC/LATINO - DOMINICAN\": \"Hispanic\", \"HISPANIC/LATINO - GUATEMALAN\": \"Hispanic\", \"HISPANIC/LATINO - HONDURAN\": \"Hispanic\", \"HISPANIC/LATINO - MEXICAN\": \"Hispanic\", \"HISPANIC/LATINO - PUERTO RICAN\": \"Hispanic\", \"HISPANIC/LATINO - SALVADORAN\": \"Hispanic\", \"SOUTH AMERICAN\": \"Hispanic\", \"ASIAN\": \"Asian\", \"ASIAN - ASIAN INDIAN\": \"Asian\", \"ASIAN - CHINESE\": \"Asian\", \"ASIAN - KOREAN\": \"Asian\", \"ASIAN - SOUTH EAST ASIAN\": \"Asian\", \"AMERICAN INDIAN/ALASKA NATIVE\": \"Other\", \"NATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER\": \"Other\", \"MULTIPLE RACE/ETHNICITY\": \"Other\", \"OTHER\": \"Other\", \"PATIENT DECLINED TO ANSWER\": \"Other\", \"UNABLE TO OBTAIN\": \"Other\", \"UNKNOWN\": \"Other\"}"
+      },
+      "returnMapping": {},
+      "hyperparams": {},
+      "position": 3,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Numeric Range Group Mapper",
+      "column": "anchor_age",
+      "inputMapping": {
+        "min": "[VALUE]0",
+        "max": "[VALUE]100",
+        "group_size": "[VALUE]10"
+      },
+      "returnMapping": {},
+      "hyperparams": {},
+      "position": 4,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Value Aggregate",
+      "column": "",
+      "inputMapping": {
+        "value": "result_value",
+        "key": "result_name",
+        "order": "omr::chartdate",
+        "anchor": "gender"
+      },
+      "returnMapping": {
+        "value": "weight_lbs"
+      },
+      "hyperparams": {
+        "codes": [
+          "Weight (Lbs)"
+        ],
+        "match_mode": "EQUALS",
+        "aggregate": "LAST",
+        "write": "ANCHOR",
+        "default": ""
+      },
+      "position": 5,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Numeric Range Group Mapper",
+      "column": "weight_lbs",
+      "inputMapping": {
+        "min": "[VALUE]0",
+        "max": "[VALUE]300",
+        "group_size": "[VALUE]25"
+      },
+      "returnMapping": {},
+      "hyperparams": {},
+      "position": 6,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Generic Value Mapper",
+      "column": "admission_type",
+      "inputMapping": {
+        "map": "[VALUE]{\"EW EMER.\": \"1\", \"DIRECT EMER.\": \"1\", \"EU OBSERVATION\": \"1\", \"URGENT\": \"2\", \"ELECTIVE\": \"3\", \"SURGICAL SAME DAY ADMISSION\": \"3\", \"OBSERVATION ADMIT\": \"5\", \"DIRECT OBSERVATION\": \"5\", \"AMBULATORY OBSERVATION\": \"5\"}"
+      },
+      "returnMapping": {},
+      "hyperparams": {},
+      "position": 7,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Generic Value Mapper",
+      "column": "admission_location",
+      "inputMapping": {
+        "map": "[VALUE]{\"PHYSICIAN REFERRAL\": \"1\", \"CLINIC REFERRAL\": \"2\", \"TRANSFER FROM HOSPITAL\": \"4\", \"TRANSFER FROM SKILLED NURSING FACILITY\": \"5\", \"PACU\": \"6\", \"INTERNAL TRANSFER TO OR FROM PSYCH\": \"6\", \"TRANSFER FROM OTHER HEALTHCARE FACILITY\": \"6\", \"EMERGENCY ROOM\": \"7\", \"INFORMATION NOT AVAILABLE\": \"9\", \"WALK-IN/SELF REFERRAL\": \"20\", \"AMBULATORY SURGERY TRANSFER\": \"25\", \"PROCEDURE SITE\": \"25\"}"
+      },
+      "returnMapping": {},
+      "hyperparams": {},
+      "position": 8,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Generic Value Mapper",
+      "column": "discharge_location",
+      "inputMapping": {
+        "map": "[VALUE]{\"HOME\": \"1\", \"ACUTE HOSPITAL\": \"2\", \"SKILLED NURSING FACILITY\": \"3\", \"ASSISTED LIVING\": \"4\", \"PSYCH FACILITY\": \"5\", \"OTHER FACILITY\": \"5\", \"HEALTHCARE FACILITY\": \"5\", \"HOME HEALTH CARE\": \"6\", \"AGAINST ADVICE\": \"7\", \"DIED\": \"11\", \"HOSPICE\": \"13\", \"REHAB\": \"22\", \"CHRONIC/LONG TERM ACUTE CARE\": \"23\"}"
+      },
+      "returnMapping": {},
+      "hyperparams": {},
+      "position": 9,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Date Difference",
+      "column": "",
+      "inputMapping": {
+        "start": "admittime",
+        "end": "dischtime"
+      },
+      "returnMapping": {
+        "value": "time_in_hospital"
+      },
+      "hyperparams": {
+        "unit": "DAYS",
+        "date_format": "yyyy-MM-dd HH:mm:ss",
+        "decimals": 0
+      },
+      "position": 10,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Value Aggregate",
+      "column": "",
+      "inputMapping": {
+        "value": "labevents::itemid",
+        "group": "labevents::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "num_lab_procedures"
+      },
+      "hyperparams": {
+        "aggregate": "COUNT",
+        "write": "GROUP",
+        "default": "0",
+        "decimals": 2
+      },
+      "position": 11,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Value Aggregate",
+      "column": "",
+      "inputMapping": {
+        "value": "procedures_icd::icd_code",
+        "group": "procedures_icd::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "num_procedures"
+      },
+      "hyperparams": {
+        "aggregate": "COUNT",
+        "write": "GROUP",
+        "default": "0",
+        "decimals": 2
+      },
+      "position": 12,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Value Aggregate",
+      "column": "",
+      "inputMapping": {
+        "value": "drug",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "num_medications"
+      },
+      "hyperparams": {
+        "aggregate": "COUNT_DISTINCT",
+        "write": "GROUP",
+        "default": "0",
+        "decimals": 2
+      },
+      "position": 13,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Value Aggregate",
+      "column": "",
+      "inputMapping": {
+        "value": "diagnoses_icd::icd_code",
+        "group": "diagnoses_icd::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "number_diagnoses"
+      },
+      "hyperparams": {
+        "aggregate": "COUNT",
+        "write": "GROUP",
+        "default": "0",
+        "decimals": 2
+      },
+      "position": 14,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Prior Event Count",
+      "column": "",
+      "inputMapping": {
+        "date": "admittime",
+        "key": "admission_type"
+      },
+      "returnMapping": {
+        "value": "number_outpatient"
+      },
+      "hyperparams": {
+        "days": 365,
+        "date_format": "yyyy-MM-dd HH:mm:ss",
+        "codes": [
+          "AMBULATORY OBSERVATION",
+          "DIRECT OBSERVATION",
+          "OBSERVATION ADMIT"
+        ]
+      },
+      "position": 15,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Prior Event Count",
+      "column": "",
+      "inputMapping": {
+        "date": "admittime",
+        "key": "admission_type"
+      },
+      "returnMapping": {
+        "value": "number_emergency"
+      },
+      "hyperparams": {
+        "days": 365,
+        "date_format": "yyyy-MM-dd HH:mm:ss",
+        "codes": [
+          "EW EMER.",
+          "DIRECT EMER.",
+          "EU OBSERVATION",
+          "URGENT"
+        ]
+      },
+      "position": 16,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Prior Event Count",
+      "column": "",
+      "inputMapping": {
+        "date": "admittime"
+      },
+      "returnMapping": {
+        "value": "number_inpatient"
+      },
+      "hyperparams": {
+        "days": 365,
+        "date_format": "yyyy-MM-dd HH:mm:ss"
+      },
+      "position": 17,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Value Aggregate",
+      "column": "",
+      "inputMapping": {
+        "value": "diagnoses_icd::icd_code",
+        "group": "diagnoses_icd::hadm_id",
+        "target_group": "admissions::hadm_id",
+        "key": "diagnoses_icd::seq_num"
+      },
+      "returnMapping": {
+        "value": "diag_1"
+      },
+      "hyperparams": {
+        "aggregate": "FIRST",
+        "write": "GROUP",
+        "default": "",
+        "decimals": 2,
+        "codes": [
+          "1"
+        ],
+        "match_mode": "EQUALS"
+      },
+      "position": 18,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Value Aggregate",
+      "column": "",
+      "inputMapping": {
+        "value": "diagnoses_icd::icd_code",
+        "group": "diagnoses_icd::hadm_id",
+        "target_group": "admissions::hadm_id",
+        "key": "diagnoses_icd::seq_num"
+      },
+      "returnMapping": {
+        "value": "diag_2"
+      },
+      "hyperparams": {
+        "aggregate": "FIRST",
+        "write": "GROUP",
+        "default": "",
+        "decimals": 2,
+        "codes": [
+          "2"
+        ],
+        "match_mode": "EQUALS"
+      },
+      "position": 19,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Value Aggregate",
+      "column": "",
+      "inputMapping": {
+        "value": "diagnoses_icd::icd_code",
+        "group": "diagnoses_icd::hadm_id",
+        "target_group": "admissions::hadm_id",
+        "key": "diagnoses_icd::seq_num"
+      },
+      "returnMapping": {
+        "value": "diag_3"
+      },
+      "hyperparams": {
+        "aggregate": "FIRST",
+        "write": "GROUP",
+        "default": "",
+        "decimals": 2,
+        "codes": [
+          "3"
+        ],
+        "match_mode": "EQUALS"
+      },
+      "position": 20,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Filter Rows By Value",
+      "column": "",
+      "inputMapping": {
+        "value": "labevents::itemid"
+      },
+      "returnMapping": {},
+      "hyperparams": {
+        "values": [
+          "50852",
+          "50931",
+          "50809"
+        ],
+        "mode": "KEEP",
+        "match_mode": "EQUALS",
+        "on_missing": "KEEP"
+      },
+      "position": 21,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Value Aggregate",
+      "column": "",
+      "inputMapping": {
+        "value": "labevents::valuenum",
+        "group": "labevents::hadm_id",
+        "target_group": "admissions::hadm_id",
+        "key": "labevents::itemid"
+      },
+      "returnMapping": {
+        "value": "a1c_result"
+      },
+      "hyperparams": {
+        "aggregate": "MAX",
+        "write": "GROUP",
+        "default": "",
+        "decimals": 2,
+        "codes": [
+          "50852"
+        ],
+        "match_mode": "EQUALS"
+      },
+      "position": 22,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Numeric Threshold Class",
+      "column": "a1c_result",
+      "inputMapping": {
+        "bins": "[VALUE][{\"lt\": 7, \"label\": \"Norm\"}, {\"lt\": 8, \"label\": \">7\"}]",
+        "else_label": "[VALUE]>8",
+        "empty_label": "[VALUE]None"
+      },
+      "returnMapping": {},
+      "hyperparams": {},
+      "position": 23,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Value Aggregate",
+      "column": "",
+      "inputMapping": {
+        "value": "labevents::valuenum",
+        "group": "labevents::hadm_id",
+        "target_group": "admissions::hadm_id",
+        "key": "labevents::itemid"
+      },
+      "returnMapping": {
+        "value": "max_glu_serum"
+      },
+      "hyperparams": {
+        "aggregate": "MAX",
+        "write": "GROUP",
+        "default": "",
+        "decimals": 2,
+        "codes": [
+          "50931",
+          "50809"
+        ],
+        "match_mode": "EQUALS"
+      },
+      "position": 24,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Numeric Threshold Class",
+      "column": "max_glu_serum",
+      "inputMapping": {
+        "bins": "[VALUE][{\"lt\": 200, \"label\": \"Norm\"}, {\"lt\": 300, \"label\": \">200\"}]",
+        "else_label": "[VALUE]>300",
+        "empty_label": "[VALUE]None"
+      },
+      "returnMapping": {},
+      "hyperparams": {},
+      "position": 25,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_metformin"
+      },
+      "hyperparams": {
+        "match": [
+          "metformin",
+          "glucophage",
+          "fortamet",
+          "riomet",
+          "glumetza"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 26,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_repaglinide"
+      },
+      "hyperparams": {
+        "match": [
+          "repaglinide",
+          "prandin"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 27,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_nateglinide"
+      },
+      "hyperparams": {
+        "match": [
+          "nateglinide",
+          "starlix"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 28,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_chlorpropamide"
+      },
+      "hyperparams": {
+        "match": [
+          "chlorpropamide",
+          "diabinese"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 29,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_glimepiride"
+      },
+      "hyperparams": {
+        "match": [
+          "glimepiride",
+          "amaryl"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 30,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_acetohexamide"
+      },
+      "hyperparams": {
+        "match": [
+          "acetohexamide",
+          "dymelor"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 31,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_glipizide"
+      },
+      "hyperparams": {
+        "match": [
+          "glipizide",
+          "glucotrol"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 32,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_glyburide"
+      },
+      "hyperparams": {
+        "match": [
+          "glyburide",
+          "glibenclamide",
+          "diabeta",
+          "micronase",
+          "glynase"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 33,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_tolbutamide"
+      },
+      "hyperparams": {
+        "match": [
+          "tolbutamide",
+          "orinase"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 34,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_pioglitazone"
+      },
+      "hyperparams": {
+        "match": [
+          "pioglitazone",
+          "actos"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 35,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_rosiglitazone"
+      },
+      "hyperparams": {
+        "match": [
+          "rosiglitazone",
+          "avandia"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 36,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_acarbose"
+      },
+      "hyperparams": {
+        "match": [
+          "acarbose",
+          "precose"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 37,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_miglitol"
+      },
+      "hyperparams": {
+        "match": [
+          "miglitol",
+          "glyset"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 38,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_troglitazone"
+      },
+      "hyperparams": {
+        "match": [
+          "troglitazone",
+          "rezulin"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 39,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_tolazamide"
+      },
+      "hyperparams": {
+        "match": [
+          "tolazamide",
+          "tolinase"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 40,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_examide"
+      },
+      "hyperparams": {
+        "match": [
+          "examide"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 41,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_citoglipton"
+      },
+      "hyperparams": {
+        "match": [
+          "citoglipton"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 42,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_insulin"
+      },
+      "hyperparams": {
+        "match": [
+          "insulin",
+          "humalog",
+          "novolog",
+          "lantus",
+          "levemir",
+          "humulin",
+          "novolin",
+          "glargine",
+          "lispro",
+          "aspart",
+          "detemir",
+          "degludec",
+          "glulisine",
+          "toujeo",
+          "tresiba"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 43,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_glyburide_metformin"
+      },
+      "hyperparams": {
+        "match": [
+          "glucovance",
+          "glyburide-metformin",
+          "glyburide and metformin"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 44,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_glipizide_metformin"
+      },
+      "hyperparams": {
+        "match": [
+          "metaglip",
+          "glipizide-metformin",
+          "glipizide and metformin"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 45,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_glimepiride_pioglitazone"
+      },
+      "hyperparams": {
+        "match": [
+          "duetact",
+          "glimepiride-pioglitazone"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 46,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_metformin_rosiglitazone"
+      },
+      "hyperparams": {
+        "match": [
+          "avandamet",
+          "metformin-rosiglitazone"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 47,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Patient Dosage Trend",
+      "column": "",
+      "inputMapping": {
+        "name": "drug",
+        "dose": "dose_val_rx",
+        "order": "prescriptions::starttime",
+        "group": "prescriptions::hadm_id",
+        "target_group": "admissions::hadm_id"
+      },
+      "returnMapping": {
+        "value": "med_metformin_pioglitazone"
+      },
+      "hyperparams": {
+        "match": [
+          "actoplus",
+          "metformin-pioglitazone"
+        ],
+        "steady_label": "Steady",
+        "up_label": "Up",
+        "down_label": "Down",
+        "write": "GROUP",
+        "default": "No"
+      },
+      "position": 48,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Column Set Indicator",
+      "column": "",
+      "inputMapping": {
+        "m1": "med_metformin",
+        "m2": "med_repaglinide",
+        "m3": "med_nateglinide",
+        "m4": "med_chlorpropamide",
+        "m5": "med_glimepiride",
+        "m6": "med_acetohexamide",
+        "m7": "med_glipizide",
+        "m8": "med_glyburide",
+        "m9": "med_tolbutamide",
+        "m10": "med_pioglitazone",
+        "m11": "med_rosiglitazone",
+        "m12": "med_acarbose",
+        "m13": "med_miglitol",
+        "m14": "med_troglitazone",
+        "m15": "med_tolazamide",
+        "m16": "med_examide",
+        "m17": "med_citoglipton",
+        "m18": "med_insulin",
+        "m19": "med_glyburide_metformin",
+        "m20": "med_glipizide_metformin",
+        "m21": "med_glimepiride_pioglitazone",
+        "m22": "med_metformin_rosiglitazone",
+        "m23": "med_metformin_pioglitazone"
+      },
+      "returnMapping": {
+        "value": "med_change"
+      },
+      "hyperparams": {
+        "values": [
+          "Up",
+          "Down"
+        ],
+        "comparison": "IN",
+        "mode": "ANY",
+        "match_label": "Ch",
+        "default_label": "No"
+      },
+      "position": 49,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Column Set Indicator",
+      "column": "",
+      "inputMapping": {
+        "m1": "med_metformin",
+        "m2": "med_repaglinide",
+        "m3": "med_nateglinide",
+        "m4": "med_chlorpropamide",
+        "m5": "med_glimepiride",
+        "m6": "med_acetohexamide",
+        "m7": "med_glipizide",
+        "m8": "med_glyburide",
+        "m9": "med_tolbutamide",
+        "m10": "med_pioglitazone",
+        "m11": "med_rosiglitazone",
+        "m12": "med_acarbose",
+        "m13": "med_miglitol",
+        "m14": "med_troglitazone",
+        "m15": "med_tolazamide",
+        "m16": "med_examide",
+        "m17": "med_citoglipton",
+        "m18": "med_insulin",
+        "m19": "med_glyburide_metformin",
+        "m20": "med_glipizide_metformin",
+        "m21": "med_glimepiride_pioglitazone",
+        "m22": "med_metformin_rosiglitazone",
+        "m23": "med_metformin_pioglitazone"
+      },
+      "returnMapping": {
+        "value": "diabetes_med"
+      },
+      "hyperparams": {
+        "values": [
+          "No"
+        ],
+        "comparison": "NOT_IN",
+        "mode": "ANY",
+        "match_label": "Yes",
+        "default_label": "No"
+      },
+      "position": 50,
+      "appVersionId": null,
+      "appImage": null
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Readmission Interval Class",
+      "column": "",
+      "inputMapping": {
+        "admission_date": "admittime",
+        "discharge_date": "dischtime"
+      },
+      "returnMapping": {
+        "value": "readmitted"
+      },
+      "hyperparams": {
+        "days": 30,
+        "date_format": "yyyy-MM-dd HH:mm:ss",
+        "within_label": "<30",
+        "after_label": ">30",
+        "none_label": "NO"
+      },
+      "position": 51,
+      "appVersionId": null,
+      "appImage": null
+    }
+  ],
+  "mergeConfig": {
+    "uidColumn": "subject_id",
+    "sheetUidMapping": {
+      "admissions": "subject_id",
+      "diagnoses_icd": "subject_id",
+      "labevents": "subject_id",
+      "omr": "subject_id",
+      "patients": "subject_id",
+      "prescriptions": "subject_id",
+      "procedures_icd": "subject_id",
+      "services": "subject_id"
+    },
+    "commonUidColumnName": "subject_id"
+  },
+  "pivotConfig": null,
+  "triggerSettings": null,
+  "scheduleSettings": null,
+  "lastRun": {}
+}

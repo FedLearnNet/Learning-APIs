@@ -1,0 +1,180 @@
+{
+  "name" : "GaussianMixtureModel",
+  "uniqueAppId" : "911f4fbd-976b-4354-8479-eb885c5a1fc2",
+  "slug" : "gaussianmixturemodel",
+  "type" : "SELF_LEARNED",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/posymed/apps/gaussianmixturemodel",
+  "icon" : "https://scikit-learn.org/stable/_static/scikit-learn-logo-small.png",
+  "oldFCVersion" : false,
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 9,
+    "appVersion" : "1.0.0",
+    "publishHash" : "gmm",
+    "publishInfo" : {
+      "commitHash" : "cc9824e99e0550c1e6f0c48d942a2039b41bff73",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/posymed/apps/gaussianmixturemodel/-/blob/cc9824e99e0550c1e6f0c48d942a2039b41bff73/data/iris.csv" ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/gaussianmixturemodel:KJnVegqJ"
+    },
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/gaussianmixturemodel:KJnVegqJ",
+    "shortDescription" : "Probabilistisches Clustering mit scikit-learn Gaussian Mixture Models (EM), inkl. Responsibilities und Modellparameter.",
+    "longDescription" : "Dieses Tool führt Clustering mittels GaussianMixture (GMM) aus scikit-learn durch. Es passt ein Mischmodell aus multivariaten Gaußverteilungen per EM (Expectation-Maximization) an und liefert harte Labels (argmax), weiche Zuordnungen (Responsibilities) sowie Modellparameter (Gewichte, Mittelwerte, Kovarianzen). Optional werden Features standardisiert und ein HTML-Report erzeugt.",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "n_components",
+        "variableName" : "n_components",
+        "type" : "INTEGER",
+        "description" : "Anzahl der Gauss-Komponenten (Cluster).",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "maxValue" : 200.0,
+        "default" : "3"
+      }, {
+        "name" : "covariance_type",
+        "variableName" : "covariance_type",
+        "type" : "STRING",
+        "description" : "Kovarianztyp: full, tied, diag, spherical.",
+        "mode" : "BOTH",
+        "options" : [ "full", "tied", "diag", "spherical" ],
+        "default" : "full"
+      }, {
+        "name" : "tol",
+        "variableName" : "tol",
+        "type" : "FLOAT",
+        "description" : "Konvergenzschwelle für EM (Stop wenn log-likelihood Verbesserung < tol).",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "default" : "0.001"
+      }, {
+        "name" : "reg_covar",
+        "variableName" : "reg_covar",
+        "type" : "FLOAT",
+        "description" : "Nichtnegative Regularisierung für Kovarianzen (numerische Stabilität).",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "default" : "0.000001"
+      }, {
+        "name" : "max_iter",
+        "variableName" : "max_iter",
+        "type" : "INTEGER",
+        "description" : "Maximale EM-Iterationen pro Initialisierung.",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "maxValue" : 2000.0,
+        "default" : "100"
+      }, {
+        "name" : "n_init",
+        "variableName" : "n_init",
+        "type" : "INTEGER",
+        "description" : "Anzahl der unabhängigen Initialisierungen (bestes Resultat nach log-likelihood).",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "maxValue" : 100.0,
+        "default" : "1"
+      }, {
+        "name" : "init_params",
+        "variableName" : "init_params",
+        "type" : "STRING",
+        "description" : "Initialisierungsstrategie: kmeans oder random.",
+        "mode" : "BOTH",
+        "options" : [ "kmeans", "random" ],
+        "default" : "kmeans"
+      }, {
+        "name" : "random_state",
+        "variableName" : "random_state",
+        "type" : "INTEGER",
+        "description" : "Seed für Reproduzierbarkeit (optional).",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "maxValue" : 2.1474836E9,
+        "default" : "42"
+      }, {
+        "name" : "warm_start",
+        "variableName" : "warm_start",
+        "type" : "BOOLEAN",
+        "description" : "Wenn true, nutzt fit() die letzte Lösung als Startpunkt (bei wiederholtem Fit).",
+        "options" : [ ],
+        "default" : "0"
+      }, {
+        "name" : "compute_labels",
+        "variableName" : "compute_labels",
+        "type" : "BOOLEAN",
+        "description" : "Wenn true, werden harte Labels als argmax der Responsibilities ausgegeben.",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "standardize",
+        "variableName" : "standardize",
+        "type" : "BOOLEAN",
+        "description" : "Standardisiert Features (zero mean / unit variance) vor dem Fit (empfohlen).",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "output_probabilities",
+        "variableName" : "output_probabilities",
+        "type" : "BOOLEAN",
+        "description" : "Wenn true, werden Responsibilities (Posterior) als CSV ausgegeben.",
+        "options" : [ ],
+        "default" : "1"
+      } ],
+      "input" : [ {
+        "name" : "features",
+        "variableName" : "features",
+        "type" : "CSV",
+        "description" : "Tabellarische Feature-Matrix. Zeilen = Samples, Spalten = numerische Features. Optional erste Spalte 'id'; sonst werden Indizes verwendet.",
+        "tabularSchema" : {
+          "allowOnlyNumbers" : true,
+          "prohibitedNulls" : false
+        },
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "labels",
+        "variableName" : "labels",
+        "type" : "CSV",
+        "description" : "Harte Clusterzuordnung pro Sample. Spalten: [id?/index, label]. (Nur wenn compute_labels=true)."
+      }, {
+        "name" : "responsibilities",
+        "variableName" : "responsibilities",
+        "type" : "CSV",
+        "description" : "Weiche Zuordnung (Posterior/Responsibilities). Zeilen=Samples, Spalten=Komponenten (p(z=k|x)). (Nur wenn output_probabilities=true)."
+      }, {
+        "name" : "weights",
+        "variableName" : "weights",
+        "type" : "CSV",
+        "description" : "Mischgewichte der Komponenten (weights_). Spalten: [component, weight]."
+      }, {
+        "name" : "means",
+        "variableName" : "means",
+        "type" : "CSV",
+        "description" : "Komponentenmittelwerte (means_). Zeilen=Komponenten, Spalten=Features."
+      }, {
+        "name" : "covariances",
+        "variableName" : "covariances",
+        "type" : "CSV",
+        "description" : "Kovarianzparameter (covariances_). Für 'diag'/'spherical' als Matrix/Vector ausgegeben; für 'full'/'tied' als flach serialisierte Matrizen pro Komponente."
+      }, {
+        "name" : "report",
+        "variableName" : "report",
+        "type" : "HTML",
+        "description" : "HTML-Report mit Parametern, Konvergenz, AIC/BIC, log-likelihood und Clustergrößenstatistik."
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

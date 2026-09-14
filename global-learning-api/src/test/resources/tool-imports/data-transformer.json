@@ -1,0 +1,73 @@
+{
+  "name" : "data-transformer",
+  "uniqueAppId" : "3309a3f7-8d53-41ad-a76f-96febe9919ea",
+  "slug" : "data-transformer",
+  "type" : "DATA_TRANSFORMATION",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/transformer-date",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 7,
+    "appVersion" : "1.0.0",
+    "publishHash" : "90483ecb-334c-42fe-8386-3cf0a15f82b4",
+    "publishInfo" : {
+      "commitHash" : "c426b83f9061c08b0fe2cf15ad5cbb5d104f4de8",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/transformer-date/-/blob/c426b83f9061c08b0fe2cf15ad5cbb5d104f4de8/data/test_datetimes.csv" ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/data-transformer:huSuonHv"
+    },
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/data-transformer:huSuonHv",
+    "shortDescription" : "DateTransformer detects common date/time string formats (including ISO-8601 and Unix timestamps) and normalizes them to a fixed output format YYYY-MM-DD HH:MM:SS",
+    "longDescription" : "# DateTransformer\n\nDateTransformer is a data transformation tool that parses heterogeneous date/datetime strings and returns a normalized timestamp string in the fixed format:\n- Output format: \"%Y-%m-%d %H:%M:%S\" (e.g., 2026-03-03 14:05:00)\n\nIt is intended for cleaning and harmonizing date columns coming from mixed sources (UCI datasets, clinical exports, logs, manually entered CSVs, etc.).\n\n## What this tool does\n- Accepts an input value as a string and converts it into a standardized datetime string.\n- Supports multiple input styles, including:\n- Common explicit formats (examples):\n- YYYY-MM-DD / YYYY-MM-DD HH:MM / YYYY-MM-DD HH:MM:SS\n- YYYY/MM/DD variants\n- DD.MM.YYYY variants\n- DD/MM/YYYY variants\n- ISO-8601-like formats:\n- YYYY-MM-DDTHH:MM:SS\n- fractional seconds: YYYY-MM-DDTHH:MM:SS.sss\n- timezone suffixes: Z or ±HH:MM\n- also accepts a single space instead of T\n- Unix timestamps:\n- seconds (10 digits), e.g. 1700000000\n- milliseconds (13 digits), e.g. 1700000000000\n- float seconds, e.g. 1700000000.123\n\n## Parsing rules\n- Unix timestamps are interpreted as UTC.\n- Timezone-aware datetimes (e.g., ISO strings with Z / +02:00) are:\n\t1.\tconverted to UTC, then\n\t2.\tformatted without timezone information.\n- Naive datetimes (no timezone information) are treated as-is (no implicit timezone shift).\n- If the input contains only a date (no time), the time defaults to 00:00:00.\n- If the string cannot be parsed, the transformer raises a ValueError.\n\n## Configuration\n\nThis transformer currently has no hyperparameters (TransformerConfig is empty).\n\n## Output\n- Returns a string in the format: YYYY-MM-DD HH:MM:SS\n\nExample outputs:\n- 2026-03-03 00:00:00\n- 2026-03-03 14:05:23\n\n# Notes / assumptions\n- Empty strings are rejected (ValueError).\n- The transformer is strict about numeric conversion for Unix timestamps (only the supported digit-length patterns / float pattern are accepted).\n- When outputting timezone-aware inputs, timezone is normalized to UTC and then removed from the final formatted string.",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "column",
+        "variableName" : "column",
+        "type" : "STRING",
+        "description" : "input string representing a date/datetime.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "value"
+      } ],
+      "input" : [ {
+        "name" : "input",
+        "variableName" : "input",
+        "type" : "CSV",
+        "description" : "Input row schema. Input dictionary containing a 'value' key with the string to split",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "tabularSchema" : {
+          "requiredColumns" : [ "column" ]
+        },
+        "required" : false
+      } ],
+      "output" : [ {
+        "name" : "output",
+        "variableName" : "output",
+        "type" : "CSV",
+        "description" : "Output row schema. Input dictionary containing a 'value' key with the string to split",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "tabularSchema" : {
+          "requiredColumns" : [ "column" ]
+        }
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

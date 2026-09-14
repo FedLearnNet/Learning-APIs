@@ -1,0 +1,187 @@
+{
+  "name": "SpectralClustering",
+  "uniqueAppId": "c1c2c3d4-9a8b-4c6d-8e7f-1a2b3c4d5e6f",
+  "slug": "spectralclustering",
+  "type": "SELF_LEARNED",
+  "sourceUrl": "https://gitlab.cosy.bio/cosybio/posymed/apps/spectral-clustering",
+  "icon": "https://scikit-learn.org/stable/_static/scikit-learn-logo-small.png",
+  "oldFCVersion": false,
+  "count": 0,
+  "average": 0.0,
+  "addedToWorkflowCount": 0,
+  "authors": [
+    {
+      "keycloakId": "test"
+    }
+  ],
+  "versions": [
+    {
+      "federatedAppId": 10,
+      "appVersion": "1.0.0",
+      "publishHash": "ebacbec150b4f1284fd9a7ad5df06e684b7eca2c",
+      "publishInfo": {
+        "commitHash": "a9c51efe14a9414e1cd1568821b1a64acdd6f4f1",
+        "filePaths": [
+          "https://gitlab.cosy.bio/cosybio/posymed/apps/spectral-clustering/-/blob/a9c51efe14a9414e1cd1568821b1a64acdd6f4f1/data/iris_encoded.csv"
+        ],
+        "malwareScanResult": {
+          "tool": "clamav",
+          "success": true,
+          "infectedCount": 0,
+          "findings": []
+        },
+        "imageName": "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/spectralclustering:MViNNTnp"
+      },
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "certificationLevel": 0,
+      "imageName": "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/spectralclustering:MViNNTnp",
+      "shortDescription": "Graph-based clustering using scikit-learn SpectralClustering (eigenvectors + k-means).",
+      "longDescription": "This tool runs SpectralClustering from scikit-learn. It constructs an affinity matrix (e.g., RBF or a k-NN graph), computes a spectral embedding (eigenvectors of the graph Laplacian), and then clusters in the embedding space (typically via k-means). Outputs: cluster labels per sample, optionally the spectral embedding, and an HTML report with parameters and statistics.",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "name": "n_clusters",
+            "variableName": "n_clusters",
+            "type": "INTEGER",
+            "description": "Number of clusters.",
+            "mode": "BOTH",
+            "options": [],
+            "minValue": 2.0,
+            "maxValue": 200.0,
+            "default": "3"
+          },
+          {
+            "name": "affinity",
+            "variableName": "affinity",
+            "type": "CATEGORICAL",
+            "description": "Affinity definition: rbf, nearest_neighbors, precomputed (if the input is already an affinity matrix).",
+            "mode": "BOTH",
+            "options": [
+              "rbf",
+              "nearest_neighbors",
+              "precomputed"
+            ],
+            "default": "rbf"
+          },
+          {
+            "name": "gamma",
+            "variableName": "gamma",
+            "type": "FLOAT",
+            "description": "Gamma for the RBF kernel (only if affinity='rbf').",
+            "mode": "BOTH",
+            "options": [],
+            "minValue": 0.0,
+            "default": "1.0"
+          },
+          {
+            "name": "n_neighbors",
+            "variableName": "n_neighbors",
+            "type": "INTEGER",
+            "description": "Number of neighbors for the k-NN graph (only if affinity='nearest_neighbors').",
+            "mode": "BOTH",
+            "options": [],
+            "minValue": 1.0,
+            "maxValue": 10000.0,
+            "default": "10"
+          },
+          {
+            "name": "assign_labels",
+            "variableName": "assign_labels",
+            "type": "CATEGORICAL",
+            "description": "Clustering in the embedding space: kmeans or discretize.",
+            "mode": "BOTH",
+            "options": [
+              "kmeans",
+              "discretize"
+            ],
+            "default": "kmeans"
+          },
+          {
+            "name": "n_init",
+            "variableName": "n_init",
+            "type": "INTEGER",
+            "description": "Number of k-means initializations (relevant when assign_labels='kmeans').",
+            "mode": "BOTH",
+            "options": [],
+            "minValue": 1.0,
+            "maxValue": 100.0,
+            "default": "10"
+          },
+          {
+            "name": "eigen_solver",
+            "variableName": "eigen_solver",
+            "type": "CATEGORICAL",
+            "description": "Eigen solver: arpack, lobpcg, amg (amg requires pyamg).",
+            "mode": "BOTH",
+            "options": [
+              "arpack",
+              "lobpcg",
+              "amg"
+            ],
+            "default": "arpack"
+          },
+          {
+            "name": "random_state",
+            "variableName": "random_state",
+            "type": "INTEGER",
+            "description": "Seed for reproducibility (especially for k-means / discretize).",
+            "mode": "BOTH",
+            "options": [],
+            "minValue": 0.0,
+            "maxValue": 2147483600.0,
+            "default": "42"
+          },
+          {
+            "name": "standardize",
+            "variableName": "standardize",
+            "type": "BOOLEAN",
+            "description": "Standardizes features (zero mean / unit variance) before clustering (recommended).",
+            "mode": "BOTH",
+            "options": [],
+            "default": "1"
+          }
+        ],
+        "input": [
+          {
+            "name": "features",
+            "variableName": "features",
+            "type": "CSV",
+            "description": "Tabular feature matrix (or affinity matrix when affinity='precomputed'). If features: rows=samples, columns=numeric features. Optional first column 'id'.",
+            "mode": "BOTH",
+            "tabularSchema": {
+              "allowOnlyNumbers": true,
+              "prohibitedNulls": false
+            },
+            "required": true
+          }
+        ],
+        "output": [
+          {
+            "name": "labels",
+            "variableName": "labels",
+            "type": "CSV",
+            "description": "Cluster assignment per sample. Columns: [id?/index, label].",
+            "mode": "BOTH"
+          },
+          {
+            "name": "embedding",
+            "variableName": "embedding",
+            "type": "CSV",
+            "description": "Spectral embedding (eigenvectors). Rows=samples, columns=components (typically n_clusters). (Only if output_embedding=true).",
+            "mode": "BOTH"
+          },
+          {
+            "name": "report",
+            "variableName": "report",
+            "type": "HTML",
+            "description": "HTML report with parameters, affinity settings, eigen solver, and cluster size statistics.",
+            "mode": "BOTH"
+          }
+        ]
+      },
+      "audits": []
+    }
+  ],
+  "hasImage": false
+}

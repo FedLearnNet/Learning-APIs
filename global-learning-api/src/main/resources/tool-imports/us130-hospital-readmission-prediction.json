@@ -1,0 +1,150 @@
+{
+  "name" : "US130-Hospital Readmission Prediction",
+  "uniqueAppId" : "92e3b583-29d1-4659-9e4a-046812f4b373",
+  "slug" : "us130-hospital-readmission-prediction",
+  "type" : "ANALYSIS",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/us130-hospital-readmission-prediction",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 27,
+    "appVersion" : "0.0.0",
+    "publishHash" : "91401b9192b3703a059e1d5fa71aeff47f1616a4947b078867647fd7513e2063",
+    "publishInfo" : {
+      "commitHash" : "c848b7dacaf2ff115035adfb67757830e54660ae",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/us130-hospital-readmission-prediction/-/blob/c848b7dacaf2ff115035adfb67757830e54660ae/data/test_us130_wide.csv" ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us130-hospital-readmission-prediction:hzCyoDFw"
+    },
+    "changelog" : "",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us130-hospital-readmission-prediction:hzCyoDFw",
+    "shortDescription" : "Predict 30-day hospital readmission for diabetic patients using Logistic Regression",
+    "longDescription" : "",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "max_iter",
+        "variableName" : "max_iter",
+        "type" : "INTEGER",
+        "description" : "Maximum solver iterations",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1000"
+      }, {
+        "name" : "solver",
+        "variableName" : "solver",
+        "type" : "CATEGORICAL",
+        "description" : "Optimization algorithm",
+        "mode" : "BOTH",
+        "options" : [ "lbfgs", "liblinear", "saga", "newton-cg", "sag" ],
+        "default" : "lbfgs"
+      }, {
+        "name" : "class_weight",
+        "variableName" : "class_weight",
+        "type" : "CATEGORICAL",
+        "description" : "Class weighting — use 'balanced' to counter the ~11% readmission base rate",
+        "mode" : "BOTH",
+        "options" : [ "balanced", "none" ],
+        "default" : "balanced"
+      }, {
+        "name" : "random_state",
+        "variableName" : "random_state",
+        "type" : "INTEGER",
+        "description" : "Random seed for reproducibility",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "42"
+      }, {
+        "name" : "test_size",
+        "variableName" : "test_size",
+        "type" : "FLOAT",
+        "description" : "Fraction of data held out for validation",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0.2"
+      }, {
+        "name" : "target_column",
+        "variableName" : "target_column",
+        "type" : "STRING",
+        "description" : "Name of the readmission target column (<30 / >30 / NO)",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "hospital_readmission"
+      }, {
+        "name" : "standardize",
+        "variableName" : "standardize",
+        "type" : "BOOLEAN",
+        "description" : "Standardize numeric features with StandardScaler before training",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "C",
+        "variableName" : "c",
+        "type" : "FLOAT",
+        "description" : "Inverse regularization strength (smaller = stronger regularization)",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1.0"
+      } ],
+      "input" : [ {
+        "name" : "data",
+        "variableName" : "data",
+        "type" : "CSV",
+        "description" : "US130 clinics daataset",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "predictions",
+        "variableName" : "predictions",
+        "type" : "CSV",
+        "description" : "Per-patient predicted readmission label and probability (validation split during training, all rows during prediction)",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      }, {
+        "name" : "coefficients",
+        "variableName" : "coefficients",
+        "type" : "CSV",
+        "description" : "Long-form coefficient table sorted by magnitude",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      }, {
+        "name" : "explanation",
+        "variableName" : "explanation",
+        "type" : "HTML",
+        "description" : "Interactive report: metrics, confusion matrix, ROC curve, feature importance bar chart",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      }, {
+        "name" : "report",
+        "variableName" : "report",
+        "type" : "TEXT",
+        "description" : "Plain-text training / prediction summary",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

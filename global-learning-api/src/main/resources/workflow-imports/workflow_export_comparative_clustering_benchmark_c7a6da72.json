@@ -1,0 +1,164 @@
+{
+  "nodes" : [ {
+    "nodeId" : "131ab165-3a80-4e23-aa8d-f0774ae9e494",
+    "appUniqueId" : "b7c4f2a1-1d3e-4b6a-9c2f-7a1e5d0c9b11",
+    "versionPublishHash" : "birch",
+    "position" : {
+      "x" : 550,
+      "y" : 700
+    },
+    "hyperParams" : {
+      "threshold" : 0.5,
+      "branching_factor" : 50,
+      "use_global_clustering" : "1",
+      "n_clusters" : 3,
+      "compute_labels" : "1",
+      "copy" : "1",
+      "standardize" : "1"
+    },
+    "hasChildren" : true,
+    "hasParent" : true,
+    "executionOrder" : 2
+  }, {
+    "nodeId" : "aa2186e1-cd64-4671-8f7b-429b1b109519",
+    "appUniqueId" : "9da0dc07-2e4a-4f2b-ab1e-caffdcafd19a",
+    "versionPublishHash" : "6f3cc1c5-5868-4d00-95c2-a45698244dc1",
+    "position" : {
+      "x" : 300,
+      "y" : 1000
+    },
+    "hyperParams" : {
+      "id_column" : "index",
+      "truth_label_column" : "label",
+      "sort_by" : "silhouette"
+    },
+    "hasChildren" : false,
+    "hasParent" : true,
+    "executionOrder" : 4
+  }, {
+    "nodeId" : "a3373154-74df-4e02-aea0-ef63c5386b75",
+    "appUniqueId" : "8c2e7e45-1b6a-4c6b-9b3e-1c8c2d6b7a10",
+    "versionPublishHash" : "onehot",
+    "position" : {
+      "x" : 150,
+      "y" : 400
+    },
+    "hyperParams" : {
+      "drop_first" : "0",
+      "keep_original" : "0",
+      "bool_to_number" : "1",
+      "columns" : "",
+      "dummy_na" : "0",
+      "handle_unknown" : "ignore",
+      "prefix_sep" : "__"
+    },
+    "hasChildren" : true,
+    "hasParent" : true,
+    "executionOrder" : 1
+  }, {
+    "nodeId" : "f8d5bf58-847d-40f9-a8ae-e71e31c8c5ba",
+    "appUniqueId" : "911f4fbd-976b-4354-8479-eb885c5a1fc2",
+    "versionPublishHash" : "gmm",
+    "position" : {
+      "x" : 50,
+      "y" : 700
+    },
+    "hyperParams" : {
+      "n_components" : 3,
+      "covariance_type" : "full",
+      "tol" : 0.001,
+      "reg_covar" : 1.0E-6,
+      "max_iter" : 100,
+      "n_init" : 1,
+      "init_params" : "kmeans",
+      "random_state" : 42,
+      "warm_start" : "0",
+      "compute_labels" : "1",
+      "standardize" : "1",
+      "output_probabilities" : "1"
+    },
+    "hasChildren" : true,
+    "hasParent" : true,
+    "executionOrder" : 3
+  }, {
+    "nodeId" : "e19374fe-11dc-46a9-b3b1-d9fada9bf649",
+    "appUniqueId" : "a71e2f25-1d3a-4b0c-9b85-7a2e6c1f4f0e",
+    "versionPublishHash" : "1543c4685ccd1fbdf9ea6d054ab9b5ab1d9903e2",
+    "position" : {
+      "x" : 150,
+      "y" : 100
+    },
+    "hyperParams" : {
+      "dataset_id" : 17
+    },
+    "hasChildren" : true,
+    "hasParent" : false,
+    "executionOrder" : 0
+  } ],
+  "connections" : [ {
+    "inputId" : "app_131ab165-3a80-4e23-aa8d-f0774ae9e494_input_features",
+    "outputId" : "app_a3373154-74df-4e02-aea0-ef63c5386b75_output_encoded",
+    "inputNodeId" : "131ab165-3a80-4e23-aa8d-f0774ae9e494",
+    "outputNodeId" : "a3373154-74df-4e02-aea0-ef63c5386b75",
+    "inputFileName" : "features.csv",
+    "outputFileName" : "encoded.csv",
+    "inputConfigName" : "features",
+    "outputConfigName" : "encoded",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_aa2186e1-cd64-4671-8f7b-429b1b109519_input_features",
+    "outputId" : "app_a3373154-74df-4e02-aea0-ef63c5386b75_output_encoded",
+    "inputNodeId" : "aa2186e1-cd64-4671-8f7b-429b1b109519",
+    "outputNodeId" : "a3373154-74df-4e02-aea0-ef63c5386b75",
+    "inputFileName" : "features.csv",
+    "outputFileName" : "encoded.csv",
+    "inputConfigName" : "features",
+    "outputConfigName" : "encoded",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_a3373154-74df-4e02-aea0-ef63c5386b75_input_features",
+    "outputId" : "app_e19374fe-11dc-46a9-b3b1-d9fada9bf649_output_dataset",
+    "inputNodeId" : "a3373154-74df-4e02-aea0-ef63c5386b75",
+    "outputNodeId" : "e19374fe-11dc-46a9-b3b1-d9fada9bf649",
+    "inputFileName" : "features.csv",
+    "outputFileName" : "dataset.csv",
+    "inputConfigName" : "features",
+    "outputConfigName" : "dataset",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_aa2186e1-cd64-4671-8f7b-429b1b109519_input_predictions",
+    "outputId" : "app_f8d5bf58-847d-40f9-a8ae-e71e31c8c5ba_output_labels",
+    "inputNodeId" : "aa2186e1-cd64-4671-8f7b-429b1b109519",
+    "outputNodeId" : "f8d5bf58-847d-40f9-a8ae-e71e31c8c5ba",
+    "inputFileName" : "predictions.csv",
+    "outputFileName" : "labels.csv",
+    "inputConfigName" : "predictions",
+    "outputConfigName" : "labels",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_f8d5bf58-847d-40f9-a8ae-e71e31c8c5ba_input_features",
+    "outputId" : "app_a3373154-74df-4e02-aea0-ef63c5386b75_output_encoded",
+    "inputNodeId" : "f8d5bf58-847d-40f9-a8ae-e71e31c8c5ba",
+    "outputNodeId" : "a3373154-74df-4e02-aea0-ef63c5386b75",
+    "inputFileName" : "features.csv",
+    "outputFileName" : "encoded.csv",
+    "inputConfigName" : "features",
+    "outputConfigName" : "encoded",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_aa2186e1-cd64-4671-8f7b-429b1b109519_input_ground_truth",
+    "outputId" : "app_131ab165-3a80-4e23-aa8d-f0774ae9e494_output_labels",
+    "inputNodeId" : "aa2186e1-cd64-4671-8f7b-429b1b109519",
+    "outputNodeId" : "131ab165-3a80-4e23-aa8d-f0774ae9e494",
+    "inputFileName" : "ground_truth.csv",
+    "outputFileName" : "labels.csv",
+    "inputConfigName" : "ground_truth",
+    "outputConfigName" : "labels",
+    "inputConnection" : false
+  } ],
+  "inputs" : [ ],
+  "keycloakId" : "test",
+  "name" : "Comparative clustering benchmark",
+  "description" : "Comparative clustering benchmark\n\n",
+  "publishStatus" : "PUBLISHED"
+}

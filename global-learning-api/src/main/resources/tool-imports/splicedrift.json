@@ -1,0 +1,110 @@
+{
+  "name" : "SpliceDrift",
+  "uniqueAppId" : "f1300dda-4602-4f5d-8105-adc54d7b6b99",
+  "slug" : "splicedrift",
+  "type" : "SELF_LEARNED",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/posymed/apps/splicedrift",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 18,
+    "appVersion" : "1.0.1",
+    "publishHash" : "f1b915b557675bb1c93d56e3a638250564578706029f3de7f3f59a36c98ed9eb",
+    "publishInfo" : {
+      "commitHash" : "cf34fac783d0b507c888ea99aa6e5361df1044d9",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/posymed/apps/splicedrift/-/blob/cf34fac783d0b507c888ea99aa6e5361df1044d9/data/example_input.tsv" ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/splicedrift:CTWDcGRF"
+    },
+    "changelog" : "",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/splicedrift:CTWDcGRF",
+    "shortDescription" : "Bayesian Beta-Binomial regression for age-related splicing drift analysis.",
+    "longDescription" : "# SpliceDrift\nBayesian Beta-Binomial regression for age-related splicing drift analysis.\n\nSpliceDrift fits a probabilistic model to RNA-seq junction counts in order to detect age-associated changes in both the mean and variability of exon inclusion (PSI) across tissues and species.\n\n# Motivation\nMost available RNA-seq datasets (< 50 million reads per sample) provide limited coverage for individual splicing events. Percent Spliced In (PSI) estimates derived from junction counts can therefore be imprecise, and direct correlation or regression analyses on PSI point estimates are often insufficiently sensitive.\n\nSpliceDrift addresses this limitation by adopting a probabilistic modelling frame",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "draws",
+        "variableName" : "draws",
+        "type" : "INTEGER",
+        "description" : "Number of posterior draws per chain",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "200"
+      }, {
+        "name" : "tune",
+        "variableName" : "tune",
+        "type" : "INTEGER",
+        "description" : "Number of tuning (warm-up) steps per chain",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "200"
+      }, {
+        "name" : "chains",
+        "variableName" : "chains",
+        "type" : "INTEGER",
+        "description" : "Number of MCMC chains",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "max_refits",
+        "variableName" : "max_refits",
+        "type" : "INTEGER",
+        "description" : "Number of automatic refits on convergence failure",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0"
+      }, {
+        "name" : "target_accept",
+        "variableName" : "target_accept",
+        "type" : "FLOAT",
+        "description" : "NUTS target acceptance probability",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0.9"
+      }, {
+        "name" : "min_total",
+        "variableName" : "min_total",
+        "type" : "INTEGER",
+        "description" : "Minimum total reads N per sample",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "5"
+      } ],
+      "input" : [ {
+        "name" : "junction_counts",
+        "variableName" : "junction_counts",
+        "type" : "TSV",
+        "description" : "TSV with columns: event_id, sample_id, k, N, age, group (optional)",
+        "hasHeader" : true,
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "results",
+        "variableName" : "results",
+        "type" : "CSV",
+        "description" : "Summary table with alpha_prime and beta_prime per (event, group)"
+      }, {
+        "name" : "scatter_plot",
+        "variableName" : "scatter_plot",
+        "type" : "IMAGE",
+        "description" : "Scatter plot of alpha_prime vs beta_prime"
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

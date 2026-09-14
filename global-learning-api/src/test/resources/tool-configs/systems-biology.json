@@ -1,0 +1,20 @@
+[
+  {
+    "name": "SBtab Reaction Table",
+    "variableName": "sbtabReactions",
+    "type": "TSV",
+    "description": "SBtab (Systems Biology Table) is a convention for structured tabular data used in systems biology for biochemical reaction networks, stoichiometry, and parameter lists. It defines table types and controlled columns for model building. ",
+    "delimiter": "\t",
+    "hasHeader": true,
+    "tabularSchema": {
+      "minColumns": 2,
+      "prohibitedNulls": true,
+      "requiredColumns": ["!Reaction", "!SumFormula"],
+      "columns": {
+        "!Reaction": { "type": "STRING", "nullable": false },
+        "!SumFormula": { "type": "STRING", "nullable": false },
+        "!IsReversible": { "type": "STRING", "enumValues": ["True", "False"], "nullable": true }
+      }
+    }
+  }
+]

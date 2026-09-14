@@ -1,0 +1,216 @@
+{
+  "name": "LogisticRegression",
+  "uniqueAppId": "a67b810a-6c3c-4f63-a9e4-b56333174591",
+  "slug": "logisticregression",
+  "type": "ANALYSIS",
+  "sourceUrl": "https://gitlab.cosy.bio/cosybio/posymed/apps/logistic-regression",
+  "count": 0,
+  "average": 0.0,
+  "addedToWorkflowCount": 0,
+  "authors": [
+    {
+      "keycloakId": "test"
+    }
+  ],
+  "versions": [
+    {
+      "appVersion": "1.0.0",
+      "publishHash": "6a8ff472-adba-45c1-839b-5c8fdde1ba8f",
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "certificationLevel": 0,
+      "imageName": "<IMAGE_NAME_PLACEHOLDER>",
+      "shortDescription": "Trainable scikit-learn Logistic Regression baseline with built-in explainability.",
+      "longDescription": "# LogisticRegression\n\nLogisticRegression is a trainable scikit-learn baseline classifier. It trains on a CSV containing numeric features and a target/label column, optionally standardizes numeric features, generates predictions (including per-class probabilities), exports a coefficient table (including intercepts), and produces a human-readable explainability report highlighting the most influential positive/negative coefficients per class.\n\n## What this tool does\n- Reads a training CSV (`data`) with a configurable `target_column` and optional first column `id`.\n- Optionally standardizes numeric feature columns (recommended).\n- Trains a scikit-learn Logistic Regression model with configurable solver/regularization.\n- Outputs:\n  - predictions (label + probability columns)\n  - coefficients (long-form coefficients per class, incl. intercept)\n  - explanation (HTML report of top positive/negative coefficients)\n  - report (short textual summary)\n\n## Configuration\n### Hyperparameters\n- `target_column`: name of the target column in the input CSV\n- `standardize`: standardize numeric features before training\n- `C`: inverse regularization strength\n- `max_iter`: maximum iterations\n- `solver`: optimization algorithm\n- `multi_class`: multi-class strategy\n- `class_weight`: class weighting strategy\n- `random_state`: random seed\n- `explain_top_k`: number of top coefficients to show per class\n",
+      "config": {
+        "hyperparams": [
+          {
+            "name": "target_column",
+            "description": "Name of the target/label column in the training CSV.",
+            "type": "STRING",
+            "default": "col_5",
+            "minValue": null,
+            "maxValue": null,
+            "options": [],
+            "pattern": null
+          },
+          {
+            "name": "standardize",
+            "description": "Standardize numeric features before training and prediction.",
+            "type": "BOOLEAN",
+            "default": "1",
+            "minValue": null,
+            "maxValue": null,
+            "options": [],
+            "pattern": null
+          },
+          {
+            "name": "C",
+            "description": "Inverse regularization strength (smaller => stronger regularization).",
+            "type": "FLOAT",
+            "default": "1.0",
+            "minValue": 0.0,
+            "maxValue": null,
+            "options": [],
+            "pattern": null
+          },
+          {
+            "name": "max_iter",
+            "description": "Maximum number of solver iterations.",
+            "type": "INTEGER",
+            "default": "200",
+            "minValue": 1.0,
+            "maxValue": 100000.0,
+            "options": [],
+            "pattern": null
+          },
+          {
+            "name": "solver",
+            "description": "Optimizer/solver used for Logistic Regression.",
+            "type": "CATEGORICAL",
+            "default": "lbfgs",
+            "minValue": null,
+            "maxValue": null,
+            "options": [
+              "lbfgs",
+              "liblinear",
+              "saga",
+              "newton-cg",
+              "sag"
+            ],
+            "pattern": null
+          },
+          {
+            "name": "multi_class",
+            "description": "Multi-class handling strategy.",
+            "type": "CATEGORICAL",
+            "default": "auto",
+            "minValue": null,
+            "maxValue": null,
+            "options": [
+              "auto",
+              "ovr",
+              "multinomial"
+            ],
+            "pattern": null
+          },
+          {
+            "name": "class_weight",
+            "description": "Class weighting strategy. Use balanced for imbalanced datasets.",
+            "type": "CATEGORICAL",
+            "default": "balanced",
+            "minValue": null,
+            "maxValue": null,
+            "options": [
+              "balanced",
+              "none"
+            ],
+            "pattern": null
+          },
+          {
+            "name": "random_state",
+            "description": "Random seed.",
+            "type": "INTEGER",
+            "default": "42",
+            "minValue": 0.0,
+            "maxValue": 2147483600.0,
+            "options": [],
+            "pattern": null
+          },
+          {
+            "name": "explain_top_k",
+            "description": "Number of top positive/negative coefficients per class to show in explanation.html.",
+            "type": "INTEGER",
+            "default": "15",
+            "minValue": 1.0,
+            "maxValue": 200.0,
+            "options": [],
+            "pattern": null
+          }
+        ],
+        "input": [
+          {
+            "name": "data",
+            "description": "Training CSV containing numeric features and a target column (target_column). Optional first column 'id'.",
+            "type": "CSV",
+            "required": true,
+            "delimiter": ",",
+            "hasHeader": true,
+            "indexCol": null,
+            "shape": null,
+            "minValue": null,
+            "maxValue": null,
+            "tabularSchema": {
+              "allowOnlyNumbers": false,
+              "prohibitedNulls": false,
+              "nullPolicy": null,
+              "columns": null,
+              "minRows": null,
+              "maxRows": null,
+              "minColumns": null,
+              "maxColumns": null,
+              "requiredColumns": null
+            }
+          }
+        ],
+        "output": [
+          {
+            "name": "explanation",
+            "description": "Human-readable explainability report (top positive/negative coefficients per class).",
+            "type": "HTML",
+            "required": false,
+            "delimiter": null,
+            "hasHeader": null,
+            "indexCol": null,
+            "shape": null,
+            "minValue": null,
+            "maxValue": null,
+            "tabularSchema": null
+          },
+          {
+            "name": "report",
+            "description": "Small textual run report.",
+            "type": "TEXT",
+            "required": false,
+            "delimiter": null,
+            "hasHeader": null,
+            "indexCol": null,
+            "shape": null,
+            "minValue": null,
+            "maxValue": null,
+            "tabularSchema": null
+          },
+          {
+            "name": "predictions",
+            "description": "Predictions CSV including label and probabilities for each class (p_<class> columns).",
+            "type": "CSV",
+            "required": false,
+            "delimiter": null,
+            "hasHeader": null,
+            "indexCol": null,
+            "shape": null,
+            "minValue": null,
+            "maxValue": null,
+            "mode": "PREDICTION",
+            "tabularSchema": null
+          },
+          {
+            "name": "coefficients",
+            "description": "Long-form coefficient table per class (includes intercept).",
+            "type": "CSV",
+            "required": false,
+            "delimiter": null,
+            "hasHeader": null,
+            "indexCol": null,
+            "shape": null,
+            "minValue": null,
+            "maxValue": null,
+            "tabularSchema": null
+          }
+        ]
+      },
+      "audits": []
+    }
+  ],
+  "hasImage": false
+}

@@ -1,0 +1,332 @@
+{
+  "name" : "US130-Hospital Readmission Federated NN",
+  "uniqueAppId" : "de70ee5d-1d92-46cf-9d4c-77cf96bc2498",
+  "slug" : "us130-hospital-readmission-federated-nn",
+  "type" : "ANALYSIS",
+  "supportsFederatedLearning" : true,
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/us-130-fl-nn",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 27,
+    "appVersion" : "0.0.0",
+    "publishHash" : "91401b9192b3703a059e1d5fa71aeff47f1616a4947b078867647fd7513e2062",
+    "publishInfo" : {
+      "commitHash" : "ec86a7d62aa9c18c8ec72dff8817584f15b3020b",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/us-130-fl-nn/-/blob/ec86a7d62aa9c18c8ec72dff8817584f15b3020b/data/test_us130_wide_c85ce744.csv", "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/us-130-fl-nn/-/blob/ec86a7d62aa9c18c8ec72dff8817584f15b3020b/data/test_us130_wide.csv" ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us130-hospital-readmission-federated-nn:MkSRaOLR",
+        "success" : false,
+        "summary" : {
+          "critical" : 0,
+          "high" : 2,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 2
+        },
+        "rawReport" : {
+          "lang-pkgs-python-pkg" : [ {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:e62d433b90d3cf59a0ccccf4114b4c0d24fad996a6df666ec14764962be06091"
+            },
+            "PkgID" : "msgpack@1.1.2",
+            "Title" : "MessagePack for Python: Out-of-bounds read / crash on Unpacker reuse after a caught error",
+            "Status" : "fixed",
+            "PkgName" : "msgpack",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://github.com/advisories/GHSA-6v7p-g79w-8964",
+            "References" : [ "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/2c56ddb5d0025ed481d962c0f5d62d19dec7476d", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.1", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-6v7p-g79w-8964" ],
+            "Description" : "### Impact\n\nIf the Unpacker is used repeatedly after an error occurs, the process may crash with a SEGV.\n\nIf the Unpacker is used repeatedly to unpack untrusted input from external sources, it may be vulnerable to a DoS attack.\n\n### Patches\n\nv1.2.1\n\n### Workarounds\n\nUsers should create a new Unpacker instead of reusing the same Unpacker after an error occurs.\n\nApplying the above patch can prevent SEGV, but reusing the Streaming Unpacker after it has encountered an error will not yield correct data. If an error occurs during Streaming Unpacking, the Stream and Streaming Unpacker should be discarded.\n\nTherefore, this is not just a workaround but the correct solution. The above patch only prevents crashes from incorrect usage.",
+            "Fingerprint" : "sha256:f05bbf807e6943aa54bd208fe8d13fef97f8701bfa8d5cbdcbb082cbd9e22312",
+            "FixedVersion" : "1.2.1",
+            "PkgIdentifier" : {
+              "UID" : "f7dd9267d9d4da19",
+              "PURL" : "pkg:pypi/msgpack@1.1.2",
+              "BOMRef" : "pkg:pypi/msgpack@1.1.2"
+            },
+            "PublishedDate" : "2026-06-19T21:42:55Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "ghsa" : 3
+            },
+            "VulnerabilityID" : "GHSA-6v7p-g79w-8964",
+            "InstalledVersion" : "1.1.2",
+            "LastModifiedDate" : "2026-06-19T21:42:55Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 8.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "ghsa" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              },
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:L"
+              },
+              "bitnami" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:e62d433b90d3cf59a0ccccf4114b4c0d24fad996a6df666ec14764962be06091"
+            },
+            "PkgID" : "setuptools@70.3.0",
+            "Title" : "setuptools: Path Traversal Vulnerability in setuptools PackageIndex",
+            "CweIDs" : [ "CWE-22" ],
+            "Status" : "fixed",
+            "PkgName" : "setuptools",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-5rjg-fvgr-3xxf" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:13578", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/9/ALSA-2025-13578.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
+            "Fingerprint" : "sha256:d062a6211b3c7ebe96ba41a20b4700924569bf7cfcc4f6ac887283bbf4b6dce0",
+            "FixedVersion" : "78.1.1",
+            "PkgIdentifier" : {
+              "UID" : "c5eccaa7d8e0c308",
+              "PURL" : "pkg:pypi/setuptools@70.3.0",
+              "BOMRef" : "pkg:pypi/setuptools@70.3.0"
+            },
+            "PublishedDate" : "2025-05-17T16:15:19.11Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 2,
+              "ghsa" : 3,
+              "azure" : 3,
+              "rocky" : 2,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "bitnami" : 3,
+              "oracle-oval" : 2
+            },
+            "VulnerabilityID" : "CVE-2025-47273",
+            "InstalledVersion" : "70.3.0",
+            "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
+          } ]
+        }
+      },
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us130-hospital-readmission-federated-nn:MkSRaOLR"
+    },
+    "changelog" : "",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us130-hospital-readmission-federated-nn:MkSRaOLR",
+    "shortDescription" : "Predict 30-day hospital readmission for diabetic patients using a federated neural network",
+    "longDescription" : "",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "batch_size",
+        "variableName" : "batch_size",
+        "type" : "STRING",
+        "description" : "MLP batch size.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "10"
+      }, {
+        "name" : "communication_id",
+        "variableName" : "communication_id",
+        "type" : "STRING",
+        "description" : "Base communication id. For multi-round training the app appends -round-N so every round has a unique id.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "hospital-readmission"
+      }, {
+        "name" : "output_filename",
+        "variableName" : "output_filename",
+        "type" : "STRING",
+        "description" : "CSV file written by each client into its local output directory.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "federated_readmission_predictions.csv"
+      }, {
+        "name" : "federated_rounds",
+        "variableName" : "federated_rounds",
+        "type" : "INTEGER",
+        "description" : "Number of federated train/aggregate rounds.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "default" : "10"
+      }, {
+        "name" : "local_max_iter",
+        "variableName" : "local_max_iter",
+        "type" : "INTEGER",
+        "description" : "Local MLP iteration budget per federated round.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "default" : "15"
+      }, {
+        "name" : "random_state",
+        "variableName" : "random_state",
+        "type" : "INTEGER",
+        "description" : "Random seed for reproducibility",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "42"
+      }, {
+        "name" : "test_size",
+        "variableName" : "test_size",
+        "type" : "FLOAT",
+        "description" : "Fraction of data held out for validation",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0.2"
+      }, {
+        "name" : "target_column",
+        "variableName" : "target_column",
+        "type" : "STRING",
+        "description" : "Name of the readmission target column (<30 / >30 / NO)",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "hospital_readmission"
+      }, {
+        "name" : "standardize",
+        "variableName" : "standardize",
+        "type" : "BOOLEAN",
+        "description" : "Reserved for compatibility with the reference app.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0"
+      }, {
+        "name" : "hidden_layer_sizes",
+        "variableName" : "hidden_layer_sizes",
+        "type" : "STRING",
+        "description" : "Comma-separated hidden layer sizes. Default mirrors a simple diabetes NN with 12 hidden units, then 8 hidden units.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "12,8"
+      }, {
+        "name" : "activation",
+        "variableName" : "activation",
+        "type" : "CATEGORICAL",
+        "description" : "MLP activation function.",
+        "mode" : "BOTH",
+        "options" : [ "relu", "tanh", "logistic" ],
+        "default" : "relu"
+      }, {
+        "name" : "max_iter",
+        "variableName" : "max_iter",
+        "type" : "INTEGER",
+        "description" : "Total iteration budget for standalone local baselines.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "150"
+      }, {
+        "name" : "solver",
+        "variableName" : "solver",
+        "type" : "CATEGORICAL",
+        "description" : "MLP optimization algorithm",
+        "mode" : "BOTH",
+        "options" : [ "adam", "sgd" ],
+        "default" : "adam"
+      }, {
+        "name" : "alpha",
+        "variableName" : "alpha",
+        "type" : "FLOAT",
+        "description" : "L2 regularization strength.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0.0001"
+      }, {
+        "name" : "learning_rate_init",
+        "variableName" : "learning_rate_init",
+        "type" : "FLOAT",
+        "description" : "Initial learning rate for adam/sgd.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0.001"
+      }, {
+        "name" : "class_weight",
+        "variableName" : "class_weight",
+        "type" : "CATEGORICAL",
+        "description" : "Class weighting — use 'balanced' to counter the ~11% readmission base rate",
+        "mode" : "BOTH",
+        "options" : [ "balanced", "none" ],
+        "default" : "balanced"
+      } ],
+      "input" : [ {
+        "name" : "data",
+        "variableName" : "data",
+        "type" : "CSV",
+        "description" : "US130 clinics dataset",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "predictions",
+        "variableName" : "predictions",
+        "type" : "CSV",
+        "description" : "Per-patient predicted readmission label and probability (validation split during training, all rows during prediction)",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      }, {
+        "name" : "coefficients",
+        "variableName" : "coefficients",
+        "type" : "CSV",
+        "description" : "Long-form first-layer feature-weight table sorted by magnitude",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      }, {
+        "name" : "explanation",
+        "variableName" : "explanation",
+        "type" : "HTML",
+        "description" : "Interactive report: metrics, confusion matrix, ROC curve, feature importance bar chart",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      }, {
+        "name" : "report",
+        "variableName" : "report",
+        "type" : "TEXT",
+        "description" : "Plain-text training / prediction summary",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

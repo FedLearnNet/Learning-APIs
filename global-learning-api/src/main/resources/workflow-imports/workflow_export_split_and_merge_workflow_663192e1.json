@@ -1,0 +1,178 @@
+{
+  "nodes" : [ {
+    "nodeId" : "4af86cdd-add4-42a6-878c-bb8f4f3b4f97",
+    "appUniqueId" : "8c2e7e45-1b6a-4c6b-9b3e-1c8c2d6b7a10",
+    "versionPublishHash" : "onehot",
+    "position" : {
+      "x" : 750,
+      "y" : 700
+    },
+    "hyperParams" : {
+      "drop_first" : "0",
+      "keep_original" : "0",
+      "bool_to_number" : "1",
+      "columns" : "",
+      "dummy_na" : "0",
+      "handle_unknown" : "ignore",
+      "prefix_sep" : "__"
+    },
+    "hasChildren" : true,
+    "hasParent" : true,
+    "executionOrder" : 2
+  }, {
+    "nodeId" : "4a848f74-3502-47e0-ad02-35ca221f87e0",
+    "appUniqueId" : "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b",
+    "versionPublishHash" : "agglomerative",
+    "position" : {
+      "x" : 450,
+      "y" : 1300
+    },
+    "hyperParams" : {
+      "linkage" : "ward",
+      "compute_distances" : "1",
+      "standardize" : "1",
+      "metric" : "euclidean",
+      "use_distance_threshold" : "1",
+      "n_clusters" : 2,
+      "plot_title" : "Agglomerative Clustering Dendrogram",
+      "dendrogram_truncate_mode" : "none",
+      "dendrogram_p" : 30,
+      "distance_threshold" : 0
+    },
+    "hasChildren" : false,
+    "hasParent" : true,
+    "executionOrder" : 5
+  }, {
+    "nodeId" : "3b7ee445-fe87-4d42-a4d6-bd3510c69e45",
+    "appUniqueId" : "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
+    "versionPublishHash" : "d79380765e11b21a15886658f3dcaec913a2d77e",
+    "position" : {
+      "x" : 300,
+      "y" : 400
+    },
+    "hyperParams" : {
+      "shuffle" : "1",
+      "test_size" : 0.25,
+      "random_state" : 42
+    },
+    "hasChildren" : true,
+    "hasParent" : true,
+    "executionOrder" : 1
+  }, {
+    "nodeId" : "ebd69b2a-564d-471f-a3bf-513e81aca059",
+    "appUniqueId" : "8b5a0816-df3a-441c-abba-8ee85375374f",
+    "versionPublishHash" : "f25e48d1-1c84-462e-9320-df960d7d4272",
+    "position" : {
+      "x" : 400,
+      "y" : 1000
+    },
+    "hyperParams" : {
+      "mode" : "concat_rows",
+      "key" : "",
+      "how" : "inner"
+    },
+    "hasChildren" : true,
+    "hasParent" : true,
+    "executionOrder" : 4
+  }, {
+    "nodeId" : "438def66-caa9-47bd-9a1a-4c95d7947a0f",
+    "appUniqueId" : "a71e2f25-1d3a-4b0c-9b85-7a2e6c1f4f0e",
+    "versionPublishHash" : "1543c4685ccd1fbdf9ea6d054ab9b5ab1d9903e2",
+    "position" : {
+      "x" : 250,
+      "y" : 100
+    },
+    "hyperParams" : {
+      "dataset_id" : 17
+    },
+    "hasChildren" : true,
+    "hasParent" : false,
+    "executionOrder" : 0
+  }, {
+    "nodeId" : "622ed8b1-2aa1-4477-8e5c-5d60f3415b01",
+    "appUniqueId" : "8c2e7e45-1b6a-4c6b-9b3e-1c8c2d6b7a10",
+    "versionPublishHash" : "onehot",
+    "position" : {
+      "x" : 100,
+      "y" : 700
+    },
+    "hyperParams" : {
+      "drop_first" : "0",
+      "keep_original" : "0",
+      "bool_to_number" : "1",
+      "columns" : "",
+      "dummy_na" : "0",
+      "handle_unknown" : "ignore",
+      "prefix_sep" : "__"
+    },
+    "hasChildren" : true,
+    "hasParent" : true,
+    "executionOrder" : 3
+  } ],
+  "connections" : [ {
+    "inputId" : "app_ebd69b2a-564d-471f-a3bf-513e81aca059_input_right",
+    "outputId" : "app_4af86cdd-add4-42a6-878c-bb8f4f3b4f97_output_encoded",
+    "inputNodeId" : "ebd69b2a-564d-471f-a3bf-513e81aca059",
+    "outputNodeId" : "4af86cdd-add4-42a6-878c-bb8f4f3b4f97",
+    "inputFileName" : "right.csv",
+    "outputFileName" : "encoded.csv",
+    "inputConfigName" : "right",
+    "outputConfigName" : "encoded",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_622ed8b1-2aa1-4477-8e5c-5d60f3415b01_input_features",
+    "outputId" : "app_3b7ee445-fe87-4d42-a4d6-bd3510c69e45_output_test",
+    "inputNodeId" : "622ed8b1-2aa1-4477-8e5c-5d60f3415b01",
+    "outputNodeId" : "3b7ee445-fe87-4d42-a4d6-bd3510c69e45",
+    "inputFileName" : "features.csv",
+    "outputFileName" : "test.csv",
+    "inputConfigName" : "features",
+    "outputConfigName" : "test",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_ebd69b2a-564d-471f-a3bf-513e81aca059_input_left",
+    "outputId" : "app_622ed8b1-2aa1-4477-8e5c-5d60f3415b01_output_encoded",
+    "inputNodeId" : "ebd69b2a-564d-471f-a3bf-513e81aca059",
+    "outputNodeId" : "622ed8b1-2aa1-4477-8e5c-5d60f3415b01",
+    "inputFileName" : "left.csv",
+    "outputFileName" : "encoded.csv",
+    "inputConfigName" : "left",
+    "outputConfigName" : "encoded",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_3b7ee445-fe87-4d42-a4d6-bd3510c69e45_input_input",
+    "outputId" : "app_438def66-caa9-47bd-9a1a-4c95d7947a0f_output_dataset",
+    "inputNodeId" : "3b7ee445-fe87-4d42-a4d6-bd3510c69e45",
+    "outputNodeId" : "438def66-caa9-47bd-9a1a-4c95d7947a0f",
+    "inputFileName" : "input.csv",
+    "outputFileName" : "dataset.csv",
+    "inputConfigName" : "input",
+    "outputConfigName" : "dataset",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_4a848f74-3502-47e0-ad02-35ca221f87e0_input_features",
+    "outputId" : "app_ebd69b2a-564d-471f-a3bf-513e81aca059_output_output",
+    "inputNodeId" : "4a848f74-3502-47e0-ad02-35ca221f87e0",
+    "outputNodeId" : "ebd69b2a-564d-471f-a3bf-513e81aca059",
+    "inputFileName" : "features.csv",
+    "outputFileName" : "output.csv",
+    "inputConfigName" : "features",
+    "outputConfigName" : "output",
+    "inputConnection" : false
+  }, {
+    "inputId" : "app_4af86cdd-add4-42a6-878c-bb8f4f3b4f97_input_features",
+    "outputId" : "app_3b7ee445-fe87-4d42-a4d6-bd3510c69e45_output_train",
+    "inputNodeId" : "4af86cdd-add4-42a6-878c-bb8f4f3b4f97",
+    "outputNodeId" : "3b7ee445-fe87-4d42-a4d6-bd3510c69e45",
+    "inputFileName" : "features.csv",
+    "outputFileName" : "train.csv",
+    "inputConfigName" : "features",
+    "outputConfigName" : "train",
+    "inputConnection" : false
+  } ],
+  "inputs" : [ ],
+  "keycloakId" : "test",
+  "name" : "split-and-merge workflow",
+  "description" : "split-and-merge workflow\n",
+  "publishStatus" : "PUBLISHED"
+}

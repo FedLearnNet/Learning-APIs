@@ -1,0 +1,117 @@
+{
+  "name" : "MofaExploration",
+  "uniqueAppId" : "d0fa2a30-7cb5-4161-8c02-5aa556d1e96c",
+  "slug" : "mofaexploration",
+  "type" : "SELF_LEARNED",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/posymed/apps/mofa2",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 12,
+    "appVersion" : "1.0.0",
+    "publishHash" : "adbae9080ae6342775589fdbcb7f7afc09ee2708a7a01a00a590c1f5b38a1492",
+    "publishInfo" : {
+      "commitHash" : "44e8cd13098e890073eb2e337ed3656f6678aeb6",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/posymed/apps/mofa2/-/blob/44e8cd13098e890073eb2e337ed3656f6678aeb6/data/models/pbmc10k.hdf5" ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/mofaexploration:TSjFYyAA"
+    },
+    "changelog" : "",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/mofaexploration:TSjFYyAA",
+    "shortDescription" : "Explore a trained MOFA/MOFA+ PBMC10K dataset model and export factors, weights, variance explained, and top features",
+    "longDescription" : "# MofaExploration\n\n`MofaExploration` is a PoSyMed app for downstream inspection of a trained MOFA/MOFA+ model.\nIt is based on the ideas shown in the `mofax` PBMC10k getting-started notebook: load a trained model, inspect factors and weights, review variance explained, and identify factor-defining features. citeturn1view0\n\n## What the app does\n\nThe app opens a trained MOFA/MOFA+ HDF5 model and exports structured tables that are easy to use in PoSyMed workflows:\n\n- **factors**: factor matrix `Z`\n- **weights**: weights/loadings matrix `W`\n- **variance_explained**: variance explained per factor/view/group via `get_r2(...)`\n- **top_features**: strongest positively or negatively weighted features per factor\n- **report**: HTML overview for quick inspection\n\nThe underlying notebook demonstrates exactly these core concepts: connecting to a trained HDF5 model, accessing `Z` and `W`, exploring weights/loadings, and computing variance explained.\n\n## Why this design fits PoSyMed\n\nThe original notebook is exploratory and plot-heavy. For a first PoSyMed integration, structured outputs are usually more useful than notebook visuals because they can be chained into downstream workflow steps. The app therefore prioritizes reproducible exports over interactive plotting.\n\nThis makes it suitable for:\n\n- model inspection after training\n- factor interpretation workflows\n- comparison of latent factors across runs\n- downstream reporting in PoSyMed\n\n## Inputs\n\n| Name | Type | Required | Description |\n|---|---|---:|---|\n| `model` | MIXED | yes | Path or file-like reference to a trained MOFA/MOFA+ HDF5 model |\n\n## Hyperparameters\n\n| Name | Type | Default | Description |\n|---|---|---:|---|\n| `factors` | categorical/list-like | all | Factor indices to export |\n| `n_top_features` | integer | `20` | Number of top features per factor |\n| `group_label` | string | none | Optional metadata label mentioned in report |\n| `export_weights` | boolean | `true` | Export weights/loadings matrix |\n| `export_factors` | boolean | `true` | Export factor matrix |\n| `export_r2` | boolean | `true` | Export variance explained |\n| `export_top_features` | boolean | `true` | Export ranked top features |\n\n## Outputs\n\n| Name | Type | Description |\n|---|---|---|\n| `factors` | CSV | Factor matrix `Z` |\n| `weights` | CSV | Weights/loadings matrix `W` |\n| `variance_explained` | CSV | Variance explained summary |\n| `top_features` | CSV | Top-ranked features per factor |\n| `report` | HTML | Summary report |\n\n## Example workflow position\n\nThis app fits best as a **post-training analysis** or **self-learned inspection** step:\n\n1. Obtain or train a MOFA/MOFA+ model.\n2. Pass the resulting HDF5 model into `MofaExploration`.\n3. Use the exported tables for interpretation, benchmarking, or reporting.\n\n## Example configuration\n\n```yaml\nhyperparameters:\n  n_top_features: 15\n  export_weights: true\n  export_factors: true\n  export_r2: true\n  export_top_features: true\ninputs:\n  model: pbmc10k.hdf5\n```\n\n## Python dependencies\n\nAt minimum, the runtime should include:\n\n```txt\nmofax\npandas\npydantic\npyfedappwrap\n```\n\nDepending on the installed `mofax` version and backend, the environment may also need the MOFA model-reading stack used by that package.\n\n## Notes\n\n- The reference notebook also showcases multiple plotting functions such as `plot_weights_ranked`, `plot_weights_heatmap`, `plot_r2`, and `plot_factors_scatter`.\n- Those can be added later as image or HTML visualization outputs if you want a richer reporting app.\n- For PoSyMed, tabular exports are usually the best first integration target.\n",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "n_top_features",
+        "variableName" : "n_top_features",
+        "type" : "INTEGER",
+        "description" : "Number of top absolute-weight features to export per factor.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "default" : "20"
+      }, {
+        "name" : "export_weights",
+        "variableName" : "export_weights",
+        "type" : "BOOLEAN",
+        "description" : "Export the factor loadings matrix.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "export_factors",
+        "variableName" : "export_factors",
+        "type" : "BOOLEAN",
+        "description" : "Export the factor values matrix.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "export_top_features",
+        "variableName" : "export_top_features",
+        "type" : "BOOLEAN",
+        "description" : "Export ranked top features per factor.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1"
+      } ],
+      "input" : [ ],
+      "output" : [ {
+        "name" : "factors",
+        "variableName" : "factors",
+        "type" : "CSV",
+        "description" : "Exported factor matrix (Z).",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      }, {
+        "name" : "weights",
+        "variableName" : "weights",
+        "type" : "CSV",
+        "description" : "Exported weights/loadings matrix (W).",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      }, {
+        "name" : "top_features",
+        "variableName" : "top_features",
+        "type" : "CSV",
+        "description" : "Ranked top features per factor based on absolute weight.",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      }, {
+        "name" : "report",
+        "variableName" : "report",
+        "type" : "HTML",
+        "description" : "HTML summary report of the explored model.",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      }, {
+        "name" : "weights_plot",
+        "variableName" : "weights_plot",
+        "type" : "IMAGE",
+        "description" : "PNG heatmap of MOFA weights.",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

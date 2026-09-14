@@ -1,0 +1,113 @@
+{
+  "name" : "spycone",
+  "uniqueAppId" : "d3b8f6e2-9a4c-4f5d-8e7b-6c9a3f2d5e1b",
+  "slug" : "spycone",
+  "type" : "SELF_LEARNED",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-spycone",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 13,
+    "appVersion" : "1.0.0",
+    "publishHash" : "a10272e3e6dc7aa801014e62bf94fb164404f2b7",
+    "publishInfo" : {
+      "commitHash" : "84f141f7301e4aa9e43bec7fc0c3094224a9430a",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-spycone/-/blob/84f141f7301e4aa9e43bec7fc0c3094224a9430a/data/normticonerhino_wide.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-spycone/-/blob/84f141f7301e4aa9e43bec7fc0c3094224a9430a/data/symbs.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-spycone/-/blob/84f141f7301e4aa9e43bec7fc0c3094224a9430a/data/preprocess.ipynb", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-spycone/-/blob/84f141f7301e4aa9e43bec7fc0c3094224a9430a/data/flu_ts_small.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-spycone/-/blob/84f141f7301e4aa9e43bec7fc0c3094224a9430a/data/outputgene_level_cluster_visualization.png", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-spycone/-/blob/84f141f7301e4aa9e43bec7fc0c3094224a9430a/data/flu_ts.csv", "https://gitlab.cosy.bio/cosybio/posymed/apps/posymed-spycone/-/blob/84f141f7301e4aa9e43bec7fc0c3094224a9430a/data/gene_list.csv" ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/spycone:FPPRizge"
+    },
+    "changelog" : "Changelog 1.0.0",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/spycone:FPPRizge",
+    "shortDescription" : "Spycone: SPlicing-aware time-COurse Network Enricher",
+    "longDescription" : "# Posymed-Spycone\n\nA comprehensive implementation of **Spycone** (SPlicing-aware time-COurse Network Enricher) for federated learning environments, designed for time-series gene expression analysis with network enrichment capabilities.\n\n## Overview\n\nSpycone is a powerful tool for analyzing time-series gene expression data with a focus on:\n- Splicing-aware transcript-level analysis\n- Time-course clustering and pattern recognition\n- Co-expression network construction\n- Functional enrichment analysis\n- Differential expression analysis across time points\n\n## Features\n\n### Core Analysis Capabilities\n- **Time-Series Analysis**: Comprehensive analysis of gene expression changes over time\n- **Splicing-Aware Analysis**: Support for both gene-level and transcript-level analysis\n- **Multiple Clustering Algorithms**: Hierarchical, K-means, DBSCAN, OPTICS, and K-medoids\n- **Network Construction**: Co-expression network analysis with correlation thresholding\n- **Functional Enrichment**: Integration with GO, KEGG, and Reactome databases\n- **Differential Expression**: Statistical analysis of expression changes between conditions\n- **Quality Control**: Comprehensive data validation and preprocessing\n\n### Visualization\n- Cluster visualization plots\n- Network topology plots\n- Time-course expression patterns\n- Heatmaps and correlation matrices\n- Statistical summary plots\n\n## Input Requirements\n\n### Primary Input\n- **Time Series Data**: CSV file with genes as rows and samples as columns\n  - Format: Gene names in first column, expression values in subsequent columns\n  - Column naming convention: `T{timepoint}_{condition}_Rep{replicate}`\n  - Example: `T0_Ctrl_Rep1`, `T1_Ctrl_Rep1`, `T0_Treat_Rep1`, etc.\n\n### Optional Input\n- **Gene List**: CSV file for transcript-level analysis\n  - Contains specific genes/transcripts of interest\n  - Used for focused analysis when provided\n\n## Parameters\n\n### Basic Parameters\n- **data_num_species** (int, default: 9606): Species ID (9606 for Homo sapiens, 10090 for Mus musculus)\n- **clustering_algorithm** (str, default: \"hierarchical\"): Clustering method\n  - Options: `hierarchical`, `kmeans`, `dbscan`, `optics`, `kmedoids`\n- **analysis_type** (str, default: \"gene_level\"): Analysis level\n  - Options: `gene_level`, `transcript_level`\n\n### Time Series Parameters\n- **timepts** (int, default: 9, range: 3-50): Number of time points\n- **reps1** (int, default: 3, range: 1-10): Number of replicates for condition 1\n- **reps2** (int, default: 3, range: 1-10): Number of replicates for condition 2\n\n### Statistical Parameters\n- **pval_threshold** (float, default: 0.05, range: 0.001-1.0): P-value threshold\n- **fc_threshold** (float, default: 1.5, range: 1.0-10.0): Fold change threshold\n- **fdr_correction** (bool, default: true): Apply false discovery rate correction\n\n### Clustering Parameters\n- **min_cluster_size** (int, default: 5, range: 2-100): Minimum genes per cluster\n- **max_cluster_size** (int, default: 100, range: 10-1000): Maximum genes per cluster\n\n### Network Parameters\n- **network_threshold** (float, default: 0.7, range: 0.1-1.0): Correlation threshold\n\n### Enrichment Parameters\n- **enrichment_database** (str, default: \"GO_BP\"): Enrichment database\n  - Options: `GO_BP`, `GO_MF`, `GO_CC`, `KEGG`, `Reactome`\n\n### Output Parameters\n- **plot_format** (str, default: \"png\"): Output format\n  - Options: `png`, `pdf`, `svg`\n- **dpi** (int, default: 300, range: 72-600): Plot resolution\n\n## Output Files\n\n### Visualizations\n1. **cluster_visualization.png**: Gene clustering results and patterns\n2. **network_plot.png**: Co-expression network visualization\n3. **time_course_plot.png**: Time-series expression patterns by cluster\n\n### Data Files\n1. **enrichment_results.csv**: Functional enrichment analysis results\n2. **differential_expression.csv**: Differential expression statistics\n3. **cluster_data.csv**: Gene cluster assignments\n4. **network_data.csv**: Network topology and correlation data\n\n### Reports\n1. **analysis_summary.txt**: Comprehensive analysis summary\n\n## Usage\n\n### Docker Usage\n\n```bash\n# Build the Docker image\ndocker build -t posymed-spycone .\n\n# Run the analysis\ndocker run -v /path/to/data:/app/data -v /path/to/output:/app/output posymed-spycone\n```\n\n### Local Development\n\n```bash\n# Install dependencies\npip install -r requirements.txt\n\n# Install R dependencies\nRscript -e \"install.packages(c('BiocManager', 'devtools'))\"\nRscript -e \"BiocManager::install(c('DESeq2', 'edgeR', 'clusterProfiler'))\"\n\n# Run the analysis\npython main.py\n```\n\n### Python API\n\n```python\nfrom app import MyAPP, MyAppConfig, MyAppInputConfig, MyAppOutputConfig\nfrom pathlib import Path\n\n# Configure analysis parameters\nconfig = MyAppConfig(\n    data_num_species=9606,\n    clustering_algorithm=\"hierarchical\",\n    timepts=9,\n    analysis_type=\"gene_level\",\n    pval_threshold=0.05\n)\n\n# Set input files\ninput_config = MyAppInputConfig(\n    time_series_data=Path(\"data/time_series.csv\"),\n    gene_list=Path(\"data/genes.csv\")  # Optional\n)\n\n# Set output files\noutput_config = MyAppOutputConfig(\n    cluster_visualization=Path(\"output/clusters.png\"),\n    network_plot=Path(\"output/network.png\"),\n    # ... other output files\n)\n\n# Run analysis\napp = MyAPP(config, input_config, output_config)\nresults = app.run_train(input_config)\n```\n\n## Dependencies\n\n### Python Dependencies\n- **Core**: pandas, numpy, scipy, scikit-learn\n- **Visualization**: matplotlib, seaborn, plotly\n- **Network Analysis**: networkx\n- **Time Series**: tslearn\n- **Bioinformatics**: biopython, gseapy\n- **Statistical**: statsmodels\n- **Clustering**: hdbscan, umap-learn, leidenalg\n- **Framework**: pyfedappwrap\n\n### R Dependencies\n- **Bioconductor**: DESeq2, edgeR, clusterProfiler\n- **Network Analysis**: WGCNA, igraph\n- **Visualization**: ggplot2, pheatmap\n- **Data Manipulation**: dplyr, tidyr\n\n### System Requirements\n- Python ≥ 3.8\n- R ≥ 4.0\n- Sufficient memory for large expression matrices\n- Multi-core CPU recommended for large datasets\n\n## Algorithm Details\n\n### Analysis Pipeline\n1. **Data Preprocessing**\n   - Quality control and filtering\n   - Normalization and scaling\n   - Missing value handling\n\n2. **Time-Series Clustering**\n   - Pattern recognition across time points\n   - Multiple clustering algorithms\n   - Cluster validation and optimization\n\n3. **Network Construction**\n   - Correlation-based co-expression networks\n   - Network topology analysis\n   - Module detection\n\n4. **Differential Expression**\n   - Statistical testing across time points\n   - Multiple testing correction\n   - Effect size calculation\n\n5. **Functional Enrichment**\n   - Gene set enrichment analysis\n   - Pathway analysis\n   - GO term enrichment\n\n6. **Visualization and Reporting**\n   - Comprehensive plots and summaries\n   - Interactive visualizations\n   - Statistical reports\n\n## Performance Considerations\n\n- **Memory Usage**: Scales with number of genes and time points\n- **Computation Time**: Depends on clustering algorithm and network size\n- **Recommended**: 8GB+ RAM for datasets with >10,000 genes\n- **Parallelization**: Supports multi-core processing for large datasets\n\n## Troubleshooting\n\n### Common Issues\n1. **Memory Errors**: Reduce dataset size or increase available memory\n2. **R Package Issues**: Ensure all Bioconductor packages are installed\n3. **Clustering Failures**: Try different clustering algorithms or parameters\n4. **Network Construction**: Adjust correlation thresholds for sparse networks\n\n### Support\nFor issues and questions, please refer to the Spycone documentation or create an issue in the repository.\n\n## References\n\n- Spycone: SPlicing-aware time-COurse Network Enricher\n- Original implementation: https://github.com/LohmannJens/Spycone\n- Time-series analysis methods in bioinformatics\n- Network-based approaches for gene expression analysis\n\n## License\n\nThis implementation follows the same license as the original Spycone project.",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "data_num_species",
+        "variableName" : "data_num_species",
+        "type" : "CATEGORICAL",
+        "description" : "specify the species ID",
+        "mode" : "BOTH",
+        "options" : [ "9606" ],
+        "default" : "9606"
+      }, {
+        "name" : "clustering_algorithm",
+        "variableName" : "clustering_algorithm",
+        "type" : "CATEGORICAL",
+        "description" : "Type of clustering algorithm to use",
+        "mode" : "BOTH",
+        "options" : [ "dbscan", "optics", "kmeans", "kmedoids", "hierarchical" ],
+        "default" : "hierarchical"
+      }, {
+        "name" : "reps1",
+        "variableName" : "reps1",
+        "type" : "INTEGER",
+        "description" : "Number of replicates",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "default" : "5"
+      }, {
+        "name" : "timepts",
+        "variableName" : "timepts",
+        "type" : "INTEGER",
+        "description" : "Number of time points",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "default" : "9"
+      }, {
+        "name" : "n_clusters",
+        "variableName" : "n_clusters",
+        "type" : "INTEGER",
+        "description" : "Number of cluster",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "default" : "10"
+      } ],
+      "input" : [ {
+        "name" : "data",
+        "variableName" : "data",
+        "type" : "CSV",
+        "description" : "time series data values with columns as each sample e.g. the order of the columns should be sample1_rep1, sample1_rep2, sample2_rep1, sample2_rep2 and so on….",
+        "tabularSchema" : {
+          "minRows" : 1,
+          "minColumns" : 1,
+          "allowOnlyNumbers" : true,
+          "prohibitedNulls" : true
+        },
+        "required" : false
+      }, {
+        "name" : "gene_ids",
+        "variableName" : "gene_ids",
+        "type" : "CSV",
+        "description" : "list of gene id (can be entrez gene id or ensembl gene id)",
+        "tabularSchema" : {
+          "allowOnlyNumbers" : false,
+          "prohibitedNulls" : true
+        },
+        "required" : false
+      } ],
+      "output" : [ {
+        "name" : "image",
+        "variableName" : "image",
+        "type" : "IMAGE",
+        "description" : ""
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

@@ -1,0 +1,91 @@
+{
+  "name" : "train-test-split",
+  "uniqueAppId" : "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
+  "slug" : "train-test-split",
+  "type" : "DATA_TRANSFORMATION",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/train-test-split",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 15,
+    "appVersion" : "4.1.0",
+    "publishHash" : "d79380765e11b21a15886658f3dcaec913a2d77e",
+    "publishInfo" : {
+      "commitHash" : "5da06f9d908aea6cac6181511cb8fafcc024f056",
+      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/train-test-split/-/blob/5da06f9d908aea6cac6181511cb8fafcc024f056/data/uci_dataset17.csv", "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/train-test-split/-/blob/5da06f9d908aea6cac6181511cb8fafcc024f056/data/metapath.csv" ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/train-test-split:HsjSdWej"
+    },
+    "changelog" : "Changelog 4.1.0",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/train-test-split:HsjSdWej",
+    "shortDescription" : "train-test-split",
+    "longDescription" : "Split arrays or matrices into random train and test subsets.\n\nQuick utility that wraps input validation,\n``next(ShuffleSplit().split(X, y))``, and application to input data\ninto a single call for splitting (and optionally subsampling) data into a\none-liner.\n\nRead more in the :ref:`User Guide <cross_validation>`.\n\nParameters\n----------\n*arrays : sequence of indexables with same length / shape[0]\n    Allowed inputs are lists, numpy arrays, scipy-sparse\n    matrices or pandas dataframes.\n\ntest_size : float or int, default=None\n    If float, should be between 0.0 and 1.0 and represent the proportion\n    of the dataset to include in the test split. If int, represents the\n    absolute number of test samples. If None, the value is set to the\n    complement of the train size. If ``train_size`` is also None, it will\n    be set to 0.25.\n\ntrain_size : float or int, default=None\n    If float, should be between 0.0 and 1.0 and represent the\n    proportion of the dataset to include in the train split. If\n    int, represents the absolute number of train samples. If None,\n    the value is automatically set to the complement of the test size.\n\nrandom_state : int, RandomState instance or None, default=None\n    Controls the shuffling applied to the data before applying the split.\n    Pass an int for reproducible output across multiple function calls.\n    See :term:`Glossary <random_state>`.\n\nshuffle : bool, default=True\n    Whether or not to shuffle the data before splitting. If shuffle=False\n    then stratify must be None.\n\nstratify : array-like, default=None\n    If not None, data is split in a stratified fashion, using this as\n    the class labels.\n    Read more in the :ref:`User Guide <stratification>`.\n\nReturns\n-------\nsplitting : list, length=2 * len(arrays)\n    List containing train-test split of inputs.\n\n    .. versionadded:: 0.16\n        If the input is sparse, the output will be a\n        ``scipy.sparse.csr_matrix``. Else, output type is the same as the\n        input type.",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "shuffle",
+        "variableName" : "shuffle",
+        "type" : "BOOLEAN",
+        "description" : "If not None, data is split in a stratified fashion, using this as the class labels.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "test_size",
+        "variableName" : "test_size",
+        "type" : "FLOAT",
+        "description" : "Represent the proportion of the dataset to include in the test split. If int, represents the absolute number of test samples",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "maxValue" : 1.0,
+        "default" : "0.25"
+      }, {
+        "name" : "random_state",
+        "variableName" : "random_state",
+        "type" : "INTEGER",
+        "description" : "Controls the shuffling applied to the data before applying the split. Pass an int for reproducible output across multiple function calls.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "42"
+      } ],
+      "input" : [ {
+        "name" : "input",
+        "variableName" : "input",
+        "type" : "CSV",
+        "description" : "Input for the train-test split",
+        "mode" : "BOTH",
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "test",
+        "variableName" : "test",
+        "type" : "CSV",
+        "description" : "The CSV file containing the test set.",
+        "mode" : "BOTH",
+        "shape" : "[None]"
+      }, {
+        "name" : "train",
+        "variableName" : "train",
+        "type" : "CSV",
+        "description" : "The CSV file containing the training set",
+        "mode" : "BOTH",
+        "shape" : "[None]"
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

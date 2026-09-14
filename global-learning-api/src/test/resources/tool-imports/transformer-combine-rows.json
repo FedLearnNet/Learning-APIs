@@ -1,0 +1,73 @@
+{
+  "name" : "Transformer Combine Rows",
+  "uniqueAppId" : "bdda8b73-bce0-4875-b464-52b778862999",
+  "slug" : "transformer-combine-rows",
+  "type" : "DATA_TRANSFORMATION",
+  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/transformer-combine-rows",
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 13,
+    "appVersion" : "1.0.0",
+    "publishHash" : "<PUBLISH_HASH_PLACEHOLDER>",
+    "publishInfo" : {
+      "commitHash" : "0f8ea30f9fd58065bd7344812880fc7e7763261f",
+      "filePaths" : [ ],
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ]
+      },
+      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/transformer-combine-rows:QcGIYZmc"
+    },
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/transformer-combine-rows:QcGIYZmc",
+    "shortDescription" : "Combine two rows using a delimiter.",
+    "longDescription" : "# Transformer Combine Rows\n\nTransformer Combine Rows aggregates a CSV table by combining multiple rows into a single row. For\neach column, it concatenates all row values in order using a configurable delimiter. This is useful\nwhen you need a compact, single-row representation (e.g., joining multiple codes/labels/IDs into one\nfield per column).\n\n## Core behavior\n\n- Reads an input CSV table.\n- If the first column is named id (case-insensitive), it is treated as an identifier column and is\n  preserved.\n- For every other column:\n- values from all rows are converted to string form (implementation-dependent),\n- then concatenated using the configured delimiter.\n- Produces a single-row output CSV.\n\n## Hyperparameter\n\n- delimiter (STRING): Separator used when concatenating values (e.g., \",\", \";\", \"|\", \"\\n\").\n\n## Input\n\n- table (CSV, required): Tabular input whose rows will be combined.\n\n## Output\n\n- combined (CSV): One-row table containing concatenated column values.\n\n## Notes / assumptions\n\n- Null/empty handling depends on the implementation (e.g., whether NaNs become empty strings or \"\n  nan\").\n- Non-string values are typically stringified before concatenation.",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "columns",
+        "variableName" : "columns",
+        "type" : "STRING",
+        "description" : "Delimiter used to split values when expanding into rows",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "|"
+      } ],
+      "input" : [ {
+        "name" : "input",
+        "variableName" : "input",
+        "type" : "CSV",
+        "description" : "Input row schema. Input dictionary containing a 'value' key with the string to split",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "tabularSchema" : {
+          "requiredColumns" : [ "a", "b" ]
+        },
+        "required" : false
+      } ],
+      "output" : [ {
+        "name" : "output",
+        "variableName" : "output",
+        "type" : "CSV",
+        "description" : "Output row schema. Input dictionary containing a 'value' key with the string to split",
+        "mode" : "BOTH",
+        "delimiter" : ",",
+        "hasHeader" : true,
+        "tabularSchema" : {
+          "requiredColumns" : [ "value" ]
+        }
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

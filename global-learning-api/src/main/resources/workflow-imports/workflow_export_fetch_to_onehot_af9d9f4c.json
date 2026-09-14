@@ -1,0 +1,53 @@
+{
+  "nodes" : [ {
+    "nodeId" : "ef861dc5-2a36-4270-a567-e5809dc13dc9",
+    "appUniqueId" : "8c2e7e45-1b6a-4c6b-9b3e-1c8c2d6b7a10",
+    "versionPublishHash" : "onehot",
+    "position" : {
+      "x" : 250,
+      "y" : 400
+    },
+    "hyperParams" : {
+      "drop_first" : "0",
+      "keep_original" : "0",
+      "bool_to_number" : true,
+      "columns" : "",
+      "dummy_na" : "0",
+      "handle_unknown" : "ignore",
+      "prefix_sep" : "__"
+    },
+    "hasChildren" : false,
+    "hasParent" : true,
+    "executionOrder" : 1
+  }, {
+    "nodeId" : "ba278660-3593-4856-8c97-e1ba0bf078bd",
+    "appUniqueId" : "a71e2f25-1d3a-4b0c-9b85-7a2e6c1f4f0e",
+    "versionPublishHash" : "1543c4685ccd1fbdf9ea6d054ab9b5ab1d9903e2",
+    "position" : {
+      "x" : 250,
+      "y" : 100
+    },
+    "hyperParams" : {
+      "dataset_id" : 17
+    },
+    "hasChildren" : true,
+    "hasParent" : false,
+    "executionOrder" : 0
+  } ],
+  "connections" : [ {
+    "inputId" : "app_ef861dc5-2a36-4270-a567-e5809dc13dc9_input_features",
+    "outputId" : "app_ba278660-3593-4856-8c97-e1ba0bf078bd_output_dataset",
+    "inputNodeId" : "ef861dc5-2a36-4270-a567-e5809dc13dc9",
+    "outputNodeId" : "ba278660-3593-4856-8c97-e1ba0bf078bd",
+    "inputFileName" : "features.csv",
+    "outputFileName" : "dataset.csv",
+    "inputConfigName" : "features",
+    "outputConfigName" : "dataset",
+    "inputConnection" : false
+  } ],
+  "inputs" : [ ],
+  "keycloakId" : "test",
+  "name" : "Fetch-To-Onehot",
+  "description" : "One hot encoding for uciFetch",
+  "publishStatus" : "PUBLISHED"
+}

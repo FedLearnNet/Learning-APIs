@@ -1,0 +1,10 @@
+config:
+  hyperparams: [ ]
+  input: [ ]
+  output: [ ]
+info:
+  name: {app.name}
+  shortDescription: {app.shortDescription}
+  slug: {app.slug}
+  sourceUrl: {app.sourceUrl}
+  type: {app.type}
