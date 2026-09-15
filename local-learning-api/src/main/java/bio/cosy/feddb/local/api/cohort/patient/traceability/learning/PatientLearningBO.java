@@ -89,6 +89,10 @@ public class PatientLearningBO extends BaseBo<PatientLearningDTO, PatientLearnin
         return ao.countForRequestAndCohorts(requestId, cohortIds);
     }
 
+    public Map<Long, Long> countByCohortForRequest(Long requestId, Set<Long> cohortIds) {
+        return ao.countByCohortForRequest(requestId, cohortIds);
+    }
+
     public long removePatientsOfCohorts(Long requestId, Set<Long> cohortIds) {
         return ao.deleteForRequestAndCohorts(requestId, cohortIds);
     }

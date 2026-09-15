@@ -45,6 +45,28 @@ public class PatientLearningAO implements PanacheRepository<PatientLearningEntit
         return count("request.id = ?1 and patient.cohort.id in ?2", requestId, cohortIds);
     }
 
+    public Map<Long, Long> countByCohortForRequest(Long requestId, Set<Long> cohortIds) {
+        if (cohortIds == null || cohortIds.isEmpty()) {
+            return Map.of();
+        }
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = getEntityManager()
+                .createQuery("""
+                        select p.patient.cohort.id, count(p)
+                        from PatientLearningEntity p
+                        where p.request.id = :requestId and p.patient.cohort.id in :cohortIds
+                        group by p.patient.cohort.id
+                        """)
+                .setParameter("requestId", requestId)
+                .setParameter("cohortIds", cohortIds)
+                .getResultList();
+        Map<Long, Long> counts = new HashMap<>();
+        for (Object[] row : rows) {
+            counts.put((Long) row[0], (Long) row[1]);
+        }
+        return counts;
+    }
+
     public long deleteForRequestAndCohortsExcept(Long requestId, Set<Long> cohortIds,
                                                  Set<Long> keepIds) {
         if (cohortIds == null || cohortIds.isEmpty()) {

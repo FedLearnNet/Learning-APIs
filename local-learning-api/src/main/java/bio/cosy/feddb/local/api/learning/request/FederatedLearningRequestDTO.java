@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.List;
+import java.util.Map;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -22,6 +23,8 @@ public class FederatedLearningRequestDTO extends BaseDTO {
 
     private ProjectDetailDTO project;
     private List<PatientLearningDTO> requestPatients;
+
+    private Map<Long, Long> patientCountByCohort;
 
     private List<FederatedLearningRequestCohortDTO> cohortDecisions;
 
