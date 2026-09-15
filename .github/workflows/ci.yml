@@ -1,0 +1,137 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "*/src/**"
+      - "**/pom.xml"
+      - "checkstyle-configuration.xml"
+      - ".mvn/**"
+      - "mvnw"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    paths:
+      - "*/src/**"
+      - "**/pom.xml"
+      - "checkstyle-configuration.xml"
+      - ".mvn/**"
+      - "mvnw"
+      - ".github/workflows/ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  # Superseded pull request runs are cancelled; every push to main/develop keeps its result
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      security-events: write
+
+    # Databases expected by the %test profiles: local-learning-api on 5432, global-learning-api on 5433
+    services:
+      local-learning-db:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: local-learning-management
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U user -d local-learning-management"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+      global-learning-db:
+        image: pgvector/pgvector:pg18
+        env:
+          POSTGRES_DB: global-learning-management
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U user -d global-learning-management"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      QUARKUS_DEVSERVICES_ENABLED: "false"
+      QUARKUS_DATASOURCE_DEVSERVICES_ENABLED: "false"
+      QUARKUS_COMPOSE_DEVSERVICES_ENABLED: "false"
+      QUALITY_ARGS: >-
+        -DskipQualityCheck=false
+        -Dcheckstyle.output.format=sarif
+        -Dspotbugs.sarifOutput=true
+        -Dspotbugs.sarifFullPath=true
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@v6.0.1
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      # Unit and integration tests plus Checkstyle/SpotBugs for core, local and global
+      - name: Build, test and analyse
+        run: bash mvnw -B -ntp verify $QUALITY_ARGS -pl '!datamodeler-api'
+
+      # datamodeler-api tests need Neo4j and a UMLS API key, so it is compiled and analysed only
+      - name: Build and analyse datamodeler-api
+        run: bash mvnw -B -ntp verify -DskipTests $QUALITY_ARGS -pl datamodeler-api -am
+
+      # Summary on the run page and failed tests as annotations.
+      - name: Publish test results
+        if: ${{ !cancelled() }}
+        uses: mikepenz/action-junit-report@v6.5.0
+        with:
+          report_paths: "**/target/*-reports/TEST-*.xml"
+          annotate_only: true
+          require_tests: true
+          include_time_in_summary: true
+
+      - name: Prepare Checkstyle and SpotBugs findings
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p sarif
+          for module in core-learning-api local-learning-api global-learning-api datamodeler-api; do
+            for report in "checkstyle:$module/target/checkstyle-result.xml" "spotbugs:$module/target/spotbugsSarif.json"; do
+              tool="${report%%:*}"
+              file="${report#*:}"
+              [ -f "$file" ] || continue
+              jq --arg id "$tool/$module/" '.runs[].automationDetails.id = $id' "$file" > "sarif/$tool-$module.sarif"
+            done
+          done
+
+      # Findings appear under Security
+      - name: Upload Checkstyle and SpotBugs findings
+        if: ${{ !cancelled() && hashFiles('sarif/*.sarif') != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        uses: github/codeql-action/upload-sarif@v4.38.0
+        with:
+          sarif_file: sarif
+
+      - name: Upload test reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: test-reports
+          path: |
+            */target/surefire-reports/
+            */target/failsafe-reports/
+          if-no-files-found: ignore
+          retention-days: 7

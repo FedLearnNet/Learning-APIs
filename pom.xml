@@ -113,23 +113,6 @@
                 </dependencies>
             </plugin>
 
-            <!-- ====================================================== -->
-            <!--  https://github.com/chkal/gitlab-code-quality-plugin   -->
-            <!-- ====================================================== -->
-            <plugin>
-                <groupId>de.chkal.maven</groupId>
-                <artifactId>gitlab-code-quality-plugin</artifactId>
-                <version>1.1.0</version>
-                <executions>
-                    <execution>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
     </build>
 </project>
