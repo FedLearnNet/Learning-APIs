@@ -9,7 +9,7 @@
     <version>0.0.1-SNAPSHOT</version>
 
     <properties>
-        <compiler-plugin.version>3.14.1</compiler-plugin.version>
+        <compiler-plugin.version>3.16.0</compiler-plugin.version>
         <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -18,7 +18,7 @@
         <quarkus.platform.version>3.39.2</quarkus.platform.version>
         <skipITs>true</skipITs>
         <skipQualityCheck>true</skipQualityCheck>
-        <surefire-plugin.version>3.5.4</surefire-plugin.version>
+        <surefire-plugin.version>3.6.0</surefire-plugin.version>
     </properties>
     <packaging>pom</packaging>
     <modules>
@@ -55,7 +55,7 @@
             <plugin>
                 <groupId>io.smallrye</groupId>
                 <artifactId>jandex-maven-plugin</artifactId>
-                <version>3.2.3</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <id>make-index</id>
@@ -71,7 +71,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.9.3.2</version>
+                <version>4.10.4.1</version>
                 <configuration>
                     <skip>${skipQualityCheck}</skip>
                 </configuration>
