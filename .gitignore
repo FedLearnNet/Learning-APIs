@@ -59,8 +59,7 @@ datamodeler-api/sapbert
 global-learning-api/results/.venv
 global-learning-api/results/
 
-research/
-research/*
+/research/
 
 .claude
 
