@@ -69,7 +69,7 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
     public PagedResponse<FederatedLearningRequestDTO> list(Page page, FederatedLearningRequestStatus status, String keycloakId) {
         List<FederatedLearningRequestDTO> found = ao.list(page, status).stream()
                 .filter(entity -> hasCohortSearchAccess(getInvolvedCohortIds(entity), keycloakId))
-                .map(entity -> toCohortScopedDto(entity, keycloakId, false))
+                .map(entity -> toSummaryDto(entity, keycloakId))
                 .filter(dto -> dto.getStatus() != FederatedLearningRequestStatus.PENDING
                         || dto.isAwaitingCurrentUserDecision())
                 .toList();
@@ -83,13 +83,13 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
     public FederatedLearningRequestDTO findByIdForUser(Long id, String keycloakId) {
         FederatedLearningRequestEntity entity = ao.findByIdOptional(id)
                 .orElseThrow(() -> new NotFoundException("FederatedLearningRequest not found"));
-        return toCohortScopedDto(entity, keycloakId, true);
+        return toDetailDto(entity, keycloakId);
     }
 
     public List<SearchResultDTO<FederatedLearningRequestDTO>> search(String query, String keycloakId) {
         return ao.listAll().stream()
                 .filter(entity -> hasCohortSearchAccess(getInvolvedCohortIds(entity), keycloakId))
-                .map(entity -> toCohortScopedDto(entity, keycloakId, false))
+                .map(entity -> toSummaryDto(entity, keycloakId))
                 .filter(dto -> dto.getStatus() != FederatedLearningRequestStatus.PENDING
                         || dto.isAwaitingCurrentUserDecision())
                 .map(dto -> {
@@ -119,32 +119,39 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
                 .anyMatch(cohortId -> cohortMemberAuthBO.isMember(cohortId, keycloakId));
     }
 
-    private FederatedLearningRequestDTO toCohortScopedDto(FederatedLearningRequestEntity entity,
-                                                          String keycloakId,
-                                                          boolean includePatients) {
-        FederatedLearningRequestDTO dto = includePatients
-                ? mapper.entityToDto(entity)
-                : mapper.entityToSummaryDto(entity);
+    private FederatedLearningRequestDTO toSummaryDto(FederatedLearningRequestEntity entity,
+                                                     String keycloakId) {
+        FederatedLearningRequestDTO dto = mapper.entityToSummaryDto(entity);
+        Set<Long> patientCohortScope = applyCohortScope(dto, entity, keycloakId);
+        dto.setRequestPatients(List.of());
+        dto.setPatientCountByCohort(
+                patientLearningBO.countByCohortForRequest(entity.getId(), patientCohortScope));
+        return dto;
+    }
 
+    private FederatedLearningRequestDTO toDetailDto(FederatedLearningRequestEntity entity,
+                                                    String keycloakId) {
+        FederatedLearningRequestDTO dto = mapper.entityToDto(entity);
+        Set<Long> patientCohortScope = applyCohortScope(dto, entity, keycloakId);
+        if (dto.getRequestPatients() != null) {
+            dto.setRequestPatients(dto.getRequestPatients().stream()
+                    .filter(patient -> patientCohortScope.contains(patient.getInternalCohortId()))
+                    .toList());
+        }
+        return dto;
+    }
+
+    /**
+     * Applies shared cohort membership, decisions, and awaiting-decision flags.
+     *
+     * @return cohort ids used to scope patients or patient counts for this user
+     */
+    private Set<Long> applyCohortScope(FederatedLearningRequestDTO dto,
+                                       FederatedLearningRequestEntity entity,
+                                       String keycloakId) {
         Set<Long> accessibleCohortIds = getInvolvedCohortIds(entity).stream()
                 .filter(cohortId -> cohortMemberAuthBO.isMember(cohortId, keycloakId))
                 .collect(Collectors.toSet());
-
-        Set<Long> patientCohortScope = entity.getStatus() == FederatedLearningRequestStatus.PENDING
-                ? cohortDecisionBO.getDecidableCohortIds(entity.getId(), keycloakId)
-                : accessibleCohortIds;
-
-        if (includePatients) {
-            if (dto.getRequestPatients() != null) {
-                dto.setRequestPatients(dto.getRequestPatients().stream()
-                        .filter(patient -> patientCohortScope.contains(patient.getInternalCohortId()))
-                        .toList());
-            }
-        } else {
-            dto.setRequestPatients(List.of());
-            dto.setPatientCountByCohort(
-                    patientLearningBO.countByCohortForRequest(entity.getId(), patientCohortScope));
-        }
 
         List<FederatedLearningRequestCohortDTO> decisions =
                 cohortDecisionBO.findByRequestForUser(entity.getId(), keycloakId).stream()
@@ -153,7 +160,11 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
         dto.setCohortDecisions(decisions);
         dto.setAwaitingCurrentUserDecision(
                 decisions.stream().anyMatch(FederatedLearningRequestCohortDTO::isDecidableByCurrentUser));
-        return dto;
+
+        if (entity.getStatus() == FederatedLearningRequestStatus.PENDING) {
+            return cohortDecisionBO.getDecidableCohortIds(entity.getId(), keycloakId);
+        }
+        return accessibleCohortIds;
     }
 
     public void checkForCohortAccess(Long id, String keycloakId) {
