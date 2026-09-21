@@ -13,10 +13,10 @@
 
     <properties>
         <keycloak.version>26.6.1</keycloak.version>
-        <surefire-plugin.version>3.5.4</surefire-plugin.version>
-        <org.projectlombok.version>1.18.44</org.projectlombok.version>
+        <surefire-plugin.version>3.6.0</surefire-plugin.version>
+        <org.projectlombok.version>1.18.48</org.projectlombok.version>
         <org.projectlombok.binding.version>0.2.0</org.projectlombok.binding.version>
-        <quarkus-langchain4j.version>1.8.4</quarkus-langchain4j.version>
+        <quarkus-langchain4j.version>1.13.1</quarkus-langchain4j.version>
         <langchain4j.version>1.9.1-beta17</langchain4j.version>
 
     </properties>
@@ -58,7 +58,7 @@
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-embeddings</artifactId>
-            <version>1.9.1-beta17</version>
+            <version>1.20.0-beta30</version>
         </dependency>
         <dependency>
             <groupId>io.quarkiverse.langchain4j</groupId>
@@ -89,7 +89,7 @@
         <dependency>
             <groupId>io.quarkiverse.neo4j</groupId>
             <artifactId>quarkus-neo4j</artifactId>
-            <version>6.1.0</version>
+            <version>6.7.2</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
