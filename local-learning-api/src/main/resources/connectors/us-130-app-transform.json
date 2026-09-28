@@ -79,6 +79,24 @@
       "returnKeys": [],
       "parameters": [],
       "description": ""
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Replace Value",
+      "parameters": [],
+      "returnKeys": [],
+      "column": "race,weight,payer_code,medical_specialty",
+      "onRow": false,
+      "position": 3,
+      "inputMapping": {
+        "search": "[VALUE]?",
+        "replace": "[VALUE]null"
+      },
+      "returnMapping": {},
+      "description": "",
+      "appVersionId": null,
+      "appImage": null,
+      "hyperparams": {}
     }
   ],
   "schemaMapping": [
