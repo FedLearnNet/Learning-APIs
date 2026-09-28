@@ -7,7 +7,7 @@ import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 @Path("/healthz")
-@RegisterRestClient(configKey = "relay-health")
+@RegisterRestClient(configKey = "relay-api")
 public interface RelayHealthClient {
     @GET
     @Produces(MediaType.APPLICATION_JSON)

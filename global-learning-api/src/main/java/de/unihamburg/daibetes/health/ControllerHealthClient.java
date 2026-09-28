@@ -7,7 +7,7 @@ import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 @Path("/healthz")
-@RegisterRestClient(configKey = "controller-health")
+@RegisterRestClient(configKey = "local-controller")
 public interface ControllerHealthClient {
     @GET
     @Produces(MediaType.APPLICATION_JSON)

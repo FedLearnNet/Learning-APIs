@@ -7,7 +7,7 @@ import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 @Path("/q/health")
-@RegisterRestClient(configKey = "data-modeler-health")
+@RegisterRestClient(configKey = "data-modeler-service")
 public interface DataModelerHealthClient {
     @GET
     @Produces(MediaType.APPLICATION_JSON)

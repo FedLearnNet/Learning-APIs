@@ -7,7 +7,7 @@ import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 @Path("/q/health")
-@RegisterRestClient(configKey = "orch-health")
+@RegisterRestClient(configKey = "orch-docker-service")
 public interface OrchHealthClient {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
