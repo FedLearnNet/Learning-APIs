@@ -1,46 +1,55 @@
 {
-  "name" : "US-diabetes-130",
-  "uniqueAppId" : "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
-  "slug" : "us-d-130",
-  "type" : "EXTRACTOR",
-  "supportsFederatedLearning" : false,
-  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/import-diabetes-130-us-hospitals-for-years-1999-2008",
-  "oldFCVersion" : false,
-  "count" : 0,
-  "average" : 0.0,
-  "addedToWorkflowCount" : 0,
-  "authors" : [ {
-    "keycloakId" : "test"
-  } ],
-  "versions" : [ {
-    "federatedAppId" : 1,
-    "appVersion" : "1.0.0",
-    "changelog" : "Changelog 1.0.0",
-    "versionPublishStatus" : "PUBLISHED",
-    "needsInternetAccess" : false,
-    "needsHostAccess" : false,
-    "certificationLevel" : 0,
-    "imageName" : "image1.png",
-    "shortDescription" : "basic GNN",
-    "longDescription" : "Long description 1",
-    "appConfig" : {
-      "hyperparams" : [ ],
-      "input" : [ {
-        "name" : "InputConfig 1",
-        "variableName" : "input_config_1",
-        "type" : "CSV",
-        "description" : "Beschreibung für InputConfig 1",
-        "required" : true
-      } ],
-      "output" : [ {
-        "name" : "OutputConfig 1",
-        "variableName" : "output_config_1",
-        "type" : "JSON",
-        "description" : "Beschreibung für OutputConfig 1",
-        "shape" : "[None]"
-      } ]
-    },
-    "audits" : [ ]
-  } ],
-  "hasImage" : false
+  "name": "US-diabetes-130",
+  "uniqueAppId": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+  "slug": "us-d-130",
+  "type": "EXTRACTOR",
+  "supportsFederatedLearning": false,
+  "sourceUrl": "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/import-diabetes-130-us-hospitals-for-years-1999-2008",
+  "oldFCVersion": false,
+  "count": 0,
+  "average": 0.0,
+  "addedToWorkflowCount": 0,
+  "authors": [
+    {
+      "keycloakId": "test"
+    }
+  ],
+  "versions": [
+    {
+      "federatedAppId": 1,
+      "appVersion": "1.3.0",
+      "publishHash": "5f0c6f9e-3b1d-4f7a-9c2e-8d1a6b0c4e21",
+      "publishInfo": {
+        "imageName": "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us-d-130:uBvUHput",
+        "filePaths": []
+      },
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "needsHostAccess": false,
+      "certificationLevel": 0,
+      "imageName": "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us-d-130:uBvUHput",
+      "shortDescription": "diabetic-130-US-hospital-dataset",
+      "longDescription": "Extracts the Diabetes 130-US hospitals (1999-2008) dataset: the encounter records and the ID mapping table.",
+      "appConfig": {
+        "hyperparams": [],
+        "input": [],
+        "output": [
+          {
+            "name": "data",
+            "variableName": "data",
+            "type": "CSV",
+            "description": "diabetic_data.csv"
+          },
+          {
+            "name": "ids",
+            "variableName": "ids",
+            "type": "CSV",
+            "description": "IDS_MAPPING file."
+          }
+        ]
+      },
+      "audits": []
+    }
+  ],
+  "hasImage": false
 }

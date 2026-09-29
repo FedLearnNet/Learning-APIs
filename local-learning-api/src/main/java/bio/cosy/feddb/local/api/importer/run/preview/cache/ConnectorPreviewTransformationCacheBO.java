@@ -12,6 +12,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.apache.commons.codec.digest.DigestUtils;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,8 +35,22 @@ public class ConnectorPreviewTransformationCacheBO extends BaseBo<
                 json(config.getFileInfo())));
     }
 
+
+    public String sampleFingerprint(List<Map<String, Object>> rows, List<String> columns) {
+        return hash(List.of(json(columns), json(rows)));
+    }
+
+
     public String stageFingerprint(String previousFingerprint, ConnectorTransformerDTO transformer) {
-        return hash(List.of(previousFingerprint, json(transformer)));
+        Map<String, Object> definition = new LinkedHashMap<>();
+        definition.put("moduleName", transformer.getModuleName());
+        definition.put("methodName", transformer.getMethodName());
+        definition.put("appImage", transformer.getAppImage());
+        definition.put("column", transformer.getColumn());
+        definition.put("inputMapping", transformer.getInputMapping());
+        definition.put("returnMapping", transformer.getReturnMapping());
+        definition.put("hyperparams", transformer.getHyperparams());
+        return hash(List.of(previousFingerprint, json(definition)));
     }
 
     @Transactional

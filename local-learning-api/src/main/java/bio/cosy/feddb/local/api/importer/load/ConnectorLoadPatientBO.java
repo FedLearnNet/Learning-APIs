@@ -224,6 +224,25 @@ public class ConnectorLoadPatientBO {
         }
     }
 
+    /**
+     * Counts what {@link #importPatient} would do with this patient without writing anything, so a
+     * dry run reports how many patients would be created and how many updated.
+     */
+    @Transactional
+    public void dryRunPatient(
+            @Nonnull ConnectorLoadPatient patient,
+            @Nonnull ConnectorRunDTO run) {
+        updateStatistics(run, 1, BulkImportStatisticsTypeEnum.RECEIVED_ENTITIES);
+        boolean exists = !Boolean.TRUE.equals(run.getDeleteExistingPatients())
+                && patientAO.findByExternalPatientId(run.getCohortId(), patient.getExternalPatientId()).isPresent();
+        updateStatistics(
+                run,
+                1,
+                exists ? BulkImportStatisticsTypeEnum.UPDATED_ENTITIES : BulkImportStatisticsTypeEnum.NEW_ENTITIES
+        );
+        updateStatistics(run, 1, BulkImportStatisticsTypeEnum.PROCCESSED_ENTITIES);
+    }
+
     private void updateStatistics(ConnectorRunDTO run, long valueToAdd, BulkImportStatisticsTypeEnum type) {
         addToStatistic(run, valueToAdd, type);
     }
