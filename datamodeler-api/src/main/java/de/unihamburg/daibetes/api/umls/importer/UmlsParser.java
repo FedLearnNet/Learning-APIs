@@ -1,14 +1,14 @@
 package de.unihamburg.daibetes.api.umls.importer;
 
-
 import bio.cosy.feddb.core.api.datamodler.ontology.OntologyEdgeDTO;
 import bio.cosy.feddb.core.api.datamodler.ontology.OntologyNodeDTO;
+import de.unihamburg.daibetes.api.config.UMLSConfig;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -24,17 +24,8 @@ import java.util.stream.Stream;
 @ApplicationScoped
 public class UmlsParser {
 
-    @ConfigProperty(name = "umls.language.filter", defaultValue = "eng")
-    List<String> languageFilter;
-
-    @ConfigProperty(name = "umls.sab.filter", defaultValue = "SNOMEDCT_US,RXNORM,LNC,ICD10,NCBI")
-    List<String> sabFilter;
-
-    @ConfigProperty(name = "umls.import.allow-self-loops", defaultValue = "false")
-    boolean allowSelfLoops;
-
-    @ConfigProperty(name = "umls.import.folder-path")
-    Optional<String> importFolderPath;
+    @Inject
+    UMLSConfig umlsConfig;
 
     public Multi<List<OntologyEdgeDTO>> parseMrrelToEdgesBatched(
             String path,
@@ -45,7 +36,7 @@ public class UmlsParser {
             throw new BadRequestException("Path to Mrrel file cannot be null");
         }
 
-        String resolvedPath = importFolderPath.map(s -> Paths.get(s, path).toString()).orElseGet(() -> Optional.ofNullable(Thread.currentThread()
+        String resolvedPath = umlsConfig.importConfig().folderPath().map(s -> Paths.get(s, path).toString()).orElseGet(() -> Optional.ofNullable(Thread.currentThread()
                         .getContextClassLoader()
                         .getResource(path)).orElseThrow(() -> new BadRequestException("UMLS Mrrel file not found: " + path))
                 .getPath());
@@ -102,7 +93,7 @@ public class UmlsParser {
         if (path == null || path.isEmpty()) {
             throw new BadRequestException("Path to MRCONSO file cannot be null");
         }
-        String resolvedPath = importFolderPath.map(s -> Paths.get(s, path).toString()).orElseGet(() -> Optional.ofNullable(Thread.currentThread()
+        String resolvedPath = umlsConfig.importConfig().folderPath().map(s -> Paths.get(s, path).toString()).orElseGet(() -> Optional.ofNullable(Thread.currentThread()
                         .getContextClassLoader()
                         .getResource(path)).orElseThrow(() -> new BadRequestException("UMLS MRCONSO file not found: " + path))
                 .getPath());
@@ -196,10 +187,10 @@ public class UmlsParser {
         String code = c[13];  // CODE
         String str = c[14];  // STR
 
-        if (!languageFilter.isEmpty() && !languageFilter.contains(lat.toLowerCase())) {
+        if (!umlsConfig.language().filter().isEmpty() && !umlsConfig.language().filter().contains(lat.toLowerCase())) {
             return null;
         }
-        if (!sabFilter.isEmpty() && !sabFilter.contains(sab)) {
+        if (!umlsConfig.importConfig().sab().filter().isEmpty() && !umlsConfig.importConfig().sab().filter().contains(sab)) {
             return null;
         }
         OntologyNodeDTO dto = new OntologyNodeDTO();
@@ -232,10 +223,10 @@ public class UmlsParser {
             rela = "UNKNOWN";
         }
         String sab = c[10];  // SAB
-        if (!sabFilter.isEmpty() && !sabFilter.contains(sab)) {
+        if (!umlsConfig.importConfig().sab().filter().isEmpty() && !umlsConfig.importConfig().sab().filter().contains(sab)) {
             return null;
         }
-        if (!allowSelfLoops && cui1.equals(cui2)) {
+        if (!umlsConfig.importConfig().allowSelfLoops() && cui1.equals(cui2)) {
             return null;
         }
 

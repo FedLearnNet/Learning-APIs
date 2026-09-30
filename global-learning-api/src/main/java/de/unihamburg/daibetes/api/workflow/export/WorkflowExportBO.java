@@ -73,7 +73,7 @@ public class WorkflowExportBO {
             try {
                 importWorkflowTransactional(export);
             } catch (Exception e) {
-                Log.errorf(e, "Failed to import workflow %s", export.getName());
+                Log.warnf("Failed to import workflow %s: %s", export.getName(), e.getMessage());
             }
         }
     }
@@ -112,10 +112,10 @@ public class WorkflowExportBO {
             return List.of();
         }
 
-        List<PathOrUrl> jsonSources = roots.stream()
+        List<PathOrUrl> jsonSources = PathOrUrl.filterByWhitelist(roots.stream()
                 .flatMap(toolExternalHandler::resolveJsonSources)
                 .sorted(Comparator.comparing(PathOrUrl::sortKey))
-                .toList();
+                .toList(), flnet.workflowImports().whiteList());
 
         return toolExternalHandler.loadAllWorkflows(jsonSources);
     }

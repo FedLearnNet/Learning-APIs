@@ -9,6 +9,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
+//Intended for all custom properties with a "flnet" prefix
+
 //@StaticInitSafe
 @ConfigMapping(prefix = "flnet")
 public interface FLNetConfig {
@@ -106,6 +108,9 @@ public interface FLNetConfig {
         boolean enabled();
 
         Optional<List<Path>> paths();
+
+        @WithName("whitelist")
+        Optional<List<String>> whiteList();
     }
 
     interface ToolImportConfig extends FLNetConfigPaths {
@@ -164,4 +169,5 @@ public interface FLNetConfig {
     interface ObserverConfig {
         @WithDefault("false")
         boolean enabled();
-    }}
+    }
+}

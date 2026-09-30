@@ -13,6 +13,8 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 
 @Data
 @AllArgsConstructor
@@ -97,6 +99,13 @@ public class PathOrUrl {
         try (InputStream in = Files.newInputStream(Path.of(spec))) {
             return mapper.readTree(in);
         }
+    }
+
+    public static List<PathOrUrl> filterByWhitelist(List<PathOrUrl> sources, Optional<List<String>> whiteList) {
+        return whiteList.map(white -> sources.stream()
+                        .filter(src -> white.stream().anyMatch(w -> src.toString().endsWith("/" + w)))
+                        .toList())
+                .orElse(sources);
     }
 
     @Override

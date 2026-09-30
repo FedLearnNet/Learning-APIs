@@ -57,7 +57,11 @@ public class ToolExternalHandler {
             return;
         }
 
-        List<PathOrUrl> jsonSources = roots.stream().flatMap(this::resolveJsonSources).sorted(Comparator.comparing(PathOrUrl::sortKey)).toList();
+        List<PathOrUrl> jsonSources = PathOrUrl.filterByWhitelist(roots
+                .stream()
+                .flatMap(this::resolveJsonSources)
+                .sorted(Comparator.comparing(PathOrUrl::sortKey))
+                .toList(), flnet.toolImports().whiteList());
 
         List<FederatedAppDetailDTO> tools = loadAllApps(jsonSources);
         for (FederatedAppDetailDTO tool : tools) {
@@ -353,7 +357,8 @@ public class ToolExternalHandler {
         try {
             JsonNode root = objectMapper.readTree(outFile.toFile());
             JsonNode version = root.path("versions").path(0);
-            if (!(version instanceof ObjectNode target) || tool.getPublishInfo() == null || tool.getImageName() == null) return Optional.empty();
+            if (!(version instanceof ObjectNode target) || tool.getPublishInfo() == null || tool.getImageName() == null)
+                return Optional.empty();
             target.set("publishInfo", objectMapper.valueToTree(tool.getPublishInfo()));
             target.put("imageName", tool.getImageName());
             Files.writeString(outFile, objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(root), StandardOpenOption.TRUNCATE_EXISTING);

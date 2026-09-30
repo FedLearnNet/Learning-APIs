@@ -25,7 +25,7 @@ services:
     networks:
       - local-learning-network
   orch-api:
-    image: gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/orch-api/orch-api:staging
+    image: ghcr.io/fedlearnnet/orchestration-api/orch-api:staging
     user: "0:0"
     ports:
       - '8091:8080'
@@ -55,7 +55,7 @@ services:
     networks:
       - local-learning-network
   controller:
-    image: gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/feature-cloud-controller/controller:staging
+    image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller:staging
     ports:
       - '8092:8000'
     profiles:
@@ -76,7 +76,7 @@ services:
       - local-learning-network
 
   controller-test:
-    image: gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/feature-cloud-controller/controller:staging
+    image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller:staging
     ports:
       - '8092:8000'
     profiles:
@@ -91,7 +91,7 @@ services:
     networks:
       - local-learning-network
   relay-test:
-    image: gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/feature-cloud-controller/controller-relay:staging
+    image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller-relay:staging
     ports:
       - '9150:9140'
       - '9151:9141'
@@ -105,7 +105,7 @@ services:
       - local-learning-network
 
   # datamodeler-api:
-  #   image: gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/datamodeler-api/datamodeler-api:staging
+  #   image: ghcr.io/fedlearnnet/learning-apis/datamodeler-api:staging
   #   pull_policy: always
   #   environment:
   #     DEBUG: 1

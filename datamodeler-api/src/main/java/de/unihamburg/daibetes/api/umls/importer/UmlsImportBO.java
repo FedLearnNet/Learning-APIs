@@ -1,6 +1,8 @@
 package de.unihamburg.daibetes.api.umls.importer;
 
+import de.unihamburg.daibetes.api.config.UMLSConfig;
 import de.unihamburg.daibetes.api.ontology.OntologyDAO;
+import de.unihamburg.daibetes.api.ontology.OntologyRAG;
 import de.unihamburg.daibetes.api.umls.search.UMLSIdSourceDTO;
 import de.unihamburg.daibetes.api.umls.search.UMLSSearchBO;
 import io.quarkus.logging.Log;
@@ -9,7 +11,6 @@ import io.smallrye.mutiny.infrastructure.Infrastructure;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.InternalServerErrorException;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.context.ManagedExecutor;
 
 import java.util.Map;
@@ -34,27 +35,20 @@ public class UmlsImportBO {
 
     @Inject
     ManagedExecutor executor;
+    
+    @Inject
+    OntologyRAG ontologyRAG;
 
-    @ConfigProperty(name = "umls.import.batch-size", defaultValue = "100")
-    int BATCH_SIZE;
-
-    @ConfigProperty(name = "umls.import.size-max", defaultValue = "2000")
-    int DEV_MAX_ITEMS;
-
-    @ConfigProperty(name = "umls.import.edge-size-max", defaultValue = "2000")
-    int DEV_MAX_EDGE_ITEMS;
-
-    @ConfigProperty(name = "umls.import.mrconso")
-    Optional<String> mrconsoFile;
-
-    @ConfigProperty(name = "umls.import.mrrel")
-    Optional<String> mrrelFile;
+    @Inject
+    UMLSConfig umlsConfig;
 
     /**
      * Validates configuration and fires the import process in the background.
      * Throws InternalServerErrorException if the file paths are not configured.
      */
-    public void startImport() {
+    public void startImport(boolean createAlsoEmbedding) {
+        Optional<String> mrconsoFile = umlsConfig.importConfig().mrconso();
+        Optional<String> mrrelFile = umlsConfig.importConfig().mrrel();
         if (mrconsoFile.isEmpty() || mrconsoFile.get().isBlank()) {
             throw new InternalServerErrorException("UMLS mrconso file not configured (umls.import.mrconso)");
         }
@@ -65,7 +59,17 @@ public class UmlsImportBO {
         executor.execute(() ->
                 importUmls(mrconsoFile.get(), mrrelFile.get())
                         .subscribe().with(
-                                ok -> Log.info("UMLS import finished"),
+                                ok -> {
+                                    Log.info("UMLS import finished");
+                                    if (createAlsoEmbedding) {
+                                        Log.info("Starting UMLS embedding ingestion after import");
+                                        ontologyRAG.ingestAllNodes()
+                                                .subscribe().with(
+                                                        ignored -> Log.info("UMLS embedding ingestion finished"),
+                                                        err -> Log.error("Failed to ingest all nodes", err)
+                                                );
+                                    }
+                                },
                                 err -> Log.error("UMLS import failed", err)
                         )
         );
@@ -88,7 +92,7 @@ public class UmlsImportBO {
         ConcurrentHashMap<String, AtomicInteger> nodesPerOntology = new ConcurrentHashMap<>();
         Log.infof("Importing umls from %s", mrconsoPath);
         Uni<Void> nodeImport =
-                umlsParser.parseMrconsoToNodesBatched(mrconsoPath, BATCH_SIZE, DEV_MAX_ITEMS)
+                umlsParser.parseMrconsoToNodesBatched(mrconsoPath, umlsConfig.importConfig().batchSize(), umlsConfig.importConfig().sizeMax())
                         .onItem().invoke(batch ->
                                 batch.forEach(node -> {
                                     totalNodeCount.incrementAndGet();
@@ -100,21 +104,21 @@ public class UmlsImportBO {
 
                                 })
                         ).onItem().invoke(() ->
-                                Log.infof("Importing nodes batch, imported: %d/%d", totalNodeCount.get(), DEV_MAX_ITEMS)
+                                Log.infof("Importing nodes batch, imported: %d/%d", totalNodeCount.get(), umlsConfig.importConfig().sizeMax())
                         )
                         .onItem().transformToUniAndConcatenate(ontologyDAO::createNodeBatch)
                         .collect().last()
                         .replaceWithVoid();
 
         Uni<Void> edgeImport =
-                umlsParser.parseMrrelToEdgesBatched(mrrelPath, BATCH_SIZE, DEV_MAX_EDGE_ITEMS)
+                umlsParser.parseMrrelToEdgesBatched(mrrelPath, umlsConfig.importConfig().batchSize(), umlsConfig.importConfig().edgeSizeMax())
                         .onItem().invoke(batch ->
                                 batch.forEach(node -> {
                                     totalEdgeCount.incrementAndGet();
                                 })
                         )
                         .onItem().invoke(() ->
-                                Log.infof("Importing nodes edges, imported: %d/%d", totalEdgeCount.get(), DEV_MAX_EDGE_ITEMS)
+                                Log.infof("Importing nodes edges, imported: %d/%d", totalEdgeCount.get(), umlsConfig.importConfig().edgeSizeMax())
                         )
                         .onItem().transformToUniAndConcatenate(ontologyDAO::createEdgeBatch)
                         .collect().last()
@@ -134,8 +138,8 @@ public class UmlsImportBO {
                     summary.setTotalNodes(totalNodeCount.get());
                     summary.setTotalEdges(totalEdgeCount.get());
                     summary.setNodesPerOntology(nodesPerOntologyMap);
-                    summary.setMaxItems(DEV_MAX_ITEMS);
-                    summary.setBatchSize(BATCH_SIZE);
+                    summary.setMaxItems(umlsConfig.importConfig().sizeMax());
+                    summary.setBatchSize(umlsConfig.importConfig().batchSize());
                     return summary;
                 })
                 .onItem().invoke(summary -> {
