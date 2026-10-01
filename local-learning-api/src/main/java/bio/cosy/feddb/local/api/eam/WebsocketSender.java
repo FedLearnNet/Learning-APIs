@@ -76,6 +76,13 @@ public class WebsocketSender {
         client.fireAndForget(responseWrapper);
     }
 
+    public void sendRelayCertRequest(RelayCertSignRequestDTO request) {
+        FedDBClientDataDTO<RelayCertSignRequestDTO> message = new FedDBClientDataDTO<>();
+        message.setMessageType(FedDBClientTypeEnum.RELAY_CERT);
+        message.setMessage(request);
+        client.fireAndForget(message);
+    }
+
     public void sendCurrentLearnings(List<String> currentGlobalUqLearningIds) {
         CurrentLearningClientSyncResponseDTO syncResponse = CurrentLearningClientSyncResponseDTO.createResponse(currentGlobalUqLearningIds);
         FedDBClientDataDTO<CurrentLearningClientSyncResponseDTO> response = new FedDBClientDataDTO<>();

@@ -7,6 +7,7 @@ import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.api.workflow.base.BaseWorkflowEngine;
 import bio.cosy.feddb.core.api.workflow.base.step.BaseWorkflowStepBO;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
+import bio.cosy.feddb.core.services.controller.ControllerStopLearningRequestDTO;
 import bio.cosy.feddb.local.api.eam.WebsocketSender;
 import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectEntity;
 import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningExperimentAO;
@@ -25,7 +26,10 @@ import bio.cosy.feddb.local.services.orch.WorkflowOrchestratorBO;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
@@ -185,6 +189,7 @@ public class FederatedLearningExperimentStepBO
             boolean isLastStep = baseWorkflowEngine.isLastStep(workflow, node);
             Log.infof("Final status detected for step ID: %d, is last step: %b", dto.getId(), isLastStep);
             handleFinalState(updatedStep, experimentId, isLastStep, stepStatus, globalRequestId);
+            stopControllerRun(dto.getId());
         }
 
         String currentNodeId = node.getNodeId();
@@ -237,5 +242,84 @@ public class FederatedLearningExperimentStepBO
 
     public boolean setRelayInfo(Long id, FederatedLearningRelayInfoDTO relayInfo) {
         return ao.setRelayInfoTransactional(id, relayInfo);
+    }
+
+    /**
+     * Stores the CSR of the step's controller run and returns what has to be sent to the global server to get
+     * it signed.
+     */
+    @Transactional
+    public RelayCertRequest startRelayCertRequest(Long stepId, String csr) {
+        if (!ao.startRelayCertRequestTransactional(stepId, csr)) {
+            throw new IllegalArgumentException("Step with id " + stepId + " not found");
+        }
+        // the update above bypasses the persistence context, make sure not to read a stale entity
+        FederatedLearningExperimentStepEntity step = ao.findById(stepId);
+        ao.getEntityManager().refresh(step);
+        return toRelayCertRequest(step);
+    }
+
+    @Transactional
+    public List<RelayCertRequest> findPendingRelayCerts() {
+        return ao.findPendingRelayCerts().stream().map(this::toRelayCertRequest).toList();
+    }
+
+    private RelayCertRequest toRelayCertRequest(FederatedLearningExperimentStepEntity step) {
+        FederatedLearningExperimentEntity experiment = step.getExperiment();
+        return new RelayCertRequest(
+                step.getId(),
+                experiment.getProject().getRequest().getGlobalFLExperimentUniqueId(),
+                experiment.getUniqueRandomClinicId(),
+                step.getWorkflowNode().getNodeId(),
+                step.getRelayInfo() != null ? step.getRelayInfo().getId() : null,
+                step.getRelayCsr(),
+                step.getRelayCertAttempts() != null ? step.getRelayCertAttempts() : 0,
+                step.getRelayCertRequestedAt()
+        );
+    }
+
+    /**
+     * Stops the controller run of every step of the experiment that still has one.
+     */
+    public void stopControllerRuns(Long experimentId) {
+        for (FederatedLearningExperimentStepEntity step : ao.findWithOpenControllerRun(experimentId)) {
+            stopControllerRun(step);
+        }
+    }
+
+    /**
+     * Stops the controller run of the step, if one was started and not stopped yet.
+     * Never throws: a controller that cannot be reached must not break the workflow, the run then stays
+     * open and is retried the next time the experiment is stopped.
+     */
+    public void stopControllerRun(Long stepId) {
+        FederatedLearningExperimentStepEntity step = ao.findById(stepId);
+        if (step != null) {
+            stopControllerRun(step);
+        }
+    }
+
+    private void stopControllerRun(FederatedLearningExperimentStepEntity step) {
+        FederatedLearningRelayInfoDTO relay = step.getRelayInfo();
+        if (relay == null || step.getRelayCsr() == null || Boolean.TRUE.equals(step.getRelayStopped())) {
+            return;
+        }
+        int status;
+        // The app key of a controller run is the relay client id, see FederatedLearningExperimentMapper.relayToController
+        try (Response response = controllerService.stopLearning(new ControllerStopLearningRequestDTO(relay.getChannel(), relay.getId()))) {
+            status = response.getStatus();
+        } catch (WebApplicationException e) {
+            status = e.getResponse().getStatus();
+        } catch (Exception e) {
+            Log.warnf(e, "Could not stop the controller run of step %d", step.getId());
+            return;
+        }
+        // 404: the controller does not know the run (anymore), e.g. after a controller restart
+        if (status == Response.Status.OK.getStatusCode() || status == Response.Status.NOT_FOUND.getStatusCode()) {
+            ao.setRelayStoppedTransactional(step.getId());
+            Log.infof("Stopped controller run of step %d", step.getId());
+        } else {
+            Log.warnf("Controller answered %d when stopping the run of step %d", status, step.getId());
+        }
     }
 }

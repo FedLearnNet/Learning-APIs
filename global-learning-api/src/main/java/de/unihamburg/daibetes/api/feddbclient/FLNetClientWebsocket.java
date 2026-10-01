@@ -1,6 +1,7 @@
 package de.unihamburg.daibetes.api.feddbclient;
 
 import bio.cosy.feddb.core.api.socket.FedDBClientDataDTO;
+import bio.cosy.feddb.core.api.socket.FedDBClientTypeEnum;
 import de.unihamburg.daibetes.api.observer.FLNetClientObserverEmitter;
 import de.unihamburg.daibetes.api.observer.FLNetClientObserverEventDTO;
 import io.quarkus.arc.log.LoggerName;
@@ -57,7 +58,11 @@ public class FLNetClientWebsocket {
                 m.getMessage()
         ));
         try {
-            handlerBO.handle(m, connection.id());
+            if (FedDBClientTypeEnum.RELAY_CERT.equals(m.getMessageType())) {
+                handlerBO.handleRelayCert(m, connection.id());
+            } else {
+                handlerBO.handle(m, connection.id());
+            }
         } catch (Exception e) {
             logger.error("Error handling message from " + connection.id() + ": " + e.getMessage());
             e.printStackTrace();

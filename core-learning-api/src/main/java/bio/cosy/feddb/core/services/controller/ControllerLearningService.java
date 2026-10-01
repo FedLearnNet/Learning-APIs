@@ -6,11 +6,20 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
 
-@Path("/start-learning")
+@Path("/")
 @Produces("application/json")
 @Consumes("application/json")
 public interface ControllerLearningService {
 
     @POST
+    @Path("start-learning")
     Response startLearning(ControllerStartLearningRequestDTO request);
+
+    @POST
+    @Path("start-relaying")
+    Response startRelaying(ControllerStartRelayingRequestDTO request);
+
+    @POST
+    @Path("stop-learning")
+    Response stopLearning(ControllerStopLearningRequestDTO request);
 }

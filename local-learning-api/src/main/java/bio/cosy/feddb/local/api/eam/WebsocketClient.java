@@ -4,6 +4,7 @@ import bio.cosy.feddb.core.api.query.QueryClientResponseDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.socket.*;
 import bio.cosy.feddb.local.api.learning.project.FederatedLearningSyncBO;
+import bio.cosy.feddb.local.api.learning.project.run.RelayCertBO;
 import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestBO;
 import bio.cosy.feddb.local.api.learning.request.metrics.RequestRunMetricsBO;
 import bio.cosy.feddb.local.api.query.QueryBO;
@@ -47,6 +48,9 @@ public class WebsocketClient {
 
     @Inject
     ClientManager clientManager;
+
+    @Inject
+    RelayCertBO relayCertBO;
 
     @OnOpen
     public void onOpen(WebSocketClientConnection connection) {
@@ -179,6 +183,11 @@ public class WebsocketClient {
             if (m.getMessageType().equals(FedDBClientTypeEnum.RUN_METRICS)) {
                 ProjectFederatedRequestRunMetricsDTO request = objectMapper.convertValue(m.getMessage(), ProjectFederatedRequestRunMetricsDTO.class);
                 requestRunMetricsBO.createAndCheckAutoAccessTransactional(request);
+                return noResponse();
+            }
+            if (m.getMessageType().equals(FedDBClientTypeEnum.RELAY_CERT)) {
+                RelayCertSignResponseDTO response = objectMapper.convertValue(m.getMessage(), RelayCertSignResponseDTO.class);
+                relayCertBO.handleSigned(response);
                 return noResponse();
             }
         } catch (Exception e) {

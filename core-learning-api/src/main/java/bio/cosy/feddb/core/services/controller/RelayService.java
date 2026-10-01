@@ -16,4 +16,12 @@ public interface RelayService {
     @POST
     @Path("create-fl-run")
     CreateFLLearningRelayServerResponseDTO setupFL(CreateFLLearningRelayServerRequestDTO setup);
+
+    @POST
+    @Path("sign-fl-run-cert")
+    RelaySignCertResponseDTO signCert(RelaySignCertRequestDTO request);
+
+    @POST
+    @Path("stop-fl-run")
+    Response stopFL(RelayStopRequestDTO request);
 }
