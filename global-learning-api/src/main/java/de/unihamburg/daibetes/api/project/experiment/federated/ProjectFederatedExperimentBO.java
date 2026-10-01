@@ -176,6 +176,20 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
         if (entity.getWorkflow() == null || entity.getWorkflow().getNodes().isEmpty()) {
             throw new NotAllowedException("Experiment workflow is missing");
         }
+
+        // TODO Phase 2: actually start the aggregator on the platform (new orch-api + WS
+        // orchestration path). Until that lands, always fall back to today's random-clinic
+        // behavior so a platformIsCoordinator=true request never silently hangs.
+        if (Boolean.TRUE.equals(entity.getProject().getPlatformIsCoordinator())) {
+            if (projectBO.isPlatformAggregatorSupported()) {
+                Log.warnf("Platform-coordinator requested for experiment %d but platform aggregation " +
+                        "orchestration is not yet implemented - falling back to random clinic", experimentId);
+            } else {
+                Log.warnf("Platform-coordinator requested for experiment %d but platform aggregator " +
+                        "support is disabled on this deployment - falling back to random clinic", experimentId);
+            }
+        }
+
         int randomIndex = new Random().nextInt(participants.size());
         ProjectFederatedExperimentParticipantEntity coordinator = participants.get(randomIndex);
         coordinator.setIsCoordinator(true);
@@ -185,9 +199,6 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
         ProjectFederatedExperimentEntity updatedEntity = ao.findById(experimentId);
         // IF coordinator logic is setted in the project
         fedDBClientBroadcastBO.startLearning(updatedEntity.getGlobalUniqueId(), coordinator.getUniqueRandomClinicId(), updatedEntity.getModelCanBePublic());
-
-        //TODO implement case if plattform ist controller
-        //TODO FOR THIS CASE WE NEED TO CHANGE ALS BO TO BaseWorkflowExperimentBO
 
         return entityToDetailDto(updatedEntity);
     }

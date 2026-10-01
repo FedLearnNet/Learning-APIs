@@ -13,6 +13,7 @@ import de.unihamburg.daibetes.api.project.membership.ProjectMembershipBO;
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipDTO;
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipEntity;
 import de.unihamburg.daibetes.api.workflow.WorkflowEntity;
+import de.unihamburg.daibetes.config.FLNetConfig;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ClientErrorException;
@@ -40,7 +41,21 @@ public class ProjectBO extends BaseBo<ProjectDetailDTO, ProjectEntity, ProjectAO
     @Inject
     ExportConfigUtilsBO exportConfigUtilsBO;
 
+    @Inject
+    FLNetConfig config;
+
+    public boolean isPlatformAggregatorSupported() {
+        return config.federatedLearning().platformAggregatorEnabled();
+    }
+
+    private void checkPlatformIsCoordinatorAllowed(boolean platformIsCoordinator) {
+        if (platformIsCoordinator && !isPlatformAggregatorSupported()) {
+            throw new NotAllowedException("This platform deployment does not support running the aggregator on the platform");
+        }
+    }
+
     public ProjectDTO create(ProjectCreateDTO dto, String keycloakId) {
+        checkPlatformIsCoordinatorAllowed(dto.isPlatformIsCoordinator());
         ProjectDTO created = create(mapper.createToDTO(dto));
         if (created == null) {
             throw new ClientErrorException("Project already exists", Response.Status.CONFLICT);
@@ -104,6 +119,13 @@ public class ProjectBO extends BaseBo<ProjectDetailDTO, ProjectEntity, ProjectAO
 
         if (projectMembership.isEmpty()) {
             throw new NotAllowedException("User is not a coordinator");
+        }
+        // Only re-validate when the request actually turns the flag on. Otherwise a project that
+        // was created while platform-aggregator support was enabled would become permanently
+        // un-editable (even for unrelated fields) the moment that deployment-wide capability is
+        // later disabled again.
+        if (projectDto.isPlatformIsCoordinator() && !currentDto.isPlatformIsCoordinator()) {
+            checkPlatformIsCoordinatorAllowed(true);
         }
         projectDto.setVersion(currentDto.getVersion());
         currentDto = update(projectDto);
