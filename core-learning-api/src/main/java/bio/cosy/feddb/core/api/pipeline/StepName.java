@@ -1,4 +1,4 @@
-package de.unihamburg.daibetes.api.build.pipeline.steps;
+package bio.cosy.feddb.core.api.pipeline;
 
 public enum StepName {
     PREFLIGHT,

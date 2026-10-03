@@ -10,7 +10,7 @@ import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.local.api.importer.run.message.ConnectorRunRunMessagesBO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepBO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepDTO;
-import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerBO;
+import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerRunnerBO;
 import io.quarkus.logging.Log;
 import io.quarkus.websockets.next.*;
 import jakarta.inject.Inject;
@@ -46,7 +46,7 @@ public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
     ToolApiKeyService toolApiKeyService;
 
     @Inject
-    CodeTransformerBO codeTransformerBO;
+    CodeTransformerRunnerBO codeTransformerBO;
 
     @OnOpen
     public void onOpen(WebSocketConnection connection) {
@@ -131,7 +131,8 @@ public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
         try {
             Long runId = Long.parseLong(runIdString);
             Log.debug("Received message Text: " + m.getMessage() + " for container " + runId + " and type " + type);
-            if (AppMessageTypeEnum.TRANSFORMATION_CHECK_RESULT.equals(m.getType())) {
+            if (AppMessageTypeEnum.TRANSFORMATION_CHECK_RESULT.equals(m.getType())
+                    || AppMessageTypeEnum.TRANSFORMATION_SAVE_RESULT.equals(m.getType())) {
                 codeTransformerBO.complete(m.getMessage());
             } else if (AppConnectionTypesEnum.APP.isEqual(type)) {
                 handleAppMessages(m, runId, m.getRunType());

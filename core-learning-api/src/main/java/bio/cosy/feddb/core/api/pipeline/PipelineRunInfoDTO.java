@@ -1,4 +1,4 @@
-package de.unihamburg.daibetes.api.build.pipeline;
+package bio.cosy.feddb.core.api.pipeline;
 
 import lombok.Data;
 

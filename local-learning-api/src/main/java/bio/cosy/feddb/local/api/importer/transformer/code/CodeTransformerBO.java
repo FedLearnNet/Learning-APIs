@@ -1,136 +1,132 @@
 package bio.cosy.feddb.local.api.importer.transformer.code;
 
-import bio.cosy.feddb.core.api.run.AppMessageTypeEnum;
-import bio.cosy.feddb.core.api.run.AppMessageWrapperDTO;
-import bio.cosy.feddb.core.api.run.AppRunTypeEnum;
-import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
-import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
+import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
+import bio.cosy.feddb.core.base.BaseBo;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerAO;
+import bio.cosy.feddb.local.api.pipeline.PipelineBO;
+import bio.cosy.feddb.local.api.pipeline.PipelineDTO;
+import bio.cosy.feddb.local.api.pipeline.PipelineEntity;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.quarkus.scheduler.Scheduled;
+import bio.cosy.feddb.local.services.orch.OrchDockerServiceClient;
+import io.quarkus.logging.Log;
+import io.quarkus.narayana.jta.QuarkusTransaction;
+import io.quarkus.panache.common.Sort;
 import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ClientErrorException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Response;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class CodeTransformerBO {
+public class CodeTransformerBO extends BaseBo<CodeTransformerDTO, CodeTransformerEntity, CodeTransformerAO, CodeTransformerMapper> {
 
-    private static final Duration CHECK_TIMEOUT = Duration.ofMinutes(1);
-    private static final Duration IDLE_TIMEOUT = Duration.ofMinutes(15);
-    private static final int LOG_LINES = 500;
+    private static final String IMAGE_PREFIX = "fl-net/code/transformer-";
+
+    @Inject
+    CodeTransformerRunnerBO runnerBO;
+
+    @Inject
+    PipelineBO pipelineBO;
+
+    @Inject
+    ConnectorTransformerAO connectorTransformerAO;
 
     @Inject
     FLNetClientConfig config;
 
     @Inject
-    AppTransformerSessionBO sessionBO;
+    @RestClient
+    OrchDockerServiceClient dockerClient;
 
-    @Inject
-    ObjectMapper objectMapper;
+    public static String repository(CodeTransformerEntity entity) {
+        return IMAGE_PREFIX + entity.getId();
+    }
 
-    private final Map<String, CompletableFuture<CodeTransformerCheckResultDTO>> pending = new ConcurrentHashMap<>();
-    private final Deque<CodeTransformerLogDTO> logs = new ConcurrentLinkedDeque<>();
-    private final BroadcastProcessor<CodeTransformerLogDTO> logStream = BroadcastProcessor.create();
-    private volatile CodeTransformerRunnerDTO.Status status = CodeTransformerRunnerDTO.Status.STOPPED;
-    private volatile String error;
-    private volatile Long sessionId;
-    private volatile Long stepId;
-    private Instant lastUsed = Instant.now();
+    public List<CodeTransformerDTO> list() {
+        return mapper.entitiesToDtos(ao.listAll(Sort.descending("updatedAt")));
+    }
 
-    public CodeTransformerCheckResultDTO check(CodeTransformerCheckDTO request, String keycloakId) {
-        String requestId = UUID.randomUUID().toString();
-        request.setRequestId(requestId);
-        CompletableFuture<CodeTransformerCheckResultDTO> result = new CompletableFuture<>();
-        pending.put(requestId, result);
+    public CodeTransformerDTO save(CodeTransformerSaveDTO request, String keycloakId) {
+        request.setBaseImage(config.connector().codeTransformerImage());
+        CodeTransformerSaveResultDTO generated = runnerBO.generate(request, keycloakId);
+        if (!Boolean.TRUE.equals(generated.getIsSuccess())) {
+            throw new BadRequestException(generated.getMessage());
+        }
+        CodeTransformerDTO saved = getById(QuarkusTransaction.requiringNew().call(() -> store(request, generated)));
+        return saved.getStatus() == CodeTransformerStatus.READY ? saved : build(saved.getId());
+    }
+
+    public CodeTransformerDTO build(Long id) {
+        pipelineBO.start(id);
+        return getById(id);
+    }
+
+    public Multi<PipelineDTO> buildUpdates(Long id) {
+        PipelineDTO current = getById(id).getPipeline();
+        Multi<PipelineDTO> updates = pipelineBO.updatesOf(id);
+        return current == null ? updates : Multi.createBy().concatenating().streams(Multi.createFrom().item(current), updates);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        CodeTransformerEntity entity = find(id);
+        List<CodeTransformerUsageDTO> usages = mapper.usages(entity.getImageName());
+        if (!usages.isEmpty()) {
+            throw new ClientErrorException("Still used by " + usages.stream().map(CodeTransformerUsageDTO::getConnectorName)
+                    .collect(Collectors.joining(", ")), Response.Status.CONFLICT);
+        }
+        ao.delete(entity);
+        removeImage(entity.getImageName());
+    }
+
+    public void finished(PipelineEntity pipeline) {
+        CodeTransformerEntity entity = pipeline.getCodeTransformer();
+        boolean latest = pipeline.getDockerTag().equals(entity.getCodeHash());
+        if (pipeline.getPipelineStatus() != PipelineStatus.SUCCESS) {
+            entity.setStatus(latest ? CodeTransformerStatus.FAILED : entity.getStatus());
+            return;
+        }
+        String image = repository(entity) + ":" + pipeline.getDockerTag();
+        String previous = entity.getImageName();
+        entity.setImageName(image);
+        entity.setStatus(latest ? CodeTransformerStatus.READY : entity.getStatus());
+        if (previous != null && !previous.equals(image)) {
+            connectorTransformerAO.replaceAppImage(previous, image);
+            removeImage(previous);
+        }
+    }
+
+    Long store(CodeTransformerSaveDTO request, CodeTransformerSaveResultDTO generated) {
+        CodeTransformerEntity entity = request.getId() == null ? new CodeTransformerEntity() : find(request.getId());
+        mapper.updateFromSave(request, generated, entity);
+        entity.setCodeHash(DigestUtils.sha256Hex(new TreeMap<>(generated.getFiles()).toString()).substring(0, 12));
+        boolean built = entity.getImageName() != null && entity.getImageName().equals(repository(entity) + ":" + entity.getCodeHash());
+        entity.setStatus(built ? CodeTransformerStatus.READY : CodeTransformerStatus.BUILDING);
+        ao.persist(entity);
+        return entity.getId();
+    }
+
+    private CodeTransformerEntity find(Long id) {
+        return ao.findByIdOptional(id).orElseThrow(() -> new NotFoundException("Custom transformer " + id + " not found"));
+    }
+
+    private void removeImage(String image) {
+        if (image == null) {
+            return;
+        }
         try {
-            sessionBO.connection(start(keycloakId)).sendTextAndAwait(
-                    new AppMessageWrapperDTO<>(AppMessageTypeEnum.TRANSFORMATION_CHECK, request, AppRunTypeEnum.MODEL_RUN));
-            return result.completeOnTimeout(CodeTransformerCheckResultDTO.failed(requestId,
-                            "The code check did not answer within " + CHECK_TIMEOUT.toSeconds() + "s"),
-                    CHECK_TIMEOUT.toSeconds(), TimeUnit.SECONDS).join();
+            dockerClient.removeLocalImage(image);
         } catch (RuntimeException e) {
-            log("Code check failed: " + e.getMessage());
-            stop();
-            return CodeTransformerCheckResultDTO.failed(requestId, e.getMessage());
-        } finally {
-            pending.remove(requestId);
+            Log.warnf("Could not remove the image %s: %s", image, e.getMessage());
         }
-    }
-
-    public void complete(Object message) {
-        CodeTransformerCheckResultDTO result = objectMapper.convertValue(message, CodeTransformerCheckResultDTO.class);
-        Optional.ofNullable(pending.get(result.getRequestId())).ifPresent(future -> future.complete(result));
-    }
-
-    public CodeTransformerRunnerDTO status() {
-        return new CodeTransformerRunnerDTO(status, config.connector().codeTransformerImage(), error);
-    }
-
-    public synchronized Long start(String keycloakId) {
-        lastUsed = Instant.now();
-        if (sessionId == null) {
-            status = CodeTransformerRunnerDTO.Status.STARTING;
-            error = null;
-            log("Starting the code runner " + config.connector().codeTransformerImage());
-            ConnectorTransformerDTO runner = new ConnectorTransformerDTO();
-            runner.setAppImage(config.connector().codeTransformerImage());
-            try {
-                sessionId = sessionBO.openPreview(runner, keycloakId, step -> stepId = step.getId());
-            } catch (RuntimeException e) {
-                status = CodeTransformerRunnerDTO.Status.FAILED;
-                error = e.getMessage();
-                log("The code runner could not be started: " + e.getMessage());
-                throw e;
-            }
-            status = CodeTransformerRunnerDTO.Status.RUNNING;
-            log("The code runner is ready");
-        }
-        return sessionId;
-    }
-
-    public synchronized void stop() {
-        if (sessionId != null) {
-            sessionBO.close(sessionId);
-            sessionId = null;
-            stepId = null;
-            status = CodeTransformerRunnerDTO.Status.STOPPED;
-            log("The code runner was stopped");
-        }
-    }
-
-    public void log(Long runId, String message) {
-        if (runId != null && runId.equals(stepId) && message != null && !message.isBlank()) {
-            log(message);
-        }
-    }
-
-    public Multi<CodeTransformerLogDTO> logs() {
-        return Multi.createBy().concatenating().streams(Multi.createFrom().iterable(List.copyOf(logs)), logStream);
-    }
-
-    @Scheduled(every = "1m")
-    synchronized void stopIdle() {
-        if (sessionId != null && lastUsed.plus(IDLE_TIMEOUT).isBefore(Instant.now())) {
-            log("Stopping the code runner after " + IDLE_TIMEOUT.toMinutes() + " idle minutes");
-            stop();
-        }
-    }
-
-    private void log(String message) {
-        CodeTransformerLogDTO line = new CodeTransformerLogDTO(Instant.now(), message.strip());
-        logs.addLast(line);
-        while (logs.size() > LOG_LINES) {
-            logs.pollFirst();
-        }
-        logStream.onNext(line);
     }
 }

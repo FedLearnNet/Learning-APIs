@@ -1,7 +1,5 @@
-package de.unihamburg.daibetes.api.build.pipeline;
+package bio.cosy.feddb.core.api.pipeline;
 
-import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
-import de.unihamburg.daibetes.api.build.pipeline.steps.StepName;
 import lombok.Data;
 
 @Data

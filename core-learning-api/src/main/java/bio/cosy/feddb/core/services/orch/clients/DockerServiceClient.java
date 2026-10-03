@@ -14,6 +14,10 @@ public interface DockerServiceClient {
 
 
     @DELETE
+    @Path("image")
+    Response removeLocalImage(@QueryParam("name") String name);
+
+    @DELETE
     @Path("workflow/{workflowId}/cleanup")
     Response cleanupWorkflow(@PathParam("workflowId") Long workflowId);
 

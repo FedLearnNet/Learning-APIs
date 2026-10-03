@@ -17,6 +17,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -163,6 +164,19 @@ public class FileHelper {
             }
         }
         return extracted;
+    }
+
+    public static byte[] textsToZip(Map<String, String> texts) throws UncheckedIOException {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+                for (Map.Entry<String, String> entry : texts.entrySet()) {
+                    addFileToZip(zos, entry.getKey(), entry.getValue().getBytes(StandardCharsets.UTF_8));
+                }
+            }
+            return baos.toByteArray();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to create file zip", e);
+        }
     }
 
     public static byte[] filesToZipByPath(Map<String, File> fileMap) throws UncheckedIOException {
