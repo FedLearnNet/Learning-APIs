@@ -52,9 +52,9 @@ class ConnectorFilesBOStatisticsCacheTest {
                 20);
 
         assertEquals("20", analysis.uploadInfo().getFirst().getJson());
-        assertEquals(10, analysis.previewData().get("0").rows().size());
-        assertEquals(List.of("patient_id", "age"), analysis.previewData().get("0").columns());
-        assertEquals(profile("age"), analysis.previewData().get("0").columnProfiles().getFirst());
+        assertEquals(10, analysis.previewData().get("0").getRows().size());
+        assertEquals(List.of("patient_id", "age"), analysis.previewData().get("0").getColumns());
+        assertEquals(profile("age"), analysis.previewData().get("0").getColumnProfiles().getFirst());
         verify(fileHandler).getByFile(any(), any(), isNull());
     }
 

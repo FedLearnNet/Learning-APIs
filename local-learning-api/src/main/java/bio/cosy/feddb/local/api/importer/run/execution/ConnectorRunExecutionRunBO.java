@@ -86,7 +86,7 @@ public class ConnectorRunExecutionRunBO extends DataAnalysisOrchestrator {
         DataAnalysisCreatePredictionDTO createModel = new DataAnalysisCreatePredictionDTO();
         createModel.setKeycloakId(keycloakId);
         createModel.setAppVersionId(transformer.getAppVersionId());
-        createModel.setHyperParams(transformer.getHyperparams());
+        createModel.setHyperParams(transformer.getHyperparams() == null ? null : new LinkedHashMap<>(transformer.getHyperparams()));
         createModel.setId(transformer.getId());
         try {
             String containerId = execute(createModel, prediction.getId(), image, apiKey);

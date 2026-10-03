@@ -1,28 +1,32 @@
 package bio.cosy.feddb.local.api.importer.files.table;
 
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Immutable JSON-safe table sample. Unlike TableData, it has no temporary-file
  * lifecycle and can therefore be persisted safely in an entity.
  */
-public record TableSample(
-        List<String> columns,
-        List<Map<String, Object>> rows,
-        List<ColumnProfile> columnProfiles
-) {
-    public TableSample {
-        columns = columns == null ? List.of() : List.copyOf(columns);
-        rows = rows == null ? List.of() : rows.stream()
+@Data
+@NoArgsConstructor
+public class TableSample {
+    private List<String> columns;
+    private List<Map<String, Object>> rows;
+    private List<ColumnProfile> columnProfiles;
+
+    public TableSample(
+            List<String> columns,
+            List<Map<String, Object>> rows,
+            List<ColumnProfile> columnProfiles
+    ) {
+        this.columns = columns == null ? List.of() : List.copyOf(columns);
+        this.rows = rows == null ? List.of() : rows.stream()
                 .map(row -> row == null ? null : Collections.unmodifiableMap(new LinkedHashMap<>(row)))
                 .toList();
-        columnProfiles = columnProfiles == null ? null : List.copyOf(columnProfiles);
+        this.columnProfiles = columnProfiles == null ? null : List.copyOf(columnProfiles);
     }
 
     public TableData toTableData() {
@@ -50,5 +54,23 @@ public record TableSample(
                     tableData.getColumnProfiles()
             );
         }
+    }
+
+    public TableSample filterColumns(List<String> keep) {
+        List<String> keptColumns = columns.stream()
+                .filter(keep::contains)
+                .toList();
+        List<Map<String, Object>> keptRows = rows.stream()
+                .filter(Objects::nonNull)
+                .map(row -> {
+                    Map<String, Object> filteredRow = new LinkedHashMap<>();
+                    keptColumns.forEach(column -> filteredRow.put(column, row.get(column)));
+                    return filteredRow;
+                })
+                .toList();
+        List<ColumnProfile> keptProfiles = columnProfiles == null ? null : columnProfiles.stream()
+                .filter(profile -> keptColumns.contains(profile.name()))
+                .toList();
+        return new TableSample(keptColumns, keptRows, keptProfiles);
     }
 }
