@@ -233,7 +233,7 @@ public class ConnectorRunExecutionRunBO extends DataAnalysisOrchestrator {
     public String execute(DataAnalysisCreatePredictionDTO model, Long id, String image, String apiKey) throws IllegalArgumentException {
         Long identifier = model.getModelSubId();
         if (identifier == null) {
-            identifier = model.getAppVersionId();
+            identifier = model.getAppVersionId() != null ? model.getAppVersionId() : id;
         }
         StartAppDTO dto = new StartAppDTO();
         dto.setGroupId(id);

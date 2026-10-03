@@ -67,6 +67,9 @@ public interface FLNetClientConfig {
         @WithDefault("10")
         int previewRows();
 
+        @WithDefault("fl-net/etl-tool-factory-wrapper:dev")
+        String codeTransformerImage();
+
         // importer file rows kept in memory before spilling to an NDJSON disk cache; 0 = disk first
         @WithDefault("0")
         int importRowLimitForDiskCache();

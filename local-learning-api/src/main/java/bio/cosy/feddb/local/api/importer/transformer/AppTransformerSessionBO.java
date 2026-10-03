@@ -360,6 +360,12 @@ public class AppTransformerSessionBO {
     }
 
     /** Stops every container this run started, whether the run succeeded or failed. */
+    public WebSocketConnection connection(Long sessionId) {
+        TransformerSession session = sessions.getOrDefault(sessionId, Map.of()).values().stream().findFirst()
+                .orElseThrow(() -> new AppTransformerSessionException("No running app transformer for session " + sessionId));
+        return awaitReconnect(session.stepId(), session.transformer());
+    }
+
     public void close(Long runId) {
         Map<Long, TransformerSession> forRun = sessions.remove(runId);
         if (forRun == null) {

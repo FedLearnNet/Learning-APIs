@@ -10,6 +10,7 @@ import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.local.api.importer.run.message.ConnectorRunRunMessagesBO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepBO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepDTO;
+import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerBO;
 import io.quarkus.logging.Log;
 import io.quarkus.websockets.next.*;
 import jakarta.inject.Inject;
@@ -43,6 +44,9 @@ public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
 
     @Inject
     ToolApiKeyService toolApiKeyService;
+
+    @Inject
+    CodeTransformerBO codeTransformerBO;
 
     @OnOpen
     public void onOpen(WebSocketConnection connection) {
@@ -127,7 +131,9 @@ public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
         try {
             Long runId = Long.parseLong(runIdString);
             Log.debug("Received message Text: " + m.getMessage() + " for container " + runId + " and type " + type);
-            if (AppConnectionTypesEnum.APP.isEqual(type)) {
+            if (AppMessageTypeEnum.TRANSFORMATION_CHECK_RESULT.equals(m.getType())) {
+                codeTransformerBO.complete(m.getMessage());
+            } else if (AppConnectionTypesEnum.APP.isEqual(type)) {
                 handleAppMessages(m, runId, m.getRunType());
             } else {
                 Log.error("Received message for unknown/not supported type: " + type);
@@ -204,12 +210,13 @@ public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
     @Transactional
     protected void logMessage(Long runId, RunMessageLogDTO runMessage, AppRunTypeEnum runType) {
         stepMessageBO.create(runMessage, runId);
+        codeTransformerBO.log(runId, runMessage.getMessage());
     }
 
     @Override
     // @Transactional
     protected void consoleMessage(Long runId, ConsoleStdOutDTO runMessage, AppRunTypeEnum runType) {
-        //ingore
+        codeTransformerBO.log(runId, runMessage.getMsg());
     }
 
     private void closeRun() {
