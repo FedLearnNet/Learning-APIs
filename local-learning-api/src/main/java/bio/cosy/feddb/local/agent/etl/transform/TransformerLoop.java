@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.agent.etl.transform;
 
 import bio.cosy.feddb.core.api.datamodler.schema.SchemaNodeType;
+import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import bio.cosy.feddb.local.api.importer.extract.ConnectorExtractBO;
@@ -24,6 +25,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
+
+import static bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType.NODE_RESULT;
+import static bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType.NODE_STARTED;
 
 @ApplicationScoped
 public class TransformerLoop {
@@ -47,17 +54,26 @@ public class TransformerLoop {
     FLNetClientConfig config;
 
     public ConnectorDTO selectAfterMerge(ConnectorDTO connector) {
-        TableSample preview = QuarkusTransaction.joiningExisting().call(() -> {
-            try (TableData data = extractBO.loadPreviewData(connector.getInputConfig(), connector.getCohortId(),
-                    config.connector().previewRows(), connector.getMergeConfig(), connector.getPivotConfig(),
-                    connector.getUploadInfo())) {
-                return TableSample.from(data, config.connector().previewRows());
-            }
-        });
-        return select(connector, preview);
+        return select(connector, loadPreview(connector));
     }
 
     public ConnectorDTO select(ConnectorDTO connector, TableSample previewData) {
+        return select(connector, previewData, event -> {
+        }, () -> "", null);
+    }
+
+    public ConnectorDTO selectAfterMerge(ConnectorDTO connector,
+                                         Consumer<TransformerAssistantMessageDTO> events,
+                                         Supplier<String> instructions,
+                                         UnaryOperator<String> askUser) {
+        return select(connector, loadPreview(connector), events, instructions, askUser);
+    }
+
+    public ConnectorDTO select(ConnectorDTO connector,
+                               TableSample previewData,
+                               Consumer<TransformerAssistantMessageDTO> events,
+                               Supplier<String> instructions,
+                               UnaryOperator<String> askUser) {
         Map<String, LocalSchemaNodeNestedDTO> schemaNodes = QuarkusTransaction.joiningExisting().call(() -> {
             Map<String, LocalSchemaNodeNestedDTO> nodes = new LinkedHashMap<>();
             collectAttributes(schemaNodeBO.getSchemaNodesNestedForCohort(connector.getCohortId()).getChildNodes(), null, nodes);
@@ -78,8 +94,10 @@ public class TransformerLoop {
             if (mapped.contains(schemaNode.getId())) {
                 continue;
             }
-            ConnectorSelectedTransformer selected =
-                    transformerOrganizer.selectTransformer(preview, schemaNode, patientIdColumn);
+            events.accept(TransformerAssistantMessageDTO.node(NODE_STARTED, schemaNode.getId(), entry.getKey(), null));
+            ConnectorSelectedTransformer selected = transformerOrganizer.selectTransformer(
+                    preview, schemaNode, patientIdColumn, instructions.get(), askUser);
+            events.accept(TransformerAssistantMessageDTO.node(NODE_RESULT, schemaNode.getId(), entry.getKey(), selected));
             if (!selected.isFoundTransformer()) {
                 Log.infof("No transformer for schema node %s: %s", entry.getKey(), selected.getNeededTransformerFunction());
                 continue;
@@ -101,6 +119,16 @@ public class TransformerLoop {
         connector.setTransformer(transformers);
         connector.setSchemaMapping(mappings);
         return connector;
+    }
+
+    private TableSample loadPreview(ConnectorDTO connector) {
+        return QuarkusTransaction.joiningExisting().call(() -> {
+            try (TableData data = extractBO.loadPreviewData(connector.getInputConfig(), connector.getCohortId(),
+                    config.connector().previewRows(), connector.getMergeConfig(), connector.getPivotConfig(),
+                    connector.getUploadInfo())) {
+                return TableSample.from(data, config.connector().previewRows());
+            }
+        });
     }
 
     private TableSample applyTransformer(TableSample preview, ConnectorTransformerDTO transformer, String patientIdColumn) {

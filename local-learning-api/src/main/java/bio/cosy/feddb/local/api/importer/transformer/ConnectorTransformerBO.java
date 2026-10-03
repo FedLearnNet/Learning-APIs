@@ -459,7 +459,7 @@ public class ConnectorTransformerBO extends BaseBo<
         step.setTransformationId(transformer.getId());
         step.setStatus(RunStatusTypes.PENDING);
         step.setProgress(0f);
-        step.setHyperParams(transformer.getHyperparams());
+        step.setHyperParams(transformer.getHyperparams() == null ? null : new LinkedHashMap<>(transformer.getHyperparams()));
         return stepBO.createInNewTransaction(step);
     }
 

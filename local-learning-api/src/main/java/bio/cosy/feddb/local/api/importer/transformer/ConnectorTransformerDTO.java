@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Data
@@ -25,7 +24,7 @@ public class ConnectorTransformerDTO extends BaseDTO {
     // For remote app execution
     private Long appVersionId;
     private String appImage;
-    private LinkedHashMap<String, Object> hyperparams;
+    private Map<String, Object> hyperparams;
 
     private Long connectorId;
 }

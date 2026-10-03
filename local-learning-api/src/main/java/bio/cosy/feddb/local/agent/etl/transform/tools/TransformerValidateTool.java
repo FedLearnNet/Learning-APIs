@@ -3,9 +3,11 @@ package bio.cosy.feddb.local.agent.etl.transform.tools;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationBO;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
+import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
 import dev.langchain4j.agentic.Agent;
 import io.quarkus.arc.Arc;
@@ -39,7 +41,31 @@ public class TransformerValidateTool {
         this.patientIdColumn = patientIdColumn;
     }
 
-    @Tool("Validate a selected transformer: runs it on the preview data and checks the values of mappedColumn against the schema node")
+    @Tool("Validate a transformer before answering: runs it on the preview data and checks the values of mappedColumn against the schema node. Leave moduleName and methodName empty for a direct mapping.")
+    public ConnectorValidationResultDTO validateTransformer(
+            @P(value = "moduleName of the function", required = false) String moduleName,
+            @P(value = "methodName of the function", required = false) String methodName,
+            @P(value = "CELL functions: the column the function rewrites", required = false) String column,
+            @P(value = "ROW and PATIENT functions: parameter name -> source column", required = false) Map<String, Object> inputMapping,
+            @P(value = "ROW and PATIENT functions: return key -> output column", required = false) Map<String, Object> returnMapping,
+            @P(value = "Hyperparameter name -> value", required = false) Map<String, Object> hyperparams,
+            @P("The column mapped onto the schema node") String mappedColumn) {
+        ConnectorSelectedTransformer selected = new ConnectorSelectedTransformer();
+        selected.setFoundTransformer(true);
+        selected.setMappedColumn(mappedColumn);
+        if (methodName != null && !methodName.isBlank()) {
+            ConnectorTransformerDTO transformer = new ConnectorTransformerDTO();
+            transformer.setModuleName(moduleName);
+            transformer.setMethodName(methodName);
+            transformer.setColumn(column);
+            transformer.setInputMapping(inputMapping);
+            transformer.setReturnMapping(returnMapping);
+            transformer.setHyperparams(hyperparams);
+            selected.setSelectedTransformer(transformer);
+        }
+        return validate(selected);
+    }
+
     public ConnectorValidationResultDTO validate(ConnectorSelectedTransformer selected) {
         Long schemaId = schemaNode.getId();
         if (selected == null || !selected.isFoundTransformer()) {
