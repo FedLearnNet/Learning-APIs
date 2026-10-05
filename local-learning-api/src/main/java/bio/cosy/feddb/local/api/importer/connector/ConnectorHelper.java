@@ -4,6 +4,7 @@ import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadInfoDTO;
 import bio.cosy.feddb.local.api.importer.files.table.ColumnNames;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorValueMappingConfigDTO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerEntity;
 
 import java.util.ArrayList;
@@ -89,27 +90,48 @@ public class ConnectorHelper {
         }
     }
 
+    public static Set<String> transformerOutputs(ConnectorTransformerDTO transformer) {
+        return transformerOutputs(transformer.getColumn(), transformer.getReturnMapping());
+    }
+
+    public static Set<String> transformerInputs(ConnectorTransformerDTO transformer) {
+        return transformerInputs(transformer.getColumn(), transformer.getInputMapping(), transformer.getReturnMapping());
+    }
+
+    public static Set<String> commaSeparated(String value) {
+        LinkedHashSet<String> columns = new LinkedHashSet<>();
+        addCommaSeparated(columns, value);
+        return columns;
+    }
+
     private static Set<String> transformerOutputs(ConnectorTransformerEntity transformer) {
+        return transformerOutputs(transformer.getColumn(), transformer.getReturnMapping());
+    }
+
+    private static Set<String> transformerInputs(ConnectorTransformerEntity transformer) {
+        return transformerInputs(transformer.getColumn(), transformer.getInputMapping(), transformer.getReturnMapping());
+    }
+
+    private static Set<String> transformerOutputs(String column, Map<String, Object> returnMapping) {
         LinkedHashSet<String> outputs = new LinkedHashSet<>();
-        Map<String, Object> returnMapping = transformer.getReturnMapping();
         if (returnMapping == null || returnMapping.isEmpty()) {
-            addCommaSeparated(outputs, transformer.getColumn());
+            addCommaSeparated(outputs, column);
         } else {
             returnMapping.values().forEach(value -> addMappedColumns(outputs, value));
         }
         return outputs;
     }
 
-    private static Set<String> transformerInputs(ConnectorTransformerEntity transformer) {
+    private static Set<String> transformerInputs(String column, Map<String, Object> inputMapping,
+                                                 Map<String, Object> returnMapping) {
         LinkedHashSet<String> inputs = new LinkedHashSet<>();
-        Map<String, Object> returnMapping = transformer.getReturnMapping();
         if (returnMapping == null || returnMapping.isEmpty()) {
-            addCommaSeparated(inputs, transformer.getColumn());
+            addCommaSeparated(inputs, column);
         }
-        if (transformer.getInputMapping() != null) {
-            transformer.getInputMapping().values().forEach(value -> {
+        if (inputMapping != null) {
+            inputMapping.values().forEach(value -> {
                 if ("[VALUE]".equals(value)) {
-                    addCommaSeparated(inputs, transformer.getColumn());
+                    addCommaSeparated(inputs, column);
                 } else if (!(value instanceof String text) || !text.startsWith("[VALUE]")) {
                     addMappedColumns(inputs, value);
                 }

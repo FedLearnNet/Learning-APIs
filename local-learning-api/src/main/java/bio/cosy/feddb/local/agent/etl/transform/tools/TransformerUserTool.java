@@ -17,9 +17,6 @@ public class TransformerUserTool {
 
     @Tool("Ask the user a question and wait for the answer, e.g. when several columns or functions fit equally well")
     public String askUser(@P("The question, including the options to choose from") String question) {
-        if (askUser == null) {
-            return "The user is not available, decide yourself.";
-        }
         return askUser.apply(question);
     }
 }

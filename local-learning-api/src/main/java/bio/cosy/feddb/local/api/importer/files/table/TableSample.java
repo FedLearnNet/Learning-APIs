@@ -73,4 +73,19 @@ public class TableSample {
                 .toList();
         return new TableSample(keptColumns, keptRows, keptProfiles);
     }
+
+
+    public List<String> getColumns() {
+        return columns == null ? List.of() : columns;
+    }
+
+    public Map<String, List<Object>> getValues() {
+        Map<String, List<Object>> values = new HashMap<>();
+        columns.forEach(column -> values.put(column, this.getRows().stream()
+                .filter(Objects::nonNull)
+                .map(row -> (Object) Objects.toString(row.get(column), ""))
+                .distinct()
+                .toList()));
+        return values;
+    }
 }

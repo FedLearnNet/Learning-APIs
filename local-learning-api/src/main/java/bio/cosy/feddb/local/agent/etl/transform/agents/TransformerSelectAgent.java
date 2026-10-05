@@ -19,14 +19,21 @@ import java.util.List;
 public interface TransformerSelectAgent {
 
     @UserMessage("""
-            Your job is to select the best transformer to fill the schema node below from the selected columns.
-            - First validate the direct mapping of the best matching column (validation tool without moduleName and methodName).
-              If it is valid, answer with foundTransformer set, that column as mappedColumn and no selectedTransformer.
-            - Only if the direct mapping is rejected, pick the best fitting function of the transformer list tool and configure it.
+            Your job is to select the transformers that compute the schema node below from the selected columns.
+            - If one column already holds valid values (validation tool with an empty transformer list), answer with
+              foundTransformer set, that column as mappedColumn and no selectedTransformers.
+            - Otherwise pick the best fitting functions of the transformer list tool and configure them. Use a chain of
+              several functions in execution order when one is not enough, e.g. first merge or convert, then map values.
+              A single wrong value (e.g. the missing-value placeholder '?') is fixed with the Replace Value function
+              (search = the value, replace = null or the allowed value), several with the Generic Value Mapper.
               CELL functions rewrite their column in place, so mappedColumn is that column.
               ROW and PATIENT functions read inputMapping (parameter -> source column) and write returnMapping
               (return key -> output column); write to a new output column and use it as mappedColumn.
-            - Check your selection with the validation tool before answering.
+            - Only if no built-in function fits, use a store tool from getAllStoreDetailed: moduleName 'tools',
+              methodName the tool name, appVersionId and appImage copied exactly, column the comma separated source
+              columns for the tool, returnMapping from a tool output column to a new column, hyperparams keyed by the
+              listed parameter names. A store tool runs in a container and cannot be checked on the preview.
+            - Check the whole chain with the validation tool before answering.
             - If no function fits, set foundTransformer to false and describe the needed function.
             - If you are unsure which of several options the user wants, ask the user.
             {#if instructions}Instructions of the user: {instructions}{/if}
@@ -39,16 +46,17 @@ public interface TransformerSelectAgent {
             {#if schemaNode.dataType.validations}Validations: {#for v in schemaNode.dataType.validations}{v.name} {v.validator}; {/for}{/if}
             {/if}
 
-            Selected columns:
-            {#for row in previewData.rows}
-            {#for column in selectedColumns}{column}={row.get(column)}{#if column_hasNext}, {/if}{/for}
+            Selected columns: {selectedColumns}
+            Rows:
+            {#for row in selectedData.rows}
+            {#if row_index < 15}{row}{/if}
             {/for}
 
             Result of the previous attempt: {validation.message}
             """)
     @Agent(name = "selectTransformer", description = "Selects and configures the transformer for a schema node", outputKey = "selectedTransformer")
     @ToolBox({TransformerListTool.class, TransformerValidateTool.class, TransformerUserTool.class})
-    ConnectorSelectedTransformer select(TableSample previewData,
+    ConnectorSelectedTransformer select(TableSample selectedData,
                                         LocalSchemaNodeDTO schemaNode,
                                         List<String> selectedColumns,
                                         String instructions,

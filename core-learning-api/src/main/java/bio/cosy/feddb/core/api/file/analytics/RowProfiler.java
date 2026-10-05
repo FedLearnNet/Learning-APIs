@@ -211,7 +211,7 @@ public final class RowProfiler {
     /** Longest token in {@link #MISSING_TOKENS}; anything longer skips the lowercase/lookup work. */
     private static final int MAX_MISSING_TOKEN_LENGTH = 4;
 
-    private static boolean isMissing(String s) {
+    public static boolean isMissing(String s) {
         if (s == null) return true;
         String v = s.trim();
         if (v.length() > MAX_MISSING_TOKEN_LENGTH) return false;

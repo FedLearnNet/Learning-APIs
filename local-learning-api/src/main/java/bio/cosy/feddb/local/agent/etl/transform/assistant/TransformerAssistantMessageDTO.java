@@ -6,6 +6,8 @@ import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 public class TransformerAssistantMessageDTO {
@@ -16,6 +18,7 @@ public class TransformerAssistantMessageDTO {
     private Long schemaId;
     private String mappingPath;
     private ConnectorSelectedTransformer selectedTransformer;
+    private List<Long> schemaIds;
 
     public TransformerAssistantMessageDTO(TransformerAssistantMessageType type) {
         this.type = type;

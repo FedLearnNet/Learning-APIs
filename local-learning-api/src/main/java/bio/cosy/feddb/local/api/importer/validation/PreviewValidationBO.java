@@ -258,7 +258,7 @@ public class PreviewValidationBO {
         return result;
     }
 
-    private List<String> values(ColumnProfile profile) {
+    public List<String> values(ColumnProfile profile) {
         LinkedHashSet<String> values = new LinkedHashSet<>();
         if (isNumeric(profile)) {
             // For numeric columns testing the representative boundaries (min, mean, max)

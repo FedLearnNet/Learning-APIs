@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.api.schema.schemanode;
 
+import bio.cosy.feddb.core.api.datamodler.schema.SchemaNodeType;
 import bio.cosy.feddb.core.base.BaseMapper;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeNestedDTO;
@@ -35,6 +36,15 @@ public interface SchemaNodeMapper extends BaseMapper<LocalSchemaNodeDTO, SchemaN
             @Mapping(target = "childrenIds", source = "entity", qualifiedByName = "entityChildrenToIds"),
     })
     LocalSchemaNodeDTO entityToDto(SchemaNodeEntity entity);
+
+    @Mappings({
+            @Mapping(target = "ontology", expression = "java(ontologyMapper.entityToDto(entity.getOntology()))"),
+            @Mapping(target = "dataType", expression = "java(dataTypeEntityMapper.entityToDto(entity.getDataType()))"),
+            @Mapping(target = "parentId", source = "entity.parent.id"),
+            @Mapping(target = "childrenIds", source = "entity", qualifiedByName = "entityChildrenToIds"),
+            @Mapping(target = "path", source = "entity", qualifiedByName = "mapPath"),
+    })
+    LocalSchemaNodeWithPathDTO entityToNamedDto(SchemaNodeEntity entity);
 
     @Mappings({
             @Mapping(target = "parentId", source = "entity.parent.id"),
@@ -100,6 +110,19 @@ public interface SchemaNodeMapper extends BaseMapper<LocalSchemaNodeDTO, SchemaN
         if (entity.getChildren() == null) return new HashSet<>();
         return entity.getChildren().stream().map(this::entityToNested).collect(Collectors.toSet());
     }
+
+    @Named("mapPath")
+    default String mapPath(SchemaNodeEntity entity) {
+        if (entity == null) return null;
+        StringBuilder path = new StringBuilder(entity.getName());
+        SchemaNodeEntity parent = entity.getParent();
+        while (parent != null && parent.getType() != SchemaNodeType.ROOT) {
+            path.insert(0, parent.getName() + ".");
+            parent = parent.getParent();
+        }
+        return path.toString();
+    }
+
 
     @Named("shallowDataType")
     default DataTypeEntity shallowDataType(DataTypeDTO dto) {

@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.agent.etl.transform.agents;
 
+import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerUserTool;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
@@ -24,13 +25,15 @@ public interface ColumnSelectAgent {
             {#if schemaNode.description}Description: {schemaNode.description}{/if}
             {#if schemaNode.dataType}Data type: {schemaNode.dataType.name} ({schemaNode.dataType.type}){/if}
 
-            Columns: {previewData.columns}
-            Rows:
-            {#for row in previewData.rows}
-            {row}
+            Candidate columns, ranked by name similarity, meaning and how many of their values are valid for the schema node:
+            {#for candidate in candidates}
+            - {candidate.column}: {candidate.summary}
             {/for}
+
+            Names of all columns, in case a value needs other columns than the candidates: {previewData.columns}
             """)
     @Agent(description = "Selects the columns needed for a schema node", outputKey = "selectedColumns")
     @ToolBox({TransformerListTool.class, TransformerUserTool.class})
-    List<String> select(TableSample previewData, LocalSchemaNodeDTO schemaNode, String instructions);
+    List<String> select(TableSample previewData, LocalSchemaNodeDTO schemaNode, String instructions,
+                        List<ColumnCandidate> candidates);
 }

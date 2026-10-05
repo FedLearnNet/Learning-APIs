@@ -24,9 +24,16 @@ public class SchemaNodeBO extends BaseBo<LocalSchemaNodeDTO, SchemaNodeEntity, S
     @Inject
     FederatedLearningProjectBO federatedLearningProjectBO;
 
-    public List<LocalSchemaNodeDTO> getSchemaNodesForCohort(Long internalPatientId) {
-        return mapper.entitiesToDtos(ao.getSchemaNodesForCohort(internalPatientId));
+    public List<LocalSchemaNodeDTO> getSchemaNodesForCohort(Long cohortId) {
+        return mapper.entitiesToDtos(ao.getSchemaNodesForCohort(cohortId));
     }
+
+    public List<LocalSchemaNodeWithPathDTO> getSchemaNodesWithPathForCohort(Long cohortId) {
+        return ao.getSchemaNodesForCohort(cohortId).stream()
+                .map(mapper::entityToNamedDto)
+                .toList();
+    }
+
 
     public List<SearchResultDTO<LocalSchemaNodeDTO>> search(String query, Set<Long> cohortIds) {
         return cohortIds.stream()
@@ -110,7 +117,7 @@ public class SchemaNodeBO extends BaseBo<LocalSchemaNodeDTO, SchemaNodeEntity, S
                 .toList();
     }
 
-    public Map<Long, SimpleLocalSchemaNodeDTO> findSimpleMapByIds(Set<Long> schemaNodeIds){
+    public Map<Long, SimpleLocalSchemaNodeDTO> findSimpleMapByIds(Set<Long> schemaNodeIds) {
         return ao.findByIds(schemaNodeIds).stream()
                 .filter(Objects::nonNull)
                 .filter(node -> node.getId() != null)

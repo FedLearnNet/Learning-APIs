@@ -33,7 +33,7 @@ public class ReplaceValueFunction extends AbstractManagedCellFunction {
     @Override
     public Object execute(CellFunctionExecutionContext context) {
         Object replaceWith = context.getParams().getOrDefault("replace", null);
-        if (replaceWith.equals("null")) {
+        if ("null".equals(replaceWith)) {
             replaceWith = null;
         }
         String searchValue = String.valueOf(context.getParams().get("search"));

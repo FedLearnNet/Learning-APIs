@@ -167,7 +167,6 @@ public class MappingBO {
     }
 
     private Map<Long, DataTypeNodeDTO> loadValidationNodes(List<ConnectorMappingDTO> schemaMapping) {
-        Map<Long, DataTypeNodeDTO> validationNodeBySchemaId = new HashMap<>();
         List<Long> schemaIds = schemaMapping == null
                 ? List.of()
                 : schemaMapping.stream()
@@ -184,6 +183,11 @@ public class MappingBO {
                   .distinct()
                   .toList();
 
+        return loadValidationNodes(schemaIds);
+    }
+
+    public Map<Long, DataTypeNodeDTO> loadValidationNodes(Collection<Long> schemaIds) {
+        Map<Long, DataTypeNodeDTO> validationNodeBySchemaId = new HashMap<>();
         if (schemaIds.isEmpty()) {
             return validationNodeBySchemaId;
         }

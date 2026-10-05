@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.api.schema.datatype;
 
+import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypes;
 import bio.cosy.feddb.core.base.BaseMapper;
 import bio.cosy.feddb.local.helper.QuarkusMappingConfig;
@@ -30,6 +31,10 @@ public interface DataTypeEntityMapper extends BaseMapper<DataTypeDTO, DataTypeEn
     })
     DataTypeEntity dtoToEntity(DataTypeDTO dto);
 
+    @Mappings({
+            @Mapping(target = "label", ignore = true)
+    })
+    DataTypeNodeDTO dtoToNodeDto(DataTypeDTO dto);
 
     @ValueMapping(target = "NUMBER", source = "INT")
     @ValueMapping(target = "NUMBER", source = "FLOAT")
