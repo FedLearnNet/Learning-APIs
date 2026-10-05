@@ -303,10 +303,16 @@ public class ConnectorTransformerBO extends BaseBo<
                 : applyTransformations(transformer, rows);
     }
 
-    /**
-     * Groups the given rows by the external patient id column and applies the PATIENT-mode
-     * transformer to each patient group, preserving the incoming order of patients.
-     */
+    public List<Map<String, Object>> applyBuiltInTransformations(
+            List<ConnectorTransformerDTO> transformers,
+            List<Map<String, Object>> rows,
+            String patientIdColumn) {
+        for (ConnectorTransformerDTO transformer : transformers) {
+            rows = applyBuiltInTransformation(transformer, rows, patientIdColumn);
+        }
+        return rows;
+    }
+
     public List<Map<String, Object>> applyPatientTransformation(
             ConnectorTransformerDTO transformer,
             List<Map<String, Object>> rows,

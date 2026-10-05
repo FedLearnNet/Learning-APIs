@@ -2,9 +2,9 @@ package bio.cosy.feddb.local.agent.etl.transform.helper;
 
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
-import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerValidateTool;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorHelper;
+import bio.cosy.feddb.local.api.importer.functions.managed.AbstractManagedFunction;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -75,7 +75,7 @@ public class TransformerHelper {
     public static boolean isCellTransformer(ConnectorTransformerDTO transformer) {
         return transformer.getColumn() != null && !transformer.getColumn().isBlank()
                 && (transformer.getInputMapping() == null || transformer.getInputMapping().values().stream()
-                .allMatch(value -> String.valueOf(value).startsWith(TransformerValidateTool.VALUE_PREFIX)))
+                .allMatch(value -> String.valueOf(value).startsWith(AbstractManagedFunction.VALUE_PREFIX)))
                 && (transformer.getReturnMapping() == null || transformer.getReturnMapping().isEmpty())
                 && (transformer.getAppImage() == null || transformer.getAppImage().isBlank());
     }

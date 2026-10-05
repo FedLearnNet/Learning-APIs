@@ -5,7 +5,6 @@ import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.config.ColumnMatcherConfig;
 import bio.cosy.feddb.local.agent.etl.transform.model.CandidateAssignment;
 import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
-import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerValidateTool;
 import bio.cosy.feddb.local.agent.text.SapbertSimilartity;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationBO;
@@ -122,7 +121,7 @@ public class ColumnMatcher {
         }
         DataTypeNodeDTO nodeDTO = dataTypeMapper.dtoToNodeDto(dataType);
         long valid = values.stream()
-                .filter(value -> TransformerValidateTool.rejection(validationBO, value, schemaId, nodeDTO) == null)
+                .filter(value -> validationBO.rejection(value, schemaId, nodeDTO) == null)
                 .count();
         return (double) valid / values.size();
     }

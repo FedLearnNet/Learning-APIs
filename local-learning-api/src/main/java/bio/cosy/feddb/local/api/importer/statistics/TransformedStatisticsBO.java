@@ -170,9 +170,7 @@ public class TransformedStatisticsBO {
                     ? selectRepresentativePatients(source, sourceColumns, patientIdColumn)
                     : selectRepresentativeRows(source, sourceColumns);
 
-            for (ConnectorTransformerDTO transformer : builtInTransformers) {
-                rows = transformerBO.applyBuiltInTransformation(transformer, rows, patientIdColumn);
-            }
+            rows = transformerBO.applyBuiltInTransformations(builtInTransformers, rows, patientIdColumn);
 
             List<ColumnProfile> profiles;
             try (TableData transformed = new TableData(resultColumns(sourceColumns, rows), rows, null)) {

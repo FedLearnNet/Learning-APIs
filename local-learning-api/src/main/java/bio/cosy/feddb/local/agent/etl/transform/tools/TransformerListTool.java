@@ -12,6 +12,7 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionParameterDTO;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterType;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterUsage;
 import bio.cosy.feddb.local.api.importer.functions.FunctionsDetailDTO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.services.GlobalAPIStoreService;
 import dev.langchain4j.agent.tool.Tool;
 import io.quarkus.logging.Log;
@@ -65,6 +66,23 @@ public class TransformerListTool {
         return getAllStoreDetailed().stream()
                 .filter(tool -> Objects.equals(tool.getAppVersionId(), appVersionId))
                 .findFirst();
+    }
+
+    public static boolean isStoreTool(ConnectorTransformerDTO transformer) {
+        return TOOLS_MODULE.equals(transformer.getModuleName())
+                || transformer.getAppVersionId() != null
+                || transformer.getAppImage() != null && !transformer.getAppImage().isBlank();
+    }
+
+
+    public boolean resolveStoreTool(ConnectorTransformerDTO transformer) {
+        Optional<FunctionsDetailDTO> tool = storeTool(transformer.getAppVersionId());
+        tool.ifPresent(found -> {
+            transformer.setModuleName(TOOLS_MODULE);
+            transformer.setMethodName(found.getMethodName());
+            transformer.setAppImage(found.getAppImage());
+        });
+        return tool.isPresent();
     }
 
     private List<FunctionsDetailDTO> loadStoreTools() {

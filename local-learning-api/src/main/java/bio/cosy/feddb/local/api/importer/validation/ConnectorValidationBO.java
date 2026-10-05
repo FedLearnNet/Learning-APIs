@@ -2,6 +2,7 @@ package bio.cosy.feddb.local.api.importer.validation;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.datamodler.validation.BaseValidationBO;
+import bio.cosy.feddb.core.api.file.analytics.RowProfiler;
 import bio.cosy.feddb.local.api.schema.datatype.DataTypeHelper;
 import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeAO;
 import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeEntity;
@@ -9,11 +10,17 @@ import bio.cosy.feddb.local.config.FLNetClientConfig;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @ApplicationScoped
 public class ConnectorValidationBO extends BaseValidationBO {
+
+    private static final Set<String> EXTRA_MISSING_PLACEHOLDERS = Set.of("?", "-", "--", ".");
 
     @Inject
     SchemaNodeAO schemaNodeAO;
@@ -107,5 +114,33 @@ public class ConnectorValidationBO extends BaseValidationBO {
         } catch (Exception e) {
             return new ConnectorValidationResultDTO(e.getMessage(), schemaId);
         }
+    }
+
+    public static boolean isMissingPlaceholder(Object value, Collection<?> allowedValues) {
+        String text = value == null ? "" : String.valueOf(value).strip();
+        return !text.isEmpty()
+                && (RowProfiler.isMissing(text) || EXTRA_MISSING_PLACEHOLDERS.contains(text))
+                && (allowedValues == null || allowedValues.stream().map(String::valueOf).noneMatch(text::equals));
+    }
+
+    public String rejection(Object value, Long schemaId, DataTypeNodeDTO dataType) {
+        ConnectorValidationResultDTO result = validate(value, schemaId, dataType);
+        if (!result.isValid()) {
+            return result.getMessage();
+        }
+        return isMissingPlaceholder(value, dataType == null ? null : dataType.getOptions())
+                ? "a missing-value placeholder, replace it with null (Replace Value function)"
+                : null;
+    }
+
+    public Map<Object, String> rejections(Collection<?> values, Long schemaId, DataTypeNodeDTO dataType) {
+        Map<Object, String> rejected = new LinkedHashMap<>();
+        for (Object value : values) {
+            String message = rejection(value, schemaId, dataType);
+            if (message != null) {
+                rejected.put(value, message);
+            }
+        }
+        return rejected;
     }
 }

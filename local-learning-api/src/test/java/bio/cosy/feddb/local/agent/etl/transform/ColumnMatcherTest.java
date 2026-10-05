@@ -4,7 +4,6 @@ import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypes;
 import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
 import bio.cosy.feddb.local.agent.etl.transform.organizer.ColumnMatcher;
-import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerValidateTool;
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.core.api.file.analytics.FileAnalytics;
 import bio.cosy.feddb.local.api.importer.files.read.TableDataProfileBO;
@@ -115,10 +114,10 @@ public class ColumnMatcherTest {
 
     @Test
     void detectsMissingValuePlaceholdersUnlessTheSchemaAllowsThem() {
-        assertTrue(TransformerValidateTool.isMissingPlaceholder("?", null));
-        assertTrue(TransformerValidateTool.isMissingPlaceholder(" N/A ", List.of("Yes", "No")));
-        assertFalse(TransformerValidateTool.isMissingPlaceholder("?", List.of("?")));
-        assertFalse(TransformerValidateTool.isMissingPlaceholder("MC", null));
+        assertTrue(ConnectorValidationBO.isMissingPlaceholder("?", null));
+        assertTrue(ConnectorValidationBO.isMissingPlaceholder(" N/A ", List.of("Yes", "No")));
+        assertFalse(ConnectorValidationBO.isMissingPlaceholder("?", List.of("?")));
+        assertFalse(ConnectorValidationBO.isMissingPlaceholder("MC", null));
     }
 
     @Test

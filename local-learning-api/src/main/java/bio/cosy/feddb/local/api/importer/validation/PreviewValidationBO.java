@@ -1,6 +1,9 @@
 package bio.cosy.feddb.local.api.importer.validation;
 
+import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
+import bio.cosy.feddb.local.api.importer.files.read.TableDataProfileBO;
+import bio.cosy.feddb.local.api.importer.files.table.TableData;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorValueMappingConfigDTO;
 import bio.cosy.feddb.local.api.importer.files.table.SheetMergePlan;
@@ -29,6 +32,9 @@ public class PreviewValidationBO {
 
     @Inject
     ConnectorValidationBO validationBO;
+
+    @Inject
+    TableDataProfileBO profileBO;
 
     /** Upper bound on distinct categorical values validated per column, to bound validation cost. */
     @ConfigProperty(name = "connector.preview-validation.max-categorical-values", defaultValue = "50")
@@ -256,6 +262,23 @@ public class PreviewValidationBO {
             }
         }
         return result;
+    }
+
+    public Map<Object, String> rejectedValues(List<Map<String, Object>> rows, String column,
+                                              Long schemaId, DataTypeNodeDTO dataType) {
+        if (column == null || rows.stream().noneMatch(row -> row.containsKey(column))) {
+            return null;
+        }
+        try (TableData data = new TableData(new ArrayList<>(List.of(column)), rows, null)) {
+            return profileBO.profiles(data).stream()
+                    .findFirst()
+                    .map(profile -> rejectedValues(profile, schemaId, dataType))
+                    .orElse(Map.of("", "the values of this column could not be profiled"));
+        }
+    }
+
+    public Map<Object, String> rejectedValues(ColumnProfile profile, Long schemaId, DataTypeNodeDTO dataType) {
+        return validationBO.rejections(values(profile), schemaId, dataType);
     }
 
     public List<String> values(ColumnProfile profile) {

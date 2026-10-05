@@ -2,6 +2,7 @@ package bio.cosy.feddb.local.api.importer.connector;
 
 import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadInfoDTO;
 import bio.cosy.feddb.local.api.importer.files.table.ColumnNames;
+import bio.cosy.feddb.local.api.importer.functions.managed.AbstractManagedFunction;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorValueMappingConfigDTO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
@@ -130,9 +131,9 @@ public class ConnectorHelper {
         }
         if (inputMapping != null) {
             inputMapping.values().forEach(value -> {
-                if ("[VALUE]".equals(value)) {
+                if (AbstractManagedFunction.VALUE_PREFIX.equals(value)) {
                     addCommaSeparated(inputs, column);
-                } else if (!(value instanceof String text) || !text.startsWith("[VALUE]")) {
+                } else if (!(value instanceof String text) || !text.startsWith(AbstractManagedFunction.VALUE_PREFIX)) {
                     addMappedColumns(inputs, value);
                 }
             });

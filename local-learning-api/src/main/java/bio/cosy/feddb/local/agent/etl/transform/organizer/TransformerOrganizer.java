@@ -65,9 +65,8 @@ public class TransformerOrganizer {
         if (columns.size() == 1) {
             ConnectorSelectedTransformer direct = ConnectorSelectedTransformer.mapping(columns.getFirst(), List.of());
             ConnectorValidationResultDTO validation = validateTool.validate(direct);
-            ConnectorSelectedTransformer resolved = validation.isValid() ? direct : validateTool.repair(direct);
-            if (resolved != null) {
-                return resolved;
+            if (validation.isValid()) {
+                return direct;
             }
             hints += "\nMapping column '" + columns.getFirst() + "' directly is rejected: " + validation.getMessage();
         }
@@ -79,17 +78,19 @@ public class TransformerOrganizer {
         ConnectorSelectedTransformer selected;
         try {
             selected = transformerWorkflow.select(previewData.filterColumns(keep), schemaNode, columns, hints.strip());
+            if (selected == null) {
+                return ConnectorSelectedTransformer.notFound("No transformer found");
+            }
         } catch (RuntimeException e) {
             Log.warnf(e, "Transformer selection for schema node %s failed", schemaNode.getName());
             return ConnectorSelectedTransformer.notFound("Transformer selection failed: " + e.getMessage());
         }
-        if (selected == null || !selected.isFoundTransformer()) {
-            return selected == null ? ConnectorSelectedTransformer.notFound("No transformer found") : selected;
+        if (!selected.isFoundTransformer()) {
+            return selected;
         }
         ConnectorValidationResultDTO validation = validateTool.validate(selected);
-        ConnectorSelectedTransformer resolved = validation.isValid() ? selected : validateTool.repair(selected);
-        if (resolved != null) {
-            return resolved;
+        if (validation.isValid()) {
+            return selected;
         }
         selected.setFoundTransformer(false);
         selected.setNeededTransformerFunction(validation.getMessage());
