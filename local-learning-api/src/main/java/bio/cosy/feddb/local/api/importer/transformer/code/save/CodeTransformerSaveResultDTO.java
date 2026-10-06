@@ -1,5 +1,6 @@
-package bio.cosy.feddb.local.api.importer.transformer.code;
+package bio.cosy.feddb.local.api.importer.transformer.code.save;
 
+import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerCheckResultDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;

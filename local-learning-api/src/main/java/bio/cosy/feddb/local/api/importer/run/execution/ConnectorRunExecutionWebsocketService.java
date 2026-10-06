@@ -10,7 +10,7 @@ import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.local.api.importer.run.message.ConnectorRunRunMessagesBO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepBO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepDTO;
-import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerRunnerBO;
+import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerRunnerBO;
 import io.quarkus.logging.Log;
 import io.quarkus.websockets.next.*;
 import jakarta.inject.Inject;

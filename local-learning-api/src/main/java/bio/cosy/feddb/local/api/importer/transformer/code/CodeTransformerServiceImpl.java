@@ -1,10 +1,16 @@
 package bio.cosy.feddb.local.api.importer.transformer.code;
 
 import bio.cosy.feddb.local.api.auth.UserIdentity;
+import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerCheckDTO;
+import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerCheckResultDTO;
+import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerRunnerBO;
+import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerRunnerDTO;
+import bio.cosy.feddb.local.api.importer.transformer.code.save.CodeTransformerSaveDTO;
 import bio.cosy.feddb.local.api.pipeline.PipelineDTO;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 
@@ -26,6 +32,7 @@ public class CodeTransformerServiceImpl implements CodeTransformerService {
     }
 
     @Override
+    @Transactional
     public CodeTransformerDTO save(CodeTransformerSaveDTO request) {
         return codeTransformerBO.save(request, userIdentity.getKeycloakId());
     }

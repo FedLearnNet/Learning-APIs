@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.agent.etl.transform.agents;
 
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
+import bio.cosy.feddb.local.agent.etl.transform.model.PreviousValidation;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerUserTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerValidateTool;
@@ -9,7 +10,6 @@ import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
 import dev.langchain4j.agentic.Agent;
 import dev.langchain4j.agentic.declarative.K;
-import dev.langchain4j.agentic.declarative.TypedKey;
 import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.V;
 import io.quarkiverse.langchain4j.ToolBox;
@@ -39,7 +39,7 @@ public interface TransformerSelectAgent {
             - If you are unsure which of several options the user wants, ask the user; let the user select columns
               with selectColumns instead of asking for column names.
             {#if instructions}Instructions of the user: {instructions}{/if}
-
+            
             Schema node: {schemaNode.name}
             {#if schemaNode.description}Description: {schemaNode.description}{/if}
             {#if schemaNode.dataType}
@@ -47,13 +47,13 @@ public interface TransformerSelectAgent {
             {#if schemaNode.dataType.allowedValues}Allowed values: {schemaNode.dataType.allowedValues}{/if}
             {#if schemaNode.dataType.validations}Validations: {#for v in schemaNode.dataType.validations}{v.name} {v.validator}; {/for}{/if}
             {/if}
-
+            
             Selected columns: {selectedColumns}
             Rows:
             {#for row in selectedData.rows}
             {#if row_index < 15}{row}{/if}
             {/for}
-
+            
             Result of the previous attempt: {validation.message}
             """)
     @Agent(name = "selectTransformer", description = "Selects and configures the transformer for a schema node", outputKey = "selectedTransformer")
@@ -63,16 +63,4 @@ public interface TransformerSelectAgent {
                                         List<String> selectedColumns,
                                         String instructions,
                                         @K(PreviousValidation.class) @V("validation") ConnectorValidationResultDTO validation);
-
-    class PreviousValidation implements TypedKey<ConnectorValidationResultDTO> {
-        @Override
-        public ConnectorValidationResultDTO defaultValue() {
-            return new ConnectorValidationResultDTO("none, this is the first attempt");
-        }
-
-        @Override
-        public String name() {
-            return "validation";
-        }
-    }
 }

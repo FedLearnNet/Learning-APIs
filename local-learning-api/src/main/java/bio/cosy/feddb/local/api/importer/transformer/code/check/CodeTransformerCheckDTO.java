@@ -1,4 +1,4 @@
-package bio.cosy.feddb.local.api.importer.transformer.code;
+package bio.cosy.feddb.local.api.importer.transformer.code.check;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.local.api.importer.functions.FunctionExecutionMode;

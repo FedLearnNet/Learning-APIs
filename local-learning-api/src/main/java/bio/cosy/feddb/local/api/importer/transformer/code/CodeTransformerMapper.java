@@ -7,7 +7,9 @@ import bio.cosy.feddb.local.api.pipeline.PipelineEntity;
 import bio.cosy.feddb.local.api.pipeline.PipelineMapper;
 import bio.cosy.feddb.local.helper.QuarkusMappingConfig;
 import jakarta.inject.Inject;
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 
 import java.util.List;
 
@@ -26,23 +28,6 @@ public abstract class CodeTransformerMapper implements BaseMapper<CodeTransforme
 
     @Mapping(target = "pipelines", ignore = true)
     public abstract CodeTransformerEntity dtoToEntity(CodeTransformerDTO dto);
-
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_NULL)
-    @Mappings({
-            @Mapping(target = "id", ignore = true),
-            @Mapping(target = "version", ignore = true),
-            @Mapping(target = "createdAt", ignore = true),
-            @Mapping(target = "updatedAt", ignore = true),
-            @Mapping(target = "codeHash", ignore = true),
-            @Mapping(target = "imageName", ignore = true),
-            @Mapping(target = "status", ignore = true),
-            @Mapping(target = "pipelines", ignore = true),
-            @Mapping(target = "inputKeys", source = "generated.inputKeys"),
-            @Mapping(target = "returnKeys", source = "generated.returnKeys"),
-            @Mapping(target = "files", source = "generated.files"),
-    })
-    public abstract void updateFromSave(CodeTransformerSaveDTO request, CodeTransformerSaveResultDTO generated,
-                                        @MappingTarget CodeTransformerEntity entity);
 
     @Named("latestPipeline")
     public PipelineDTO latestPipeline(List<PipelineEntity> pipelines) {

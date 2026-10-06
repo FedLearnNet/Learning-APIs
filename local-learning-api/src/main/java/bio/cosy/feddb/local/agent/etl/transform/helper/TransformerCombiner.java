@@ -30,8 +30,7 @@ public class TransformerCombiner {
 
     @Inject
     ObjectMapper objectMapper;
-
-
+    
     public ConnectorTransformerDTO normalize(ConnectorTransformerDTO transformer) {
         Map<String, Object> inputMapping = new LinkedHashMap<>(transformer.getInputMapping() == null ? Map.of() : transformer.getInputMapping());
         Map<String, Object> hyperparams = new LinkedHashMap<>(transformer.getHyperparams() == null ? Map.of() : transformer.getHyperparams());

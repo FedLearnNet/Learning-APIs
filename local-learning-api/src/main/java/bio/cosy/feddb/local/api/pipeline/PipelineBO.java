@@ -11,6 +11,7 @@ import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerAO;
 import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerBO;
 import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerEntity;
 import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerStatus;
+import bio.cosy.feddb.local.api.importer.transformer.code.save.CodeTransformerImageSaveBO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import bio.cosy.feddb.local.services.orch.OrchContainerServiceClient;
 import io.quarkus.logging.Log;
@@ -81,7 +82,7 @@ public class PipelineBO extends BasePipelineBO<PipelineDTO, PipelineEntity, Pipe
     @Override
     protected PipelineRunInfoDTO runInfo(PipelineEntity pipeline) {
         PipelineRunInfoDTO info = new PipelineRunInfoDTO();
-        info.setImageName(CodeTransformerBO.repository(pipeline.getCodeTransformer()));
+        info.setImageName(CodeTransformerImageSaveBO.repository(pipeline.getCodeTransformer()));
         info.setDockerTag(pipeline.getDockerTag());
         return info;
     }

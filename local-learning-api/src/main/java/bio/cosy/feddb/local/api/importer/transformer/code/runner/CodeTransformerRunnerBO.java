@@ -1,10 +1,15 @@
-package bio.cosy.feddb.local.api.importer.transformer.code;
+package bio.cosy.feddb.local.api.importer.transformer.code.runner;
 
 import bio.cosy.feddb.core.api.run.AppMessageTypeEnum;
 import bio.cosy.feddb.core.api.run.AppMessageWrapperDTO;
 import bio.cosy.feddb.core.api.run.AppRunTypeEnum;
 import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
+import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerLogDTO;
+import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerCheckDTO;
+import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerCheckResultDTO;
+import bio.cosy.feddb.local.api.importer.transformer.code.save.CodeTransformerSaveDTO;
+import bio.cosy.feddb.local.api.importer.transformer.code.save.CodeTransformerSaveResultDTO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.scheduler.Scheduled;
@@ -25,6 +30,14 @@ public class CodeTransformerRunnerBO {
     private static final Duration ANSWER_TIMEOUT = Duration.ofMinutes(1);
     private static final Duration IDLE_TIMEOUT = Duration.ofMinutes(15);
     private static final int LOG_LINES = 500;
+    private final Map<String, CompletableFuture<Object>> pending = new ConcurrentHashMap<>();
+    private final Deque<CodeTransformerLogDTO> logs = new ConcurrentLinkedDeque<>();
+    private final BroadcastProcessor<CodeTransformerLogDTO> logStream = BroadcastProcessor.create();
+    private volatile CodeTransformerRunnerStatus status = CodeTransformerRunnerStatus.STOPPED;
+    private volatile String error;
+    private volatile Long sessionId;
+    private volatile Long stepId;
+    private Instant lastUsed = Instant.now();
 
     @Inject
     FLNetClientConfig config;
@@ -34,15 +47,6 @@ public class CodeTransformerRunnerBO {
 
     @Inject
     ObjectMapper objectMapper;
-
-    private final Map<String, CompletableFuture<Object>> pending = new ConcurrentHashMap<>();
-    private final Deque<CodeTransformerLogDTO> logs = new ConcurrentLinkedDeque<>();
-    private final BroadcastProcessor<CodeTransformerLogDTO> logStream = BroadcastProcessor.create();
-    private volatile CodeTransformerRunnerDTO.Status status = CodeTransformerRunnerDTO.Status.STOPPED;
-    private volatile String error;
-    private volatile Long sessionId;
-    private volatile Long stepId;
-    private Instant lastUsed = Instant.now();
 
     public CodeTransformerCheckResultDTO check(CodeTransformerCheckDTO request, String keycloakId) {
         return ask(AppMessageTypeEnum.TRANSFORMATION_CHECK, request, keycloakId, CodeTransformerCheckResultDTO.class,
@@ -86,7 +90,7 @@ public class CodeTransformerRunnerBO {
     public synchronized Long start(String keycloakId) {
         lastUsed = Instant.now();
         if (sessionId == null) {
-            status = CodeTransformerRunnerDTO.Status.STARTING;
+            status = CodeTransformerRunnerStatus.STARTING;
             error = null;
             log("Starting the code runner " + config.connector().codeTransformerImage());
             ConnectorTransformerDTO runner = new ConnectorTransformerDTO();
@@ -94,12 +98,12 @@ public class CodeTransformerRunnerBO {
             try {
                 sessionId = sessionBO.openPreview(runner, keycloakId, step -> stepId = step.getId());
             } catch (RuntimeException e) {
-                status = CodeTransformerRunnerDTO.Status.FAILED;
+                status = CodeTransformerRunnerStatus.FAILED;
                 error = e.getMessage();
                 log("The code runner could not be started: " + e.getMessage());
                 throw e;
             }
-            status = CodeTransformerRunnerDTO.Status.RUNNING;
+            status = CodeTransformerRunnerStatus.RUNNING;
             log("The code runner is ready");
         }
         return sessionId;
@@ -110,7 +114,7 @@ public class CodeTransformerRunnerBO {
             sessionBO.close(sessionId);
             sessionId = null;
             stepId = null;
-            status = CodeTransformerRunnerDTO.Status.STOPPED;
+            status = CodeTransformerRunnerStatus.STOPPED;
             log("The code runner was stopped");
         }
     }
