@@ -19,6 +19,7 @@ public class TransformerAssistantMessageDTO {
     private String mappingPath;
     private ConnectorSelectedTransformer selectedTransformer;
     private List<Long> schemaIds;
+    private List<String> columns;
 
     public TransformerAssistantMessageDTO(TransformerAssistantMessageType type) {
         this.type = type;
@@ -30,6 +31,13 @@ public class TransformerAssistantMessageDTO {
         message.setSchemaId(schemaId);
         message.setMappingPath(mappingPath);
         message.setSelectedTransformer(selectedTransformer);
+        return message;
+    }
+
+    public static TransformerAssistantMessageDTO patientId(String mappingPath, String column) {
+        TransformerAssistantMessageDTO message = new TransformerAssistantMessageDTO(TransformerAssistantMessageType.PATIENT_ID);
+        message.setMappingPath(mappingPath);
+        message.setColumns(List.of(column));
         return message;
     }
 

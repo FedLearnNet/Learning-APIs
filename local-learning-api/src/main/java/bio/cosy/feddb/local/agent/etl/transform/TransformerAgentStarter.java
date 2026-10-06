@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.agent.etl.transform;
 
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
+import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerCombiner;
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerHelper;
 import bio.cosy.feddb.local.agent.etl.transform.organizer.TransformerLoop;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
@@ -26,16 +27,19 @@ public class TransformerAgentStarter {
     @VirtualThreads
     ExecutorService executor;
 
+    @Inject
+    TransformerCombiner combiner;
+
     private final Map<String, TransformerRun> runs = new ConcurrentHashMap<>();
 
-    public void start(String sessionId, ConnectorDTO connector, Consumer<TransformerAssistantMessageDTO> send) {
+    public void start(String sessionId, ConnectorDTO connector, String keycloakId, Consumer<TransformerAssistantMessageDTO> send) {
         TransformerRun run = new TransformerRun(send);
         Optional.ofNullable(runs.put(sessionId, run)).ifPresent(TransformerRun::cancel);
-        run.start(executor, () -> transformerLoop.run(connector, run::emit, run::instructions, run::askUser));
+        run.start(executor, () -> transformerLoop.run(connector, keycloakId, run::emit, run::instructions, run));
     }
 
-    public void message(String sessionId, String text) {
-        Optional.ofNullable(runs.get(sessionId)).ifPresent(run -> run.answerOrInstruct(text));
+    public void message(String sessionId, TransformerAssistantMessageDTO message) {
+        Optional.ofNullable(runs.get(sessionId)).ifPresent(run -> run.answerOrInstruct(message));
     }
 
     public ConnectorDTO apply(String sessionId, List<Long> schemaIds) {
@@ -43,7 +47,9 @@ public class TransformerAgentStarter {
         if (run == null || schemaIds == null || schemaIds.isEmpty()) {
             return TransformerHelper.toConnector(List.of());
         }
-        return TransformerHelper.toConnector(run.results(schemaIds));
+        ConnectorDTO connector = TransformerHelper.toConnector(run.results(schemaIds));
+        connector.setTransformer(combiner.combine(connector.getTransformer()));
+        return connector;
     }
 
     public void stop(String sessionId) {

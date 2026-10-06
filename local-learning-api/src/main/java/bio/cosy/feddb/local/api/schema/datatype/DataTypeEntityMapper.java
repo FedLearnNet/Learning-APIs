@@ -6,9 +6,12 @@ import bio.cosy.feddb.core.base.BaseMapper;
 import bio.cosy.feddb.local.helper.QuarkusMappingConfig;
 import org.mapstruct.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 @Mapper(config = QuarkusMappingConfig.class)
@@ -32,9 +35,24 @@ public interface DataTypeEntityMapper extends BaseMapper<DataTypeDTO, DataTypeEn
     DataTypeEntity dtoToEntity(DataTypeDTO dto);
 
     @Mappings({
-            @Mapping(target = "label", ignore = true)
+            @Mapping(target = "label", ignore = true),
+            @Mapping(target = "id", ignore = true),
+            @Mapping(target = "options", source = "dto", qualifiedByName = "allowedValues")
     })
     DataTypeNodeDTO dtoToNodeDto(DataTypeDTO dto);
+
+    @Named("allowedValues")
+    default List<String> allowedValues(DataTypeDTO dto) {
+        if (dto.getOptions() != null && !dto.getOptions().isEmpty()) {
+            return dto.getOptions().stream()
+                    .filter(Objects::nonNull)
+                    .map(option -> String.valueOf(option.getValue()))
+                    .toList();
+        }
+        return dto.getAllowedValues() == null
+                ? new ArrayList<>()
+                : dto.getAllowedValues().stream().map(String::valueOf).toList();
+    }
 
     @ValueMapping(target = "NUMBER", source = "INT")
     @ValueMapping(target = "NUMBER", source = "FLOAT")

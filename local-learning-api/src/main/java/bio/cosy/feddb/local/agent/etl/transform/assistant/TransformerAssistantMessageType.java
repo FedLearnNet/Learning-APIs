@@ -10,6 +10,7 @@ public enum TransformerAssistantMessageType {
     NODE_PENDING,
     NODE_STARTED,
     NODE_RESULT,
+    PATIENT_ID,
     DONE,
     ERROR
 }

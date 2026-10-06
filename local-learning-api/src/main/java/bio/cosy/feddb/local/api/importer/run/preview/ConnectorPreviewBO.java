@@ -103,6 +103,12 @@ public class ConnectorPreviewBO {
                 cacheBO.stageFingerprint(walk.getFingerprint(), transformer));
     }
 
+    public ConnectorPreviewTransformationStageData run(ConnectorConfigDTO config,
+                                                       BiFunction<ConnectorTransformerDTO, List<Map<String, Object>>, List<Map<String, Object>>> appRunner) {
+        List<ConnectorTransformerDTO> transformers = config.getTransformer() == null ? List.of() : config.getTransformer();
+        return walk(config, transformers, transformers.size(), null, true, appRunner).getStage();
+    }
+
     public void warmFromRun(ConnectorConfigDTO config,
                             BiFunction<ConnectorTransformerDTO, List<Map<String, Object>>, List<Map<String, Object>>> appRunner) {
         List<ConnectorTransformerDTO> transformers = config.getTransformer();

@@ -32,10 +32,12 @@ public interface TransformerSelectAgent {
             - Only if no built-in function fits, use a store tool from getAllStoreDetailed: moduleName 'tools',
               methodName the tool name, appVersionId and appImage copied exactly, column the comma separated source
               columns for the tool, returnMapping from a tool output column to a new column, hyperparams keyed by the
-              listed parameter names. A store tool runs in a container and cannot be checked on the preview.
+              listed parameter names. Validating a store tool starts its container, which takes a while, so only
+              validate a store tool chain once it is complete.
             - Check the whole chain with the validation tool before answering.
             - If no function fits, set foundTransformer to false and describe the needed function.
-            - If you are unsure which of several options the user wants, ask the user.
+            - If you are unsure which of several options the user wants, ask the user; let the user select columns
+              with selectColumns instead of asking for column names.
             {#if instructions}Instructions of the user: {instructions}{/if}
 
             Schema node: {schemaNode.name}

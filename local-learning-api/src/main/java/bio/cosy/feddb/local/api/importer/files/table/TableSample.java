@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.api.importer.files.table;
 
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -79,6 +80,7 @@ public class TableSample {
         return columns == null ? List.of() : columns;
     }
 
+    @JsonIgnore
     public Map<String, List<Object>> getValues() {
         Map<String, List<Object>> values = new HashMap<>();
         columns.forEach(column -> values.put(column, this.getRows().stream()

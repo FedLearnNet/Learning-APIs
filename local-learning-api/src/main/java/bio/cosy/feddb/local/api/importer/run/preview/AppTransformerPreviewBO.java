@@ -5,6 +5,7 @@ import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepDTO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepMessageSender;
 import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
@@ -20,6 +21,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 
 @ApplicationScoped
@@ -64,14 +66,11 @@ public class AppTransformerPreviewBO {
                     String keycloakId,
                     MultiEmitter<? super AppTransformerPreviewStreamDTO> emitter) {
         AtomicReference<ConnectorRunStepDTO> step = new AtomicReference<>();
-        Long sessionId = null;
         try {
-            sessionId = sessionBO.openPreview(input.getTransformer(), keycloakId, created -> {
+            List<Map<String, Object>> rows = transformAppBased(input.getTransformer(), input.getRows(), keycloakId, created -> {
                 step.set(created);
                 emitter.emit(message(created, stepIndex, false, null));
             });
-
-            List<Map<String, Object>> rows = sessionBO.transform(sessionId, input.getTransformer(), input.getRows());
             previewBO.storeAppStage(config.getConnectorId(), stepIndex, input.getTransformer(),
                     input.getFingerprint(), rows, columnsOf(input.getColumns(), rows));
 
@@ -86,10 +85,19 @@ public class AppTransformerPreviewBO {
             Log.errorf("App transformer preview of step %d failed: %s", stepIndex, e.getMessage());
             publish(emitter, message(step.get(), stepIndex, true, e.getMessage()));
         } finally {
-            if (sessionId != null) {
-                sessionBO.close(sessionId);
-            }
             emitter.complete();
+        }
+    }
+
+    public List<Map<String, Object>> transformAppBased(ConnectorTransformerDTO transformer,
+                                                       List<Map<String, Object>> rows,
+                                                       String keycloakId,
+                                                       Consumer<ConnectorRunStepDTO> onStepCreated) {
+        Long sessionId = sessionBO.openPreview(transformer, keycloakId, onStepCreated);
+        try {
+            return sessionBO.transform(sessionId, transformer, rows);
+        } finally {
+            sessionBO.close(sessionId);
         }
     }
 

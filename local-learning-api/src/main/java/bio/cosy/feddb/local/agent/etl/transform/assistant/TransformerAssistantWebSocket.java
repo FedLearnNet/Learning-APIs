@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.agent.etl.transform.assistant;
 
 import bio.cosy.feddb.local.agent.etl.transform.TransformerAgentStarter;
+import bio.cosy.feddb.local.api.auth.UserIdentity;
 import io.quarkus.logging.Log;
 import io.quarkus.security.Authenticated;
 import io.quarkus.websockets.next.OnClose;
@@ -22,12 +23,16 @@ public class TransformerAssistantWebSocket {
     @Inject
     OpenConnections openConnections;
 
+    @Inject
+    UserIdentity userIdentity;
+
     @OnTextMessage
     public void onMessage(TransformerAssistantMessageDTO message, WebSocketConnection connection) {
         String sessionId = connection.id();
         switch (message.getType()) {
-            case START -> agentStarter.start(sessionId, message.getConnector(), event -> send(sessionId, event));
-            case USER_MESSAGE -> agentStarter.message(sessionId, message.getMessage());
+            case START -> agentStarter.start(sessionId, message.getConnector(), userIdentity.getKeycloakId(),
+                    event -> send(sessionId, event));
+            case USER_MESSAGE -> agentStarter.message(sessionId, message);
             case STOP -> agentStarter.stop(sessionId);
             case APPLY -> {
                 TransformerAssistantMessageDTO applied = new TransformerAssistantMessageDTO(APPLIED);

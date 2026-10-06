@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -15,9 +16,18 @@ public class HumanInTheLoopDTO {
 
     private Date timestamp;
 
+    private HumanInTheLoopType type = HumanInTheLoopType.TEXT;
+    private List<String> options;
+
     public HumanInTheLoopDTO(String message) {
         this.question = message;
         this.timestamp = new Date();
+    }
+
+    public HumanInTheLoopDTO(String question, HumanInTheLoopType type, List<String> options) {
+        this(question);
+        this.type = type;
+        this.options = options;
     }
 
     public HumanInTheLoopDTO(String question, String answer) {

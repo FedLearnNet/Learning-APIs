@@ -1,10 +1,9 @@
 package bio.cosy.feddb.local.agent.etl.transform.tools;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
-import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
-import bio.cosy.feddb.local.api.importer.files.table.TableSample;
-import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBO;
+import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
+import bio.cosy.feddb.local.api.importer.run.preview.ConnectorPreviewRunnerBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO;
 import bio.cosy.feddb.local.api.importer.validation.PreviewValidationBO;
@@ -26,7 +25,7 @@ public class TransformerValidateTool {
     private static final int MAX_REPORTED_ERRORS = 10;
 
     @Inject
-    ConnectorTransformerBO transformerBO;
+    ConnectorPreviewRunnerBO previewRunnerBO;
 
     @Inject
     PreviewValidationBO previewValidationBO;
@@ -34,22 +33,17 @@ public class TransformerValidateTool {
     @Inject
     TransformerListTool listTool;
 
-    private TableSample previewData;
+    private TransformerRunContext context;
     private LocalSchemaNodeDTO schemaNode;
-    private String patientIdColumn;
-    private Map<String, ColumnProfile> fileProfiles;
     private DataTypeNodeDTO dataType;
 
-    public void init(TableSample previewData, LocalSchemaNodeDTO schemaNode, String patientIdColumn,
-                     Map<String, ColumnProfile> fileProfiles, DataTypeNodeDTO dataType) {
-        this.previewData = previewData;
+    public void init(TransformerRunContext context, LocalSchemaNodeDTO schemaNode, DataTypeNodeDTO dataType) {
+        this.context = context;
         this.schemaNode = schemaNode;
-        this.patientIdColumn = patientIdColumn;
-        this.fileProfiles = fileProfiles;
         this.dataType = dataType;
     }
 
-    @Tool("Validate transformers before answering: runs them in order on the preview data and checks the values of mappedColumn against the schema node. Pass an empty list for a direct mapping.")
+    @Tool("Validate transformers before answering: runs them in order on the preview data, store tools in a container, and checks the values of mappedColumn against the schema node. Pass an empty list for a direct mapping.")
     public ConnectorValidationResultDTO validateTransformers(
             @P(value = "The transformers in execution order", required = false) List<ConnectorTransformerDTO> transformers,
             @P("The column mapped onto the schema node") String mappedColumn) {
@@ -67,23 +61,24 @@ public class TransformerValidateTool {
             return new ConnectorValidationResultDTO("No transformer selected", schemaId);
         }
         List<ConnectorTransformerDTO> transformers = selected.getSelectedTransformers();
-        List<ConnectorTransformerDTO> storeTools = transformers.stream().filter(TransformerListTool::isStoreTool).toList();
-        if (!storeTools.isEmpty()) {
-            return validateStoreTools(storeTools, schemaId);
-        }
-
-        List<Map<String, Object>> rows;
-        try {
-            rows = transformerBO.applyBuiltInTransformations(transformers, previewData.getRows(), patientIdColumn);
-        } catch (RuntimeException e) {
-            return new ConnectorValidationResultDTO("Running the transformer failed: " + e.getMessage(), schemaId);
+        boolean knownStoreTools = transformers.stream()
+                .filter(TransformerListTool::isStoreTool)
+                .allMatch(listTool::resolveStoreTool);
+        if (!knownStoreTools) {
+            return new ConnectorValidationResultDTO("Unknown store tool. Copy appVersionId and appImage exactly from getAllStoreDetailed.", schemaId);
         }
 
         String column = selected.getMappedColumn();
         Map<Object, String> rejected;
-        if (transformers.isEmpty() && fileProfiles.containsKey(column)) {
-            rejected = previewValidationBO.rejectedValues(fileProfiles.get(column), schemaId, dataType);
+        if (transformers.isEmpty() && context.fileProfiles().containsKey(column)) {
+            rejected = previewValidationBO.rejectedValues(context.fileProfiles().get(column), schemaId, dataType);
         } else {
+            List<Map<String, Object>> rows;
+            try {
+                rows = previewRunnerBO.run(context.configWith(transformers), context.keycloakId());
+            } catch (RuntimeException e) {
+                return new ConnectorValidationResultDTO("Running the transformer failed: " + e.getMessage(), schemaId);
+            }
             rejected = previewValidationBO.rejectedValues(rows, column, schemaId, dataType);
         }
 
@@ -98,15 +93,5 @@ public class TransformerValidateTool {
                 .map(entry -> "'" + entry.getKey() + "': " + entry.getValue())
                 .collect(Collectors.joining("\n"));
         return new ConnectorValidationResultDTO(rejected.size() + " rejected values of '" + column + "':\n" + errors, schemaId);
-    }
-
-    private ConnectorValidationResultDTO validateStoreTools(List<ConnectorTransformerDTO> storeTools, Long schemaId) {
-        if (!storeTools.stream().allMatch(listTool::resolveStoreTool)) {
-            return new ConnectorValidationResultDTO("Unknown store tool. Copy appVersionId and appImage exactly from getAllStoreDetailed.", schemaId);
-        }
-        ConnectorValidationResultDTO result = new ConnectorValidationResultDTO(schemaId);
-        result.setMessage("Store tool " + storeTools.getFirst().getMethodName()
-                + " runs in a container, so the chain is validated when the connector runs");
-        return result;
     }
 }

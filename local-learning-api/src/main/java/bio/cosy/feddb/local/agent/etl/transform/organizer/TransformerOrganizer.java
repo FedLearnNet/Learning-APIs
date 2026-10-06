@@ -1,11 +1,12 @@
 package bio.cosy.feddb.local.agent.etl.transform.organizer;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
-import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.agents.ColumnSelectAgent;
 import bio.cosy.feddb.local.agent.etl.transform.agents.TransformerWorkflow;
+import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerCombiner;
 import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
+import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerUserTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerValidateTool;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
@@ -20,8 +21,6 @@ import jakarta.inject.Inject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.function.UnaryOperator;
 
 @ApplicationScoped
 public class TransformerOrganizer {
@@ -41,20 +40,22 @@ public class TransformerOrganizer {
     @Inject
     DataTypeEntityMapper dataTypeMapper;
 
+    @Inject
+    TransformerCombiner combiner;
+
     @ActivateRequestContext
-    public ConnectorSelectedTransformer selectTransformer(TableSample previewData,
+    public ConnectorSelectedTransformer selectTransformer(TransformerRunContext context,
+                                                          TableSample previewData,
                                                           LocalSchemaNodeDTO schemaNode,
-                                                          String patientIdColumn,
                                                           String instructions,
-                                                          UnaryOperator<String> askUser,
                                                           List<ColumnCandidate> candidates,
-                                                          Map<String, ColumnProfile> fileProfiles,
                                                           DataTypeDTO dataType) {
 
         DataTypeNodeDTO nodeDTO = dataTypeMapper.dtoToNodeDto(dataType);
 
-        validateTool.init(previewData, schemaNode, patientIdColumn, fileProfiles, nodeDTO);
-        userTool.init(askUser);
+        validateTool.init(context, schemaNode, nodeDTO);
+        userTool.init(context.user(), previewData.getColumns());
+        String patientIdColumn = context.patientIdColumn();
         String hints = instructions;
 
         List<String> columns = selectColumns(previewData, schemaNode, hints, candidates);
@@ -88,6 +89,7 @@ public class TransformerOrganizer {
         if (!selected.isFoundTransformer()) {
             return selected;
         }
+        selected.getSelectedTransformers().forEach(combiner::normalize);
         ConnectorValidationResultDTO validation = validateTool.validate(selected);
         if (validation.isValid()) {
             return selected;
