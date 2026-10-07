@@ -25,7 +25,7 @@
       "moduleName": "app",
       "methodName": "Transformer Combine Rows",
       "appImage": "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/transformer-combine-rows:qfyjTIKg",
-      "appVersionId": 26,
+      "appVersionId": 27,
       "column": null,
       "onRow": true,
       "position": 0,
@@ -62,7 +62,7 @@
       "moduleName": "app",
       "methodName": "Transformer Split Rows",
       "appImage": "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/transformer-split-rows:vElEmkSt",
-      "appVersionId": 27,
+      "appVersionId": 28,
       "column": null,
       "onRow": true,
       "position": 2,
@@ -79,6 +79,24 @@
       "returnKeys": [],
       "parameters": [],
       "description": ""
+    },
+    {
+      "moduleName": "builtin",
+      "methodName": "Replace Value",
+      "parameters": [],
+      "returnKeys": [],
+      "column": "race,weight,payer_code,medical_specialty",
+      "onRow": false,
+      "position": 3,
+      "inputMapping": {
+        "search": "[VALUE]?",
+        "replace": "[VALUE]null"
+      },
+      "returnMapping": {},
+      "description": "",
+      "appVersionId": null,
+      "appImage": null,
+      "hyperparams": {}
     }
   ],
   "schemaMapping": [

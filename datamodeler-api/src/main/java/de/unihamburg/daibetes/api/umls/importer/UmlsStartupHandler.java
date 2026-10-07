@@ -1,5 +1,8 @@
 package de.unihamburg.daibetes.api.umls.importer;
 
+import de.unihamburg.daibetes.api.config.UMLSConfig;
+import de.unihamburg.daibetes.api.feature.FeatureAvailableBO;
+import de.unihamburg.daibetes.api.feature.FeatureAvailableMessages;
 import de.unihamburg.daibetes.api.ontology.OntologyDAO;
 import de.unihamburg.daibetes.api.ontology.OntologyRAG;
 import io.quarkus.logging.Log;
@@ -9,7 +12,7 @@ import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import jakarta.ws.rs.core.Response;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -26,17 +29,12 @@ public class UmlsStartupHandler {
     @Inject
     OntologyRAG ontologyRAG;
 
-    @ConfigProperty(name = "umls.auto-import.enabled", defaultValue = "false")
-    boolean autoImportEnabled;
+    @Inject
+    FeatureAvailableBO featureAvailableBO;
 
-    @ConfigProperty(name = "umls.import.mrconso")
-    Optional<String> mrconsoFile;
+    @Inject
+    UMLSConfig umlsConfig;
 
-    @ConfigProperty(name = "umls.import.mrrel")
-    Optional<String> mrrelFile;
-
-    @ConfigProperty(name = "umls.auto-import.timeout-seconds", defaultValue = "3600")
-    int autoImportTimeoutSeconds;
 
     /**
      * Observes application startup event.
@@ -46,10 +44,15 @@ public class UmlsStartupHandler {
      * The startup method returns immediately; the pipeline runs asynchronously.
      */
     void onStartup(@Observes @Priority(Integer.MAX_VALUE) StartupEvent event) {
-        if (!autoImportEnabled) {
+
+
+        if (!umlsConfig.autoImport().enabled()) {
             Log.info("UMLS auto-import disabled");
             return;
         }
+
+        Optional<String> mrconsoFile = umlsConfig.importConfig().mrconso();
+        Optional<String> mrrelFile = umlsConfig.importConfig().mrrel();
 
         if (mrconsoFile.isEmpty() || mrconsoFile.get().isEmpty()) {
             Log.warn("UMLS auto-import enabled but mrconso file not configured (umls.import.mrconso)");
@@ -77,11 +80,15 @@ public class UmlsStartupHandler {
                             .invoke(summary -> Log.infof("UMLS import completed: %s", summary))
                             .chain(ignored -> {
                                 Log.info("UMLS import finished, triggering automatic embeddings...");
+                                if (!featureAvailableBO.isEmbeddingEnabled()) {
+                                    Log.warn("Embedding is not enabled, skipping automatic embedding after UMLS import");
+                                    return Uni.createFrom().<Void>nullItem();
+                                }
                                 return ontologyRAG.ingestAllNodes();
                             })
                             .invoke(ignored -> Log.info("UMLS embeddings completed successfully"));
                 })
-                .ifNoItem().after(Duration.ofSeconds(autoImportTimeoutSeconds)).fail()
+                .ifNoItem().after(Duration.ofSeconds(umlsConfig.autoImport().timeoutSeconds())).fail()
                 .subscribe().with(
                         ignored -> Log.info("UMLS startup pipeline completed"),
                         error -> Log.errorf("UMLS startup pipeline failed: %s", error.getMessage())

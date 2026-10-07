@@ -65,4 +65,8 @@ public class SapBERTEmbeddingModel implements EmbeddingModel {
     public int dimension() {
         return embeddingModel.dimension();
     }
+
+    public boolean enabled() {
+        return embeddingModel != null && dimension() > 0;
+    }
 }

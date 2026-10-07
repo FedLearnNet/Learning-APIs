@@ -4,13 +4,14 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 @ApplicationScoped
 public class ConnectorRunAO implements PanacheRepository<ConnectorRunEntity> {
 
     public List<ConnectorRunEntity> getAllForConnector(Long connectorId) {
-    	return list("connector.id = ?1 ORDER BY createdAt DESC", connectorId);
+        return list("connector.id = ?1 ORDER BY createdAt DESC", connectorId);
     }
 
     public boolean hasRunningProcess(Long cohortId) {
@@ -19,12 +20,13 @@ public class ConnectorRunAO implements PanacheRepository<ConnectorRunEntity> {
 
     @Transactional
     public void updateStatus(Long runId, ImportStatusEnum status) {
-        update("status = ?1 where id = ?2", status, runId);
+        update("status = ?1, updatedAt = ?2 where id = ?3", status, new Date(), runId);
     }
 
     @Transactional
     public void updateProgressAndStatus(Long runId, Long progress, ImportStatusEnum status, ConnectorRunStep currentStep) {
-        update("progress = ?1, status = ?2, currentStep = ?3 where id = ?4", progress, status, currentStep, runId);
+        update("progress = ?1, status = ?2, currentStep = ?3, updatedAt = ?4 where id = ?5",
+                progress, status, currentStep, new Date(), runId);
     }
 
     @Transactional
@@ -43,8 +45,9 @@ public class ConnectorRunAO implements PanacheRepository<ConnectorRunEntity> {
                         expectedElements = ?4,
                         currentElementNr = ?5,
                         currentRowNr = ?6,
-                        progressExtracting = ?7
-                        where id = ?8
+                        progressExtracting = ?7,
+                        updatedAt = ?8
+                        where id = ?9
                         """,
                 progress,
                 status,
@@ -53,6 +56,7 @@ public class ConnectorRunAO implements PanacheRepository<ConnectorRunEntity> {
                 currentElementNr,
                 currentRowNr,
                 progressExtracting,
+                new Date(),
                 runId);
     }
 
@@ -94,8 +98,9 @@ public class ConnectorRunAO implements PanacheRepository<ConnectorRunEntity> {
                         processedEntities = ?15,
                         newDataEntries = ?16,
                         failedDataEntries = ?17,
-                        errorMessage = ?18
-                        where id = ?19
+                        errorMessage = ?18,
+                        updatedAt = ?19
+                        where id = ?20
                         """,
                 status,
                 progress,
@@ -115,6 +120,7 @@ public class ConnectorRunAO implements PanacheRepository<ConnectorRunEntity> {
                 newDataEntries,
                 failedDataEntries,
                 errorMessage,
+                new Date(),
                 id);
     }
 }

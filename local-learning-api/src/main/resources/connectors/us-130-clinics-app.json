@@ -9,10 +9,11 @@
     "mode": "APP",
     "appTitle": "diabetic-130-US-hospital-dataset",
     "appImage": "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us-d-130:uBvUHput",
-    "appVersionId": 30,
+    "appVersionId": 31,
     "hyperParams": {},
     "inputData": {},
-    "outputParams": {}
+    "outputParams": {},
+    "selectedOutputs": ["data"]
   },
   "transformer": [
     {

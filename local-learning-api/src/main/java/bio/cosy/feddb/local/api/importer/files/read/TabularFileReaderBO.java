@@ -90,9 +90,27 @@ public class TabularFileReaderBO extends TableReaderSupport {
         if (pivoting) {
             tables = tableDataPivotBO.pivotTables(pivotConfig, tables, spec.preview() ? spec.maxRows() : null);
         }
-        return asSingleTable(tables, mergeConfig, spec, sourceName(file));
+        return asSingleTable(tables, mergeConfig, spec, sourceName(file), uploadInfo);
     }
 
+
+    public TableData getTableData(
+            Map<String, TableData> tables,
+            SheetMergeResultDTO mergeConfig,
+            PivotConfigDTO pivotConfig,
+            Map<String, UploadInfoDTO> uploadInfo
+    ) {
+        ParsedTables parsed = ParsedTables.of(tables);
+        if (uploadInfo != null && !uploadInfo.isEmpty()) {
+            parsed = tableDataUploadInfoBO.apply(parsed, uploadInfo);
+        }
+        if (pivotConfig != null && pivotConfig.getValueColumnIndex() != null
+                && !pivotConfig.getValueColumnIndex().isEmpty()) {
+            parsed = tableDataPivotBO.pivotTables(pivotConfig, parsed, null);
+        }
+        return asSingleTable(parsed, mergeConfig, TableReadSpec.whole(new FileParsingSettingsDTO()),
+                "app outputs", uploadInfo);
+    }
 
     public TableData getFirstPreviewTableData(
             Map<String, TableSample> previewData,
@@ -124,7 +142,27 @@ public class TabularFileReaderBO extends TableReaderSupport {
         }
         ParsedTables pivoted = tableDataPivotBO.pivotTables(pivotConfig, configured, maxRows);
         return asSingleTable(pivoted, mergeConfig, TableReadSpec.of(settings, maxRows, true),
-                "preview sample (1/1)");
+                "preview sample (1/1)", uploadInfo);
+    }
+
+    public TableData getMergedPreviewTableData(
+            File file,
+            FileParsingSettingsDTO settings,
+            Integer maxRows,
+            SheetMergeResultDTO mergeConfig,
+            PivotConfigDTO pivotConfig,
+            Map<String, UploadInfoDTO> uploadInfo
+    ) {
+        TableData merged = getFirstTableData(
+                file, TableReadSpec.whole(settings), mergeConfig, pivotConfig, uploadInfo);
+        if (merged == null) {
+            return null;
+        }
+        TableData collapsed = merges.collapse(merged, SheetMergePlan.commonUidColumn(mergeConfig), maxRows);
+        if (collapsed != merged) {
+            merged.close();
+        }
+        return profiles.enrich(collapsed, sourceName(file));
     }
 
     public List<ColumnProfile> getColumnProfiles(TableData tableData) {
@@ -143,14 +181,18 @@ public class TabularFileReaderBO extends TableReaderSupport {
             ParsedTables tables,
             SheetMergeResultDTO mergeConfig,
             TableReadSpec spec,
-            String source
+            String source,
+            Map<String, UploadInfoDTO> uploadInfo
     ) {
         if (SheetMergePlan.requested(mergeConfig)) {
             Map<String, TableData> merged = tables.tables();
             TableData result = mergeTables(merged, mergeConfig,
                     spec.preview() ? spec : spec.unprofiled(), source);
             merged.clear();
-            return result;
+            TableData configured = applyMergedUploadInfo(result, uploadInfo);
+            return configured != result && spec.preview() && configured != null
+                    ? profiles.enrich(configured, source)
+                    : configured;
         }
 
         TableData result = tables.takeFirst();
@@ -162,6 +204,17 @@ public class TabularFileReaderBO extends TableReaderSupport {
             }
         }
         return spec.preview() && result != null ? profiles.enrich(result, source) : result;
+    }
+
+    private TableData applyMergedUploadInfo(TableData merged, Map<String, UploadInfoDTO> uploadInfo) {
+        UploadInfoDTO info = uploadInfo == null ? null : uploadInfo.get(SheetMergePlan.MERGED_TABLE_NAME);
+        if (merged == null || info == null) {
+            return merged;
+        }
+        Map<String, TableData> table = new LinkedHashMap<>();
+        table.put(SheetMergePlan.MERGED_TABLE_NAME, merged);
+        return tableDataUploadInfoBO.apply(ParsedTables.of(table), Map.of(SheetMergePlan.MERGED_TABLE_NAME, info))
+                .takeFirst();
     }
 
     private TableData readJson(File file, TableReadSpec spec) {

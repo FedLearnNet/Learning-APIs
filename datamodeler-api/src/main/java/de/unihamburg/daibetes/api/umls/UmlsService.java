@@ -41,7 +41,7 @@ public interface UmlsService {
                     content = @Content(schema = @Schema(implementation = String.class))
             )
     })
-    Uni<Response> create();
+    Uni<Response> create(@QueryParam("embedding") @DefaultValue("true") boolean createAlsoEmbedding);
 
     @POST
     @Operation(summary = "Create all Embeddings", description = "Trigger embedding generation for all relevant nodes. Call this after an import via POST /umls finished, the POST /umls does NOT automatically trigger embedding generation.")

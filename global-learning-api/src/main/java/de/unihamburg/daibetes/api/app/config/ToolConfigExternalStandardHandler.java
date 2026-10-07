@@ -42,10 +42,10 @@ public class ToolConfigExternalStandardHandler {
             return List.of();
         }
 
-        List<PathOrUrl> jsonSources = roots.stream()
+        List<PathOrUrl> jsonSources = PathOrUrl.filterByWhitelist(roots.stream()
                 .flatMap(this::resolveJsonSources)
                 .sorted(Comparator.comparing(PathOrUrl::sortKey))
-                .toList();
+                .toList(), flnet.toolConfigs().whiteList());
 
         List<ToolConfigDTO> out = new ArrayList<>();
         for (PathOrUrl src : jsonSources) {

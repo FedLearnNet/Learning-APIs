@@ -22,7 +22,7 @@ services:
     networks:
       - global-learning-network
   orch-api:
-    image: gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/orch-api/orch-api:staging
+    image: ghcr.io/fedlearnnet/orchestration-api/orch-api:staging
     user: "0:0"
     ports:
       - '8191:8080'
@@ -56,7 +56,7 @@ services:
     networks:
       - global-learning-network
   controller:
-    image: gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/feature-cloud-controller/controller:staging
+    image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller:staging
     ports:
       - '8192:8000'
     profiles:
@@ -75,7 +75,7 @@ services:
       - global-learning-network
 
   controller-test:
-    image: gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/feature-cloud-controller/controller:staging
+    image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller:staging
     ports:
       - '8192:8000'
     profiles:
@@ -91,7 +91,7 @@ services:
       - global-learning-network
 
   relay:
-    image: gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/feature-cloud-controller/controller-relay:staging
+    image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller-relay:staging
     ports:
       - '9160:9140'
       - '9161:9141'

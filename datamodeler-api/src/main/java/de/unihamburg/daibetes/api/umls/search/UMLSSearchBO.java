@@ -9,7 +9,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import de.unihamburg.daibetes.api.config.UMLSConfig;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.ArrayList;
@@ -29,11 +29,11 @@ public class UMLSSearchBO {
     @Inject
     OntologyBO ontologyBO;
 
-    @ConfigProperty(name = "umls.sab.filter", defaultValue = "SNOMEDCT_US,RXNORM,LNC,ICD10,NCBI")
-    List<String> sabFilter;
+    @Inject
+    UMLSConfig umlsConfig;
 
     public Uni<PagedResponse<UMLSSearchResultDTO>> search(String searchString, int page, int pageSize, UMLSSources sources) {
-        String sourcesParam = String.join(",", sabFilter);
+        String sourcesParam = String.join(",", umlsConfig.sab().filter());
         if(sources != null) {
             sourcesParam = sources.name();
         }

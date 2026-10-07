@@ -170,15 +170,20 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
 
         Optional<ProjectFederatedExperimentEntity> entityOptional = ao.findByIdOptional(experimentId, LockModeType.PESSIMISTIC_WRITE);
         if (entityOptional.isEmpty() || !entityOptional.get().getExperimentStatus().equals(ProjectStatus.READY)) {
+            Log.warnf("Experiment %d is not ready to start learning. Current status: %s", experimentId,
+                    entityOptional.map(ProjectFederatedExperimentEntity::getExperimentStatus).orElse(null));
             throw new NotAllowedException("Experiment is not ready");
         }
         ProjectFederatedExperimentEntity entity = entityOptional.get();
 
         List<ProjectFederatedExperimentParticipantEntity> participants = projectFederatedExperimentParticipantAO.getAllByExperiment(experimentId);
         if (participants.size() < config.federatedLearning().participantsMinAmount()) {
+            Log.warnf("Experiment %d does not have enough participants to start learning. Current count: %d, required: %d",
+                    experimentId, participants.size(), config.federatedLearning().participantsMinAmount());
             throw new NotAllowedException("Not enough participants");
         }
         if (entity.getWorkflow() == null || entity.getWorkflow().getNodes().isEmpty()) {
+            Log.warnf("Experiment %d does not have a valid workflow to start learning. Workflow is null or has no nodes.", experimentId);
             throw new NotAllowedException("Experiment workflow is missing");
         }
 

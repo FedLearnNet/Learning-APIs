@@ -16,15 +16,20 @@ public class WebApplicationExceptionMapper implements ExceptionMapper<WebApplica
         Response r = ex.getResponse();
         int status = r != null ? r.getStatus() : 500;
 
-        String reason = (r != null && r.getStatusInfo() != null)
+        String reason = (ex.getMessage() != null && !ex.getMessage().isBlank())
+                ? ex.getMessage()
+                : (r != null && r.getStatusInfo() != null
                 ? r.getStatusInfo().getReasonPhrase()
-                : "Error";
+                : "Error");
 
+        Log.infof("Creating ErrorResponseDTO: status=%d, reason=%s, message=%s", status, reason, ex.getMessage());
         var body = new ErrorResponseDTO(status, reason, ex.getMessage());
         if (status == 500) {
-            Log.errorf(ex, "Unhandled exception occurred: %s", ex.getMessage());
+            Log.errorf(ex, "Unhandled exception occurred: status=%d, reason=%s, message=%s",
+                    status, reason, ex.getMessage());
         } else if (status >= 400) {
-            Log.warnf("WebApplicationException occurred: %s", ex.getMessage());
+            Log.warnf("WebApplicationException occurred: status=%d, reason=%s, message=%s",
+                    status, reason, ex.getMessage());
         }
         return Response.status(status)
                 .type(MediaType.APPLICATION_JSON)

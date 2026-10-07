@@ -23,7 +23,7 @@ public class StoreGraphBO extends ToolGraphBuilder {
     public ToolGraphDTO createGraph(List<String> appTypes, List<String> tags, Integer minRating, boolean showUncertified, String keycloakId) {
         List<FederatedAppDetailDTO> apps = federatedAppBO.getAllDetailedForStore(keycloakId).stream().filter(app -> {
             if (!storeBO.filterAppType(app, null, null, appTypes)) return false;
-            if (!storeBO.filterAppTags(app, null, tags)) return false;
+            if (!storeBO.filterPrivacyTechniques(app, null, null, tags)) return false;
             if (!storeBO.filterMinRating(app, null, minRating)) return false;
             return storeBO.filterUncertification(app, null, showUncertified);
         }).toList();

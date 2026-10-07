@@ -18,10 +18,15 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class ConnectorPreviewBOTest {
@@ -52,7 +57,7 @@ class ConnectorPreviewBOTest {
         FilterPatientByHitFunction filter = new FilterPatientByHitFunction();
         List<List<String>> transformedPatientIds = new ArrayList<>();
 
-        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull()))
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
                 .thenReturn(data);
         when(mappingBO.resolveExternalIdSourceColumn(isNull())).thenReturn("patient_nbr");
         when(functionRunnerBO.mode(same(transformer))).thenReturn(FunctionExecutionMode.PATIENT);
@@ -151,7 +156,7 @@ class ConnectorPreviewBOTest {
                 List.of(row("p1", "31")),
                 new ArrayList<>()
         );
-        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull()))
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
                 .thenReturn(pivoted);
         // Matched by type, not identity: each stage is rendered through a TableData built for it,
         // so the preview no longer hands the extractor's own instance to the serializer.
@@ -187,7 +192,7 @@ class ConnectorPreviewBOTest {
         ConnectorTransformerBO transformerBO = mock(ConnectorTransformerBO.class);
         FunctionRunnerBO functionRunnerBO = mock(FunctionRunnerBO.class);
 
-        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull()))
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
                 .thenReturn(data);
         when(transformerBO.applyBuiltInTransformation(same(afterIt), anyList(), isNull()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
@@ -231,7 +236,7 @@ class ConnectorPreviewBOTest {
         config.setTransformer(List.of(appTransformer, secondApp));
 
         ConnectorExtractBO extractBO = mock(ConnectorExtractBO.class);
-        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull()))
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
                 .thenReturn(new TableData(
                         List.of("patient_nbr", "race"),
                         new ArrayList<>(List.of(row("patient-1", "Caucasian"))),
@@ -243,6 +248,47 @@ class ConnectorPreviewBOTest {
 
         // Running the second app on the first one's input would silently produce nonsense.
         assertThrows(BadRequestException.class, () -> previewBO.prepareAppStage(config, 2));
+    }
+
+    @Test
+    void aRunCachesItsAppStepsAndTheStepsAfterThem() {
+        ConnectorTransformerDTO appTransformer = new ConnectorTransformerDTO();
+        appTransformer.setAppImage("transformer-combine-rows:qfyjTIKg");
+        ConnectorTransformerDTO afterIt = new ConnectorTransformerDTO();
+
+        ConnectorConfigDTO config = new ConnectorConfigDTO();
+        config.setConnectorId(3L);
+        config.setTransformer(List.of(appTransformer, afterIt));
+
+        ConnectorExtractBO extractBO = mock(ConnectorExtractBO.class);
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
+                .thenReturn(new TableData(
+                        List.of("patient_nbr", "race"),
+                        new ArrayList<>(List.of(row("patient-1", "Caucasian"))),
+                        new ArrayList<>()));
+        ConnectorTransformerBO transformerBO = mock(ConnectorTransformerBO.class);
+        when(transformerBO.applyBuiltInTransformation(same(afterIt), anyList(), isNull()))
+                .thenAnswer(invocation -> invocation.getArgument(1));
+
+        ConnectorPreviewTransformationCacheBO cacheBO =
+                mock(ConnectorPreviewTransformationCacheBO.class, CALLS_REAL_METHODS);
+        doReturn(Optional.empty()).when(cacheBO).find(any(), anyInt(), any());
+        doNothing().when(cacheBO).store(any(), anyInt(), any(), any(), any(), any());
+        doReturn(0L).when(cacheBO).invalidateFrom(any(), anyInt());
+
+        ConnectorPreviewBO previewBO = new ConnectorPreviewBO();
+        previewBO.cacheBO = cacheBO;
+        previewBO.extractBO = extractBO;
+        previewBO.transformerBO = transformerBO;
+        previewBO.functionRunnerBO = mock(FunctionRunnerBO.class);
+
+        List<Map<String, Object>> appOutput = List.of(row("patient-1", "combined"));
+        previewBO.warmFromRun(config, (transformer, rows) -> appOutput);
+
+        // The app step is stored with what the run's container returned, and the built-in step
+        // after it is computed on that output instead of being blocked behind an unrun app step.
+        verify(cacheBO).store(eq(3L), eq(1), any(), any(), eq(appOutput), any());
+        verify(cacheBO).store(eq(3L), eq(2), any(), any(), eq(appOutput), any());
     }
 
     private static Map<String, Object> row(String patientId, String race) {
