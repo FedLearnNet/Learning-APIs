@@ -27,6 +27,6 @@ public interface TransformerWriteLoop {
 
     @ErrorHandler
     static ErrorRecoveryResult retryWithFeedback(ErrorContext errorContext) {
-        return TransformerWorkflow.retryWithFeedback(errorContext, TransformerWriterAgent.NAME);
+        return TransformerWorkflow.retryWithFeedback(errorContext);
     }
 }
