@@ -2,6 +2,8 @@ package eval.agent.etl.transform;
 
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
+import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
+import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerContainerBO;
 import eval.agent.etl.transform.judge.TransformerWriterJudge;
 import eval.agent.etl.transform.judge.TransformerWriterPrompt;
 import eval.agent.etl.transform.judge.TransformerWriterReviews;
@@ -21,6 +23,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -50,6 +53,12 @@ public class TransformerWriterEvaluationTest {
     @Inject
     TransformerWriterJudge judge;
 
+    @Inject
+    CodeTransformerContainerBO codeRunner;
+
+    @Inject
+    AppTransformerSessionBO appSessions;
+
     @Test
     void evaluateTransformerAssistant() throws IOException {
         Map<String, List<TransformerWriterResult>> results = new LinkedHashMap<>();
@@ -62,6 +71,12 @@ public class TransformerWriterEvaluationTest {
                     .toList());
             TransformerWriterReport.save(model, results);
         }
+    }
+
+    @AfterEach
+    void stopContainers() {
+        codeRunner.stop();
+        appSessions.closeAll();
     }
 
     private TransformerWriterVerdict judge(TransformerWriterReview review) {

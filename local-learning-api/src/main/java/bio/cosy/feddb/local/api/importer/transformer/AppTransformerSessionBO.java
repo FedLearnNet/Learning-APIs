@@ -18,6 +18,7 @@ import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepDTO;
 import io.quarkus.logging.Log;
 import io.quarkus.websockets.next.OpenConnections;
 import io.quarkus.websockets.next.WebSocketConnection;
+import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -384,6 +385,12 @@ public class AppTransformerSessionBO {
                         session.stepId(), runId, e.getMessage());
             }
         });
+    }
+
+    /** Stops every container still running, e.g. when the application shuts down mid-run. */
+    @PreDestroy
+    public void closeAll() {
+        List.copyOf(sessions.keySet()).forEach(this::close);
     }
 
     private void failStep(Long stepId, String error) {
