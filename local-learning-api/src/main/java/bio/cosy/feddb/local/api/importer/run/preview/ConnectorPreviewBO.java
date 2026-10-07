@@ -10,7 +10,7 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionRunnerBO;
 import bio.cosy.feddb.local.api.importer.mapping.MappingBO;
 import bio.cosy.feddb.local.api.importer.run.preview.cache.ConnectorPreviewTransformationCacheBO;
 import bio.cosy.feddb.local.api.importer.run.preview.cache.ConnectorPreviewTransformationCacheStage;
-import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.importer.extract.UploadInfoDTO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadInfoDTO;
@@ -40,7 +40,7 @@ public class ConnectorPreviewBO {
     TabularFileReaderBO fileHandlerBO;
 
     @Inject
-    ConnectorTransformerBO transformerBO;
+    ConnectorTransformationBO transformationBO;
 
     @Inject
     FunctionRunnerBO functionRunnerBO;
@@ -169,7 +169,7 @@ public class ConnectorPreviewBO {
                 }
             } else {
                 List<Map<String, Object>> rows =
-                        transformerBO.applyBuiltInTransformation(transformer, stage.getRows(), patientIdColumn);
+                        transformationBO.applyBuiltInTransformation(transformer, stage.getRows(), patientIdColumn);
                 stage = new ConnectorPreviewTransformationStageData(rows, stage.getColumns(), stage.getProfiles());
                 if (blockedBy == null) {
                     cacheBO.store(connectorId, stepIndex, transformer.getId(), fingerprint,

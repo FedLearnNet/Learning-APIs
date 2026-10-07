@@ -1,8 +1,8 @@
 package bio.cosy.feddb.local.api.importer.transformer.code.runner;
 
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepDTO;
-import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
 import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerLogDTO;
+import bio.cosy.feddb.local.api.importer.transformer.session.AppTransformerSessionBO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

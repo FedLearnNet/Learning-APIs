@@ -9,7 +9,7 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionRunnerBO;
 import bio.cosy.feddb.local.api.importer.functions.managed.builtin.FilterPatientByHitFunction;
 import bio.cosy.feddb.local.api.importer.mapping.MappingBO;
 import bio.cosy.feddb.local.api.importer.run.preview.cache.ConnectorPreviewTransformationCacheBO;
-import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import jakarta.ws.rs.BadRequestException;
 import org.junit.jupiter.api.Test;
@@ -51,7 +51,7 @@ class ConnectorPreviewBOTest {
 
         ConnectorExtractBO extractBO = mock(ConnectorExtractBO.class);
         TabularFileReaderBO fileHandlerBO = mock(TabularFileReaderBO.class);
-        ConnectorTransformerBO transformerBO = mock(ConnectorTransformerBO.class);
+        ConnectorTransformationBO transformationBO = mock(ConnectorTransformationBO.class);
         FunctionRunnerBO functionRunnerBO = mock(FunctionRunnerBO.class);
         MappingBO mappingBO = mock(MappingBO.class);
         FilterPatientByHitFunction filter = new FilterPatientByHitFunction();
@@ -61,9 +61,9 @@ class ConnectorPreviewBOTest {
                 .thenReturn(data);
         when(mappingBO.resolveExternalIdSourceColumn(isNull())).thenReturn("patient_nbr");
         when(functionRunnerBO.mode(same(transformer))).thenReturn(FunctionExecutionMode.PATIENT);
-        // Patient grouping now lives in ConnectorTransformerBO#applyBuiltInTransformation (tested
+        // Patient grouping now lives in ConnectorTransformationBO#applyBuiltInTransformation (tested
         // there); here we reproduce it so the preview's json output can still be asserted.
-        when(transformerBO.applyBuiltInTransformation(same(transformer), anyList(), eq("patient_nbr")))
+        when(transformationBO.applyBuiltInTransformation(same(transformer), anyList(), eq("patient_nbr")))
                 .thenAnswer(invocation -> {
                     List<Map<String, Object>> allRows = invocation.getArgument(1);
                     Map<String, List<Map<String, Object>>> byPatient = new LinkedHashMap<>();
@@ -99,7 +99,7 @@ class ConnectorPreviewBOTest {
         previewBO.cacheBO = new ConnectorPreviewTransformationCacheBO();
         previewBO.extractBO = extractBO;
         previewBO.fileHandlerBO = fileHandlerBO;
-        previewBO.transformerBO = transformerBO;
+        previewBO.transformationBO = transformationBO;
         previewBO.functionRunnerBO = functionRunnerBO;
         previewBO.mappingBO = mappingBO;
 
@@ -189,12 +189,12 @@ class ConnectorPreviewBOTest {
 
         ConnectorExtractBO extractBO = mock(ConnectorExtractBO.class);
         TabularFileReaderBO fileHandlerBO = mock(TabularFileReaderBO.class);
-        ConnectorTransformerBO transformerBO = mock(ConnectorTransformerBO.class);
+        ConnectorTransformationBO transformationBO = mock(ConnectorTransformationBO.class);
         FunctionRunnerBO functionRunnerBO = mock(FunctionRunnerBO.class);
 
         when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
                 .thenReturn(data);
-        when(transformerBO.applyBuiltInTransformation(same(afterIt), anyList(), isNull()))
+        when(transformationBO.applyBuiltInTransformation(same(afterIt), anyList(), isNull()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
         when(fileHandlerBO.getJson(any(TableData.class))).thenReturn("[]");
 
@@ -202,7 +202,7 @@ class ConnectorPreviewBOTest {
         previewBO.cacheBO = new ConnectorPreviewTransformationCacheBO();
         previewBO.extractBO = extractBO;
         previewBO.fileHandlerBO = fileHandlerBO;
-        previewBO.transformerBO = transformerBO;
+        previewBO.transformationBO = transformationBO;
         previewBO.functionRunnerBO = functionRunnerBO;
 
         PreviewResponseDTO response = previewBO.preview(config);
@@ -266,8 +266,8 @@ class ConnectorPreviewBOTest {
                         List.of("patient_nbr", "race"),
                         new ArrayList<>(List.of(row("patient-1", "Caucasian"))),
                         new ArrayList<>()));
-        ConnectorTransformerBO transformerBO = mock(ConnectorTransformerBO.class);
-        when(transformerBO.applyBuiltInTransformation(same(afterIt), anyList(), isNull()))
+        ConnectorTransformationBO transformationBO = mock(ConnectorTransformationBO.class);
+        when(transformationBO.applyBuiltInTransformation(same(afterIt), anyList(), isNull()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
 
         ConnectorPreviewTransformationCacheBO cacheBO =
@@ -279,7 +279,7 @@ class ConnectorPreviewBOTest {
         ConnectorPreviewBO previewBO = new ConnectorPreviewBO();
         previewBO.cacheBO = cacheBO;
         previewBO.extractBO = extractBO;
-        previewBO.transformerBO = transformerBO;
+        previewBO.transformationBO = transformationBO;
         previewBO.functionRunnerBO = mock(FunctionRunnerBO.class);
 
         List<Map<String, Object>> appOutput = List.of(row("patient-1", "combined"));

@@ -16,7 +16,7 @@ import bio.cosy.feddb.local.api.importer.files.table.TableSample;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import bio.cosy.feddb.local.api.importer.mapping.MappingBO;
 import bio.cosy.feddb.local.api.importer.statistics.TransformedStatisticsBO;
-import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.schema.schemanode.LocalSchemaNodeWithPathDTO;
 import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeBO;
@@ -55,7 +55,7 @@ public class TransformerLoop {
     ConnectorExtractBO extractBO;
 
     @Inject
-    ConnectorTransformerBO transformerBO;
+    ConnectorTransformationBO transformationBO;
 
     @Inject
     SchemaNodeBO schemaNodeBO;
@@ -186,7 +186,7 @@ public class TransformerLoop {
     }
 
     private TableSample applyTransformer(TableSample preview, ConnectorTransformerDTO transformer, String patientIdColumn) {
-        List<Map<String, Object>> rows = transformerBO.applyBuiltInTransformation(
+        List<Map<String, Object>> rows = transformationBO.applyBuiltInTransformation(
                 transformer, new ArrayList<>(preview.toTableData().getRows()), patientIdColumn);
         List<String> columns = new ArrayList<>(preview.getColumns());
         rows.forEach(row -> row.keySet().stream().filter(column -> !columns.contains(column)).forEach(columns::add));

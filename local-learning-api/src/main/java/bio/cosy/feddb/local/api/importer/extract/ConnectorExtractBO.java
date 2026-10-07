@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBO.APP_OUTPUT_TIMEOUT;
+import static bio.cosy.feddb.local.api.importer.run.execution.ConnectorRunExecutionOutputAwaiter.APP_OUTPUT_TIMEOUT;
 
 @ApplicationScoped
 public class ConnectorExtractBO {

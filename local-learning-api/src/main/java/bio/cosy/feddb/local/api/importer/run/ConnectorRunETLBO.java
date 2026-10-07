@@ -18,8 +18,9 @@ import bio.cosy.feddb.local.api.importer.run.message.ConnectorRunRunMessagesBO;
 import bio.cosy.feddb.local.api.importer.run.patientlog.ConnectorRunPatientLogBO;
 import bio.cosy.feddb.local.api.importer.run.patientlog.ConnectorRunPatientLogType;
 import bio.cosy.feddb.local.api.importer.run.preview.ConnectorPreviewBO;
-import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
-import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
+import bio.cosy.feddb.local.api.importer.transformer.session.AppTransformerMapper;
+import bio.cosy.feddb.local.api.importer.transformer.session.AppTransformerSessionBO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import io.quarkus.logging.Log;
 import io.smallrye.context.api.ManagedExecutorConfig;
@@ -52,10 +53,13 @@ public class ConnectorRunETLBO {
     ConnectorRunAO runAO;
 
     @Inject
-    ConnectorTransformerBO transformerBO;
+    ConnectorTransformationBO transformationBO;
 
     @Inject
     AppTransformerSessionBO appTransformerSessionBO;
+
+    @Inject
+    AppTransformerMapper appTransformerMapper;
 
     @Inject
     ConnectorRunPatientLogBO errorLogBO;
@@ -362,7 +366,7 @@ public class ConnectorRunETLBO {
             // TRANSFORM (per patient group; correct for all row/cell built-in functions).
             workerRun.setCurrentStep(ConnectorRunStep.TRANSFORMING);
             List<Map<String, Object>> transformed =
-                    transformerBO.applyTransformations(connectorDTO, workerRun, new ArrayList<>(group.rows()));
+                    transformationBO.applyTransformations(connectorDTO, workerRun, new ArrayList<>(group.rows()));
             if (transformed == null) {
                 throw new IllegalStateException("Transformation returned null");
             }
@@ -417,7 +421,7 @@ public class ConnectorRunETLBO {
     }
 
     private boolean openAppTransformerSession(ConnectorDTO connectorDTO, ConnectorRunDTO run) {
-        if (AppTransformerSessionBO.appTransformersOf(connectorDTO).isEmpty()) {
+        if (appTransformerMapper.appTransformersOf(connectorDTO).isEmpty()) {
             return false;
         }
         runMessagesBO.createTransactional("Starting app-based transformers",

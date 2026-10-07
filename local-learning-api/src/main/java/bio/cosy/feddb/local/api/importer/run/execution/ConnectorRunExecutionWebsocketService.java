@@ -41,7 +41,7 @@ public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
     ConnectorRunStepBO stepBO;
 
     @Inject
-    bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO sessionBO;
+    bio.cosy.feddb.local.api.importer.transformer.session.AppTransformerSessionBO sessionBO;
 
     @Inject
     ToolApiKeyService toolApiKeyService;

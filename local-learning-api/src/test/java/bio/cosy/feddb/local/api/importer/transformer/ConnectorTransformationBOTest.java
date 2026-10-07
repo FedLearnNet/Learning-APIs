@@ -18,7 +18,7 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class ConnectorTransformerBOTest {
+class ConnectorTransformationBOTest {
 
     @Test
     void applyPatientTransformationFiltersEachPatientGroupSeparately() {
@@ -37,7 +37,7 @@ class ConnectorTransformerBOTest {
                         null
                 ));
 
-        ConnectorTransformerBO bo = new ConnectorTransformerBO();
+        ConnectorTransformationBO bo = new ConnectorTransformationBO();
         bo.functionRunnerBO = functionRunnerBO;
 
         List<Map<String, Object>> rows = new ArrayList<>(List.of(
@@ -57,7 +57,7 @@ class ConnectorTransformerBOTest {
 
     @Test
     void applyPatientTransformationRejectsRowsWithoutPatientId() {
-        ConnectorTransformerBO bo = new ConnectorTransformerBO();
+        ConnectorTransformationBO bo = new ConnectorTransformationBO();
         bo.functionRunnerBO = mock(FunctionRunnerBO.class);
 
         assertThrows(BadRequestException.class, () -> bo.applyPatientTransformation(
@@ -69,7 +69,7 @@ class ConnectorTransformerBOTest {
 
     @Test
     void applyPatientTransformationRejectsMissingPatientIdColumn() {
-        ConnectorTransformerBO bo = new ConnectorTransformerBO();
+        ConnectorTransformationBO bo = new ConnectorTransformationBO();
         bo.functionRunnerBO = mock(FunctionRunnerBO.class);
 
         assertThrows(BadRequestException.class, () -> bo.applyPatientTransformation(

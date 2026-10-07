@@ -17,7 +17,7 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionExecutionMode;
 import bio.cosy.feddb.local.api.importer.functions.FunctionRunnerBO;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import bio.cosy.feddb.local.api.importer.mapping.MappingBO;
-import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,7 +73,7 @@ public class TransformedStatisticsBO {
     TabularFileReaderBO fileHandlerBO;
 
     @Inject
-    ConnectorTransformerBO transformerBO;
+    ConnectorTransformationBO transformationBO;
 
     @Inject
     FunctionRunnerBO functionRunnerBO;
@@ -170,7 +170,7 @@ public class TransformedStatisticsBO {
                     ? selectRepresentativePatients(source, sourceColumns, patientIdColumn)
                     : selectRepresentativeRows(source, sourceColumns);
 
-            rows = transformerBO.applyBuiltInTransformations(builtInTransformers, rows, patientIdColumn);
+            rows = transformationBO.applyBuiltInTransformations(builtInTransformers, rows, patientIdColumn);
 
             List<ColumnProfile> profiles;
             try (TableData transformed = new TableData(resultColumns(sourceColumns, rows), rows, null)) {

@@ -14,6 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @ApplicationScoped
 public class ConnectorRunExecutionOutputAwaiter {
 
+    public static final Duration APP_OUTPUT_TIMEOUT = Duration.ofMinutes(5);
+
     private final ConcurrentHashMap<Long, CompletableFuture<ConnectorRunExecutionResult>> pending = new ConcurrentHashMap<>();
 
 
