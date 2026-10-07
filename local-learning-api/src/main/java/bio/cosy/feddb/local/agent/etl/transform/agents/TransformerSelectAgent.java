@@ -18,6 +18,8 @@ import java.util.List;
 
 public interface TransformerSelectAgent {
 
+    String NAME = "selectTransformer";
+
     @UserMessage("""
             Your job is to select the transformers that compute the schema node below from the selected columns.
             - If one column already holds valid values (validation tool with an empty transformer list), answer with
@@ -60,7 +62,7 @@ public interface TransformerSelectAgent {
             
             Result of the previous attempt: {validation.message}
             """)
-    @Agent(name = "selectTransformer", description = "Selects and configures the transformer for a schema node", outputKey = "selectedTransformer")
+    @Agent(name = NAME, description = "Selects and configures the transformer for a schema node", outputKey = "selectedTransformer")
     @ToolBox({TransformerListTool.class, TransformerValidateTool.class, TransformerUserTool.class})
     ConnectorSelectedTransformer select(TableSample selectedData,
                                         LocalSchemaNodeDTO schemaNode,

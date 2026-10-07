@@ -76,6 +76,7 @@ public class TransformerLoop {
         transformerListTool.resetStoreTools();
         TableSample preview = loadPreview(connector);
         String patientIdColumn = patientIdColumn(connector, preview, user, events);
+        setPatientIdMapping(connector, patientIdColumn);
         TransformerRunContext context = new TransformerRunContext(config(connector, patientIdColumn), patientIdColumn,
                 keycloakId, fileProfiles(connector), user);
         Map<Long, List<ColumnCandidate>> candidates = columnMatcher.match(preview, schemaNodes, context.fileProfiles());
@@ -129,6 +130,13 @@ public class TransformerLoop {
         }
         events.accept(TransformerAssistantMessageDTO.patientId(config.connector().externalIdColumn(), selected.getFirst()));
         return selected.getFirst();
+    }
+
+    private void setPatientIdMapping(ConnectorDTO connector, String patientId) {
+        List<ConnectorMappingDTO> mappings = connector.getSchemaMapping() == null ? new ArrayList<>() : new ArrayList<>(connector.getSchemaMapping());
+        mappings = new ArrayList<>(ConnectorMappingDTO.removePatientIdMapping(mappings, config.connector().externalIdColumn()));
+        mappings.add(ConnectorMappingDTO.getPatientIdMapping(patientId, config.connector().externalIdColumn()));
+        connector.setSchemaMapping(mappings);
     }
 
 

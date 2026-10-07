@@ -5,9 +5,6 @@ import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerValidateTool;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
-import dev.langchain4j.agentic.agent.ErrorContext;
-import dev.langchain4j.agentic.agent.ErrorRecoveryResult;
-import dev.langchain4j.agentic.declarative.ErrorHandler;
 import dev.langchain4j.agentic.declarative.ExitCondition;
 import dev.langchain4j.agentic.declarative.LoopAgent;
 
@@ -25,8 +22,4 @@ public interface TransformerSelectLoop {
         return validation.isValid() || !selectedTransformer.isFoundTransformer();
     }
 
-    @ErrorHandler
-    static ErrorRecoveryResult retryWithFeedback(ErrorContext errorContext) {
-        return TransformerWorkflow.retryWithFeedback(errorContext, "selectTransformer");
-    }
 }
