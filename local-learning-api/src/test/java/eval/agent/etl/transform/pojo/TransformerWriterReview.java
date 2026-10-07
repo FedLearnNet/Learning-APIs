@@ -1,5 +1,6 @@
 package eval.agent.etl.transform.pojo;
 
+import bio.cosy.feddb.local.agent.etl.transform.model.VisitMapping;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ public class TransformerWriterReview {
     private String notFoundReason;
     private String mappedColumn;
     private List<TransformerWriterTransformation> transformations = new ArrayList<>();
+    private VisitMapping visitMapping;
     private List<String> sourceColumns = new ArrayList<>();
 
     private String importRun;

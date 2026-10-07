@@ -14,7 +14,9 @@ public interface TransformerWriterJudge {
             what the import of the whole dataset with the agent's connector stored for the schema node.
             Give two independent verdicts:
             - mappingCorrect: the source columns hold the information the schema node asks for: the right concept,
-              every column the value depends on and none that only looks similar.
+              every column the value depends on and none that only looks similar. If the export has several rows
+              per patient, the visit id column has to identify the visit of a row and the timestamp column the time
+              of the value; a wrong visit column makes the mapping incorrect.
             - transformationCorrect: every source value is converted into the semantically right value of the schema
               node: the right allowed value for a code or term, the right unit and arithmetic, the right range. Judge
               the meaning, not the code style. Compare the source values with the imported ones and read the code. A

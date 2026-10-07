@@ -1,5 +1,6 @@
 package eval.agent.etl.transform.judge;
 
+import bio.cosy.feddb.local.agent.etl.transform.model.VisitMapping;
 import eval.agent.etl.transform.pojo.TransformerWriterReview;
 import eval.agent.etl.transform.pojo.TransformerWriterTransformation;
 
@@ -40,6 +41,7 @@ public final class TransformerWriterPrompt {
 
     private static void appendMapping(StringBuilder text, TransformerWriterReview review) {
         text.append("\n### Mapping\nMapped column: ").append(review.getMappedColumn()).append('\n');
+        appendVisit(text, review.getVisitMapping());
         List<TransformerWriterTransformation> transformations = review.getTransformations();
         if (transformations.isEmpty()) {
             text.append("The column is mapped directly, without a transformation.\n");
@@ -51,6 +53,17 @@ public final class TransformerWriterPrompt {
                 text.append("```python\n").append(transformation.getCode()).append("\n```\n");
             }
         }
+    }
+
+    private static void appendVisit(StringBuilder text, VisitMapping visit) {
+        if (visit == null) {
+            text.append("No visit columns: every value belongs to the patient, not to a visit.\n");
+            return;
+        }
+        text.append("Visit id column: ").append(visit.getVisitIdMapping())
+                .append(", visit timestamp column: ").append(visit.getVisitTimestampMapping())
+                .append(visit.getTimestampFormat() == null ? "" : " (format " + visit.getTimestampFormat() + ")")
+                .append('\n');
     }
 
     private static void appendImport(StringBuilder text, TransformerWriterReview review) {

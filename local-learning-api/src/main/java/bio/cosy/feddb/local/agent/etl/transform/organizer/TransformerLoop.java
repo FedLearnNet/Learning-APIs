@@ -99,7 +99,11 @@ public class TransformerLoop {
 
         ConnectorSelectedTransformer selected = transformerOrganizer.selectTransformer(context, preview, node,
                 instructions.get(), candidates.getOrDefault(node.getId(), List.of()), node.getDataType());
-        events.accept(TransformerAssistantMessageDTO.node(NODE_RESULT, node.getId(), node.getPath(), selected));
+        TransformerAssistantMessageDTO result = TransformerAssistantMessageDTO.node(NODE_RESULT, node.getId(), node.getPath(), selected);
+        if (selected.isFoundTransformer()) {
+            result.setVisitMapping(transformerOrganizer.selectVisit(context, preview, node, instructions.get(), selected));
+        }
+        events.accept(result);
         if (!selected.isFoundTransformer()) {
             return preview;
         }

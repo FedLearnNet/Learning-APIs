@@ -3,10 +3,13 @@ package bio.cosy.feddb.local.agent.etl.transform.organizer;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.local.agent.etl.transform.agents.ColumnSelectAgent;
 import bio.cosy.feddb.local.agent.etl.transform.agents.TransformerWorkflow;
+import bio.cosy.feddb.local.agent.etl.transform.agents.VisitColumnAgent;
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerCombiner;
+import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerHelper;
 import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
+import bio.cosy.feddb.local.agent.etl.transform.model.VisitMapping;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerUserTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerValidateTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerWriterTool;
@@ -31,6 +34,9 @@ public class TransformerOrganizer {
 
     @Inject
     TransformerWorkflow transformerWorkflow;
+
+    @Inject
+    VisitColumnAgent visitColumnAgent;
 
     @Inject
     TransformerValidateTool validateTool;
@@ -87,6 +93,26 @@ public class TransformerOrganizer {
             writerTool.discard();
         }
         return selected;
+    }
+
+    @ActivateRequestContext
+    public VisitMapping selectVisit(TransformerRunContext context,
+                                    TableSample previewData,
+                                    LocalSchemaNodeDTO schemaNode,
+                                    String instructions,
+                                    ConnectorSelectedTransformer selected) {
+        String patientIdColumn = context.patientIdColumn();
+        if (!TransformerHelper.hasSeveralRowsPerPatient(previewData, patientIdColumn)) {
+            return null;
+        }
+        try {
+            VisitMapping visit = visitColumnAgent.select(schemaNode, selected.getMappedColumn(), patientIdColumn,
+                    TransformerHelper.columnExamples(previewData), instructions == null ? "" : instructions.strip());
+            return TransformerHelper.checkVisitMapping(visit, previewData, patientIdColumn);
+        } catch (RuntimeException e) {
+            Log.warnf(e, "Visit selection for schema node %s failed", schemaNode.getName());
+            return null;
+        }
     }
 
     private ConnectorSelectedTransformer select(TableSample selectedData, LocalSchemaNodeDTO schemaNode,

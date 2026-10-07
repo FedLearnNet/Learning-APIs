@@ -69,6 +69,7 @@ public class TransformerWriterReviews {
             TransformerWriterReview review = createReview(schemaNode, node.getMappingPath(), importRun);
             if (TransformerWriterAssistant.isFound(node)) {
                 addMapping(review, node.getSelectedTransformer(), code, sourceColumns);
+                review.setVisitMapping(node.getVisitMapping());
                 addImport(review, schemaNode, connector.getCohortId(), run);
             } else {
                 addNotFound(review, node.getSelectedTransformer(), sourceColumns);

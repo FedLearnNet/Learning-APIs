@@ -1,5 +1,6 @@
 package eval.agent.etl.transform.report;
 
+import bio.cosy.feddb.local.agent.etl.transform.model.VisitMapping;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import eval.agent.etl.transform.judge.TransformerWriterVerdict;
@@ -57,14 +58,15 @@ public final class TransformerWriterReport {
             line("Import " + results.getFirst().getReview().getImportRun());
             line("");
         }
-        line("| Schema node | Mapped column | Transformation | Imported | Rejected | LLM judge |");
-        line("|---|---|---|---|---|---|");
+        line("| Schema node | Mapped column | Transformation | Visit | Imported | Rejected | LLM judge |");
+        line("|---|---|---|---|---|---|---|");
         for (TransformerWriterResult result : results) {
             TransformerWriterReview review = result.getReview();
-            line("| %s | %s | %s | %s | %s | %s |".formatted(
+            line("| %s | %s | %s | %s | %s | %s | %s |".formatted(
                     review.getSchemaNode(),
                     review.isFound() ? review.getMappedColumn() : "not found",
                     kind(review),
+                    visit(review.getVisitMapping()),
                     review.isFound() ? String.valueOf(review.getImportedEntries()) : "-",
                     review.isFound() ? String.valueOf(review.getRejectedValues()) : "-",
                     flags(result.getVerdict())));
@@ -139,6 +141,10 @@ public final class TransformerWriterReport {
             return "custom code";
         }
         return review.getTransformations().isEmpty() ? "direct" : review.getTransformations().size() + " function(s)";
+    }
+
+    private static String visit(VisitMapping visit) {
+        return visit == null ? "-" : visit.getVisitIdMapping() + " / " + visit.getVisitTimestampMapping();
     }
 
     private static String flags(TransformerWriterVerdict verdict) {
