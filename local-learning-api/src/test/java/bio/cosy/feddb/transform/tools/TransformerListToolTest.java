@@ -1,13 +1,9 @@
-package bio.cosy.feddb.local.agent.etl.transform.tools;
+package bio.cosy.feddb.transform.tools;
 
 import bio.cosy.feddb.core.api.app.FederatedAppDTO;
+import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
 import bio.cosy.feddb.core.api.app.FederatedAppDetailDTO;
-import bio.cosy.feddb.core.api.app.config.TabularSchemaDTO;
-import bio.cosy.feddb.core.api.app.config.ToolConfigHyperParamDataType;
-import bio.cosy.feddb.core.api.app.config.ToolConfigsDTO;
-import bio.cosy.feddb.core.api.app.config.ToolHyperParamConfigDTO;
-import bio.cosy.feddb.core.api.app.config.ToolInputConfigDTO;
-import bio.cosy.feddb.core.api.app.config.ToolOutputConfigDTO;
+import bio.cosy.feddb.core.api.app.config.*;
 import bio.cosy.feddb.core.api.store.StoreDTO;
 import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterDTO;
@@ -16,28 +12,29 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionsDetailDTO;
 import bio.cosy.feddb.local.services.GlobalAPIStoreService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class TransformerListToolTest {
 
-    private final TransformerListTool tool = new TransformerListTool();
+    @Mock
+    GlobalAPIStoreService storeService;
+
+    @InjectMocks
+    TransformerListTool tool;
 
     @BeforeEach
     void setUp() {
-        tool.storeService = mock(GlobalAPIStoreService.class);
         FederatedAppDTO app = new FederatedAppDTO();
         app.setLatestVersionId(7L);
         StoreDTO entry = new StoreDTO();
@@ -45,9 +42,9 @@ class TransformerListToolTest {
         PagedResponse<StoreDTO> page = new PagedResponse<>();
         page.setResults(List.of(entry));
         page.setTotalCount(1);
-        when(tool.storeService.list(any(), anyList(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean(), anyString(), anyInt(), anyInt()))
+        when(storeService.list(any(), anyList(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean(), anyString(), anyInt(), anyInt()))
                 .thenReturn(page);
-        when(tool.storeService.getAppsByVersions(List.of(7L))).thenReturn(List.of(icdGrouper()));
+        when(storeService.getAppsByVersions(List.of(7L))).thenReturn(List.of(icdGrouper()));
     }
 
     @Test
@@ -72,11 +69,11 @@ class TransformerListToolTest {
     void loadsTheStoreToolsOncePerRun() {
         tool.getAllStoreDetailed();
         tool.storeTool(7L);
-        verify(tool.storeService, times(1)).getAppsByVersions(anyList());
+        verify(storeService, times(1)).getAppsByVersions(anyList());
 
         tool.resetStoreTools();
         tool.getAllStoreDetailed();
-        verify(tool.storeService, times(2)).getAppsByVersions(anyList());
+        verify(storeService, times(2)).getAppsByVersions(anyList());
     }
 
     private static FederatedAppDetailDTO icdGrouper() {

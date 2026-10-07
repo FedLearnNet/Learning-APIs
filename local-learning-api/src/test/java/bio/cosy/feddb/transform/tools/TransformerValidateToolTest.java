@@ -1,10 +1,12 @@
-package bio.cosy.feddb.local.agent.etl.transform.tools;
+package bio.cosy.feddb.transform.tools;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypes;
 import bio.cosy.feddb.core.api.file.analytics.FileAnalytics;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
+import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
+import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerValidateTool;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
 import bio.cosy.feddb.local.api.importer.files.read.TableDataProfileBO;
 import bio.cosy.feddb.local.api.importer.functions.managed.builtin.ReplaceValueFunction;
@@ -16,34 +18,44 @@ import bio.cosy.feddb.local.api.importer.validation.PreviewValidationBO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class TransformerValidateToolTest {
 
-    private final TransformerValidateTool tool = new TransformerValidateTool();
-    private TransformerRunContext context;
     private final ReplaceValueFunction replaceValue = new ReplaceValueFunction();
+    private TransformerRunContext context;
     private List<Map<String, Object>> previewRows;
 
+    @Mock
+    ConnectorPreviewRunnerBO previewRunnerBO;
+
+    @Mock
+    TransformerListTool listTool;
+
+    @Spy
+    PreviewValidationBO previewValidationBO = previewValidation();
+
+    @InjectMocks
+    TransformerValidateTool tool;
+
     @BeforeEach
-    void setUp() throws Exception {
-        tool.previewRunnerBO = mock(ConnectorPreviewRunnerBO.class);
-        when(tool.previewRunnerBO.run(any(), eq("keycloak-user"))).thenAnswer(invocation -> {
+    void setUp() {
+        // The preview runs the Replace Value transformers on the rows; the unknown store tool never gets that far
+        lenient().when(previewRunnerBO.run(any(), eq("keycloak-user"))).thenAnswer(invocation -> {
             ConnectorConfigDTO config = invocation.getArgument(0);
             List<Map<String, Object>> rows = previewRows.stream().<Map<String, Object>>map(LinkedHashMap::new).toList();
             for (ConnectorTransformerDTO transformer : config.getTransformer()) {
@@ -54,8 +66,6 @@ class TransformerValidateToolTest {
             }
             return rows;
         });
-        tool.previewValidationBO = previewValidation();
-        tool.listTool = mock(TransformerListTool.class);
     }
 
     @Test
@@ -101,7 +111,7 @@ class TransformerValidateToolTest {
 
         assertFalse(result.isValid());
         assertTrue(result.getMessage().startsWith("Unknown store tool"), result.getMessage());
-        verify(tool.previewRunnerBO, never()).run(any(), any());
+        verify(previewRunnerBO, never()).run(any(), any());
     }
 
     @Test
@@ -151,7 +161,7 @@ class TransformerValidateToolTest {
         return transformer;
     }
 
-    private static PreviewValidationBO previewValidation() throws Exception {
+    private static PreviewValidationBO previewValidation() {
         PreviewValidationBO previewValidation = new PreviewValidationBO();
         set(previewValidation, "validationBO", new ConnectorValidationBO());
         set(previewValidation, "profileBO", new TableDataProfileBO(new FileAnalytics()));
@@ -159,9 +169,13 @@ class TransformerValidateToolTest {
         return previewValidation;
     }
 
-    private static void set(Object target, String name, Object value) throws Exception {
-        Field field = target.getClass().getDeclaredField(name);
-        field.setAccessible(true);
-        field.set(target, value);
+    private static void set(Object target, String name, Object value) {
+        try {
+            Field field = target.getClass().getDeclaredField(name);
+            field.setAccessible(true);
+            field.set(target, value);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

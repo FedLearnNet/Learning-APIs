@@ -1,36 +1,35 @@
-package bio.cosy.feddb.local.agent.etl.transform.organizer;
+package bio.cosy.feddb.transform.organizer;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypes;
 import bio.cosy.feddb.local.agent.etl.transform.config.ColumnMatcherConfig;
 import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
+import bio.cosy.feddb.local.agent.etl.transform.organizer.ColumnMatcher;
 import bio.cosy.feddb.local.agent.text.SapbertSimilartity;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationBO;
 import bio.cosy.feddb.local.api.schema.datatype.DataTypeDTO;
+import bio.cosy.feddb.local.api.schema.datatype.DataTypeEntityMapper;
 import bio.cosy.feddb.local.api.schema.datatype.DataTypeEntityMapperImpl;
 import bio.cosy.feddb.local.api.schema.datatype.DataTypeOptionsDTO;
 import bio.cosy.feddb.local.api.schema.schemanode.LocalSchemaNodeWithPathDTO;
 import bio.cosy.feddb.local.helper.text.TextSimilarity;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class ColumnMatcherTest {
 
-    private final ColumnMatcher matcher = new ColumnMatcher();
     private final List<LocalSchemaNodeWithPathDTO> nodes = new ArrayList<>();
 
     private final TableSample sample = new TableSample(
@@ -43,21 +42,20 @@ class ColumnMatcherTest {
             null
     );
 
-    @BeforeEach
-    void setUp() {
-        matcher.config = mock(ColumnMatcherConfig.class);
-        when(matcher.config.candidates()).thenReturn(8);
-        when(matcher.config.summaryValues()).thenReturn(8);
-        when(matcher.config.textWeight()).thenReturn(0.6);
-        when(matcher.config.semanticBaseline()).thenReturn(0.6);
-        when(matcher.config.confidentText()).thenReturn(0.85);
-        when(matcher.config.confidentMargin()).thenReturn(0.1);
-        // Without semantic scores the matching relies on the names and values only
-        matcher.sapbertSimilartity = mock(SapbertSimilartity.class);
-        when(matcher.sapbertSimilartity.semanticScoresNodeNames(any(), any())).thenReturn(null);
-        matcher.validationBO = new ConnectorValidationBO();
-        matcher.dataTypeMapper = new DataTypeEntityMapperImpl();
-    }
+    @Mock
+    ColumnMatcherConfig config;
+
+    @Mock
+    SapbertSimilartity sapbertSimilartity;
+
+    @Spy
+    ConnectorValidationBO validationBO = new ConnectorValidationBO();
+
+    @Spy
+    DataTypeEntityMapper dataTypeMapper = new DataTypeEntityMapperImpl();
+
+    @InjectMocks
+    ColumnMatcher matcher;
 
     @Test
     void mapsColumnsWithTheNameOfTheSchemaNodeDirectly() {
@@ -121,6 +119,14 @@ class ColumnMatcherTest {
     }
 
     private Map<Long, List<ColumnCandidate>> match() {
+        when(config.candidates()).thenReturn(8);
+        when(config.summaryValues()).thenReturn(8);
+        when(config.textWeight()).thenReturn(0.6);
+        when(config.semanticBaseline()).thenReturn(0.6);
+        when(config.confidentText()).thenReturn(0.85);
+        when(config.confidentMargin()).thenReturn(0.1);
+        // Without semantic scores the matching relies on the names and values only
+        when(sapbertSimilartity.semanticScoresNodeNames(any(), any())).thenReturn(null);
         return matcher.match(sample, nodes, Map.of());
     }
 

@@ -1,11 +1,17 @@
-package bio.cosy.feddb.local.agent.etl.transform.helper;
+package bio.cosy.feddb.transform.helper;
 
+import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerCombiner;
 import bio.cosy.feddb.local.api.importer.functions.FunctionRegistry;
 import bio.cosy.feddb.local.api.importer.functions.managed.builtin.ReplaceValueFunction;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,19 +20,25 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class TransformerCombinerTest {
 
-    private final TransformerCombiner combiner = new TransformerCombiner();
     private final ReplaceValueFunction replaceValue = new ReplaceValueFunction();
+
+    @Mock
+    FunctionRegistry functionRegistry;
+
+    @Spy
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    @InjectMocks
+    TransformerCombiner combiner;
 
     @BeforeEach
     void setUp() {
-        combiner.objectMapper = new ObjectMapper();
-        combiner.functionRegistry = mock(FunctionRegistry.class);
-        when(combiner.functionRegistry.get(any(), any())).thenAnswer(invocation ->
+        when(functionRegistry.get(any(), any())).thenAnswer(invocation ->
                 replaceValue.methodName().equals(invocation.getArgument(1)) ? Optional.of(replaceValue) : Optional.empty());
     }
 

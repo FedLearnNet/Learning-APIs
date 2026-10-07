@@ -42,6 +42,20 @@ public class PatientDataEntryAO implements PanacheRepository<PatientDataEntryEnt
         return IdChunks.collect(internalPatientIds, chunk -> find("patient.id IN ?1", chunk).list());
     }
 
+    public List<Object[]> countValuesBySchemaNode(Long cohortId, Long schemaNodeId) {
+        return getEntityManager().createQuery("""
+                        SELECT de.valueString, de.valueInt, de.valueFloat, de.valueBoolean, de.valueDate, de.valueDateTime,
+                               COUNT(de)
+                        FROM PatientDataEntryEntity de
+                        WHERE de.patient.cohort.id = :cohortId
+                          AND de.schemaNode.id = :schemaNodeId
+                        GROUP BY de.valueString, de.valueInt, de.valueFloat, de.valueBoolean, de.valueDate, de.valueDateTime
+                        """, Object[].class)
+                .setParameter("cohortId", cohortId)
+                .setParameter("schemaNodeId", schemaNodeId)
+                .getResultList();
+    }
+
     public List<PatientDataEntryEntity> findReducedPageEntries(Long cohortId, List<Long> internalPatientIds) {
         if (internalPatientIds == null || internalPatientIds.isEmpty()) {
             return List.of();
