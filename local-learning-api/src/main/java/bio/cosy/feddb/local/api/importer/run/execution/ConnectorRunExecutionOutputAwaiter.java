@@ -58,20 +58,30 @@ public class ConnectorRunExecutionOutputAwaiter {
         return batchId != null && pendingBatches.containsKey(batchId);
     }
 
+    // The entry stays until the result is awaited, so a result that arrives before awaitBatch is not lost
     public Uni<TableData> awaitBatch(Long batchId, Duration timeout) {
         CompletableFuture<TableData> future =
                 pendingBatches.computeIfAbsent(batchId, id -> new CompletableFuture<>());
+        future.whenComplete((output, error) -> pendingBatches.remove(batchId, future));
         return Uni.createFrom().completionStage(future).ifNoItem().after(timeout).fail();
     }
 
     /** Hands a batch result to whoever is waiting. Returns false when the id is not a known batch. */
     public boolean completeBatch(Long batchId, TableData outputData) {
-        CompletableFuture<TableData> future = pendingBatches.remove(batchId);
+        CompletableFuture<TableData> future = pendingBatches.get(batchId);
         if (future == null) {
             return false;
         }
         future.complete(outputData);
         return true;
+    }
+
+    /** Fails a batch the app reported as failed, so its caller gets the error right away instead of a timeout. */
+    public void failBatch(Long batchId, String error) {
+        CompletableFuture<TableData> future = pendingBatches.get(batchId);
+        if (future != null) {
+            future.completeExceptionally(new IllegalStateException(error == null ? "The app reported an error" : error));
+        }
     }
 
     public void cancelBatch(Long batchId) {

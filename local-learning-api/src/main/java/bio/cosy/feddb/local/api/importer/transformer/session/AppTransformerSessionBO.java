@@ -15,6 +15,7 @@ import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepBO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepDTO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import io.quarkus.logging.Log;
+import io.smallrye.mutiny.TimeoutException;
 import io.quarkus.websockets.next.WebSocketConnection;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -97,7 +98,7 @@ public class AppTransformerSessionBO {
         } catch (Exception e) {
             outputAwaiter.cancelBatch(batchId);
             throw new AppTransformerSessionException(
-                    "App transformer '" + transformer.getAppImage() + "' failed on a batch: " + e.getMessage(), e);
+                    "App transformer '" + transformer.getAppImage() + "' failed on a batch: " + reason(e), e);
         }
     }
 
@@ -189,6 +190,17 @@ public class AppTransformerSessionBO {
             Log.errorf("Could not mark app transformer step %d as failed: %s", stepId, e.getMessage());
         }
         throw new AppTransformerSessionException(error);
+    }
+
+    private static String reason(Exception exception) {
+        if (exception instanceof TimeoutException) {
+            return "no result within " + APP_OUTPUT_TIMEOUT.toMinutes() + " minutes";
+        }
+        Throwable cause = exception;
+        while (cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+        return cause.getMessage();
     }
 
     private static Long keyOf(ConnectorTransformerDTO transformer, Long sessionId) {

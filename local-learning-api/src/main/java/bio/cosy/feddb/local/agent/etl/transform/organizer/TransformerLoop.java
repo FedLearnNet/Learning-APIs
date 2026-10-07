@@ -119,17 +119,16 @@ public class TransformerLoop {
     private String patientIdColumn(ConnectorDTO connector, TableSample preview, TransformerAssistantUser user,
                                    Consumer<TransformerAssistantMessageDTO> events) {
         String patientIdColumn = mappingBO.resolveExternalIdSourceColumn(connector.getSchemaMapping());
+        if (patientIdColumn == null) {
+            List<String> selected = user.selectColumns(
+                    "Which column holds the patient ID? It keeps the rows of one patient together.",
+                    preview.getColumns(), false);
+            patientIdColumn = selected.isEmpty() ? null : selected.getFirst();
+        }
         if (patientIdColumn != null) {
-            return patientIdColumn;
+            events.accept(TransformerAssistantMessageDTO.patientId(config.connector().externalIdColumn(), patientIdColumn));
         }
-        List<String> selected = user.selectColumns(
-                "Which column holds the patient ID? It keeps the rows of one patient together.",
-                preview.getColumns(), false);
-        if (selected.isEmpty()) {
-            return null;
-        }
-        events.accept(TransformerAssistantMessageDTO.patientId(config.connector().externalIdColumn(), selected.getFirst()));
-        return selected.getFirst();
+        return patientIdColumn;
     }
 
     private void setPatientIdMapping(ConnectorDTO connector, String patientId) {

@@ -76,7 +76,7 @@ public class TransformerWriterImporter {
         List<String> fields = List.of(mappedColumn, node.getName(), String.valueOf(node.getId()));
         Map<String, Long> rejections = new HashMap<>();
         patientLogBO.getByRunId(run.getId(), null, null).stream()
-                .filter(log -> fields.contains(log.getField()))
+                .filter(log -> log.getField() != null && fields.contains(log.getField()))
                 .forEach(log -> rejections.merge(log.getMessage(), 1L, Long::sum));
         return rejections;
     }

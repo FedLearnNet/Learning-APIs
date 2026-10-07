@@ -130,7 +130,7 @@ final class TransformerRun implements TransformerAssistantUser {
     /** The results of the given schema nodes, plus the patient id column the user selected during the run. */
     List<TransformerAssistantMessageDTO> results(List<Long> schemaIds) {
         Stream<TransformerAssistantMessageDTO> nodes = schemaIds.stream().map(results::get).filter(Objects::nonNull);
-        return Stream.concat(Stream.ofNullable(patientId), nodes).toList();
+        return Stream.concat(nodes, Stream.ofNullable(patientId)).toList();
     }
 
     void cancel() {

@@ -47,6 +47,9 @@ public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
     ToolApiKeyService toolApiKeyService;
 
     @Inject
+    ConnectorRunExecutionOutputAwaiter outputAwaiter;
+
+    @Inject
     CodeTransformerRequestBO codeTransformerRequestBO;
 
     @Inject
@@ -152,6 +155,14 @@ public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
 
     @Override
     protected void updateRun(Long runId, UpdateRunDTO updateTest, AppRunTypeEnum runType) {
+        if (outputAwaiter.isBatch(updateTest.getRunId())) {
+            // The update is about one batch of a session, not the step: the container keeps serving the import
+            if (updateTest.getStatus() == RunStatusTypes.ERROR) {
+                Log.warnf("Batch %d of app transformer step %d failed: %s", updateTest.getRunId(), runId, updateTest.getError());
+                outputAwaiter.failBatch(updateTest.getRunId(), updateTest.getError());
+            }
+            return;
+        }
         stepBO.updateAndNotify(runId, updateTest.getStatus(), updateTest.getError());
     }
 
