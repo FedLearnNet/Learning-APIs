@@ -9,6 +9,7 @@ import bio.cosy.feddb.core.services.controller.RelayServerAppVersions;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
 import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantEntity;
+import de.unihamburg.daibetes.api.workflow.WorkflowEntity;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
 import de.unihamburg.daibetes.services.GlobalRelayService;
 import io.quarkus.logging.Log;
@@ -21,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 @ApplicationScoped
@@ -29,6 +31,10 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
     @Inject
     @RestClient
     GlobalRelayService globalRelayService;
+
+    public boolean setPlatformAggregatorContainer(Long stepId, String containerId, FederatedLearningRelayInfoDTO relayInfo) {
+        return ao.setPlatformAggregatorContainerTransactional(stepId, containerId, relayInfo);
+    }
 
     public List<ProjectFederatedExperimentStepEntity> createForWorkflow(ProjectFederatedExperimentEntity entity) {
         List<ProjectFederatedExperimentStepEntity> steps = new ArrayList<>();
@@ -43,8 +49,11 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
         return steps;
     }
 
-    public Map<String, FederatedLearningRelayInfoDTO> handleRelaySetup(ProjectFederatedExperimentEntity experiment) {
-        WorkflowNodeEntity workflowNode = experiment.getCurrentWorkflowNode().getWorkflowNode();
+    /**
+     * Resolves a workflow node's app version, falling back to its submodel's model version when
+     * the node itself has none set directly.
+     */
+    private FederatedAppVersionEntity resolveAppVersion(WorkflowNodeEntity workflowNode) {
         FederatedAppVersionEntity appVersion = workflowNode.getFederatedAppVersion();
         if (appVersion == null
                 && workflowNode.getSubModel() != null
@@ -52,6 +61,29 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
                 && workflowNode.getSubModel().getModelVersion().getModel() != null) {
             appVersion = workflowNode.getSubModel().getModelVersion().getModel().getFederatedAppVersion();
         }
+        return appVersion;
+    }
+
+    /**
+     * Platform-coordinator mode only works for v2 FeatureCloud apps - v2 relay setup mints a
+     * separate AGGREGATOR-only relay identity; v1 has no such slot (the first client is also the
+     * coordinator), so handing that slot to the platform would leave one clinic without a relay
+     * identity and the round would hang. Checked across every node, since a workflow can mix app
+     * versions across its steps.
+     */
+    public boolean workflowHasOldFCVersionNode(WorkflowEntity workflow) {
+        if (workflow == null || workflow.getNodes() == null) {
+            return false;
+        }
+        return workflow.getNodes().stream()
+                .map(this::resolveAppVersion)
+                .filter(Objects::nonNull)
+                .anyMatch(av -> Boolean.TRUE.equals(av.getFederatedApp().getOldFCVersion()));
+    }
+
+    public FederatedRelaySetupResult handleRelaySetup(ProjectFederatedExperimentEntity experiment) {
+        WorkflowNodeEntity workflowNode = experiment.getCurrentWorkflowNode().getWorkflowNode();
+        FederatedAppVersionEntity appVersion = resolveAppVersion(workflowNode);
         if (appVersion == null) {
             Log.errorf("Cannot find app version for experiment %d, workflow node %d", experiment.getId(), experiment.getCurrentWorkflowNode().getId());
             throw new IllegalStateException("Cannot find app version for experiment " + experiment.getId() + ", workflow node " + experiment.getCurrentWorkflowNode().getId());
@@ -60,13 +92,16 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
             Log.infof("Do need to setup relay server");
             List<FederatedLearningRelayInfoDTO> response = handleRelaySetup(experiment, appVersion);
             Map<String, FederatedLearningRelayInfoDTO> result = new HashMap<>();
-            FederatedLearningRelayInfoDTO coordinatorInfo = null;
+            FederatedLearningRelayInfoDTO coordinatorInfo = response.stream()
+                    .filter(FederatedLearningRelayInfoDTO::getCoordinator)
+                    .findFirst()
+                    .orElse(null);
+            boolean anyClinicIsCoordinator = experiment.getParticipants().stream()
+                    .anyMatch(ProjectFederatedExperimentParticipantEntity::getIsCoordinator);
+
             for (ProjectFederatedExperimentParticipantEntity participant : experiment.getParticipants()) {
                 String id = participant.getUniqueRandomClinicId();
                 if (participant.getIsCoordinator()) {
-                    if (coordinatorInfo == null) {
-                        coordinatorInfo = response.stream().filter(FederatedLearningRelayInfoDTO::getCoordinator).findFirst().orElse(null);
-                    }
                     if (coordinatorInfo != null) {
                         result.put(id, coordinatorInfo);
                     }
@@ -76,14 +111,16 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
                         response.remove(r);
                     });
                 }
-
             }
-            return result;
-
+            // No clinic is coordinator - the relay server still minted a coordinator-only slot
+            // (v2) for whoever it is; that's the platform when platformIsCoordinator is active.
+            // Surface it instead of silently dropping it.
+            FederatedLearningRelayInfoDTO platformRelayInfo = anyClinicIsCoordinator ? null : coordinatorInfo;
+            return new FederatedRelaySetupResult(result, platformRelayInfo);
         }
 
         Log.infof("App version %d does not require a relay server for experiment %d", appVersion.getId(), experiment.getId());
-        return Collections.emptyMap();
+        return new FederatedRelaySetupResult(Collections.emptyMap(), null);
 
     }
 

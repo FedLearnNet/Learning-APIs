@@ -567,6 +567,7 @@
         channel_id TEXT,
         container_id varchar(255),
         relay_key TEXT,
+        platform_relay_info jsonb,
         step_status varchar(255) check ((step_status in ('PENDING','INITIALIZED','STARTED','RUNNING','FINISHED','STOPPED','ERROR'))),
         meta jsonb,
         primary key (id)

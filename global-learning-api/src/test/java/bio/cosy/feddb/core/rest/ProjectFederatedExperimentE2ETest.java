@@ -7,10 +7,8 @@ import bio.cosy.feddb.core.api.run.RunStatusTypes;
 import bio.cosy.feddb.core.rest.helper.RestAssuredConfigUtil;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
-import de.unihamburg.daibetes.api.project.ProjectAO;
 import de.unihamburg.daibetes.api.project.ProjectBO;
 import de.unihamburg.daibetes.api.project.ProjectCreateDTO;
-import de.unihamburg.daibetes.api.project.ProjectEntity;
 import de.unihamburg.daibetes.api.project.experiment.federated.CreateProjectFederatedExperimentDTO;
 import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentAO;
 import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentBO;
@@ -61,9 +59,6 @@ class ProjectFederatedExperimentE2ETest {
 
     @Inject
     ProjectFederatedExperimentParticipantAO participantAO;
-
-    @Inject
-    ProjectAO projectAO;
 
     @BeforeAll
     static void setupMapper() {
@@ -130,30 +125,10 @@ class ProjectFederatedExperimentE2ETest {
                 .anyMatch(id -> id.equals(started.getCoordinator().getUniqueRandomClinicId())));
     }
 
-    @Test
-    @TestSecurity(user = "test", roles = "admin")
-    void startFederatedExperimentAlwaysFallsBackToRandomClinicInPhase1() {
-        // Phase 1: platformIsCoordinator=true is validated and persisted, but the actual
-        // platform-side aggregator orchestration (Phase 2) isn't implemented yet, so
-        // startLearning() must still fall back to a random clinic coordinator regardless of
-        // whether the platform-aggregator capability flag happens to be enabled or disabled on
-        // this deployment (setPlatformIsCoordinator bypasses create()/update() validation, which
-        // would otherwise block setting this combination directly when the flag is disabled).
-        long projectId = createProjectWithSingleNodeWorkflow(false);
-        setPlatformIsCoordinator(projectId, true);
-        long experimentId = createExperiment(projectId, "Federated Platform Fallback");
-        ProjectFederatedExperimentEntity created = loadExperiment(experimentId);
-
-        acceptParticipant(created.getGlobalUniqueId(), 12, "clinic-a", true);
-        acceptParticipant(created.getGlobalUniqueId(), 9, "clinic-b", false);
-
-        startExperiment(projectId, experimentId);
-
-        ProjectFederatedExperimentEntity started = loadExperiment(experimentId);
-        assertEquals(ProjectStatus.RUNNING, started.getExperimentStatus());
-        assertNotNull(started.getCoordinator(), "Phase 1 has no platform-side orchestration yet - "
-                + "startLearning() must still fall back to a random clinic coordinator");
-    }
+    // Platform-coordinator start behavior (enabled vs disabled) is covered by the dedicated
+    // @TestProfile-pinned ProjectFederatedExperimentPlatformCoordinator{Enabled,Disabled}Test
+    // classes - deterministic regardless of FLNetConfig's ambient platform-aggregator.enabled
+    // default, which gets flipped locally for manual testing.
 
     @Test
     @TestSecurity(user = "test", roles = "admin")
@@ -312,14 +287,6 @@ class ProjectFederatedExperimentE2ETest {
 
     private int loadStepCount(long experimentId) {
         return QuarkusTransaction.requiringNew().call(() -> experimentAO.findById(experimentId).getSteps().size());
-    }
-
-    private void setPlatformIsCoordinator(long projectId, boolean platformIsCoordinator) {
-        QuarkusTransaction.requiringNew().run(() -> {
-            ProjectEntity project = projectAO.findById(projectId);
-            project.setPlatformIsCoordinator(platformIsCoordinator);
-            projectAO.persist(project);
-        });
     }
 
     private long createProjectWithSingleNodeWorkflow(boolean supportsFederatedLearning) {

@@ -12,9 +12,11 @@ import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
 import bio.cosy.feddb.core.base.BaseBo;
 import de.unihamburg.daibetes.api.feddbclient.FLNetClientBroadcastBO;
 import de.unihamburg.daibetes.api.project.ProjectBO;
+import de.unihamburg.daibetes.api.project.experiment.federated.aggregator.ProjectFederatedExperimentAggregatorBO;
 import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantAO;
 import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantBO;
 import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantEntity;
+import de.unihamburg.daibetes.api.project.experiment.federated.step.FederatedRelaySetupResult;
 import de.unihamburg.daibetes.api.project.experiment.federated.step.ProjectFederatedExperimentStepBO;
 import de.unihamburg.daibetes.api.project.experiment.federated.step.ProjectFederatedExperimentStepDTO;
 import de.unihamburg.daibetes.api.project.experiment.federated.step.ProjectFederatedExperimentStepEntity;
@@ -68,6 +70,9 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
 
     @Inject
     ProjectFederatedExperimentStepBO projectFederatedExperimentStepBO;
+
+    @Inject
+    ProjectFederatedExperimentAggregatorBO aggregatorBO;
 
     @Inject
     @Channel(EXPERIMENT_FED_CHANNEL)
@@ -177,27 +182,36 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
             throw new NotAllowedException("Experiment workflow is missing");
         }
 
-        // TODO Phase 2: actually start the aggregator on the platform (new orch-api + WS
-        // orchestration path). Until that lands, always fall back to today's random-clinic
-        // behavior so a platformIsCoordinator=true request never silently hangs.
-        if (Boolean.TRUE.equals(entity.getProject().getPlatformIsCoordinator())) {
-            if (projectBO.isPlatformAggregatorSupported()) {
-                Log.warnf("Platform-coordinator requested for experiment %d but platform aggregation " +
-                        "orchestration is not yet implemented - falling back to random clinic", experimentId);
+        boolean platformIsCoordinatorRequested = Boolean.TRUE.equals(entity.getProject().getPlatformIsCoordinator());
+        boolean usePlatformCoordinator = false;
+        if (platformIsCoordinatorRequested) {
+            if (!projectBO.isPlatformAggregatorSupported()) {
+                Log.warnf("Platform-coordinator requested for experiment %d but platform aggregator support " +
+                        "is disabled on this deployment - falling back to random clinic", experimentId);
+            } else if (projectFederatedExperimentStepBO.workflowHasOldFCVersionNode(entity.getProject().getWorkflow())) {
+                Log.warnf("Platform-coordinator requested for experiment %d but workflow contains an old " +
+                        "FeatureCloud-version app, which has no aggregator-only relay slot - falling back to random clinic", experimentId);
             } else {
-                Log.warnf("Platform-coordinator requested for experiment %d but platform aggregator " +
-                        "support is disabled on this deployment - falling back to random clinic", experimentId);
+                usePlatformCoordinator = true;
             }
+        }
+
+        projectFederatedExperimentStepBO.createForWorkflow(entity);
+        ao.getEntityManager().detach(entity);
+
+        if (usePlatformCoordinator) {
+            Log.infof("Platform-coordinator mode active for experiment %d - no clinic will be marked coordinator", experimentId);
+            ao.startLearningTransactional(experimentId, null);
+            ProjectFederatedExperimentEntity updatedEntity = ao.findById(experimentId);
+            fedDBClientBroadcastBO.startLearning(updatedEntity.getGlobalUniqueId(), null, updatedEntity.getModelCanBePublic());
+            return entityToDetailDto(updatedEntity);
         }
 
         int randomIndex = new Random().nextInt(participants.size());
         ProjectFederatedExperimentParticipantEntity coordinator = participants.get(randomIndex);
         coordinator.setIsCoordinator(true);
-        projectFederatedExperimentStepBO.createForWorkflow(entity);
-        ao.getEntityManager().detach(entity);
         ao.startLearningTransactional(experimentId, coordinator);
         ProjectFederatedExperimentEntity updatedEntity = ao.findById(experimentId);
-        // IF coordinator logic is setted in the project
         fedDBClientBroadcastBO.startLearning(updatedEntity.getGlobalUniqueId(), coordinator.getUniqueRandomClinicId(), updatedEntity.getModelCanBePublic());
 
         return entityToDetailDto(updatedEntity);
@@ -234,6 +248,7 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
 
         if (currentStepId != null) {
             projectFederatedExperimentStepBO.persistStep(currentStepId, RunStatusTypes.STOPPED);
+            aggregatorBO.stop(currentStepId);
         }
         projectFederatedExperimentParticipantAO.updateProjectAndStepStatusForExperimentTransactional(
                 experimentId,
@@ -441,9 +456,12 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
             Log.infof("No start node found in workflow for FED experiment ID %d", experiment.getId());
             return;
         }
-        Map<String, FederatedLearningRelayInfoDTO> relayData;
+        FederatedRelaySetupResult relaySetup;
         try {
-            relayData = projectFederatedExperimentStepBO.handleRelaySetup(experiment);
+            relaySetup = projectFederatedExperimentStepBO.handleRelaySetup(experiment);
+            if (relaySetup.platformRelayInfo() != null) {
+                aggregatorBO.start(experiment, nextNode, relaySetup.platformRelayInfo());
+            }
         } catch (Exception e) {
             Log.errorf(e, "Relay setup failed for experiment %d (current node %s) - stopping learning with ERROR: %s",
                     experiment.getId(),
@@ -452,6 +470,7 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
             stopLearning(experiment, ProjectStatus.ERROR);
             return;
         }
+        Map<String, FederatedLearningRelayInfoDTO> relayData = relaySetup.clientRelayData();
         if (relayData == null || relayData.isEmpty()) {
             Log.infof("No relay information required for experiment %d (node %s)",
                     experiment.getId(), nextNode.getNodeId());
@@ -484,6 +503,7 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
         Long experimentId = experiment.getId();
         Long currentStepId = experiment.getCurrentWorkflowNode().getId();
         projectFederatedExperimentStepBO.persistStep(currentStepId, RunStatusTypes.FINISHED);
+        aggregatorBO.stop(currentStepId);
         if (nextNode == null) {
             //FINISHED LEARNING
             projectFederatedExperimentParticipantAO.updateProjectAndStepStatusForExperimentTransactional(
