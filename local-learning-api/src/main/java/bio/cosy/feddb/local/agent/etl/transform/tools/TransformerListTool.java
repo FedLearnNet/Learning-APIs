@@ -7,21 +7,28 @@ import bio.cosy.feddb.core.api.app.config.ToolConfigDTO;
 import bio.cosy.feddb.core.api.app.config.ToolHyperParamConfigDTO;
 import bio.cosy.feddb.core.api.store.StoreDTO;
 import bio.cosy.feddb.core.base.PagedResponse;
+import bio.cosy.feddb.local.api.importer.functions.FunctionExecutionMode;
 import bio.cosy.feddb.local.api.importer.functions.FunctionManagementBO;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterDTO;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterType;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterUsage;
 import bio.cosy.feddb.local.api.importer.functions.FunctionsDetailDTO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
+import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerBO;
+import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerDTO;
+import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerStatus;
 import bio.cosy.feddb.local.services.GlobalAPIStoreService;
 import dev.langchain4j.agent.tool.Tool;
 import io.quarkus.logging.Log;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -30,6 +37,9 @@ import java.util.stream.Stream;
 public class TransformerListTool {
 
     public static final String TOOLS_MODULE = "tools";
+    public static final String CODE_MODULE = "Custom code";
+    public static final String PATIENT_ID_HYPERPARAM = "patient_id_column";
+    public static final String CODE_RETURN_KEY = "value";
     private static final int PAGE_SIZE = 100;
 
     @Inject
@@ -38,6 +48,9 @@ public class TransformerListTool {
     @Inject
     @RestClient
     GlobalAPIStoreService storeService;
+
+    @Inject
+    CodeTransformerBO codeTransformerBO;
 
     private List<FunctionsDetailDTO> storeTools;
 
@@ -58,6 +71,15 @@ public class TransformerListTool {
         return storeTools;
     }
 
+    @Tool("""
+            List the custom code transformers written and saved earlier (Python, running in a container), with
+            mode, the input keys they read (parameters), their return keys and appImage. Reuse one when it fits,
+            before writing a new one.
+            """)
+    public List<FunctionsDetailDTO> getAllCodeDetailed() {
+        return codeTransformers().stream().map(TransformerListTool::toFunction).toList();
+    }
+
     public synchronized void resetStoreTools() {
         storeTools = null;
     }
@@ -68,12 +90,67 @@ public class TransformerListTool {
                 .findFirst();
     }
 
+    public static boolean isCodeTransformer(ConnectorTransformerDTO transformer) {
+        return CODE_MODULE.equals(transformer.getModuleName());
+    }
+
     public static boolean isStoreTool(ConnectorTransformerDTO transformer) {
         return TOOLS_MODULE.equals(transformer.getModuleName())
                 || transformer.getAppVersionId() != null
                 || transformer.getAppImage() != null && !transformer.getAppImage().isBlank();
     }
 
+
+
+    public boolean resolveAppTransformer(ConnectorTransformerDTO transformer, String patientIdColumn) {
+        return isCodeTransformer(transformer)
+                ? resolveCodeTransformer(transformer, patientIdColumn)
+                : resolveStoreTool(transformer);
+    }
+
+    private boolean resolveCodeTransformer(ConnectorTransformerDTO transformer, String patientIdColumn) {
+        List<CodeTransformerDTO> ready = codeTransformers();
+        Optional<CodeTransformerDTO> code = ready.stream()
+                .filter(found -> Objects.equals(found.getImageName(), transformer.getAppImage()))
+                .findFirst()
+                .or(() -> ready.stream().filter(found -> Objects.equals(found.getName(), transformer.getMethodName())).findFirst());
+        code.ifPresent(found -> configure(transformer, found, patientIdColumn));
+        return code.isPresent();
+    }
+
+    public static void configure(ConnectorTransformerDTO transformer, CodeTransformerDTO code, String patientIdColumn) {
+        transformer.setModuleName(CODE_MODULE);
+        transformer.setMethodName(code.getName());
+        transformer.setAppImage(code.getImageName());
+        if (code.getMode() == FunctionExecutionMode.PATIENT && patientIdColumn != null) {
+            Map<String, Object> hyperparams = new LinkedHashMap<>(transformer.getHyperparams() == null ? Map.of() : transformer.getHyperparams());
+            hyperparams.put(PATIENT_ID_HYPERPARAM, patientIdColumn);
+            transformer.setHyperparams(hyperparams);
+        }
+    }
+
+    private List<CodeTransformerDTO> codeTransformers() {
+        return QuarkusTransaction.joiningExisting().call(codeTransformerBO::list).stream()
+                .filter(code -> code.getStatus() == CodeTransformerStatus.READY && code.getImageName() != null)
+                .toList();
+    }
+
+    private static FunctionsDetailDTO toFunction(CodeTransformerDTO code) {
+        FunctionsDetailDTO function = new FunctionsDetailDTO();
+        function.setModuleName(CODE_MODULE);
+        function.setMethodName(code.getName());
+        function.setDescription(code.getDescription());
+        function.setMode(code.getMode());
+        function.setAppImage(code.getImageName());
+        if (code.getMode() != FunctionExecutionMode.CELL) {
+            function.setParameters(code.getInputKeys() == null ? List.of() : code.getInputKeys().stream()
+                    .map(key -> new FunctionParameterDTO(key, FunctionParameterType.STRING, true, null))
+                    .toList());
+            function.setReturnKeys(code.getReturnKeys() == null || code.getReturnKeys().isEmpty()
+                    ? List.of(CODE_RETURN_KEY) : code.getReturnKeys());
+        }
+        return function;
+    }
 
     public boolean resolveStoreTool(ConnectorTransformerDTO transformer) {
         Optional<FunctionsDetailDTO> tool = storeTool(transformer.getAppVersionId());

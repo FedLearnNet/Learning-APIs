@@ -3,14 +3,14 @@ package bio.cosy.feddb.local.api.importer.transformer.code;
 import bio.cosy.feddb.local.api.auth.UserIdentity;
 import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerCheckDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerCheckResultDTO;
-import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerRunnerBO;
+import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerContainerBO;
+import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerRequestBO;
 import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerRunnerDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.save.CodeTransformerSaveDTO;
 import bio.cosy.feddb.local.api.pipeline.PipelineDTO;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 
 import java.util.List;
 
@@ -21,7 +21,10 @@ public class CodeTransformerServiceImpl implements CodeTransformerService {
     UserIdentity userIdentity;
 
     @Inject
-    CodeTransformerRunnerBO runnerBO;
+    CodeTransformerContainerBO containerBO;
+
+    @Inject
+    CodeTransformerRequestBO requestBO;
 
     @Inject
     CodeTransformerBO codeTransformerBO;
@@ -32,7 +35,6 @@ public class CodeTransformerServiceImpl implements CodeTransformerService {
     }
 
     @Override
-    @Transactional
     public CodeTransformerDTO save(CodeTransformerSaveDTO request) {
         return codeTransformerBO.save(request, userIdentity.getKeycloakId());
     }
@@ -59,28 +61,28 @@ public class CodeTransformerServiceImpl implements CodeTransformerService {
 
     @Override
     public CodeTransformerCheckResultDTO check(CodeTransformerCheckDTO request) {
-        return runnerBO.check(request, userIdentity.getKeycloakId());
+        return requestBO.check(request, userIdentity.getKeycloakId());
     }
 
     @Override
     public CodeTransformerRunnerDTO getRunner() {
-        return runnerBO.status();
+        return containerBO.status();
     }
 
     @Override
     public CodeTransformerRunnerDTO startRunner() {
-        runnerBO.start(userIdentity.getKeycloakId());
-        return runnerBO.status();
+        containerBO.start(userIdentity.getKeycloakId());
+        return containerBO.status();
     }
 
     @Override
     public CodeTransformerRunnerDTO stopRunner() {
-        runnerBO.stop();
-        return runnerBO.status();
+        containerBO.stop();
+        return containerBO.status();
     }
 
     @Override
     public Multi<CodeTransformerLogDTO> runnerLogs() {
-        return runnerBO.logs();
+        return containerBO.logs();
     }
 }

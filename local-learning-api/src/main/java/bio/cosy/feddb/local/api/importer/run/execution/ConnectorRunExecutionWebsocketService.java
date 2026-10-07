@@ -10,7 +10,8 @@ import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.local.api.importer.run.message.ConnectorRunRunMessagesBO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepBO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepDTO;
-import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerRunnerBO;
+import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerContainerBO;
+import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerRequestBO;
 import io.quarkus.logging.Log;
 import io.quarkus.websockets.next.*;
 import jakarta.inject.Inject;
@@ -46,7 +47,10 @@ public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
     ToolApiKeyService toolApiKeyService;
 
     @Inject
-    CodeTransformerRunnerBO codeTransformerBO;
+    CodeTransformerRequestBO codeTransformerRequestBO;
+
+    @Inject
+    CodeTransformerContainerBO codeTransformerContainerBO;
 
     @OnOpen
     public void onOpen(WebSocketConnection connection) {
@@ -133,7 +137,7 @@ public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
             Log.debug("Received message Text: " + m.getMessage() + " for container " + runId + " and type " + type);
             if (AppMessageTypeEnum.TRANSFORMATION_CHECK_RESULT.equals(m.getType())
                     || AppMessageTypeEnum.TRANSFORMATION_SAVE_RESULT.equals(m.getType())) {
-                codeTransformerBO.complete(m.getMessage());
+                codeTransformerRequestBO.complete(m.getMessage());
             } else if (AppConnectionTypesEnum.APP.isEqual(type)) {
                 handleAppMessages(m, runId, m.getRunType());
             } else {
@@ -211,13 +215,13 @@ public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
     @Transactional
     protected void logMessage(Long runId, RunMessageLogDTO runMessage, AppRunTypeEnum runType) {
         stepMessageBO.create(runMessage, runId);
-        codeTransformerBO.log(runId, runMessage.getMessage());
+        codeTransformerContainerBO.log(runId, runMessage.getMessage());
     }
 
     @Override
     // @Transactional
     protected void consoleMessage(Long runId, ConsoleStdOutDTO runMessage, AppRunTypeEnum runType) {
-        codeTransformerBO.log(runId, runMessage.getMsg());
+        codeTransformerContainerBO.log(runId, runMessage.getMsg());
     }
 
     private void closeRun() {

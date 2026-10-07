@@ -9,6 +9,7 @@ import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransform
 import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerUserTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerValidateTool;
+import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerWriterTool;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
@@ -38,6 +39,9 @@ public class TransformerOrganizer {
     TransformerUserTool userTool;
 
     @Inject
+    TransformerWriterTool writerTool;
+
+    @Inject
     DataTypeEntityMapper dataTypeMapper;
 
     @Inject
@@ -55,6 +59,7 @@ public class TransformerOrganizer {
 
         validateTool.init(context, schemaNode, nodeDTO);
         userTool.init(context.user(), previewData.getColumns());
+        writerTool.init(context, schemaNode, nodeDTO, previewData);
         String patientIdColumn = context.patientIdColumn();
         String hints = instructions;
 
@@ -76,9 +81,19 @@ public class TransformerOrganizer {
         if (patientIdColumn != null && !keep.contains(patientIdColumn)) {
             keep.add(patientIdColumn);
         }
+        ConnectorSelectedTransformer selected = select(previewData.filterColumns(keep), schemaNode, columns, hints.strip());
+        if (!selected.isFoundTransformer()) {
+            // A custom transformer written for this node but not taken is not worth keeping
+            writerTool.discard();
+        }
+        return selected;
+    }
+
+    private ConnectorSelectedTransformer select(TableSample selectedData, LocalSchemaNodeDTO schemaNode,
+                                                List<String> columns, String hints) {
         ConnectorSelectedTransformer selected;
         try {
-            selected = transformerWorkflow.select(previewData.filterColumns(keep), schemaNode, columns, hints.strip());
+            selected = transformerWorkflow.select(selectedData, schemaNode, columns, hints);
             if (selected == null) {
                 return ConnectorSelectedTransformer.notFound("No transformer found");
             }

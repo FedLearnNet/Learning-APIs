@@ -3,7 +3,7 @@ package bio.cosy.feddb.local.api.importer.transformer.code;
 import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerAO;
-import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerRunnerBO;
+import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerRequestBO;
 import bio.cosy.feddb.local.api.importer.transformer.code.save.CodeTransformerImageSaveBO;
 import bio.cosy.feddb.local.api.importer.transformer.code.save.CodeTransformerSaveDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.save.CodeTransformerSaveResultDTO;
@@ -28,7 +28,7 @@ public class CodeTransformerBO extends BaseBo<CodeTransformerDTO, CodeTransforme
 
 
     @Inject
-    CodeTransformerRunnerBO runnerBO;
+    CodeTransformerRequestBO requestBO;
 
     @Inject
     PipelineBO pipelineBO;
@@ -48,18 +48,23 @@ public class CodeTransformerBO extends BaseBo<CodeTransformerDTO, CodeTransforme
 
     public CodeTransformerDTO save(CodeTransformerSaveDTO request, String keycloakId) {
         request.setBaseImage(config.connector().codeTransformerImage());
-        CodeTransformerSaveResultDTO generated = runnerBO.generate(request, keycloakId);
+        CodeTransformerSaveResultDTO generated = requestBO.generate(request, keycloakId);
         if (!Boolean.TRUE.equals(generated.getIsSuccess())) {
             throw new BadRequestException(generated.getMessage());
         }
-        CodeTransformerEntity entity = ao.findByIdChecked(request.getId());
+        CodeTransformerDTO saved = store(request, generated);
+        if (saved.getStatus() == CodeTransformerStatus.READY) {
+            return saved;
+        }
+        return build(saved.getId());
+    }
+
+    @Transactional
+    public CodeTransformerDTO store(CodeTransformerSaveDTO request, CodeTransformerSaveResultDTO generated) {
+        CodeTransformerEntity entity = request.getId() == null ? new CodeTransformerEntity() : ao.findByIdChecked(request.getId());
         transformerImageBO.store(entity, request, generated);
         ao.persist(entity);
-        CodeTransformerDTO saved = mapper.entityToDto(entity);
-        if (saved.getStatus() == CodeTransformerStatus.READY) {
-            transformerImageBO.build(saved.getId());
-        }
-        return saved;
+        return mapper.entityToDto(entity);
     }
 
     public CodeTransformerDTO build(Long id) {

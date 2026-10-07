@@ -29,13 +29,17 @@ public interface TransformerSelectAgent {
               CELL functions rewrite their column in place, so mappedColumn is that column.
               ROW and PATIENT functions read inputMapping (parameter -> source column) and write returnMapping
               (return key -> output column); write to a new output column and use it as mappedColumn.
-            - Only if no built-in function fits, use a store tool from getAllStoreDetailed: moduleName 'tools',
-              methodName the tool name, appVersionId and appImage copied exactly, column the comma separated source
+            - Custom code transformers saved earlier (getAllCodeDetailed) are configured like functions: moduleName
+              'Custom code', methodName and appImage copied exactly, column for CELL, inputMapping (input key ->
+              source column) and returnMapping (return key -> new output column) for ROW and PATIENT.
+            - Only if neither a built-in function nor a custom code transformer fits, use a store tool from
+              getAllStoreDetailed: moduleName 'tools', methodName the tool name, appVersionId and appImage copied exactly, column the comma separated source
               columns for the tool, returnMapping from a tool output column to a new column, hyperparams keyed by the
               listed parameter names. Validating a store tool starts its container, which takes a while, so only
               validate a store tool chain once it is complete.
             - Check the whole chain with the validation tool before answering.
-            - If no function fits, set foundTransformer to false and describe the needed function.
+            - If no function fits, set foundTransformer to false and describe the needed function precisely (input
+              columns, output and how the values are converted), a custom transformer is written from it.
             - If you are unsure which of several options the user wants, ask the user; let the user select columns
               with selectColumns instead of asking for column names.
             {#if instructions}Instructions of the user: {instructions}{/if}

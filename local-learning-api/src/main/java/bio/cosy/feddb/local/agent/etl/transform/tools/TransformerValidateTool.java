@@ -63,9 +63,10 @@ public class TransformerValidateTool {
         List<ConnectorTransformerDTO> transformers = selected.getSelectedTransformers();
         boolean knownStoreTools = transformers.stream()
                 .filter(TransformerListTool::isStoreTool)
-                .allMatch(listTool::resolveStoreTool);
+                .allMatch(transformer -> listTool.resolveAppTransformer(transformer, context.patientIdColumn()));
         if (!knownStoreTools) {
-            return new ConnectorValidationResultDTO("Unknown store tool. Copy appVersionId and appImage exactly from getAllStoreDetailed.", schemaId);
+            return new ConnectorValidationResultDTO("Unknown store tool or custom code transformer. Copy appVersionId "
+                    + "and appImage exactly from getAllStoreDetailed, moduleName, methodName and appImage from getAllCodeDetailed.", schemaId);
         }
 
         String column = selected.getMappedColumn();

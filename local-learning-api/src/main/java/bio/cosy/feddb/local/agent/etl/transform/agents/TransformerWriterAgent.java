@@ -1,39 +1,72 @@
 package bio.cosy.feddb.local.agent.etl.transform.agents;
 
-import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
+import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
+import bio.cosy.feddb.local.agent.etl.transform.model.PreviousValidation;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerUserTool;
+import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerWriterTool;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
+import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
 import dev.langchain4j.agentic.Agent;
+import dev.langchain4j.agentic.declarative.K;
 import dev.langchain4j.service.UserMessage;
+import dev.langchain4j.service.V;
 import io.quarkiverse.langchain4j.ToolBox;
 
 import java.util.List;
 
 public interface TransformerWriterAgent {
 
+    String NAME = "writeTransformer";
+
     @UserMessage("""
-            Your job is to select the columns which are needed to calculate the value of the schema node below.
-            Pick every column the value depends on (e.g. both dates for a duration), but no column that only looks similar.
-            Return the exact column names, or an empty list if no column holds the information.
-            The tool lists the available transformer functions, in case this helps to judge which inputs are needed.
-            If several columns fit equally well, ask the user.
+            None of the existing transformers computes the schema node below, so your job is to write a custom
+            transformer in Python. It is saved and reused for other data later.
+            - First look at getAllCodeDetailed: if a saved custom code transformer fits, answer with it instead of
+              writing a new one. If getSavedCode returns code of a previous attempt, continue from it.
+            - Write only the body of the method transform; its signature depends on the mode:
+              CELL transform(self, value) gets one value of one column and returns the new value, it replaces the column.
+              ROW transform(self, row: dict) gets the input columns of one row by their exact names, e.g.
+              row["Date of birth"], and returns the value.
+              PATIENT transform(self, rows: list[dict]) gets all rows of one patient and returns a list with one dict
+              per row holding the result under the key 'value'. Only use it when the value depends on other rows.
+            - Use plain Python and its standard library (re, datetime, math, ...); os, sys, subprocess, socket,
+              shutil, importlib, ctypes, open, eval, exec, compile and dunder attributes are blocked.
+            - Handle every value of the rows: return None for a missing or unusable value instead of raising.
+              Return values valid for the data type, e.g. exactly the allowed values or ISO dates.
+            - Run checkCode after every change. It runs the code on the preview rows and validates every result
+              against the data type; fix the code with the failed samples until the check succeeds.
+            - Then save it with saveCode, with a general name and description of what it does. Answer with the
+              transformer saveCode returns as the only selectedTransformers entry, its mappedColumn and
+              foundTransformer set.
+            - If the meaning of the values is unclear (e.g. date format, unit, codes), ask the user.
+            - If no code can compute the schema node from the columns, set foundTransformer to false and explain why.
             {#if instructions}Instructions of the user: {instructions}{/if}
 
             Schema node: {schemaNode.name}
             {#if schemaNode.description}Description: {schemaNode.description}{/if}
-            {#if schemaNode.dataType}Data type: {schemaNode.dataType.name} ({schemaNode.dataType.type}){/if}
+            {#if schemaNode.dataType}
+            Data type: {schemaNode.dataType.name} ({schemaNode.dataType.type})
+            {#if schemaNode.dataType.allowedValues}Allowed values: {schemaNode.dataType.allowedValues}{/if}
+            {#if schemaNode.dataType.validations}Validations: {#for v in schemaNode.dataType.validations}{v.name} {v.validator}; {/for}{/if}
+            {/if}
 
-            Candidate columns, ranked by name similarity, meaning and how many of their values are valid for the schema node:
-            {#for candidate in candidates}
-            - {candidate.column}: {candidate.summary}
+            Selected columns: {selectedColumns}
+            Rows:
+            {#for row in selectedData.rows}
+            {#if row_index < 15}{row}{/if}
             {/for}
 
-            Names of all columns, in case a value needs other columns than the candidates: {previewData.columns}
+            {#if selectedTransformer}{#if selectedTransformer.neededTransformerFunction}Needed function: {selectedTransformer.neededTransformerFunction}{/if}{/if}
+            Result of the last attempt: {validation.message}
             """)
-    @Agent(description = "Selects the columns needed for a schema node", outputKey = "selectedColumns")
-    @ToolBox({TransformerListTool.class, TransformerUserTool.class})
-    List<String> select(TableSample previewData, LocalSchemaNodeDTO schemaNode, String instructions,
-                        List<ColumnCandidate> candidates);
+    @Agent(name = NAME, description = "Writes, checks and saves a custom Python transformer for a schema node", outputKey = "selectedTransformer")
+    @ToolBox({TransformerListTool.class, TransformerWriterTool.class, TransformerUserTool.class})
+    ConnectorSelectedTransformer write(TableSample selectedData,
+                                       LocalSchemaNodeDTO schemaNode,
+                                       List<String> selectedColumns,
+                                       String instructions,
+                                       ConnectorSelectedTransformer selectedTransformer,
+                                       @K(PreviousValidation.class) @V("validation") ConnectorValidationResultDTO validation);
 }
