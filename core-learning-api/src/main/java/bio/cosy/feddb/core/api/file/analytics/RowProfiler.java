@@ -6,9 +6,7 @@ import org.apache.commons.statistics.descriptive.Quantile;
 import org.apache.commons.statistics.descriptive.Statistic;
 import org.apache.datasketches.cpc.CpcSketch;
 import org.apache.datasketches.frequencies.ErrorType;
-// datasketches-java pinned to 8.0.0 (see core-learning-api/pom.xml) - this class was renamed to
-// FrequentItemsSketch in 9.0.0.
-import org.apache.datasketches.frequencies.ItemsSketch;
+import org.apache.datasketches.frequencies.FrequentItemsSketch;
 import org.apache.datasketches.kll.KllDoublesSketch;
 
 import java.text.ParsePosition;
@@ -570,7 +568,7 @@ public final class RowProfiler {
          * replayed into the sketch at that point. Feeding both would have cost a sketch update per
          * row for columns that never need the sketch at all.
          */
-        ItemsSketch<String> topItems;
+        FrequentItemsSketch<String> topItems;
         final KllDoublesSketch quantileSketch = KllDoublesSketch.newHeapInstance();
 
         final DoubleStatistics numStats = DoubleStatistics.builder(
@@ -617,7 +615,7 @@ public final class RowProfiler {
         private void dropExactTracking() {
             // Hand the exact distribution to the sketch in one weighted pass, so the bounded profile
             // starts from everything seen so far rather than only from what arrives next.
-            topItems = new ItemsSketch<>(TOP_ITEMS_MAP_SIZE);
+            topItems = new FrequentItemsSketch<>(TOP_ITEMS_MAP_SIZE);
             for (Map.Entry<String, Integer> entry : freq.entrySet()) {
                 topItems.update(entry.getKey(), entry.getValue());
             }
