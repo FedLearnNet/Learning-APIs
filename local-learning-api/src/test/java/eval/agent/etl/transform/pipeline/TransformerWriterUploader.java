@@ -19,6 +19,7 @@ import jakarta.transaction.Transactional;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 @ApplicationScoped
@@ -45,7 +46,8 @@ public class TransformerWriterUploader {
         File export = ResourceLoader.loadAsFile(dataset.getDataPath());
         FileParsingSettingsDTO parsing = FileParsingSettingsDTO.forFileName(export.getName());
         parsing.setDelimiter(dataset.getDelimiter());
-        ConnectorFilesDTO file = uploadBO.uploadFileForCohort(cohortId, export, keycloakId, parsing);
+        ConnectorFilesDTO file = uploadBO.uploadFileForCohort(cohortId, export,
+                Path.of(dataset.getDataPath()).getFileName().toString(), keycloakId, parsing);
 
         FileUploadSettingsDTO input = createFileUploadSetting(file, parsing);
         ConnectorDTO connector = createConnector(cohortId, dataset, input);

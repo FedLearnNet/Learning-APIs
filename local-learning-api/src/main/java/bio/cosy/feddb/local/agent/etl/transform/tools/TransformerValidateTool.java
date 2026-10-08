@@ -84,6 +84,15 @@ public class TransformerValidateTool {
             return new ConnectorValidationResultDTO("Unknown store tool or custom code transformer. Copy appVersionId "
                     + "and appImage exactly from getAllStoreDetailed, moduleName, methodName and appImage from getAllCodeDetailed.", schemaId);
         }
+        List<String> unknownFunctions = transformers.stream()
+                .filter(transformer -> !TransformerListTool.isStoreTool(transformer))
+                .filter(transformer -> !listTool.isBuiltInFunction(transformer))
+                .map(transformer -> transformer.getModuleName() + "/" + transformer.getMethodName())
+                .toList();
+        if (!unknownFunctions.isEmpty()) {
+            return new ConnectorValidationResultDTO("Unknown functions " + unknownFunctions + ". Copy moduleName and "
+                    + "methodName exactly from getAllDetail, or describe the needed function with foundTransformer false.", schemaId);
+        }
 
         String column = selected.getMappedColumn();
         String mappedBefore = context.mappedColumns().get(column);

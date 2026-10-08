@@ -102,6 +102,12 @@ public class TransformerListTool {
 
 
 
+    public boolean isBuiltInFunction(ConnectorTransformerDTO transformer) {
+        return functionManagementBO.getAllDetail().stream()
+                .anyMatch(function -> Objects.equals(function.getModuleName(), transformer.getModuleName())
+                        && Objects.equals(function.getMethodName(), transformer.getMethodName()));
+    }
+
     public boolean resolveAppTransformer(ConnectorTransformerDTO transformer, String patientIdColumn) {
         return isCodeTransformer(transformer)
                 ? resolveCodeTransformer(transformer, patientIdColumn)

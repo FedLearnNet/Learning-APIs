@@ -4,6 +4,7 @@ public enum TransformerAssistantMessageType {
     START,
     USER_MESSAGE,
     STOP,
+    TOKEN,
     APPLY,
     APPLIED,
     CHAT_MESSAGE,

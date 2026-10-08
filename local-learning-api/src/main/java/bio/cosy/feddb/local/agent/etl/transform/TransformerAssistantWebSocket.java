@@ -9,6 +9,7 @@ import io.quarkus.websockets.next.OnTextMessage;
 import io.quarkus.websockets.next.OpenConnections;
 import io.quarkus.websockets.next.WebSocket;
 import io.quarkus.websockets.next.WebSocketConnection;
+import io.quarkus.websockets.next.WebSocketSecurity;
 import jakarta.inject.Inject;
 
 import static bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType.APPLIED;
@@ -26,6 +27,9 @@ public class TransformerAssistantWebSocket {
     @Inject
     UserIdentity userIdentity;
 
+    @Inject
+    WebSocketSecurity webSocketSecurity;
+
     @OnTextMessage
     public void onMessage(TransformerAssistantMessageDTO message, WebSocketConnection connection) {
         String sessionId = connection.id();
@@ -34,6 +38,13 @@ public class TransformerAssistantWebSocket {
                     event -> send(sessionId, event));
             case USER_MESSAGE -> agentStarter.message(sessionId, message);
             case STOP -> agentStarter.stop(sessionId);
+            // A run that builds custom code outlasts the access token the connection was opened with
+            case TOKEN -> webSocketSecurity.updateSecurityIdentity(message.getMessage())
+                    .exceptionally(error -> {
+                        Log.warnf("Could not refresh the token of transformer assistant session %s: %s", sessionId,
+                                error.getMessage());
+                        return null;
+                    });
             case APPLY -> {
                 TransformerAssistantMessageDTO applied = new TransformerAssistantMessageDTO(APPLIED);
                 applied.setConnector(agentStarter.apply(sessionId, message.getSchemaIds()));

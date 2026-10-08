@@ -22,6 +22,7 @@ import jakarta.transaction.Transactional;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 
@@ -253,6 +254,7 @@ public class AutoSubscriberBO {
             ConnectorFilesDTO uploaded = uploadBO.uploadFileForCohort(
                     cohortId,
                     etlFile,
+                    Path.of(etlDataPath).getFileName().toString(),
                     config.user().systemUserName(),
                     fileSettings.toFileParsingSettings()
             );

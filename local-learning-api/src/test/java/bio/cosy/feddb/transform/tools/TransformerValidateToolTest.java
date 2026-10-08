@@ -69,6 +69,8 @@ class TransformerValidateToolTest {
             }
             return rows;
         });
+        lenient().when(listTool.isBuiltInFunction(any())).thenAnswer(invocation ->
+                replaceValue.methodName().equals(invocation.<ConnectorTransformerDTO>getArgument(0).getMethodName()));
         lenient().when(transformationBO.applyBuiltInTransformations(any(), any(), any())).thenAnswer(invocation -> {
             List<ConnectorTransformerDTO> transformers = invocation.getArgument(0);
             List<Map<String, Object>> rows = invocation.getArgument(1);
@@ -122,6 +124,21 @@ class TransformerValidateToolTest {
 
         assertFalse(result.isValid());
         assertTrue(result.getMessage().startsWith("Unknown store tool"), result.getMessage());
+        verify(previewRunnerBO, never()).run(any(), any());
+    }
+
+    @Test
+    void rejectsAFunctionThatDoesNotExist() {
+        init("payer_code", List.of("MC"), DataTypes.STRING, null);
+        ConnectorTransformerDTO invented = replace("?", "null");
+        invented.setModuleName("python");
+        invented.setMethodName("transform");
+
+        ConnectorValidationResultDTO result = tool.validate(
+                ConnectorSelectedTransformer.mapping("payer_code", List.of(invented)));
+
+        assertFalse(result.isValid());
+        assertTrue(result.getMessage().startsWith("Unknown functions [python/transform]"), result.getMessage());
         verify(previewRunnerBO, never()).run(any(), any());
     }
 

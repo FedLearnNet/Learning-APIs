@@ -3,10 +3,10 @@ package bio.cosy.feddb.local.api.importer.validation;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.api.importer.files.read.TableDataProfileBO;
+import bio.cosy.feddb.local.api.importer.files.table.SheetMergePlan;
 import bio.cosy.feddb.local.api.importer.files.table.TableData;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorValueMappingConfigDTO;
-import bio.cosy.feddb.local.api.importer.files.table.SheetMergePlan;
 import bio.cosy.feddb.local.api.importer.statistics.TransformedStatisticsBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import io.smallrye.mutiny.Multi;
@@ -14,15 +14,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @ApplicationScoped
 public class PreviewValidationBO {
@@ -36,7 +28,9 @@ public class PreviewValidationBO {
     @Inject
     TableDataProfileBO profileBO;
 
-    /** Upper bound on distinct categorical values validated per column, to bound validation cost. */
+    /**
+     * Upper bound on distinct categorical values validated per column, to bound validation cost.
+     */
     @ConfigProperty(name = "connector.preview-validation.max-categorical-values", defaultValue = "50")
     int maxCategoricalValues;
 
@@ -55,13 +49,13 @@ public class PreviewValidationBO {
         List<ColumnProfile> sourceProfiles = impact.structuralChange()
                 ? List.of()
                 : transformedStatisticsBO.getSourceStatistics(
-                        request.getCohortId(), request.getInputConfig(), request.getUploadInfo());
+                request.getCohortId(), request.getInputConfig(), request.getUploadInfo());
         List<ColumnProfile> fastProfiles = impact.allColumns()
                 ? List.of()
                 : sourceProfiles.stream()
-                        .filter(Objects::nonNull)
-                        .filter(profile -> !impact.columns().contains(profile.name()))
-                        .toList();
+                .filter(Objects::nonNull)
+                .filter(profile -> !impact.columns().contains(profile.name()))
+                .toList();
         Set<String> fastColumns = fastProfiles.stream()
                 .map(ColumnProfile::name)
                 .filter(Objects::nonNull)
@@ -84,25 +78,25 @@ public class PreviewValidationBO {
                 || sourceProfiles.isEmpty();
         Multi<PreviewValidationResponseDTO> transformedResults = needsTransformedProfiles
                 ? Multi.createFrom().item(() -> transformedStatisticsBO.getTransformedStatistics(
-                                request.getCohortId(),
-                                request.getInputConfig(),
-                                request.getUploadInfo(),
-                                request.getMergeConfig(),
-                                request.getPivotConfig(),
-                                request.getTransformer(),
-                                request.getSchemaMapping()
-                        ))
-                        .onItem().transformToMultiAndConcatenate(profiles -> Multi.createFrom().iterable(
-                                profiles == null ? List.<ColumnProfile>of() : profiles))
-                        .filter(Objects::nonNull)
-                        .filter(profile -> !fastColumns.contains(profile.name()))
-                        .map(profile -> validateProfile(
-                                request.getCohortId(),
-                                profile,
-                                mappingByColumn.get(profile.name()),
-                                elementByMapping,
-                                warningContext
-                        ))
+                        request.getCohortId(),
+                        request.getInputConfig(),
+                        request.getUploadInfo(),
+                        request.getMergeConfig(),
+                        request.getPivotConfig(),
+                        request.getTransformer(),
+                        request.getSchemaMapping()
+                ))
+                .onItem().transformToMultiAndConcatenate(profiles -> Multi.createFrom().iterable(
+                        profiles == null ? List.<ColumnProfile>of() : profiles))
+                .filter(Objects::nonNull)
+                .filter(profile -> !fastColumns.contains(profile.name()))
+                .map(profile -> validateProfile(
+                        request.getCohortId(),
+                        profile,
+                        mappingByColumn.get(profile.name()),
+                        elementByMapping,
+                        warningContext
+                ))
                 : Multi.createFrom().empty();
 
         return Multi.createBy().concatenating().streams(
@@ -353,6 +347,7 @@ public class PreviewValidationBO {
         }
 
         Map<String, Integer> referenceCount = new HashMap<>();
+        Set<String> keyColumns = new HashSet<>();
         if (schemaMapping != null) {
             for (ConnectorMappingDTO mapping : schemaMapping) {
                 if (mapping == null) {
@@ -363,11 +358,14 @@ public class PreviewValidationBO {
                 if (valueMapping != null) {
                     countReference(referenceCount, valueMapping.getMappingColumn());
                     countReference(referenceCount, valueMapping.getValueColumn());
+                    if (valueMapping.getMappingColumn() != null) {
+                        keyColumns.add(valueMapping.getMappingColumn());
+                    }
                 }
             }
         }
 
-        return new ColumnWarningContext(transformerOutputs, appTransformerOutputs, referenceCount);
+        return new ColumnWarningContext(transformerOutputs, appTransformerOutputs, referenceCount, keyColumns);
     }
 
     private Set<String> transformerOutputColumns(ConnectorTransformerDTO transformer) {
@@ -403,15 +401,17 @@ public class PreviewValidationBO {
         }
     }
 
-    /** Holds the precomputed warning inputs and derives per-column warnings on demand. */
+    /**
+     * Holds the precomputed warning inputs and derives per-column warnings on demand.
+     */
     private record ColumnWarningContext(
             Set<String> transformerOutputs,
             Set<String> appTransformerOutputs,
-            Map<String, Integer> referenceCount
+            Map<String, Integer> referenceCount,
+            Set<String> keyColumns
     ) {
         List<PreviewValidationWarningDTO> warningsFor(String column) {
             List<PreviewValidationWarningDTO> warnings = new ArrayList<>();
-            boolean referenced = referenceCount.getOrDefault(column, 0) > 0;
 
             if (appTransformerOutputs.contains(column)) {
                 warnings.add(new PreviewValidationWarningDTO(
@@ -419,7 +419,7 @@ public class PreviewValidationBO {
                         "Column '" + column + "' is produced by an app-based transformer, so its "
                                 + "categories cannot be computed here. Add expected values manually."));
             }
-            if (referenced && transformerOutputs.contains(column)) {
+            if (keyColumns.contains(column) && transformerOutputs.contains(column)) {
                 warnings.add(new PreviewValidationWarningDTO(
                         PreviewValidationWarningType.TRANSFORMED_MAPPING_KEY,
                         "Column '" + column + "' is created or overwritten by a transformer and also "
