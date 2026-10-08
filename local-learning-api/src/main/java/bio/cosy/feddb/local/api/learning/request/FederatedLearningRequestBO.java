@@ -102,12 +102,7 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
     }
 
     private Set<Long> getPatientCohortIds(FederatedLearningRequestEntity entity) {
-        if (entity.getPatients() == null) {
-            return Set.of();
-        }
-        return entity.getPatients().stream()
-                .map(patientLearning -> patientLearning.getPatient().getCohort().getId())
-                .collect(Collectors.toSet());
+        return patientLearningBO.getCohortIdsForRequests(List.of(entity.getId()));
     }
 
     private Set<Long> getInvolvedCohortIds(FederatedLearningRequestEntity entity) {

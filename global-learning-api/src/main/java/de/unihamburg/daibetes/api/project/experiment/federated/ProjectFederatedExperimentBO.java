@@ -26,6 +26,7 @@ import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.LockModeType;
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.NotAllowedException;
 import jakarta.ws.rs.NotFoundException;
@@ -86,6 +87,7 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
         return mapper.entitiesToDtos(ao.findByProjectId(id));
     }
 
+    @Transactional
     public ProjectFederatedExperimentDetailDTO getById(Long projectId, Long id, String keycloakId) {
         projectMembershipAO.checkProjectAndUser(projectId, keycloakId);
 
