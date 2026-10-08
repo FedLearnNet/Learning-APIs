@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface TransformerAssistantUser {
 
-    String ask(String question);
+    String ask(String agent, String question);
 
-    List<String> selectColumns(String question, List<String> columns, boolean multiple);
+    List<String> selectColumns(String agent, String question, List<String> columns, boolean multiple);
 }

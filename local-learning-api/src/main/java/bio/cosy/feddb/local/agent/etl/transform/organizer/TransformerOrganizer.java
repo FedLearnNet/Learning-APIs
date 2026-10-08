@@ -1,9 +1,9 @@
 package bio.cosy.feddb.local.agent.etl.transform.organizer;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
-import bio.cosy.feddb.local.agent.etl.transform.agents.ColumnSelectAgent;
-import bio.cosy.feddb.local.agent.etl.transform.agents.TransformerWorkflow;
-import bio.cosy.feddb.local.agent.etl.transform.agents.VisitColumnAgent;
+import bio.cosy.feddb.local.agent.etl.transform.bot.ColumnSelectBot;
+import bio.cosy.feddb.local.agent.etl.transform.agents.TransformerWorkflowAgent;
+import bio.cosy.feddb.local.agent.etl.transform.bot.VisitColumnBot;
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerCombiner;
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerHelper;
 import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
@@ -30,13 +30,13 @@ import java.util.List;
 public class TransformerOrganizer {
 
     @Inject
-    ColumnSelectAgent columnSelectAgent;
+    ColumnSelectBot columnSelectAgent;
 
     @Inject
-    TransformerWorkflow transformerWorkflow;
+    TransformerWorkflowAgent transformerWorkflow;
 
     @Inject
-    VisitColumnAgent visitColumnAgent;
+    VisitColumnBot visitColumnAgent;
 
     @Inject
     TransformerValidateTool validateTool;
@@ -63,16 +63,17 @@ public class TransformerOrganizer {
 
         DataTypeNodeDTO nodeDTO = dataTypeMapper.dtoToNodeDto(dataType);
 
-        validateTool.init(context, schemaNode, nodeDTO);
         userTool.init(context.user(), previewData.getColumns());
-        writerTool.init(context, schemaNode, nodeDTO, previewData);
         String patientIdColumn = context.patientIdColumn();
         String hints = instructions;
 
-        List<String> columns = selectColumns(previewData, schemaNode, hints, candidates);
+        List<String> columns = selectColumns(context, previewData, schemaNode, hints, candidates);
         if (columns.isEmpty()) {
             return ConnectorSelectedTransformer.notFound("No source column holds the information of this schema node");
         }
+        validateTool.init(context, schemaNode, nodeDTO,
+                TransformerHelper.valueRows(previewData, columns, context.fileProfiles(), patientIdColumn));
+        writerTool.init(context, schemaNode, nodeDTO, previewData);
 
         if (columns.size() == 1) {
             ConnectorSelectedTransformer direct = ConnectorSelectedTransformer.mapping(columns.getFirst(), List.of());
@@ -87,7 +88,9 @@ public class TransformerOrganizer {
         if (patientIdColumn != null && !keep.contains(patientIdColumn)) {
             keep.add(patientIdColumn);
         }
-        ConnectorSelectedTransformer selected = select(previewData.filterColumns(keep), schemaNode, columns, hints.strip());
+        String fileValues = TransformerHelper.describeFileValues(columns, context.fileProfiles());
+        ConnectorSelectedTransformer selected = select(previewData.filterColumns(keep), schemaNode, columns, hints.strip(),
+                fileValues);
         if (!selected.isFoundTransformer()) {
             // A custom transformer written for this node but not taken is not worth keeping
             writerTool.discard();
@@ -102,7 +105,7 @@ public class TransformerOrganizer {
                                     String instructions,
                                     ConnectorSelectedTransformer selected) {
         String patientIdColumn = context.patientIdColumn();
-        if (!TransformerHelper.hasSeveralRowsPerPatient(previewData, patientIdColumn)) {
+        if (!TransformerHelper.hasSeveralRowsPerPatient(previewData, patientIdColumn, context.fileProfiles())) {
             return null;
         }
         try {
@@ -116,10 +119,10 @@ public class TransformerOrganizer {
     }
 
     private ConnectorSelectedTransformer select(TableSample selectedData, LocalSchemaNodeDTO schemaNode,
-                                                List<String> columns, String hints) {
+                                                List<String> columns, String hints, String fileValues) {
         ConnectorSelectedTransformer selected;
         try {
-            selected = transformerWorkflow.select(selectedData, schemaNode, columns, hints);
+            selected = transformerWorkflow.select(selectedData, schemaNode, columns, hints, fileValues);
             if (selected == null) {
                 return ConnectorSelectedTransformer.notFound("No transformer found");
             }
@@ -140,18 +143,23 @@ public class TransformerOrganizer {
         return selected;
     }
 
-    private List<String> selectColumns(TableSample previewData, LocalSchemaNodeDTO schemaNode, String hints,
+    private List<String> selectColumns(TransformerRunContext context, TableSample previewData, LocalSchemaNodeDTO schemaNode, String hints,
                                        List<ColumnCandidate> candidates) {
         ColumnCandidate best = candidates.isEmpty() ? null : candidates.getFirst();
         if (best != null && (best.isDirect() || best.getNameScore() == 1)) {
+            context.step("matcher: '%s' fits by name", best.getColumn());
             return List.of(best.getColumn());
         }
         try {
+            userTool.askedBy(ColumnSelectBot.NAME);
             List<String> selected = columnSelectAgent.select(previewData, schemaNode, hints.strip(), candidates);
-            return selected == null ? List.of() : selected.stream()
+            List<String> columns = selected == null ? List.of() : selected.stream()
                     .filter(previewData.getColumns()::contains)
                     .distinct()
                     .toList();
+            context.step("%s: %s of %s", ColumnSelectBot.NAME, columns,
+                    candidates.stream().map(ColumnCandidate::getColumn).toList());
+            return columns;
         } catch (RuntimeException e) {
             Log.warnf(e, "Column selection for schema node %s failed", schemaNode.getName());
             return List.of();

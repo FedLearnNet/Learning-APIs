@@ -1,6 +1,8 @@
 package bio.cosy.feddb.local.agent.etl.transform.tools;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
+import bio.cosy.feddb.local.agent.etl.transform.helper.EtlAgentLog;
+import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerHelper;
 import bio.cosy.feddb.local.agent.etl.transform.model.SavedCodeTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
@@ -24,6 +26,7 @@ import jakarta.inject.Inject;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -90,6 +93,8 @@ public class TransformerWriterTool {
         request.setGoal(goal);
         request.setData(data(mode, inputColumns));
         CodeTransformerCheckResultDTO result = requestBO.check(request, context.keycloakId());
+        context.step("%s code on %s %s", mode, inputColumns, Boolean.TRUE.equals(result.getIsSuccess())
+                ? "valid" : "failed (" + EtlAgentLog.shorten(result.getMessage()) + ")");
         if (Boolean.TRUE.equals(result.getIsSuccess())) {
             checked = request;
             checkedColumns = List.copyOf(inputColumns);
@@ -122,6 +127,7 @@ public class TransformerWriterTool {
             return SavedCodeTransformer.failed("Saving failed: " + e.getMessage());
         }
         saved = awaitBuild(saved);
+        context.step("custom code '%s' built: %s", name, saved.getStatus());
         if (saved.getStatus() != CodeTransformerStatus.READY) {
             return SavedCodeTransformer.failed(saved.getStatus() == CodeTransformerStatus.BUILDING
                     ? "The image was not built within " + BUILD_TIMEOUT.toMinutes() + " minutes"
@@ -170,7 +176,10 @@ public class TransformerWriterTool {
 
     private Map<String, List<Object>> data(FunctionExecutionMode mode, List<String> inputColumns) {
         List<Map<String, Object>> rows = sample.getRows().stream().filter(Objects::nonNull).toList();
-        if (mode == FunctionExecutionMode.PATIENT) {
+        if (mode != FunctionExecutionMode.PATIENT) {
+            rows = new ArrayList<>(rows);
+            rows.addAll(TransformerHelper.valueRows(sample, inputColumns, context.fileProfiles(), null));
+        } else {
             String patientIdColumn = context.patientIdColumn();
             rows = rows.stream()
                     .filter(row -> row.get(patientIdColumn) != null)

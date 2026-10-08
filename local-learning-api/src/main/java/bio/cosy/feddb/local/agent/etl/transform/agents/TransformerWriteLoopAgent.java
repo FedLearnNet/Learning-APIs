@@ -13,12 +13,12 @@ import dev.langchain4j.agentic.declarative.LoopAgent;
 
 import java.util.List;
 
-public interface TransformerWriteLoop {
+public interface TransformerWriteLoopAgent {
 
     @LoopAgent(outputKey = "selectedTransformer", maxIterations = 3,
             subAgents = {TransformerWriterAgent.class, TransformerValidateTool.class})
     ConnectorSelectedTransformer write(TableSample selectedData, LocalSchemaNodeDTO schemaNode,
-                                       List<String> selectedColumns, String instructions);
+                                       List<String> selectedColumns, String instructions, String fileValues);
 
     @ExitCondition(testExitAtLoopEnd = true)
     static boolean done(ConnectorSelectedTransformer selectedTransformer, ConnectorValidationResultDTO validation) {
@@ -27,6 +27,6 @@ public interface TransformerWriteLoop {
 
     @ErrorHandler
     static ErrorRecoveryResult retryWithFeedback(ErrorContext errorContext) {
-        return TransformerWorkflow.retryWithFeedback(errorContext);
+        return TransformerWorkflowAgent.retryWithFeedback(errorContext);
     }
 }

@@ -15,10 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConnectorRunExecutionOutputAwaiter {
 
     public static final Duration APP_OUTPUT_TIMEOUT = Duration.ofMinutes(5);
-
+    private final ConcurrentHashMap<Long, CompletableFuture<TableData>> pendingBatches = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, Long> batchSteps = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, CompletableFuture<ConnectorRunExecutionResult>> pending = new ConcurrentHashMap<>();
-
-
     private final ConcurrentHashMap<Long, Long> cohorts = new ConcurrentHashMap<>();
 
     public void register(Long runId, Long cohortId) {
@@ -33,25 +32,23 @@ public class ConnectorRunExecutionOutputAwaiter {
         }
     }
 
-    /** Cohort registered for this step, empty when the outputs are not to be stored. */
     public Optional<Long> cohortOf(Long runId) {
         return runId == null ? Optional.empty() : Optional.ofNullable(cohorts.get(runId));
     }
 
-    /**
-     * Results of individual batches, keyed by the batch id the app was asked to run.
-     *
-     * <p>A batched transformer keeps one container for the whole import and feeds it batch after
-     * batch, so the step id no longer identifies a single result. The app echoes the id it was
-     * started with in its upload, which is what these futures are keyed by.</p>
-     */
-    private final ConcurrentHashMap<Long, CompletableFuture<TableData>> pendingBatches = new ConcurrentHashMap<>();
-
-    /** Announces a batch before it is sent, so its result cannot arrive before anyone waits. */
-    public void registerBatch(Long batchId) {
+    public void registerBatch(Long batchId, Long stepId) {
         if (batchId != null) {
             pendingBatches.computeIfAbsent(batchId, id -> new CompletableFuture<>());
+            batchSteps.put(batchId, stepId);
         }
+    }
+
+    public void failBatchesOf(Long stepId, String error) {
+        batchSteps.forEach((batchId, batchStepId) -> {
+            if (batchStepId.equals(stepId)) {
+                failBatch(batchId, error);
+            }
+        });
     }
 
     public boolean isBatch(Long batchId) {
@@ -62,11 +59,13 @@ public class ConnectorRunExecutionOutputAwaiter {
     public Uni<TableData> awaitBatch(Long batchId, Duration timeout) {
         CompletableFuture<TableData> future =
                 pendingBatches.computeIfAbsent(batchId, id -> new CompletableFuture<>());
-        future.whenComplete((output, error) -> pendingBatches.remove(batchId, future));
+        future.whenComplete((output, error) -> {
+            pendingBatches.remove(batchId, future);
+            batchSteps.remove(batchId);
+        });
         return Uni.createFrom().completionStage(future).ifNoItem().after(timeout).fail();
     }
 
-    /** Hands a batch result to whoever is waiting. Returns false when the id is not a known batch. */
     public boolean completeBatch(Long batchId, TableData outputData) {
         CompletableFuture<TableData> future = pendingBatches.get(batchId);
         if (future == null) {
@@ -76,7 +75,6 @@ public class ConnectorRunExecutionOutputAwaiter {
         return true;
     }
 
-    /** Fails a batch the app reported as failed, so its caller gets the error right away instead of a timeout. */
     public void failBatch(Long batchId, String error) {
         CompletableFuture<TableData> future = pendingBatches.get(batchId);
         if (future != null) {
@@ -85,6 +83,7 @@ public class ConnectorRunExecutionOutputAwaiter {
     }
 
     public void cancelBatch(Long batchId) {
+        batchSteps.remove(batchId);
         CompletableFuture<TableData> future = pendingBatches.remove(batchId);
         if (future != null && !future.isDone()) {
             future.cancel(true);

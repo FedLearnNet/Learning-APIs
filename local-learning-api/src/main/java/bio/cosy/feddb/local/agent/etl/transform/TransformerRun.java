@@ -5,6 +5,7 @@ import bio.cosy.feddb.core.api.model.workflow.chat.HumanInTheLoopType;
 import bio.cosy.feddb.core.api.model.workflow.chat.ModelWorkflowChatMessageDTO;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantUser;
+import bio.cosy.feddb.local.agent.etl.transform.helper.EtlAgentLog;
 import io.quarkus.logging.Log;
 
 import java.util.ArrayList;
@@ -80,14 +81,14 @@ final class TransformerRun implements TransformerAssistantUser {
     }
 
     @Override
-    public String ask(String question) {
-        return awaitAnswer(new HumanInTheLoopDTO(question)).getMessage();
+    public String ask(String agent, String question) {
+        return awaitAnswer(agent, new HumanInTheLoopDTO(question)).getMessage();
     }
 
     @Override
-    public List<String> selectColumns(String question, List<String> columns, boolean multiple) {
+    public List<String> selectColumns(String agent, String question, List<String> columns, boolean multiple) {
         HumanInTheLoopType type = multiple ? HumanInTheLoopType.SELECT_COLUMNS : HumanInTheLoopType.SELECT_COLUMN;
-        TransformerAssistantMessageDTO answer = awaitAnswer(new HumanInTheLoopDTO(question, type, columns));
+        TransformerAssistantMessageDTO answer = awaitAnswer(agent, new HumanInTheLoopDTO(question, type, columns));
         List<String> selected = answer.getColumns() == null || answer.getColumns().isEmpty()
                 ? Stream.ofNullable(answer.getMessage()).map(String::strip).toList()
                 : answer.getColumns();
@@ -98,7 +99,7 @@ final class TransformerRun implements TransformerAssistantUser {
                 .toList();
     }
 
-    private TransformerAssistantMessageDTO awaitAnswer(HumanInTheLoopDTO question) {
+    private TransformerAssistantMessageDTO awaitAnswer(String agent, HumanInTheLoopDTO question) {
         ModelWorkflowChatMessageDTO chat = new ModelWorkflowChatMessageDTO();
         chat.setId(messageIds.incrementAndGet());
         chat.setCreatedAt(new Date());
@@ -107,17 +108,19 @@ final class TransformerRun implements TransformerAssistantUser {
         chat.setHumanInTheLoop(new ArrayList<>(List.of(question)));
         CompletableFuture<TransformerAssistantMessageDTO> answer = new CompletableFuture<>();
         pendingAnswer = answer;
-        emit(TransformerAssistantMessageDTO.chat(chat));
+        EtlAgentLog.step(agent, "Asks the user: %s", EtlAgentLog.shorten(question.getQuestion()));
+        emit(TransformerAssistantMessageDTO.chat(chat, agent));
         // join() throws CancellationException once cancel() cancels the pending answer
         TransformerAssistantMessageDTO reply = answer.join();
         String text = reply.getColumns() == null || reply.getColumns().isEmpty()
                 ? reply.getMessage()
                 : String.join(", ", reply.getColumns());
+        EtlAgentLog.step(agent, "The user answers: %s", EtlAgentLog.shorten(text));
         chat.addHumanInTheLoopAnswer(text);
         chat.setMessage(question.getQuestion() + "\n\n> " + text);
         chat.setStatusMessage(null);
         chat.setDone(true);
-        emit(TransformerAssistantMessageDTO.chat(chat));
+        emit(TransformerAssistantMessageDTO.chat(chat, agent));
         return reply;
     }
 

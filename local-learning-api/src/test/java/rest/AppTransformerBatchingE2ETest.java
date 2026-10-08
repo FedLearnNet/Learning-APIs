@@ -398,7 +398,7 @@ public class AppTransformerBatchingE2ETest {
 
         private static Map<String, String> mapOf(JsonNode node) {
             Map<String, String> map = new java.util.LinkedHashMap<>();
-            node.fields().forEachRemaining(e -> map.put(e.getKey(), e.getValue().asText()));
+            node.properties().forEach(e -> map.put(e.getKey(), e.getValue().asText()));
             return map;
         }
 

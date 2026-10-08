@@ -85,7 +85,7 @@ public class AppTransformerSessionBO {
         AppTransformerSession session = findSession(runId, transformer);
         WebSocketConnection connection = connectionBO.awaitReconnect(session.getStepId(), transformer.getAppImage());
         Long batchId = batchIds.decrementAndGet();
-        outputAwaiter.registerBatch(batchId);
+        outputAwaiter.registerBatch(batchId, session.getStepId());
         try {
             connection.sendTextAndAwait(new AppMessageWrapperDTO<>(AppMessageTypeEnum.START_PREDICTION,
                     mapper.toBatch(batchId, transformer, rows), AppRunTypeEnum.MODEL_RUN));

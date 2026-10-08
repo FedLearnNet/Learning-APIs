@@ -16,6 +16,7 @@ public class TransformerAssistantMessageDTO {
     private ConnectorDTO connector;
     private String message;
     private ModelWorkflowChatMessageDTO chatMessage;
+    private String agent;
     private Long schemaId;
     private String mappingPath;
     private ConnectorSelectedTransformer selectedTransformer;
@@ -43,9 +44,10 @@ public class TransformerAssistantMessageDTO {
         return message;
     }
 
-    public static TransformerAssistantMessageDTO chat(ModelWorkflowChatMessageDTO chatMessage) {
+    public static TransformerAssistantMessageDTO chat(ModelWorkflowChatMessageDTO chatMessage, String agent) {
         TransformerAssistantMessageDTO message = new TransformerAssistantMessageDTO(TransformerAssistantMessageType.CHAT_MESSAGE);
         message.setChatMessage(ModelWorkflowChatMessageDTO.copy(chatMessage));
+        message.setAgent(agent);
         return message;
     }
 }

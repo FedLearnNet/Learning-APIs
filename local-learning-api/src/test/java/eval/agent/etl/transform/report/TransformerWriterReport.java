@@ -34,7 +34,7 @@ public final class TransformerWriterReport {
         JSON.writeValue(directory.resolve("transformer-writer.json").toFile(), resultsByDataset);
         Files.writeString(directory.resolve("transformer-writer-report.md"), write(model, resultsByDataset),
                 StandardCharsets.UTF_8);
-        Log.infof("[WRITER-EVAL] Saved the results to %s", directory.toAbsolutePath());
+        Log.infof("[ETL-Eval:report] Saved the results to %s", directory.toAbsolutePath());
     }
 
     private static String write(String model, Map<String, List<TransformerWriterResult>> resultsByDataset) {

@@ -11,14 +11,14 @@ import dev.langchain4j.agentic.declarative.SequenceAgent;
 
 import java.util.List;
 
-public interface TransformerWorkflow {
+public interface TransformerWorkflowAgent {
 
     int MAX_FAILED_ANSWERS = 3;
 
     @SequenceAgent(outputKey = "selectedTransformer",
-            subAgents = {TransformerSelectLoop.class, TransformerWriteFallback.class})
+            subAgents = {TransformerSelectLoop.class, TransformerWriteFallbackAgent.class})
     ConnectorSelectedTransformer select(TableSample selectedData, LocalSchemaNodeDTO schemaNode,
-                                        List<String> selectedColumns, String instructions);
+                                        List<String> selectedColumns, String instructions, String fileValues);
 
     @ErrorHandler
     static ErrorRecoveryResult retryWithFeedback(ErrorContext errorContext) {

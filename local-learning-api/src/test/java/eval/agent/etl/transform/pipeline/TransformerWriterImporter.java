@@ -51,7 +51,7 @@ public class TransformerWriterImporter {
     public ConnectorRunDTO importWith(Long connectorId, ConnectorDTO suggested) {
         String keycloakId = config.user().systemUserName();
         saveSuggestion(connectorId, suggested, keycloakId);
-        Log.infof("[WRITER-EVAL] Importing with %d transformers and %d mappings", suggested.getTransformer().size(),
+        Log.infof("[ETL-Eval:import] Importing with %d transformers and %d mappings", suggested.getTransformer().size(),
                 suggested.getSchemaMapping().size());
         return awaitRun(connectorRunBO.startRun(connectorId, true, false, keycloakId).getId());
     }

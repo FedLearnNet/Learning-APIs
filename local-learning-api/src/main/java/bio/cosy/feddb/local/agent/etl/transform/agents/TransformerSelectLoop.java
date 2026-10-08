@@ -15,7 +15,7 @@ public interface TransformerSelectLoop {
     @LoopAgent(outputKey = "selectedTransformer", maxIterations = 5,
             subAgents = {TransformerSelectAgent.class, TransformerValidateTool.class})
     ConnectorSelectedTransformer select(TableSample selectedData, LocalSchemaNodeDTO schemaNode,
-                                        List<String> selectedColumns, String instructions);
+                                        List<String> selectedColumns, String instructions, String fileValues);
 
     @ExitCondition(testExitAtLoopEnd = true)
     static boolean done(ConnectorSelectedTransformer selectedTransformer, ConnectorValidationResultDTO validation) {

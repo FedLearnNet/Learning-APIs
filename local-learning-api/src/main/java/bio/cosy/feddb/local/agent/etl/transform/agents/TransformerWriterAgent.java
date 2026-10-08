@@ -21,8 +21,8 @@ public interface TransformerWriterAgent {
     String NAME = "writeTransformer";
 
     @UserMessage("""
-            None of the existing transformers computes the schema node below, so your job is to write a custom
-            transformer in Python. It is saved and reused for other data later.
+            None of the built-in functions and none of the ETL tools from the store computes the schema node below,
+            so your job is to write a custom transformer in Python. It is saved and reused for other data later.
             - First look at getAllCodeDetailed: if a saved custom code transformer fits, answer with it instead of
               writing a new one. If getSavedCode returns code of a previous attempt, continue from it.
             - Write only the body of the method transform; its signature depends on the mode:
@@ -35,8 +35,11 @@ public interface TransformerWriterAgent {
               shutil, importlib, ctypes, open, eval, exec, compile and dunder attributes are blocked.
             - Handle every value of the rows: return None for a missing or unusable value instead of raising.
               Return values valid for the data type, e.g. exactly the allowed values or ISO dates.
-            - Run checkCode after every change. It runs the code on the preview rows and validates every result
-              against the data type; fix the code with the failed samples until the check succeeds.
+            - Run checkCode after every change. It runs the code on the preview rows and on every value of the input
+              columns in the whole file, and validates every result against the data type; fix the code with the
+              failed samples until the check succeeds.
+            - A column that already holds another schema node cannot be mapped again; then use ROW, which writes
+              the result to a new column.
             - Then save it with saveCode, with a general name and description of what it does. Answer with the
               transformer saveCode returns as the only selectedTransformers entry, its mappedColumn and
               foundTransformer set.
@@ -58,6 +61,10 @@ public interface TransformerWriterAgent {
             {#if row_index < 15}{row}{/if}
             {/for}
 
+            {#if fileValues}Values of the selected columns in the whole file, the rows above are only the first ones:
+            {fileValues}
+            {/if}
+
             {#if selectedTransformer}{#if selectedTransformer.neededTransformerFunction}Needed function: {selectedTransformer.neededTransformerFunction}{/if}{/if}
             Result of the last attempt: {validation.message}
             """)
@@ -67,6 +74,7 @@ public interface TransformerWriterAgent {
                                        LocalSchemaNodeDTO schemaNode,
                                        List<String> selectedColumns,
                                        String instructions,
+                                       String fileValues,
                                        ConnectorSelectedTransformer selectedTransformer,
                                        @K(PreviousValidation.class) @V("validation") ConnectorValidationResultDTO validation);
 }

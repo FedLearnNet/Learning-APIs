@@ -9,13 +9,13 @@ import dev.langchain4j.agentic.declarative.ConditionalAgent;
 
 import java.util.List;
 
-public interface TransformerWriteFallback {
+public interface TransformerWriteFallbackAgent {
 
-    @ConditionalAgent(outputKey = "selectedTransformer", subAgents = {TransformerWriteLoop.class})
+    @ConditionalAgent(outputKey = "selectedTransformer", subAgents = {TransformerWriteLoopAgent.class})
     ConnectorSelectedTransformer write(TableSample selectedData, LocalSchemaNodeDTO schemaNode,
-                                       List<String> selectedColumns, String instructions);
+                                       List<String> selectedColumns, String instructions, String fileValues);
 
-    @ActivationCondition(TransformerWriteLoop.class)
+    @ActivationCondition(TransformerWriteLoopAgent.class)
     static boolean nothingFits(ConnectorSelectedTransformer selectedTransformer, ConnectorValidationResultDTO validation) {
         return selectedTransformer == null || !selectedTransformer.isFoundTransformer()
                 || validation == null || !validation.isValid();

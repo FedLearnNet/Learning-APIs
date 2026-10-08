@@ -4,6 +4,7 @@ import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.api.importer.connector.input.FileUploadSettingsDTO;
 import bio.cosy.feddb.local.api.importer.extract.ConnectorExtractBO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFilesAO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFilesEntity;
 import bio.cosy.feddb.local.api.importer.files.read.TabularFileReaderBO;
 import bio.cosy.feddb.local.api.importer.files.table.TableData;
@@ -41,6 +42,7 @@ class TransformedStatisticsBOTest {
         bo.extractBO = extractBO;
         bo.fileHandlerBO = new StubReaderBO(profiles);
         bo.ao = new StubFilesAO(file);
+        bo.transformationBO = new ConnectorTransformationBO();
         bo.objectMapper = new ObjectMapper();
         bo.maxRows = 100;
         bo.maxPatients = 10;

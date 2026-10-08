@@ -83,7 +83,7 @@ public class TransformerWriterEvaluationTest {
         try {
             return judge.judge(TransformerWriterPrompt.render(review));
         } catch (RuntimeException e) {
-            Log.warnf(e, "[WRITER-EVAL] The LLM judge failed on %s", review.getSchemaNode());
+            Log.warnf(e, "[ETL-Eval:judge] Failed on %s", review.getSchemaNode());
             return null;
         }
     }

@@ -313,7 +313,7 @@ public class AppBasedAutoSubscribeE2ETest {
      * image would do — read its API key and step id from the container environment, then post its
      * declared outputs back to the run's upload endpoint.
      */
-    private static class ExtractorAppStub implements OrchContainerServiceClient {
+    static class ExtractorAppStub implements OrchContainerServiceClient {
 
         private static final String IDS_MAPPING_CSV = """
                 admission_type_id,description

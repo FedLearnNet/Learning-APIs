@@ -12,6 +12,7 @@ import bio.cosy.feddb.local.api.importer.files.ConnectorFilesAO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFilesEntity;
 import bio.cosy.feddb.local.api.importer.files.read.TabularFileReaderBO;
 import bio.cosy.feddb.local.api.importer.files.table.ColumnNames;
+import bio.cosy.feddb.local.api.importer.files.table.SheetMergePlan;
 import bio.cosy.feddb.local.api.importer.files.table.TableData;
 import bio.cosy.feddb.local.api.importer.functions.FunctionExecutionMode;
 import bio.cosy.feddb.local.api.importer.functions.FunctionRunnerBO;
@@ -181,6 +182,22 @@ public class TransformedStatisticsBO {
             fileEntity.setTransformedStatistics(profiles);
             return profiles;
         }
+    }
+
+    @Transactional
+    @TransactionConfiguration(timeout = STATISTICS_TIMEOUT_SECONDS)
+    public List<ColumnProfile> getFileStatistics(
+            Long cohortId,
+            ConnectorInputConfigDTO inputConfig,
+            Map<String, UploadInfoDTO> uploadInfo,
+            SheetMergeResultDTO mergeConfig,
+            PivotConfigDTO pivotConfig) {
+        boolean pivoting = pivotConfig != null && pivotConfig.getValueColumnIndex() != null
+                && !pivotConfig.getValueColumnIndex().isEmpty();
+        if (SheetMergePlan.requested(mergeConfig) || pivoting) {
+            return getTransformedStatistics(cohortId, inputConfig, uploadInfo, mergeConfig, pivotConfig, List.of(), List.of());
+        }
+        return getSourceStatistics(cohortId, inputConfig, uploadInfo);
     }
 
     /**

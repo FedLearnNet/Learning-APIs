@@ -54,7 +54,7 @@ public class TransformerListTool {
 
     private List<FunctionsDetailDTO> storeTools;
 
-    @Tool("List all transformer functions with module, method name, mode (CELL, ROW, PATIENT), parameters and return keys")
+    @Tool("First choice: list the built-in transformer functions with module, method name, mode (CELL, ROW, PATIENT), parameters and return keys")
     public List<FunctionsDetailDTO> getAllDetail() {
         return functionManagementBO.getAllDetail();
     }
@@ -62,7 +62,7 @@ public class TransformerListTool {
     @Tool("""
             List the store tools (apps running in a container) that transform data, with appVersionId, appImage,
             the input columns they need (parameter column), their output columns (return keys) and hyperparameters.
-            Use a store tool only when no built-in function fits.
+            Second choice: use a store tool only when no built-in function fits.
             """)
     public synchronized List<FunctionsDetailDTO> getAllStoreDetailed() {
         if (storeTools == null) {
@@ -73,8 +73,8 @@ public class TransformerListTool {
 
     @Tool("""
             List the custom code transformers written and saved earlier (Python, running in a container), with
-            mode, the input keys they read (parameters), their return keys and appImage. Reuse one when it fits,
-            before writing a new one.
+            mode, the input keys they read (parameters), their return keys and appImage. Third choice: only when
+            neither a built-in function nor a store tool fits; reusing one is still better than writing new code.
             """)
     public List<FunctionsDetailDTO> getAllCodeDetailed() {
         return codeTransformers().stream().map(TransformerListTool::toFunction).toList();

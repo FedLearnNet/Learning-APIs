@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.agent.etl.transform.helper;
 
+import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
@@ -19,6 +20,8 @@ import java.util.stream.Collectors;
 public class TransformerHelper {
 
     private static final int EXAMPLE_VALUES = 3;
+    private static final int MAX_FILE_VALUES = 50;
+    private static final int DESCRIBED_FILE_VALUES = 30;
 
     public static ConnectorDTO toConnector(Collection<TransformerAssistantMessageDTO> results) {
         List<ConnectorTransformerDTO> transformers = new ArrayList<>();
@@ -54,9 +57,15 @@ public class TransformerHelper {
     }
 
     /** Whether a patient has several rows, e.g. one per encounter, so the rows need a visit to be told apart. */
-    public static boolean hasSeveralRowsPerPatient(TableSample preview, String patientIdColumn) {
+    public static boolean hasSeveralRowsPerPatient(TableSample preview, String patientIdColumn,
+                                                   Map<String, ColumnProfile> fileProfiles) {
         if (patientIdColumn == null) {
             return false;
+        }
+        // The preview holds only the first rows, the profile counts the patients of the whole file
+        ColumnProfile profile = fileProfiles.get(patientIdColumn);
+        if (profile != null && profile.uniqueValues() > 0) {
+            return profile.uniqueValues() < profile.count() - profile.missing();
         }
         List<Object> patientIds = preview.getRows().stream()
                 .filter(Objects::nonNull)
@@ -77,6 +86,73 @@ public class TransformerHelper {
                         .limit(EXAMPLE_VALUES)
                         .collect(Collectors.joining(", ")))
                 .toList();
+    }
+
+    public static List<String> fileValues(ColumnProfile profile) {
+        if (profile == null) {
+            return List.of();
+        }
+        List<Map.Entry<String, Integer>> counts = valueCounts(profile);
+        List<String> values = counts.stream()
+                .map(Map.Entry::getKey)
+                .filter(value -> value != null && !value.isBlank())
+                .limit(MAX_FILE_VALUES)
+                .collect(Collectors.toCollection(ArrayList::new));
+        if (profile.missing() > 0) {
+            values.add(null);
+        }
+        return values;
+    }
+
+    public static List<Map<String, Object>> valueRows(TableSample preview, Collection<String> columns,
+                                                      Map<String, ColumnProfile> fileProfiles, String patientIdColumn) {
+        Map<String, Object> base = preview.getRows().stream().filter(Objects::nonNull).findFirst().orElse(Map.of());
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (String column : columns) {
+            for (String value : fileValues(fileProfiles.get(column))) {
+                Map<String, Object> row = new LinkedHashMap<>(base);
+                if (patientIdColumn != null && !patientIdColumn.equals(column)) {
+                    // Every value row is its own patient, so PATIENT transformers do not mix them
+                    row.put(patientIdColumn, "value-row-" + rows.size());
+                }
+                row.put(column, value);
+                rows.add(row);
+            }
+        }
+        return rows;
+    }
+
+    public static String describeFileValues(Collection<String> columns, Map<String, ColumnProfile> fileProfiles) {
+        return columns.stream()
+                .filter(fileProfiles::containsKey)
+                .map(column -> column + " " + describeFileValues(fileProfiles.get(column), DESCRIBED_FILE_VALUES))
+                .collect(Collectors.joining("\n"));
+    }
+
+    public static String describeFileValues(ColumnProfile profile, int maxValues) {
+        StringBuilder text = new StringBuilder("(").append(profile.count()).append(" rows, ")
+                .append(profile.missing()).append(" empty");
+        if (profile.min() != null && profile.max() != null) {
+            text.append(", ").append(profile.min()).append(" to ").append(profile.max());
+        }
+        text.append(')');
+        List<Map.Entry<String, Integer>> counts = valueCounts(profile);
+        if (counts.isEmpty()) {
+            return text.toString();
+        }
+        text.append(": ").append(counts.stream()
+                .limit(maxValues)
+                .map(entry -> "'" + entry.getKey() + "' x" + entry.getValue())
+                .collect(Collectors.joining(", ")));
+        if (counts.size() > maxValues) {
+            text.append(", ... ").append(profile.uniqueValues()).append(" distinct values");
+        }
+        return text.toString();
+    }
+
+    private static List<Map.Entry<String, Integer>> valueCounts(ColumnProfile profile) {
+        List<Map.Entry<String, Integer>> counts = profile.valueCounts() != null ? profile.valueCounts() : profile.topCategories();
+        return counts == null ? List.of() : counts.stream().filter(Objects::nonNull).toList();
     }
 
     /**

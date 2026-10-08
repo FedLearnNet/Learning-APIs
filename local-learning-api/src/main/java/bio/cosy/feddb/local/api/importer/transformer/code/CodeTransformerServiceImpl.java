@@ -8,6 +8,7 @@ import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformer
 import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerRunnerDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.save.CodeTransformerSaveDTO;
 import bio.cosy.feddb.local.api.pipeline.PipelineDTO;
+import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -54,7 +55,9 @@ public class CodeTransformerServiceImpl implements CodeTransformerService {
         return codeTransformerBO.build(id);
     }
 
+    // On a worker thread: the stream starts with the latest build, read from the database
     @Override
+    @Blocking
     public Multi<PipelineDTO> buildUpdates(Long id) {
         return codeTransformerBO.buildUpdates(id);
     }

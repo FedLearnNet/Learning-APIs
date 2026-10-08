@@ -1,17 +1,23 @@
-package bio.cosy.feddb.local.agent.etl.transform.agents;
+package bio.cosy.feddb.local.agent.etl.transform.bot;
 
+import bio.cosy.feddb.local.agent.etl.transform.memory.ColumnSelectMemory;
 import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerUserTool;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
-import dev.langchain4j.agentic.Agent;
 import dev.langchain4j.service.UserMessage;
+import io.quarkiverse.langchain4j.RegisterAiService;
 import io.quarkiverse.langchain4j.ToolBox;
+import jakarta.enterprise.context.RequestScoped;
 
 import java.util.List;
 
-public interface ColumnSelectAgent {
+@RegisterAiService(chatMemoryProviderSupplier = ColumnSelectMemory.class)
+@RequestScoped
+public interface ColumnSelectBot {
+
+    String NAME = "selectColumns";
 
     @UserMessage("""
             Your job is to select the columns which are needed to calculate the value of the schema node below.
@@ -32,7 +38,6 @@ public interface ColumnSelectAgent {
 
             Names of all columns, in case a value needs other columns than the candidates: {previewData.columns}
             """)
-    @Agent(description = "Selects the columns needed for a schema node", outputKey = "selectedColumns")
     @ToolBox({TransformerListTool.class, TransformerUserTool.class})
     List<String> select(TableSample previewData, LocalSchemaNodeDTO schemaNode, String instructions,
                         List<ColumnCandidate> candidates);

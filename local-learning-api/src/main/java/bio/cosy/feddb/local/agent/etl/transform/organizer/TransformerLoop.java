@@ -4,6 +4,7 @@ import bio.cosy.feddb.core.api.datamodler.schema.SchemaNodeType;
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantUser;
+import bio.cosy.feddb.local.agent.etl.transform.helper.EtlAgentLog;
 import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
@@ -38,6 +39,7 @@ import static bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssi
 public class TransformerLoop {
 
     static final int SAMPLE_ROWS = 200;
+    static final String PATIENT_ID_QUESTION = "patientId";
 
     @Inject
     TransformerOrganizer transformerOrganizer;
@@ -77,15 +79,19 @@ public class TransformerLoop {
         TableSample preview = loadPreview(connector);
         String patientIdColumn = patientIdColumn(connector, preview, user, events);
         setPatientIdMapping(connector, patientIdColumn);
-        TransformerRunContext context = new TransformerRunContext(config(connector, patientIdColumn), patientIdColumn,
-                keycloakId, fileProfiles(connector), user);
+        ConnectorConfigDTO connectorConfig = config(connector, patientIdColumn);
+        TransformerRunContext context = new TransformerRunContext(connectorConfig, patientIdColumn, keycloakId,
+                fileProfiles(connector), mappedColumns(connectorConfig), new ArrayList<>(), user);
         Map<Long, List<ColumnCandidate>> candidates = columnMatcher.match(preview, schemaNodes, context.fileProfiles());
+        EtlAgentLog.step("start", "Map %d schema nodes from %d columns, patient id column '%s'", schemaNodes.size(),
+                preview.getColumns().size(), patientIdColumn);
 
         schemaNodes.forEach(node ->
                 events.accept(TransformerAssistantMessageDTO.node(NODE_PENDING, node.getId(), node.getPath(), null)));
         for (LocalSchemaNodeWithPathDTO node : schemaNodes) {
             preview = runForOneSchemaNode(node, preview, context, candidates, instructions, events);
         }
+        EtlAgentLog.step("done", "Went through all %d schema nodes", schemaNodes.size());
     }
 
 
@@ -97,6 +103,7 @@ public class TransformerLoop {
                                            Consumer<TransformerAssistantMessageDTO> events
     ) {
         events.accept(TransformerAssistantMessageDTO.node(NODE_STARTED, node.getId(), node.getPath(), null));
+        context.steps().clear();
 
         ConnectorSelectedTransformer selected = transformerOrganizer.selectTransformer(context, preview, node,
                 instructions.get(), candidates.getOrDefault(node.getId(), List.of()), node.getDataType());
@@ -105,9 +112,12 @@ public class TransformerLoop {
             result.setVisitMapping(transformerOrganizer.selectVisit(context, preview, node, instructions.get(), selected));
         }
         events.accept(result);
+        EtlAgentLog.step("node", "%s -> %s%s | %s", node.getPath(), EtlAgentLog.describe(selected),
+                EtlAgentLog.describe(result.getVisitMapping()), String.join(" ; ", context.steps()));
         if (!selected.isFoundTransformer()) {
             return preview;
         }
+        context.mappedColumns().put(selected.getMappedColumn(), node.getPath());
         context.config().getTransformer().addAll(selected.getSelectedTransformers());
         for (ConnectorTransformerDTO transformer : selected.getSelectedTransformers()) {
             preview = applyTransformer(preview, transformer, context.patientIdColumn());
@@ -120,11 +130,12 @@ public class TransformerLoop {
                                    Consumer<TransformerAssistantMessageDTO> events) {
         String patientIdColumn = mappingBO.resolveExternalIdSourceColumn(connector.getSchemaMapping());
         if (patientIdColumn == null) {
-            List<String> selected = user.selectColumns(
+            List<String> selected = user.selectColumns(PATIENT_ID_QUESTION,
                     "Which column holds the patient ID? It keeps the rows of one patient together.",
                     preview.getColumns(), false);
             patientIdColumn = selected.isEmpty() ? null : selected.getFirst();
         }
+        EtlAgentLog.step(PATIENT_ID_QUESTION, "The patient id is in column '%s'", patientIdColumn);
         if (patientIdColumn != null) {
             events.accept(TransformerAssistantMessageDTO.patientId(config.connector().externalIdColumn(), patientIdColumn));
         }
@@ -154,6 +165,14 @@ public class TransformerLoop {
                 connector.getUploadInfo(), transformers, mappings, connector.getMergeConfig(), connector.getPivotConfig());
     }
 
+    private static Map<String, String> mappedColumns(ConnectorConfigDTO config) {
+        Map<String, String> mappedColumns = new HashMap<>();
+        config.getSchemaMapping().stream()
+                .filter(mapping -> mapping.getColumn() != null && mapping.getMapping() != null)
+                .forEach(mapping -> mappedColumns.put(mapping.getColumn(), mapping.getMapping()));
+        return mappedColumns;
+    }
+
     @Transactional
     public List<LocalSchemaNodeWithPathDTO> getSchemaNodesTransactional(ConnectorDTO connector) {
         List<ConnectorMappingDTO> mappings = connector.getSchemaMapping();
@@ -167,17 +186,16 @@ public class TransformerLoop {
                 .collect(Collectors.toList());
     }
 
+    // Not wrapped in a transaction: getFileStatistics starts its own, with a longer timeout for merged files
     private Map<String, ColumnProfile> fileProfiles(ConnectorDTO connector) {
         try {
-            return QuarkusTransaction.joiningExisting().call(() -> statisticsBO.getTransformedStatistics(
-                            connector.getCohortId(), connector.getInputConfig(), connector.getUploadInfo(),
-                            connector.getMergeConfig(), connector.getPivotConfig(), connector.getTransformer(),
-                            connector.getSchemaMapping()))
+            return statisticsBO.getFileStatistics(connector.getCohortId(), connector.getInputConfig(),
+                            connector.getUploadInfo(), connector.getMergeConfig(), connector.getPivotConfig())
                     .stream()
                     .filter(Objects::nonNull)
                     .collect(Collectors.toMap(ColumnProfile::name, profile -> profile, (a, b) -> a));
         } catch (RuntimeException e) {
-            Log.infof("No file statistics for the transformer selection, validating the sample only: %s", e.getMessage());
+            Log.warnf("No file statistics for the transformer selection, validating the sample only: %s", e.getMessage());
             return Map.of();
         }
     }

@@ -83,7 +83,7 @@ public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
         if (RUN_FINISHED.equals(connection.closeReason())) {
             return;
         }
-        closedRun(runId);
+        closedRun(runId, connection.closeReason().getMessage());
     }
 
     @OnError
@@ -91,7 +91,7 @@ public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
         Log.error("Error in WebsocketClient: " + throwable.getMessage());
         Long runId = Long.parseLong(connection.pathParam("runId"));
         revokeUnlessSessionDriven(runId);
-        closedRun(runId);
+        closedRun(runId, throwable.getMessage());
     }
 
 
@@ -199,7 +199,7 @@ public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
         toolApiKeyService.revoke(Scope.CONNECTOR_RUN, runId);
     }
 
-    public void closedRun(Long runId) {
+    public void closedRun(Long runId, String reason) {
         try {
             if (sessionBO.isSessionStep(runId)) {
                 // The wrapper's socket client reconnects on its own every few seconds
@@ -207,6 +207,7 @@ public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
                 // transformer - failing the step here would also tear its container down and end
                 // the import on the first blip. The session owns this step's lifecycle.
                 Log.infof("App transformer step %d disconnected; its session will wait for it to reconnect", runId);
+                outputAwaiter.failBatchesOf(runId, "The app lost its connection during the batch: " + reason);
                 return;
             }
             stepBO.failIfUnfinished(runId, "The app closed its connection before reporting a result");

@@ -26,6 +26,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -63,7 +65,7 @@ class TransformerWriterToolTest {
                 Map.of("patient", "p1", "first", "Ada", "second", "Lovelace"),
                 Map.of("patient", "p2", "first", "Alan", "second", "Turing"),
                 Map.of("patient", "p2", "first", "Grace", "second", "Hopper")), null);
-        tool.init(new TransformerRunContext(null, "patient", "user", Map.of(), null), node, goal, sample);
+        tool.init(new TransformerRunContext(null, "patient", "user", Map.of(), new HashMap<>(), new ArrayList<>(), null), node, goal, sample);
         // Checks succeed unless a test says otherwise; rejected input never reaches the runner
         lenient().when(requestBO.check(any(), anyString())).thenReturn(result(true));
     }

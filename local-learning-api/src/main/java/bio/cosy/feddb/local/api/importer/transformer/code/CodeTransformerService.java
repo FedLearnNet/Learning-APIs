@@ -6,7 +6,6 @@ import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformer
 import bio.cosy.feddb.local.api.importer.transformer.code.save.CodeTransformerSaveDTO;
 import io.quarkus.security.Authenticated;
 import bio.cosy.feddb.local.api.pipeline.PipelineDTO;
-import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Multi;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -57,7 +56,6 @@ public interface CodeTransformerService {
     CodeTransformerDTO build(@PathParam("id") Long id);
 
     @GET
-    @Blocking
     @Path("/{id: \\d+}/build")
     @Produces(MediaType.SERVER_SENT_EVENTS)
     @RestStreamElementType(MediaType.APPLICATION_JSON)

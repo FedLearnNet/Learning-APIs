@@ -50,7 +50,7 @@ public class TransformerWriterUploader {
         FileUploadSettingsDTO input = createFileUploadSetting(file, parsing);
         ConnectorDTO connector = createConnector(cohortId, dataset, input);
         connector = connectorBO.create(connector, false, false);
-        Log.infof("[WRITER-EVAL] Uploaded %s into cohort %d, connector %d", dataset.getName(), cohortId, connector.getId());
+        Log.infof("[ETL-Eval:upload] Uploaded %s into cohort %d, connector %d", dataset.getName(), cohortId, connector.getId());
         return connector;
     }
 
@@ -58,7 +58,6 @@ public class TransformerWriterUploader {
         FileUploadSettingsDTO input = new FileUploadSettingsDTO();
         input.setMode("FILE");
         input.setFileId(file.getId());
-        input.setFileType(parsing.getFileType());
         input.setDelimiter(parsing.getDelimiter());
         input.setHasHeader(parsing.isHasHeader());
         input.setFirstSheetOnly(parsing.getFirstSheetOnly());

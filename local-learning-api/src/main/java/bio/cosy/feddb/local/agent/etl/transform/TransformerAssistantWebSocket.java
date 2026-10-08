@@ -1,6 +1,6 @@
-package bio.cosy.feddb.local.agent.etl.transform.assistant;
+package bio.cosy.feddb.local.agent.etl.transform;
 
-import bio.cosy.feddb.local.agent.etl.transform.TransformerAgentStarter;
+import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
 import bio.cosy.feddb.local.api.auth.UserIdentity;
 import io.quarkus.logging.Log;
 import io.quarkus.security.Authenticated;

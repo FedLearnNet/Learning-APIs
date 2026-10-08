@@ -1,5 +1,6 @@
 package bio.cosy.feddb.transform.helper;
 
+import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType;
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerHelper;
@@ -9,6 +10,7 @@ import bio.cosy.feddb.local.api.importer.files.table.TableSample;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -30,9 +32,39 @@ class TransformerHelperTest {
         TableSample onePerPatient = new TableSample(List.of("patient_nbr"),
                 List.of(Map.of("patient_nbr", "1"), Map.of("patient_nbr", "2")), null);
 
-        assertTrue(TransformerHelper.hasSeveralRowsPerPatient(ENCOUNTERS, "patient_nbr"));
-        assertFalse(TransformerHelper.hasSeveralRowsPerPatient(onePerPatient, "patient_nbr"));
-        assertFalse(TransformerHelper.hasSeveralRowsPerPatient(ENCOUNTERS, null));
+        assertTrue(TransformerHelper.hasSeveralRowsPerPatient(ENCOUNTERS, "patient_nbr", Map.of()));
+        assertFalse(TransformerHelper.hasSeveralRowsPerPatient(onePerPatient, "patient_nbr", Map.of()));
+        assertFalse(TransformerHelper.hasSeveralRowsPerPatient(ENCOUNTERS, null, Map.of()));
+    }
+
+    @Test
+    void theWholeFileDecidesWhetherPatientsHaveSeveralRows() {
+        TableSample onePerPatient = new TableSample(List.of("patient_nbr"),
+                List.of(Map.of("patient_nbr", "1"), Map.of("patient_nbr", "2")), null);
+        ColumnProfile fourPatientsInSixRows = profile("patient_nbr", 6, 0, 4, List.of());
+
+        assertTrue(TransformerHelper.hasSeveralRowsPerPatient(onePerPatient, "patient_nbr",
+                Map.of("patient_nbr", fourPatientsInSixRows)));
+    }
+
+    @Test
+    void valueRowsHoldEveryValueOfTheFile() {
+        ColumnProfile codes = profile("age", 783, 2, 3, List.of(Map.entry("0", 750), Map.entry("2", 24), Map.entry("1", 7)));
+
+        List<Map<String, Object>> rows = TransformerHelper.valueRows(ENCOUNTERS, List.of("age"), Map.of("age", codes), "patient_nbr");
+
+        assertEquals(Arrays.asList("0", "2", "1", null), rows.stream().map(row -> row.get("age")).toList());
+        assertEquals(List.of("value-row-0", "value-row-1", "value-row-2", "value-row-3"),
+                rows.stream().map(row -> row.get("patient_nbr")).toList());
+        assertEquals("10", rows.getFirst().get("encounter_id"));
+    }
+
+    @Test
+    void fileValuesAreDescribedWithTheirCounts() {
+        ColumnProfile codes = profile("repaglinide_rx", 783, 0, 3, List.of(Map.entry("0", 750), Map.entry("2", 24), Map.entry("1", 9)));
+
+        assertEquals("repaglinide_rx (783 rows, 0 empty): '0' x750, '2' x24, '1' x9",
+                TransformerHelper.describeFileValues(List.of("repaglinide_rx", "unknown"), Map.of("repaglinide_rx", codes)));
     }
 
     @Test
@@ -67,5 +99,11 @@ class TransformerHelperTest {
         assertEquals("encounter_id", mapping.getVisitIdMapping());
         assertEquals("admitted", mapping.getVisitTimestampMapping());
         assertEquals("dd.MM.yyyy", mapping.getTimestampFormat());
+    }
+
+    private static ColumnProfile profile(String name, long count, long missing, int unique,
+                                         List<Map.Entry<String, Integer>> valueCounts) {
+        return new ColumnProfile(name, "TEXT", count, missing, unique, null, null, null, null, null, null, null,
+                null, valueCounts);
     }
 }

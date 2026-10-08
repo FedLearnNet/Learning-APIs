@@ -300,7 +300,7 @@ public class ConnectorPreviewBO {
                     : ConnectorFileUploadInfoDTO.DEFAULT_SHEET_NAME;
             uploadInfo.put(table, lenient.convertValue(node, UploadInfoDTO.class));
         } else {
-            node.fields().forEachRemaining(table -> {
+            node.properties().forEach(table -> {
                 if (table.getValue().isObject()) {
                     uploadInfo.put(table.getKey(), lenient.convertValue(table.getValue(), UploadInfoDTO.class));
                 }

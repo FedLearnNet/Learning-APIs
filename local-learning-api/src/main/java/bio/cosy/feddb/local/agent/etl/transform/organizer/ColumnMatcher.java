@@ -3,6 +3,7 @@ package bio.cosy.feddb.local.agent.etl.transform.organizer;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.config.ColumnMatcherConfig;
+import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerHelper;
 import bio.cosy.feddb.local.agent.etl.transform.model.CandidateAssignment;
 import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
 import bio.cosy.feddb.local.agent.text.SapbertSimilartity;
@@ -67,7 +68,7 @@ public class ColumnMatcher {
             if (semantic != null) {
                 candidate.setSemanticScore(semantic[columnIndex]);
             }
-            candidate.setValidRatio(validRatio(values.get(column), node.getId(), dataType));
+            candidate.setValidRatio(validRatio(valuesOf(column, values, profiles), node.getId(), dataType));
             candidate.calculateAndSetScore(config.textWeight(), config.semanticBaseline());
             scored.add(candidate);
         }
@@ -115,6 +116,11 @@ public class ColumnMatcher {
         return assignments;
     }
 
+    private static List<Object> valuesOf(String column, Map<String, List<Object>> values, Map<String, ColumnProfile> profiles) {
+        List<String> fileValues = TransformerHelper.fileValues(profiles.get(column));
+        return fileValues.isEmpty() ? values.get(column) : new ArrayList<>(fileValues);
+    }
+
     private double validRatio(List<Object> values, Long schemaId, DataTypeDTO dataType) {
         if (dataType == null || values == null || values.isEmpty()) {
             return 0;
@@ -133,20 +139,17 @@ public class ColumnMatcher {
         List<Object> values = valueMap.get(candidate.getColumn());
         StringBuilder summary = new StringBuilder();
         if (profile != null) {
-            summary.append(profile.type()).append(", ").append(profile.missing()).append('/').append(profile.count())
-                    .append(" missing, ").append(profile.uniqueValues()).append(" distinct");
-            if (profile.min() != null && profile.max() != null) {
-                summary.append(", range ").append(profile.min()).append(" to ").append(profile.max());
-            }
-            summary.append(", ");
+            summary.append(profile.type()).append(", ").append(profile.uniqueValues()).append(" distinct ")
+                    .append(TransformerHelper.describeFileValues(profile, config.summaryValues()));
+        } else {
+            summary.append("values: ").append(values == null ? "" : values.stream()
+                    .map(String::valueOf)
+                    .filter(value -> !value.isBlank())
+                    .limit(config.summaryValues())
+                    .collect(Collectors.joining(" | ")));
         }
 
-        return summary.append("values: ").append(values == null ? "" : values.stream()
-                        .map(String::valueOf)
-                        .filter(value -> !value.isBlank())
-                        .limit(config.summaryValues())
-                        .collect(Collectors.joining(" | ")))
-                .append(", ").append(Math.round(candidate.getValidRatio() * 100))
+        return summary.append(", ").append(Math.round(candidate.getValidRatio() * 100))
                 .append("% of the values are valid for the schema node")
                 .toString();
     }

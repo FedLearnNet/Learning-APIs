@@ -11,6 +11,7 @@ import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
 import bio.cosy.feddb.local.api.importer.files.read.TableDataProfileBO;
 import bio.cosy.feddb.local.api.importer.functions.managed.builtin.ReplaceValueFunction;
 import bio.cosy.feddb.local.api.importer.run.preview.ConnectorPreviewRunnerBO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationBO;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO;
@@ -38,6 +39,8 @@ class TransformerValidateToolTest {
 
     private final ReplaceValueFunction replaceValue = new ReplaceValueFunction();
     private TransformerRunContext context;
+    private LocalSchemaNodeDTO node;
+    private DataTypeNodeDTO dataType;
     private List<Map<String, Object>> previewRows;
 
     @Mock
@@ -45,6 +48,9 @@ class TransformerValidateToolTest {
 
     @Mock
     TransformerListTool listTool;
+
+    @Mock
+    ConnectorTransformationBO transformationBO;
 
     @Spy
     PreviewValidationBO previewValidationBO = previewValidation();
@@ -59,10 +65,15 @@ class TransformerValidateToolTest {
             ConnectorConfigDTO config = invocation.getArgument(0);
             List<Map<String, Object>> rows = previewRows.stream().<Map<String, Object>>map(LinkedHashMap::new).toList();
             for (ConnectorTransformerDTO transformer : config.getTransformer()) {
-                Map<String, String> inputMapping = new HashMap<>();
-                transformer.getInputMapping().forEach((key, value) -> inputMapping.put(key, String.valueOf(value)));
-                rows = replaceValue.apply(rows, transformer.getColumn(), inputMapping, Map.of(),
-                        transformer.getHyperparams(), null, null, null);
+                rows = replace(transformer, rows);
+            }
+            return rows;
+        });
+        lenient().when(transformationBO.applyBuiltInTransformations(any(), any(), any())).thenAnswer(invocation -> {
+            List<ConnectorTransformerDTO> transformers = invocation.getArgument(0);
+            List<Map<String, Object>> rows = invocation.getArgument(1);
+            for (ConnectorTransformerDTO transformer : transformers) {
+                rows = replace(transformer, rows);
             }
             return rows;
         });
@@ -134,11 +145,34 @@ class TransformerValidateToolTest {
         assertTrue(result.getMessage().contains("does not exist after the transformation"), result.getMessage());
     }
 
+    @Test
+    void rejectsAColumnThatAlreadyHoldsAnotherNode() {
+        init("payer_code", List.of("MC"), DataTypes.STRING, null);
+        context.mappedColumns().put("payer_code", "Encounter.Payer");
+
+        ConnectorValidationResultDTO result = tool.validate(ConnectorSelectedTransformer.mapping("payer_code", List.of()));
+
+        assertFalse(result.isValid());
+        assertTrue(result.getMessage().contains("already holds Encounter.Payer"), result.getMessage());
+    }
+
+    @Test
+    void rejectsFileValuesThePreviewRowsDoNotShow() {
+        init("payer_code", List.of("?", "MC"), DataTypes.STRING, null);
+        tool.init(context, node, dataType, List.of(Map.of("payer_code", "?"), Map.of("payer_code", "-")));
+
+        ConnectorValidationResultDTO result = tool.validate(
+                ConnectorSelectedTransformer.mapping("payer_code", List.of(replace("?", "null"))));
+
+        assertFalse(result.isValid());
+        assertTrue(result.getMessage().contains("'-'"), result.getMessage());
+    }
+
     private void init(String column, List<String> values, DataTypes type, List<String> options) {
-        LocalSchemaNodeDTO node = new LocalSchemaNodeDTO();
+        node = new LocalSchemaNodeDTO();
         node.setId(1L);
         node.setName(column);
-        DataTypeNodeDTO dataType = new DataTypeNodeDTO();
+        dataType = new DataTypeNodeDTO();
         dataType.setName(column);
         dataType.setType(type);
         if (options != null) {
@@ -147,8 +181,15 @@ class TransformerValidateToolTest {
         previewRows = values.stream().<Map<String, Object>>map(value -> Map.of(column, value)).toList();
         ConnectorConfigDTO config = new ConnectorConfigDTO();
         config.setTransformer(new ArrayList<>());
-        context = new TransformerRunContext(config, null, "keycloak-user", Map.of(), null);
-        tool.init(context, node, dataType);
+        context = new TransformerRunContext(config, null, "keycloak-user", Map.of(), new HashMap<>(), new ArrayList<>(), null);
+        tool.init(context, node, dataType, List.of());
+    }
+
+    private List<Map<String, Object>> replace(ConnectorTransformerDTO transformer, List<Map<String, Object>> rows) {
+        Map<String, String> inputMapping = new HashMap<>();
+        transformer.getInputMapping().forEach((key, value) -> inputMapping.put(key, String.valueOf(value)));
+        return replaceValue.apply(rows, transformer.getColumn(), inputMapping, Map.of(),
+                transformer.getHyperparams(), null, null, null);
     }
 
     private ConnectorTransformerDTO replace(String search, String replacement) {

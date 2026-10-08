@@ -8,7 +8,6 @@ import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMe
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import eval.agent.etl.transform.pojo.TransformerWriterSuggestion;
-import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -53,7 +52,7 @@ public class TransformerWriterAssistant {
     private void handle(String session, TransformerAssistantMessageDTO message, String patientIdColumn,
                         List<TransformerAssistantMessageDTO> nodes, CompletableFuture<Void> done) {
         switch (message.getType()) {
-            case CHAT_MESSAGE -> answer(session, message.getChatMessage(), patientIdColumn);
+            case CHAT_MESSAGE -> answer(session, message, patientIdColumn);
             case NODE_RESULT -> addNode(nodes, message);
             case DONE -> done.complete(null);
             case ERROR -> done.completeExceptionally(new IllegalStateException(message.getMessage()));
@@ -64,16 +63,14 @@ public class TransformerWriterAssistant {
 
     private static void addNode(List<TransformerAssistantMessageDTO> nodes, TransformerAssistantMessageDTO node) {
         nodes.add(node);
-        Log.infof("[WRITER-EVAL] %s -> %s", node.getMappingPath(),
-                isFound(node) ? node.getSelectedTransformer().getMappedColumn() : "not found");
     }
 
-    private void answer(String session, ModelWorkflowChatMessageDTO chat, String patientIdColumn) {
+    private void answer(String session, TransformerAssistantMessageDTO message, String patientIdColumn) {
+        ModelWorkflowChatMessageDTO chat = message.getChatMessage();
         if (chat.isDone() || chat.getHumanInTheLoop() == null || chat.getHumanInTheLoop().isEmpty()) {
             return;
         }
         HumanInTheLoopDTO question = chat.getHumanInTheLoop().getFirst();
-        Log.infof("[WRITER-EVAL] The agent asks: %s", question.getQuestion());
         starter.message(session, createAnswer(question, patientIdColumn));
     }
 

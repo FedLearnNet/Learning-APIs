@@ -93,9 +93,8 @@ public class TransformerWriterReviews {
     }
 
     private Map<String, ColumnProfile> loadSourceColumns(ConnectorDTO connector) {
-        return statisticsBO.getTransformedStatistics(connector.getCohortId(), connector.getInputConfig(),
-                        connector.getUploadInfo(), connector.getMergeConfig(), connector.getPivotConfig(),
-                        List.of(), List.of()).stream()
+        return statisticsBO.getFileStatistics(connector.getCohortId(), connector.getInputConfig(),
+                        connector.getUploadInfo(), connector.getMergeConfig(), connector.getPivotConfig()).stream()
                 .collect(Collectors.toMap(ColumnProfile::name, Function.identity(), (first, second) -> first));
     }
 
