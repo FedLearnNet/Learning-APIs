@@ -27,7 +27,14 @@ public class PatientLearningAO implements PanacheRepository<PatientLearningEntit
         return find("request.id", requestId).list();
     }
 
-    public Set<Long> findCohortIdsForRequests(List<Long> requestIds) {
+    /**
+     * Cohort ids that have at least one patient linked to these requests.
+     * Does not load patient rows.
+     *
+     * @param requestIds training request ids
+     * @return distinct cohort ids
+     */
+    public Set<Long> findCohortIdsForRequests(final List<Long> requestIds) {
         if (requestIds == null || requestIds.isEmpty()) {
             return Set.of();
         }

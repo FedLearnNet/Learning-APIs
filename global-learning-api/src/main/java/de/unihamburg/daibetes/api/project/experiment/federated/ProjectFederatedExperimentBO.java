@@ -87,6 +87,14 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
         return mapper.entitiesToDtos(ao.findByProjectId(id));
     }
 
+    /**
+     * Loads one federated experiment for a project member.
+     *
+     * @param projectId  the project ID
+     * @param id         the experiment ID
+     * @param keycloakId the keycloak ID
+     * @return the experiment detail
+     */
     @Transactional
     public ProjectFederatedExperimentDetailDTO getById(Long projectId, Long id, String keycloakId) {
         projectMembershipAO.checkProjectAndUser(projectId, keycloakId);
