@@ -5,7 +5,6 @@ import bio.cosy.feddb.core.api.datamodler.schema.SchemaNodeDetailDTO;
 import bio.cosy.feddb.core.api.datamodler.schema.SchemaStructureDTO;
 import bio.cosy.feddb.core.base.PagedResponse;
 import de.unihamburg.daibetes.api.ontology.OntologyDAO;
-import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
