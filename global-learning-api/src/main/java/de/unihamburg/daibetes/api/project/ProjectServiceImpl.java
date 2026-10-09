@@ -37,6 +37,11 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public boolean isPlatformAggregatorSupported() {
+        return projectBO.isPlatformAggregatorSupported();
+    }
+
+    @Override
     public ProjectDetailDTO retrieve(Long id) {
         String keycloakId = userIdentity.getKeycloakId();
         return projectBO.get(id, keycloakId);

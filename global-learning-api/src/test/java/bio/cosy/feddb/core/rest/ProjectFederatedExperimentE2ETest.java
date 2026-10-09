@@ -125,6 +125,11 @@ class ProjectFederatedExperimentE2ETest {
                 .anyMatch(id -> id.equals(started.getCoordinator().getUniqueRandomClinicId())));
     }
 
+    // Platform-coordinator start behavior (enabled vs disabled) is covered by the dedicated
+    // @TestProfile-pinned ProjectFederatedExperimentPlatformCoordinator{Enabled,Disabled}Test
+    // classes - deterministic regardless of FLNetConfig's ambient platform-aggregator.enabled
+    // default, which gets flipped locally for manual testing.
+
     @Test
     @TestSecurity(user = "test", roles = "admin")
     void participantErrorStopsRunningExperimentAndBroadcastsStop() {

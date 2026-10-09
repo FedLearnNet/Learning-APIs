@@ -3,8 +3,7 @@ package bio.cosy.feddb.local.api.learning.project.run;
 import bio.cosy.feddb.core.api.app.config.ToolInputConfigDTO;
 import bio.cosy.feddb.core.api.project.ProjectStatus;
 import bio.cosy.feddb.core.api.run.RunStatusTypes;
-import bio.cosy.feddb.core.api.run.FederatedRunConfigDTO;
-import bio.cosy.feddb.core.api.run.FederatedRunParticipantDTO;
+import bio.cosy.feddb.core.api.run.FederatedRunEnricher;
 import bio.cosy.feddb.core.api.run.StartRunDTO;
 import bio.cosy.feddb.core.api.socket.FederatedLearningRelayInfoDTO;
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
@@ -341,6 +340,12 @@ public class FederatedLearningExperimentBO
      * the app receives an empty participants list and aborts with "No participants configured".
      * This clinic always participates as a CLIENT; the coordinator clinic additionally runs the
      * AGGREGATOR (and sets startAggregator).
+     * <p>
+     * Send exactly ONE participant: this clinic. For a real run the app (pyfedappwrap) identifies
+     * its own instance either by participantId == system_settings.app_id, or by receiving a single
+     * participant. All clinics share the same app_id, so only the single-participant path is
+     * reliable - sending a second (aggregator) participant breaks self-identification with
+     * "Real federated runs require ... only one participant".
      */
     private void enrichWithFederatedRelay(StartRunDTO run, FederatedLearningExperimentStepEntity entity) {
         FederatedLearningRelayInfoDTO relay = entity.getRelayInfo();
@@ -348,53 +353,10 @@ public class FederatedLearningExperimentBO
             Log.warnf("No relay info on step %d - app will receive no participants and the round cannot start", entity.getId());
             return;
         }
-        boolean isCoordinator = relay.getCoordinator();
-
-        // Send exactly ONE participant: this clinic. For a real run the app (pyfedappwrap) identifies
-        // its own instance either by participantId == system_settings.app_id, or by receiving a single
-        // participant. All clinics share the same app_id, so only the single-participant path is
-        // reliable - sending a second (aggregator) participant breaks self-identification with
-        // "Real federated runs require ... only one participant".
-        FederatedRunParticipantDTO client = new FederatedRunParticipantDTO();
-        client.setParticipantId(relay.getId());
-        client.setRole(isCoordinator ? "AGGREGATOR" : "CLIENT");
-        client.setHyperParams(run.getHyperParams());
-        client.setInputFilePaths(run.getInputFilePaths());
-        run.setParticipants(List.of(client));
-        run.setStartAggregator(isCoordinator);
-        run.setTotalRounds(extractTotalRounds(run.getHyperParams()));
-
-        FederatedRunConfigDTO config = new FederatedRunConfigDTO();
-        config.setChannel(relay.getChannel());
-        config.setClientId(relay.getId());
-        config.setClientKey(relay.getKey());
-        config.setRelayKey(relay.getRelayKey());
-        config.setCoordinatorId(relay.getCoordinatorId());
-        config.setMaxNumClients(relay.getMaxNumClients());
-        config.setOrderClientIds(relay.getOrderClientIds() == null ? null : new ArrayList<>(relay.getOrderClientIds()));
-        config.setAppVersion(relay.getAppVersion() != null ? relay.getAppVersion().name() : null);
-        run.setConfig(config);
+        FederatedRunEnricher.enrichWithFederatedRelay(run, relay);
 
         Log.infof("Federated run for step %d: participant %s role=%s coordinator=%b channel=%s",
-                entity.getId(), relay.getId(), client.getRole(), isCoordinator, relay.getChannel());
-    }
-
-    private Integer extractTotalRounds(Map<String, Object> hyperParams) {
-        if (hyperParams == null) {
-            return null;
-        }
-        Object value = hyperParams.getOrDefault("federated_rounds", hyperParams.get("total_rounds"));
-        if (value instanceof Number number) {
-            return number.intValue();
-        }
-        if (value != null) {
-            try {
-                return Integer.parseInt(value.toString());
-            } catch (NumberFormatException ignored) {
-                return null;
-            }
-        }
-        return null;
+                entity.getId(), relay.getId(), relay.getCoordinator() ? "AGGREGATOR" : "CLIENT", relay.getCoordinator(), relay.getChannel());
     }
 
     @Override

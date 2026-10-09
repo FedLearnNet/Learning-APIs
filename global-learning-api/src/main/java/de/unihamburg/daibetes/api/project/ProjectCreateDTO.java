@@ -13,4 +13,7 @@ public class ProjectCreateDTO {
     private String description;
 
     private Long queryId;
+
+    //IF not set, the platform will decide randomly which client is coordinator
+    private boolean platformIsCoordinator = false;
 }

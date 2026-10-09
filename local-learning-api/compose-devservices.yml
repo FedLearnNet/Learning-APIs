@@ -37,7 +37,10 @@ services:
       QUARKUS_DATASOURCE_PASSWORD: password
       QUARKUS_LOG_CONSOLE_JSON_ENABLED: false
       CONTAINER_HOST_OVERRIDE: host.docker.internal
-      CONTAINER_NETWORK_CONTROLLER: controller:8001
+      # Override CONTROLLER_NAME in a (gitignored) .env file next to this compose file if you
+      # need to run multiple local-learning-api instances/checkouts at once - Docker container
+      # names must be unique per daemon, so a shared literal name would collide between them.
+      CONTAINER_NETWORK_CONTROLLER: ${CONTROLLER_NAME:-local-controller}:8001
       CONTAINER_NETWORK_NAMES: local-learning-network
       CONTAINER_NETWORK_ALWAYS_BRIDGE: "true"
       QUARKUS_LOG_CATEGORY_"bio.cosy.featurecloud"_LEVEL: DEBUG
@@ -56,6 +59,7 @@ services:
       - local-learning-network
   controller:
     image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller:staging
+    container_name: ${CONTROLLER_NAME:-local-controller}
     ports:
       - '8092:8000'
     profiles:
@@ -77,6 +81,7 @@ services:
 
   controller-test:
     image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller:staging
+    container_name: ${CONTROLLER_NAME:-local-controller}
     ports:
       - '8092:8000'
     profiles:

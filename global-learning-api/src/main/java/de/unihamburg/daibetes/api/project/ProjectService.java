@@ -49,6 +49,12 @@ public interface ProjectService {
     public Response create(@RequestBody @Valid ProjectCreateDTO createDTO);
 
     @GET
+    @Path("/platform-aggregator-supported")
+    @Operation(summary = "Returns whether this platform deployment supports running the FL aggregator on the platform itself.")
+    @APIResponse(responseCode = "200", description = "Platform aggregator capability flag")
+    public boolean isPlatformAggregatorSupported();
+
+    @GET
     @Path("/{id}")
     @Operation(summary = "Retrieves a single project.")
     @APIResponse(responseCode = "200", description = "Project found")

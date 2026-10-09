@@ -4,9 +4,12 @@ import bio.cosy.feddb.core.api.project.ProjectDTO;
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.project.ProjectStatus;
 import bio.cosy.feddb.core.rest.helper.RestAssuredConfigUtil;
+import de.unihamburg.daibetes.api.project.ProjectAO;
 import de.unihamburg.daibetes.api.project.ProjectBO;
 import de.unihamburg.daibetes.api.project.ProjectCreateDTO;
+import de.unihamburg.daibetes.api.project.ProjectEntity;
 import de.unihamburg.daibetes.api.project.ProjectService;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -33,6 +36,9 @@ public class ProjectServiceTest {
     @Inject
     ProjectBO projectBO;
 
+    @Inject
+    ProjectAO projectAO;
+
     @BeforeAll
     public static void setup() {
         RestAssuredConfigUtil.initMapper();
@@ -54,6 +60,10 @@ public class ProjectServiceTest {
     public void testCreateProject() {
         ProjectCreateDTO newProject = Instancio.create(ProjectCreateDTO.class);
         newProject.setQueryId(1L);
+        // platformIsCoordinator=true requires the platform-aggregator capability flag, which
+        // is disabled by default - pin it to false so this test doesn't flake on Instancio's
+        // random boolean.
+        newProject.setPlatformIsCoordinator(false);
         given()
                 .contentType(ContentType.JSON)
                 .body(newProject)
@@ -115,6 +125,43 @@ public class ProjectServiceTest {
                 .statusCode(200)
                 .contentType(ContentType.JSON)
                 .body("name", is(updatedProject.getName()));
+    }
+
+    @Test
+    @TestSecurity(user = "test", roles = {"admin"})
+    public void testUpdateProjectWithUnchangedPlatformIsCoordinatorSucceedsWhenCapabilityLaterDisabled() {
+        // Simulates a project created while the platform-aggregator capability was enabled, then
+        // the deployment disabling it again - update() must not block unrelated edits just because
+        // the already-persisted (unchanged) value is true.
+        // The REST-assured call below hits the app through a separate HTTP request/transaction,
+        // so the setup writes must actually commit first (QuarkusTransaction.requiringNew()) -
+        // joining this test method's own ambient @Transactional would leave them invisible to
+        // that request until the test method itself returns, and the PUT would 404.
+        ProjectDTO created = QuarkusTransaction.requiringNew().call(() -> {
+            ProjectCreateDTO createDTO = new ProjectCreateDTO();
+            createDTO.setName("Platform Coordinator Update Project");
+            createDTO.setDescription("Regression test for update() lockout");
+            createDTO.setQueryId(1L);
+            ProjectDTO project = projectBO.create(createDTO, "test");
+
+            ProjectEntity entity = projectAO.findById(project.getId());
+            entity.setPlatformIsCoordinator(true);
+            projectAO.persist(entity);
+            return project;
+        });
+
+        ProjectDTO updatedProject = projectBO.getById(created.getId());
+        updatedProject.setDescription("Renamed - unrelated to the aggregator setting");
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(updatedProject)
+                .when().put("/" + created.getId())
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("platformIsCoordinator", is(true))
+                .body("description", is(updatedProject.getDescription()));
     }
 
     @Test
