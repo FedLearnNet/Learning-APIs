@@ -100,6 +100,40 @@ public class FLNetClientBroadcastBO {
     }
 
     /**
+     * Whether the connection registered itself as a participant of the experiment.
+     */
+    public boolean isConnectionInExperiment(final String connectionId, final String globalUniqueExperimentId) {
+        if (connectionId == null || globalUniqueExperimentId == null) {
+            return false;
+        }
+        Set<String> experiments = learningConnectionMap.get(connectionId);
+        return experiments != null && experiments.contains(globalUniqueExperimentId);
+    }
+
+    /**
+     * Answers a relay certificate signing request on the connection it was received from.
+     */
+    public void sendRelayCertResponse(final String connectionId, final RelayCertSignResponseDTO response) {
+        FedDBClientDataDTO<RelayCertSignResponseDTO> fedDBClientDataDTO = new FedDBClientDataDTO<>(
+                FedDBClientTypeEnum.RELAY_CERT, response);
+        connections.findByEndpointId(ENDPOINT_ID)
+                .stream()
+                .filter(c -> c.id().equals(connectionId))
+                .forEach(c -> {
+                    try {
+                        c.sendTextAndAwait(fedDBClientDataDTO);
+                        observerEmitter.emit(FLNetClientObserverEventDTO.sent(
+                                c.id(),
+                                FedDBClientTypeEnum.RELAY_CERT.name(),
+                                response
+                        ));
+                    } catch (Exception e) {
+                        logger.errorf("Failed to send relay certificate response to connection %s: %s", c.id(), e.getMessage());
+                    }
+                });
+    }
+
+    /**
      * Broadcasts an existing query to all connected clients.
      * Used for distributing queries that need to be processed by all participants.
      *

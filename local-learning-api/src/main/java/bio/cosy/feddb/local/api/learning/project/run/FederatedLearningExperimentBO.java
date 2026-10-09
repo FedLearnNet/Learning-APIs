@@ -11,6 +11,7 @@ import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.api.workflow.base.experiment.BaseWorkflowExperimentBO;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
 import bio.cosy.feddb.core.services.controller.ControllerStartLearningRequestDTO;
+import bio.cosy.feddb.core.services.controller.ControllerStartLearningResponseDTO;
 import bio.cosy.feddb.core.services.orch.WorkflowOrchestrator;
 import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
@@ -30,6 +31,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
@@ -77,6 +79,9 @@ public class FederatedLearningExperimentBO
     @Inject
     @RestClient
     LocalControllerLearningService controllerService;
+
+    @Inject
+    RelayCertBO relayCertBO;
 
     public FederatedLearningExperimentDTO ensureApprovedLearning(FederatedLearningRequestEntity entity) {
         return ao.getByGlobalRequestId(entity.getGlobalFLExperimentUniqueId())
@@ -451,19 +456,41 @@ public class FederatedLearningExperimentBO
                 "tep details: " + step + ". Channel id is: " + step.getRelayInfo().getChannel());
         ControllerStartLearningRequestDTO startRequest = mapper.relayToController(step.getRelayInfo(), runId.toString());
         Log.info("Start learning request send to controller: " + startRequest);
+        String csr;
         try (Response response = controllerService.startLearning(startRequest)) {
-            // Response handled automatically by try-with-resource // response empty if 200
             if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-                Log.error("Failed to start learning for runId " + runId + ": " + response.readEntity(String.class));
-                setAppHasError(step, "Failed to start learning: " + response.readEntity(String.class));
-                throw new RuntimeException("Failed to start learning: " + response.readEntity(String.class));
+                throw new IllegalStateException("controller answered " + response.getStatus() + ": " + response.readEntity(String.class));
+            }
+            // The controller does not connect to the relay yet. It returns a certificate signing request and
+            // waits for the certificate, which the relay signs via the global server (see RelayCertBO).
+            ControllerStartLearningResponseDTO started = response.readEntity(ControllerStartLearningResponseDTO.class);
+            csr = started != null ? started.getCsr() : null;
+            if (csr == null || csr.isBlank()) {
+                throw new IllegalStateException("controller returned no certificate signing request");
             }
         } catch (Exception e) {
             Log.error("Error starting learning for runId " + runId, e);
             setAppHasError(step, "Error starting learning: " + e.getMessage());
             throw new RuntimeException("Error starting learning: " + e.getMessage(), e);
         }
+        relayCertBO.requestCertificate(step.getId(), csr);
+    }
 
+    /**
+     * Additionally stops the runs on the controller, which otherwise keep waiting for messages.
+     */
+    @Override
+    public FederatedLearningExperimentDTO stopLearning(final Long experimentId) {
+        FederatedLearningExperimentDTO dto = super.stopLearning(experimentId);
+        stepBO.stopControllerRuns(experimentId);
+        return dto;
+    }
+
+    @Override
+    @Transactional
+    public void onStepErrorTransactional(final Long experimentId, final Long stepId, final String message) {
+        super.onStepErrorTransactional(experimentId, stepId, message);
+        stepBO.stopControllerRuns(experimentId);
     }
 
     @Override

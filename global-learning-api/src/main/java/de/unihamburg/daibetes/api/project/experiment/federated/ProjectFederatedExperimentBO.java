@@ -239,6 +239,7 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
         if (currentStepId != null) {
             projectFederatedExperimentStepBO.persistStep(currentStepId, RunStatusTypes.STOPPED);
         }
+        projectFederatedExperimentStepBO.stopRelayRuns(experimentId);
         projectFederatedExperimentParticipantAO.updateProjectAndStepStatusForExperimentTransactional(
                 experimentId,
                 RunStatusTypes.STOPPED,
@@ -488,6 +489,7 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
         Long experimentId = experiment.getId();
         Long currentStepId = experiment.getCurrentWorkflowNode().getId();
         projectFederatedExperimentStepBO.persistStep(currentStepId, RunStatusTypes.FINISHED);
+        projectFederatedExperimentStepBO.stopRelayRun(currentStepId);
         if (nextNode == null) {
             //FINISHED LEARNING
             projectFederatedExperimentParticipantAO.updateProjectAndStepStatusForExperimentTransactional(

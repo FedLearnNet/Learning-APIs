@@ -9,11 +9,19 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -74,6 +82,35 @@ public class SubscriptionServiceTest {
                 .delete("/schema/subscriptions/" + randomId)
                 .then()
                 .statusCode(404);
+    }
+
+    @Test
+    @Order(5)
+    void testConcurrentSubscribeSameSchemaAllSucceed() throws Exception {
+        UUID schemaId = createHeadSchema();
+        int parallelCalls = 20;
+
+        ExecutorService executor = Executors.newFixedThreadPool(parallelCalls);
+        CountDownLatch start = new CountDownLatch(1);
+        try {
+            List<Future<Integer>> statusCodes = new ArrayList<>();
+            for (int i = 0; i < parallelCalls; i++) {
+                statusCodes.add(executor.submit(() -> {
+                    start.await();
+                    return given()
+                            .when()
+                            .get("/schema/subscriptions/" + schemaId)
+                            .statusCode();
+                }));
+            }
+            start.countDown();
+
+            for (Future<Integer> statusCode : statusCodes) {
+                assertEquals(200, statusCode.get(60, TimeUnit.SECONDS));
+            }
+        } finally {
+            executor.shutdownNow();
+        }
     }
 
     private UUID createHeadSchema() {
