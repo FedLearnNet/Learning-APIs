@@ -5,6 +5,7 @@ import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +25,28 @@ public class PatientLearningAO implements PanacheRepository<PatientLearningEntit
 
     public List<PatientLearningEntity> getAllForRequest(Long requestId) {
         return find("request.id", requestId).list();
+    }
+
+    /**
+     * Cohort ids that have at least one patient linked to these requests.
+     * Does not load patient rows.
+     *
+     * @param requestIds training request ids
+     * @return distinct cohort ids
+     */
+    public Set<Long> findCohortIdsForRequests(final List<Long> requestIds) {
+        if (requestIds == null || requestIds.isEmpty()) {
+            return Set.of();
+        }
+        List<Long> cohortIds = getEntityManager()
+                .createQuery("""
+                        select distinct p.patient.cohort.id
+                        from PatientLearningEntity p
+                        where p.request.id in :requestIds
+                        """, Long.class)
+                .setParameter("requestIds", requestIds)
+                .getResultList();
+        return new HashSet<>(cohortIds);
     }
 
     public List<PatientLearningEntity> getAllForRequestAndCohorts(Long requestId,
