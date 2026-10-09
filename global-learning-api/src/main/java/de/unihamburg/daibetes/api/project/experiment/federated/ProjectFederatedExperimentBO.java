@@ -187,19 +187,27 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
             throw new NotAllowedException("Experiment workflow is missing");
         }
 
+        // Participants accepted this run on the understanding of who the aggregator would be
+        // (surfaced to them before acceptance - see getAggregatorLocation() on the frontend).
+        // If platform-coordination is no longer possible by the time the run actually starts,
+        // silently substituting a random clinic instead would change that without their consent -
+        // fail the start instead and let the project owner reconcile and retry.
         boolean platformIsCoordinatorRequested = Boolean.TRUE.equals(entity.getProject().getPlatformIsCoordinator());
-        boolean usePlatformCoordinator = false;
         if (platformIsCoordinatorRequested) {
             if (!projectBO.isPlatformAggregatorSupported()) {
                 Log.warnf("Platform-coordinator requested for experiment %d but platform aggregator support " +
-                        "is disabled on this deployment - falling back to random clinic", experimentId);
-            } else if (projectFederatedExperimentStepBO.workflowHasOldFCVersionNode(entity.getProject().getWorkflow())) {
+                        "is disabled on this deployment", experimentId);
+                throw new NotAllowedException("Platform aggregator support is disabled on this deployment; "
+                        + "cannot start this experiment with the platform as coordinator.");
+            }
+            if (projectFederatedExperimentStepBO.workflowHasOldFCVersionNode(entity.getProject().getWorkflow())) {
                 Log.warnf("Platform-coordinator requested for experiment %d but workflow contains an old " +
-                        "FeatureCloud-version app, which has no aggregator-only relay slot - falling back to random clinic", experimentId);
-            } else {
-                usePlatformCoordinator = true;
+                        "FeatureCloud-version app, which has no aggregator-only relay slot", experimentId);
+                throw new NotAllowedException("The workflow contains an app that does not support running the "
+                        + "aggregator on the platform; cannot start this experiment with the platform as coordinator.");
             }
         }
+        boolean usePlatformCoordinator = platformIsCoordinatorRequested;
 
         projectFederatedExperimentStepBO.createForWorkflow(entity);
         ao.getEntityManager().detach(entity);

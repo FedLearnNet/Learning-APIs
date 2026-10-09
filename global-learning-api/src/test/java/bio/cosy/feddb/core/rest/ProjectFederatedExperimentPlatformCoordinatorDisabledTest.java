@@ -33,10 +33,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 // Pins flnet.federated-learning.platform-aggregator.enabled=false explicitly rather than relying
 // on FLNetConfig's literal @WithDefault value, since that default gets flipped locally for manual
@@ -73,10 +71,12 @@ class ProjectFederatedExperimentPlatformCoordinatorDisabledTest {
 
     @Test
     @TestSecurity(user = "test", roles = "admin")
-    void startFederatedExperimentFallsBackToRandomClinicWhenPlatformAggregatorDisabled() {
+    void startFederatedExperimentFailsWhenPlatformAggregatorDisabled() {
         // platformIsCoordinator=true was set while the capability was enabled elsewhere, then this
         // deployment disabled it again before the run starts (create()/update() validation would
-        // otherwise block setting this combination directly).
+        // otherwise block setting this combination directly). Participants already accepted this
+        // run on the understanding the platform would aggregate - silently substituting a random
+        // clinic instead would change that without their consent, so the start must fail instead.
         long projectId = createProjectWithSingleNodeWorkflow(false);
         setPlatformIsCoordinator(projectId, true);
         long experimentId = createExperiment(projectId);
@@ -85,12 +85,16 @@ class ProjectFederatedExperimentPlatformCoordinatorDisabledTest {
         acceptParticipant(created.getGlobalUniqueId(), 12, "clinic-a", true);
         acceptParticipant(created.getGlobalUniqueId(), 9, "clinic-b", false);
 
-        startExperiment(projectId, experimentId);
+        given()
+                .when()
+                .put("/project/{id}/experiment/federated/{eId}/start", projectId, experimentId)
+                .then()
+                .statusCode(405);
 
-        ProjectFederatedExperimentEntity started = loadExperiment(experimentId);
-        assertEquals(ProjectStatus.RUNNING, started.getExperimentStatus());
-        assertNotNull(started.getCoordinator(), "platform-aggregator support is disabled - "
-                + "startLearning() must fall back to a random clinic coordinator");
+        ProjectFederatedExperimentEntity afterFailedStart = loadExperiment(experimentId);
+        assertEquals(ProjectStatus.READY, afterFailedStart.getExperimentStatus(), "a failed start must not move the "
+                + "experiment out of READY, so the project owner can reconcile and retry");
+        assertNull(afterFailedStart.getCoordinator());
     }
 
     private void setPlatformIsCoordinator(long projectId, boolean platformIsCoordinator) {
@@ -117,18 +121,6 @@ class ProjectFederatedExperimentPlatformCoordinatorDisabledTest {
                 .extract()
                 .path("id");
         return experimentId.longValue();
-    }
-
-    private void startExperiment(long projectId, long experimentId) {
-        given()
-                .when()
-                .put("/project/{id}/experiment/federated/{eId}/start", projectId, experimentId)
-                .then()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .body("experimentStatus", is("RUNNING"))
-                .body("acceptanceClinicCount", is(2))
-                .body("steps", hasSize(1));
     }
 
     private void acceptParticipant(String globalUniqueExperimentId, int count, String clinicId, boolean modelCanBePublic) {
