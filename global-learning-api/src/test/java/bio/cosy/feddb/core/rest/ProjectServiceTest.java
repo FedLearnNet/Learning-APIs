@@ -9,6 +9,7 @@ import de.unihamburg.daibetes.api.project.ProjectBO;
 import de.unihamburg.daibetes.api.project.ProjectCreateDTO;
 import de.unihamburg.daibetes.api.project.ProjectEntity;
 import de.unihamburg.daibetes.api.project.ProjectService;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -132,15 +133,22 @@ public class ProjectServiceTest {
         // Simulates a project created while the platform-aggregator capability was enabled, then
         // the deployment disabling it again - update() must not block unrelated edits just because
         // the already-persisted (unchanged) value is true.
-        ProjectCreateDTO createDTO = new ProjectCreateDTO();
-        createDTO.setName("Platform Coordinator Update Project");
-        createDTO.setDescription("Regression test for update() lockout");
-        createDTO.setQueryId(1L);
-        ProjectDTO created = projectBO.create(createDTO, "test");
+        // The REST-assured call below hits the app through a separate HTTP request/transaction,
+        // so the setup writes must actually commit first (QuarkusTransaction.requiringNew()) -
+        // joining this test method's own ambient @Transactional would leave them invisible to
+        // that request until the test method itself returns, and the PUT would 404.
+        ProjectDTO created = QuarkusTransaction.requiringNew().call(() -> {
+            ProjectCreateDTO createDTO = new ProjectCreateDTO();
+            createDTO.setName("Platform Coordinator Update Project");
+            createDTO.setDescription("Regression test for update() lockout");
+            createDTO.setQueryId(1L);
+            ProjectDTO project = projectBO.create(createDTO, "test");
 
-        ProjectEntity entity = projectAO.findById(created.getId());
-        entity.setPlatformIsCoordinator(true);
-        projectAO.persist(entity);
+            ProjectEntity entity = projectAO.findById(project.getId());
+            entity.setPlatformIsCoordinator(true);
+            projectAO.persist(entity);
+            return project;
+        });
 
         ProjectDTO updatedProject = projectBO.getById(created.getId());
         updatedProject.setDescription("Renamed - unrelated to the aggregator setting");
