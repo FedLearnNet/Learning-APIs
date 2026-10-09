@@ -23,7 +23,7 @@ public final class FederatedRunEnricher {
      * {@code run.getHyperParams()}/{@code run.getInputFilePaths()} must already be set - they're
      * copied onto the single participant entry.
      */
-    public static void enrichWithFederatedRelay(StartRunDTO run, FederatedLearningRelayInfoDTO relay) {
+    public static void enrichWithFederatedRelay(final StartRunDTO run, final FederatedLearningRelayInfoDTO relay) {
         boolean isCoordinator = relay.getCoordinator();
 
         FederatedRunParticipantDTO participant = new FederatedRunParticipantDTO();
@@ -47,7 +47,14 @@ public final class FederatedRunEnricher {
         run.setConfig(config);
     }
 
-    public static Integer extractTotalRounds(Map<String, Object> hyperParams) {
+    /**
+     * Reads the total-rounds hyperparameter, accepting either {@code federated_rounds} (preferred)
+     * or the legacy {@code total_rounds} key, and tolerating a numeric or string-encoded value.
+     *
+     * @param hyperParams the run's hyperparameters, or {@code null}
+     * @return the configured round count, or {@code null} if absent or unparseable
+     */
+    public static Integer extractTotalRounds(final Map<String, Object> hyperParams) {
         if (hyperParams == null) {
             return null;
         }

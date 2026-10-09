@@ -2,6 +2,8 @@ package de.unihamburg.daibetes.api.project.experiment.federated.step;
 
 import bio.cosy.feddb.core.api.socket.FederatedLearningRelayInfoDTO;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -16,4 +18,9 @@ public record FederatedRelaySetupResult(
         Map<String, FederatedLearningRelayInfoDTO> clientRelayData,
         FederatedLearningRelayInfoDTO platformRelayInfo
 ) {
+    public FederatedRelaySetupResult {
+        // Defensive copy so a caller mutating its own map afterward can't reach back into this
+        // already-returned result - clientRelayData is never null at either call site today.
+        clientRelayData = Collections.unmodifiableMap(new HashMap<>(clientRelayData));
+    }
 }
