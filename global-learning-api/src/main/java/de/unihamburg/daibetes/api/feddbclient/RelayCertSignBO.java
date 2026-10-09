@@ -43,7 +43,7 @@ public class RelayCertSignBO {
      * Signs the CSR if the connection takes part in the experiment and the relay client id is the one that was
      * assigned to the clinic for the relay run of the requested workflow step.
      */
-    public RelayCertSignResponseDTO sign(RelayCertSignRequestDTO request, String connectionId) {
+    public RelayCertSignResponseDTO sign(final RelayCertSignRequestDTO request, final String connectionId) {
         if (request == null || request.getCsr() == null || request.getCsr().isBlank()) {
             logger.warnf("Refused relay certificate request without CSR from connection %s", connectionId);
             return RelayCertSignResponseDTO.createErrorResponse(request == null ? new RelayCertSignRequestDTO() : request, ERROR_REFUSED);

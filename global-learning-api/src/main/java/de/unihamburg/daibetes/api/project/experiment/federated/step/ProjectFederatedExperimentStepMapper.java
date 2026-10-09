@@ -24,6 +24,8 @@ public interface ProjectFederatedExperimentStepMapper extends BaseMapper<Project
     @Mappings({
             @Mapping(target = "experiment.id", source = "experimentId"),
             @Mapping(target = "messages", ignore = true),
+            @Mapping(target = "relayClientIds", ignore = true),
+            @Mapping(target = "relayStopped", ignore = true),
             @Mapping(target = "workflowNode.id", source = "workflowNodeId")
     })
     ProjectFederatedExperimentStepEntity dtoToEntity(ProjectFederatedExperimentStepDTO dto);

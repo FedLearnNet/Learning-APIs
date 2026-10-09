@@ -56,7 +56,7 @@ public class RelayCertBO {
     /**
      * Stores the CSR of the step's controller run and asks the global server to have it signed.
      */
-    public void requestCertificate(Long stepId, String csr) {
+    public void requestCertificate(final Long stepId, final String csr) {
         RelayCertRequest request = stepBO.startRelayCertRequest(stepId, csr);
         Log.infof("Requesting relay certificate for step %d", stepId);
         send(request);
@@ -66,7 +66,7 @@ public class RelayCertBO {
      * Handles the answer of the global server: passes the signed certificate on to the controller, which then
      * connects to the relay server. The step fails if signing was refused or the controller cannot connect.
      */
-    public void handleSigned(RelayCertSignResponseDTO response) {
+    public void handleSigned(final RelayCertSignResponseDTO response) {
         Optional<FederatedLearningExperimentEntity> experiment = experimentAO.getByGlobalRequestId(response.getGlobalUniqueExperimentId());
         if (experiment.isEmpty() || !experiment.get().getUniqueRandomClinicId().equals(response.getUniqueRandomClinicId())) {
             Log.warnf("Ignoring relay certificate for unknown experiment %s or another clinic", response.getGlobalUniqueExperimentId());
@@ -123,11 +123,11 @@ public class RelayCertBO {
         retryPending(new Date());
     }
 
-    void retryPending(Date now) {
+    void retryPending(final Date now) {
         long timeoutMillis = config.relay().certSign().timeout().toMillis();
         int maxAttempts = config.relay().certSign().maxAttempts();
         for (RelayCertRequest pending : stepBO.findPendingRelayCerts()) {
-            if (pending.requestedAt() != null && now.getTime() - pending.requestedAt().getTime() < timeoutMillis) {
+            if (pending.requestedAt() != null && now.getTime() - pending.requestedAt().toEpochMilli() < timeoutMillis) {
                 continue;
             }
             try {
@@ -148,7 +148,7 @@ public class RelayCertBO {
         }
     }
 
-    private void send(RelayCertRequest request) {
+    private void send(final RelayCertRequest request) {
         websocketSender.sendRelayCertRequest(new RelayCertSignRequestDTO(
                 request.globalUniqueExperimentId(),
                 request.uniqueRandomClinicId(),
@@ -161,7 +161,7 @@ public class RelayCertBO {
     /**
      * Fails the step like an error reported by the app: the global server is informed and stops the experiment.
      */
-    private void failStep(Long stepId, String error) {
+    private void failStep(final Long stepId, final String error) {
         Log.errorf("Failing step %d: %s", stepId, error);
         FederatedLearningExperimentStepDTO step = stepBO.getById(stepId);
         step.setStepStatus(RunStatusTypes.ERROR);

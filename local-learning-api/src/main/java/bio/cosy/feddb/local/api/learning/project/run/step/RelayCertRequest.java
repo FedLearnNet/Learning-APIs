@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.learning.project.run.step;
 
-import java.util.Date;
+import java.time.Instant;
 
 /**
  * A step waiting for the relay certificate of its controller: everything needed to (re)send the certificate
@@ -13,5 +13,5 @@ public record RelayCertRequest(Long stepId,
                                String clientId,
                                String csr,
                                int attempts,
-                               Date requestedAt) {
+                               Instant requestedAt) {
 }

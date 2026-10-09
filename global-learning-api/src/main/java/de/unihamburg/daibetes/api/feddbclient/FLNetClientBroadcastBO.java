@@ -102,7 +102,7 @@ public class FLNetClientBroadcastBO {
     /**
      * Whether the connection registered itself as a participant of the experiment.
      */
-    public boolean isConnectionInExperiment(String connectionId, String globalUniqueExperimentId) {
+    public boolean isConnectionInExperiment(final String connectionId, final String globalUniqueExperimentId) {
         if (connectionId == null || globalUniqueExperimentId == null) {
             return false;
         }
@@ -113,7 +113,7 @@ public class FLNetClientBroadcastBO {
     /**
      * Answers a relay certificate signing request on the connection it was received from.
      */
-    public void sendRelayCertResponse(String connectionId, RelayCertSignResponseDTO response) {
+    public void sendRelayCertResponse(final String connectionId, final RelayCertSignResponseDTO response) {
         FedDBClientDataDTO<RelayCertSignResponseDTO> fedDBClientDataDTO = new FedDBClientDataDTO<>(
                 FedDBClientTypeEnum.RELAY_CERT, response);
         connections.findByEndpointId(ENDPOINT_ID)

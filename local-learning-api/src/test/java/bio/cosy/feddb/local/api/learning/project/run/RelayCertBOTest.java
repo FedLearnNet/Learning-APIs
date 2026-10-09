@@ -87,7 +87,7 @@ class RelayCertBOTest {
     }
 
     private RelayCertRequest pending(int attempts, Date requestedAt) {
-        return new RelayCertRequest(STEP_ID, EXPERIMENT, CLINIC, NODE, CLIENT, CSR, attempts, requestedAt);
+        return new RelayCertRequest(STEP_ID, EXPERIMENT, CLINIC, NODE, CLIENT, CSR, attempts, requestedAt.toInstant());
     }
 
     private static Date minutesAgo(Date now, int minutes) {

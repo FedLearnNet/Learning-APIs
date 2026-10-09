@@ -14,7 +14,7 @@ public class ProjectFederatedExperimentStepAO extends BaseWorkflowStepAO<Project
     /**
      * Steps of the experiment whose relay run was created but not stopped yet.
      */
-    public List<ProjectFederatedExperimentStepEntity> findWithOpenRelayRun(Long experimentId) {
+    public List<ProjectFederatedExperimentStepEntity> findWithOpenRelayRun(final Long experimentId) {
         return list("experiment.id = ?1 and channel is not null and (relayStopped is null or relayStopped = false)", experimentId);
     }
 
@@ -23,7 +23,7 @@ public class ProjectFederatedExperimentStepAO extends BaseWorkflowStepAO<Project
      * was assigned to which clinic.
      */
     @Transactional
-    public boolean setRelayRunTransactional(Long id, String channel, String relayKey, Map<String, String> relayClientIds) {
+    public boolean setRelayRunTransactional(final Long id, final String channel, final String relayKey, final Map<String, String> relayClientIds) {
         int updated = update(
                 """
                         updatedAt = ?1,
@@ -42,8 +42,11 @@ public class ProjectFederatedExperimentStepAO extends BaseWorkflowStepAO<Project
         return updated == 1;
     }
 
+    /**
+     * Marks the relay run of the step as stopped on the relay server.
+     */
     @Transactional
-    public boolean setRelayStoppedTransactional(Long id) {
+    public boolean setRelayStoppedTransactional(final Long id) {
         int updated = update(
                 """
                         updatedAt = ?1,

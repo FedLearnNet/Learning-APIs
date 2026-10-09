@@ -48,12 +48,15 @@ public class FederatedLearningExperimentStepAO extends BaseWorkflowStepAO<Federa
     /**
      * Steps of the experiment whose controller run was started but not stopped yet.
      */
-    public List<FederatedLearningExperimentStepEntity> findWithOpenControllerRun(Long experimentId) {
+    public List<FederatedLearningExperimentStepEntity> findWithOpenControllerRun(final Long experimentId) {
         return list("experiment.id = ?1 and relayCsr is not null and (relayStopped is null or relayStopped = false)", experimentId);
     }
 
+    /**
+     * Stores the CSR of the step and marks it as sent to the global server for the first time.
+     */
     @Transactional
-    public boolean startRelayCertRequestTransactional(Long id, String csr) {
+    public boolean startRelayCertRequestTransactional(final Long id, final String csr) {
         int updated = update(
                 """
                         updatedAt = ?1,
@@ -71,8 +74,11 @@ public class FederatedLearningExperimentStepAO extends BaseWorkflowStepAO<Federa
         return updated == 1;
     }
 
+    /**
+     * Counts another attempt to get the CSR of the step signed.
+     */
     @Transactional
-    public boolean retryRelayCertRequestTransactional(Long id) {
+    public boolean retryRelayCertRequestTransactional(final Long id) {
         int updated = update(
                 """
                         updatedAt = ?1,
@@ -91,7 +97,7 @@ public class FederatedLearningExperimentStepAO extends BaseWorkflowStepAO<Federa
      * answer to a retried request arrives as well) or the step does not wait for a certificate.
      */
     @Transactional
-    public boolean claimRelayCertSignedTransactional(Long id) {
+    public boolean claimRelayCertSignedTransactional(final Long id) {
         int updated = update(
                 """
                         updatedAt = ?1,
@@ -106,8 +112,11 @@ public class FederatedLearningExperimentStepAO extends BaseWorkflowStepAO<Federa
         return updated == 1;
     }
 
+    /**
+     * Marks the controller run of the step as stopped.
+     */
     @Transactional
-    public boolean setRelayStoppedTransactional(Long id) {
+    public boolean setRelayStoppedTransactional(final Long id) {
         int updated = update(
                 """
                         updatedAt = ?1,

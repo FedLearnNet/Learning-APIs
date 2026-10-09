@@ -249,7 +249,7 @@ public class FederatedLearningExperimentStepBO
      * it signed.
      */
     @Transactional
-    public RelayCertRequest startRelayCertRequest(Long stepId, String csr) {
+    public RelayCertRequest startRelayCertRequest(final Long stepId, final String csr) {
         if (!ao.startRelayCertRequestTransactional(stepId, csr)) {
             throw new IllegalArgumentException("Step with id " + stepId + " not found");
         }
@@ -259,12 +259,15 @@ public class FederatedLearningExperimentStepBO
         return toRelayCertRequest(step);
     }
 
+    /**
+     * Steps that still wait for the signed relay certificate of their CSR.
+     */
     @Transactional
     public List<RelayCertRequest> findPendingRelayCerts() {
         return ao.findPendingRelayCerts().stream().map(this::toRelayCertRequest).toList();
     }
 
-    private RelayCertRequest toRelayCertRequest(FederatedLearningExperimentStepEntity step) {
+    private RelayCertRequest toRelayCertRequest(final FederatedLearningExperimentStepEntity step) {
         FederatedLearningExperimentEntity experiment = step.getExperiment();
         return new RelayCertRequest(
                 step.getId(),
@@ -274,14 +277,14 @@ public class FederatedLearningExperimentStepBO
                 step.getRelayInfo() != null ? step.getRelayInfo().getId() : null,
                 step.getRelayCsr(),
                 step.getRelayCertAttempts() != null ? step.getRelayCertAttempts() : 0,
-                step.getRelayCertRequestedAt()
+                step.getRelayCertRequestedAt() != null ? step.getRelayCertRequestedAt().toInstant() : null
         );
     }
 
     /**
      * Stops the controller run of every step of the experiment that still has one.
      */
-    public void stopControllerRuns(Long experimentId) {
+    public void stopControllerRuns(final Long experimentId) {
         for (FederatedLearningExperimentStepEntity step : ao.findWithOpenControllerRun(experimentId)) {
             stopControllerRun(step);
         }
@@ -292,14 +295,14 @@ public class FederatedLearningExperimentStepBO
      * Never throws: a controller that cannot be reached must not break the workflow, the run then stays
      * open and is retried the next time the experiment is stopped.
      */
-    public void stopControllerRun(Long stepId) {
+    public void stopControllerRun(final Long stepId) {
         FederatedLearningExperimentStepEntity step = ao.findById(stepId);
         if (step != null) {
             stopControllerRun(step);
         }
     }
 
-    private void stopControllerRun(FederatedLearningExperimentStepEntity step) {
+    private void stopControllerRun(final FederatedLearningExperimentStepEntity step) {
         FederatedLearningRelayInfoDTO relay = step.getRelayInfo();
         if (relay == null || step.getRelayCsr() == null || Boolean.TRUE.equals(step.getRelayStopped())) {
             return;

@@ -17,19 +17,25 @@ public class RelayCertSignResponseDTO {
     private String certificate;
     private String error;
 
-    public static RelayCertSignResponseDTO createResponse(RelayCertSignRequestDTO request, String certificate) {
+    /**
+     * Answer for a request whose CSR was signed.
+     */
+    public static RelayCertSignResponseDTO createResponse(final RelayCertSignRequestDTO request, final String certificate) {
         RelayCertSignResponseDTO dto = forRequest(request);
         dto.setCertificate(certificate);
         return dto;
     }
 
-    public static RelayCertSignResponseDTO createErrorResponse(RelayCertSignRequestDTO request, String error) {
+    /**
+     * Answer for a request whose CSR was not signed.
+     */
+    public static RelayCertSignResponseDTO createErrorResponse(final RelayCertSignRequestDTO request, final String error) {
         RelayCertSignResponseDTO dto = forRequest(request);
         dto.setError(error);
         return dto;
     }
 
-    private static RelayCertSignResponseDTO forRequest(RelayCertSignRequestDTO request) {
+    private static RelayCertSignResponseDTO forRequest(final RelayCertSignRequestDTO request) {
         RelayCertSignResponseDTO dto = new RelayCertSignResponseDTO();
         dto.setGlobalUniqueExperimentId(request.getGlobalUniqueExperimentId());
         dto.setUniqueRandomClinicId(request.getUniqueRandomClinicId());

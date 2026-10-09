@@ -480,7 +480,7 @@ public class FederatedLearningExperimentBO
      * Additionally stops the runs on the controller, which otherwise keep waiting for messages.
      */
     @Override
-    public FederatedLearningExperimentDTO stopLearning(Long experimentId) {
+    public FederatedLearningExperimentDTO stopLearning(final Long experimentId) {
         FederatedLearningExperimentDTO dto = super.stopLearning(experimentId);
         stepBO.stopControllerRuns(experimentId);
         return dto;
@@ -488,7 +488,7 @@ public class FederatedLearningExperimentBO
 
     @Override
     @Transactional
-    public void onStepErrorTransactional(Long experimentId, Long stepId, String message) {
+    public void onStepErrorTransactional(final Long experimentId, final Long stepId, final String message) {
         super.onStepErrorTransactional(experimentId, stepId, message);
         stepBO.stopControllerRuns(experimentId);
     }

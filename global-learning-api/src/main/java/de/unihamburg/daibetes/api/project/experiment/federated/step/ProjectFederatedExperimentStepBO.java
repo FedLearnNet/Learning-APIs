@@ -173,7 +173,7 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
      * Empty if any of these checks fails or the relay run of the step was already stopped.
      */
     @Transactional
-    public Optional<String> findRelayChannelForClient(String globalUniqueExperimentId, String nodeId, String uniqueRandomClinicId, String clientId) {
+    public Optional<String> findRelayChannelForClient(final String globalUniqueExperimentId, final String nodeId, final String uniqueRandomClinicId, final String clientId) {
         if (globalUniqueExperimentId == null || nodeId == null || uniqueRandomClinicId == null || clientId == null) {
             return Optional.empty();
         }
@@ -198,7 +198,7 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
     /**
      * Stops the relay run of every step of the experiment that still has one.
      */
-    public void stopRelayRuns(Long experimentId) {
+    public void stopRelayRuns(final Long experimentId) {
         for (ProjectFederatedExperimentStepEntity step : ao.findWithOpenRelayRun(experimentId)) {
             stopRelayRun(step.getId(), step.getChannel());
         }
@@ -209,7 +209,7 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
      * Never throws: a relay server that cannot be reached must not break the workflow, the run is then
      * only cleaned up when the relay server restarts.
      */
-    public void stopRelayRun(Long stepId) {
+    public void stopRelayRun(final Long stepId) {
         ProjectFederatedExperimentStepEntity step = ao.findById(stepId);
         if (step == null || step.getChannel() == null || Boolean.TRUE.equals(step.getRelayStopped())) {
             return;
@@ -217,7 +217,7 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
         stopRelayRun(step.getId(), step.getChannel());
     }
 
-    private void stopRelayRun(Long stepId, String channel) {
+    private void stopRelayRun(final Long stepId, final String channel) {
         try (Response response = globalRelayService.stopFL(new RelayStopRequestDTO(channel))) {
             if (response.getStatus() != Response.Status.OK.getStatusCode()) {
                 Log.warnf("Relay server answered %d when stopping the relay run of step %d", response.getStatus(), stepId);

@@ -47,7 +47,7 @@ public class FLNetClientWebsocketHandlerBO {
      * Handles a request to sign the relay certificate of a client and answers on the same connection.
      * Not transactional on purpose: it calls the relay server.
      */
-    public <T> void handleRelayCert(FedDBClientDataDTO<T> m, String connectionId) {
+    public <T> void handleRelayCert(final FedDBClientDataDTO<T> m, final String connectionId) {
         RelayCertSignRequestDTO request = new ObjectMapper().convertValue(m.getMessage(), RelayCertSignRequestDTO.class);
         broadcastBO.sendRelayCertResponse(connectionId, relayCertSignBO.sign(request, connectionId));
     }

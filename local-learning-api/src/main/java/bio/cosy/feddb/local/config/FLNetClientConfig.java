@@ -33,8 +33,14 @@ public interface FLNetClientConfig {
 
     CohortConfig cohort();
 
+    /**
+     * Settings for the relay server connection of the controller.
+     */
     RelayConfig relay();
 
+    /**
+     * Settings for the relay server connection of the controller.
+     */
     interface RelayConfig {
 
         @WithName("cert-sign")

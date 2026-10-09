@@ -76,7 +76,10 @@ public class WebsocketSender {
         client.fireAndForget(responseWrapper);
     }
 
-    public void sendRelayCertRequest(RelayCertSignRequestDTO request) {
+    /**
+     * Asks the global server to have the CSR of a controller run signed by the relay server.
+     */
+    public void sendRelayCertRequest(final RelayCertSignRequestDTO request) {
         FedDBClientDataDTO<RelayCertSignRequestDTO> message = new FedDBClientDataDTO<>();
         message.setMessageType(FedDBClientTypeEnum.RELAY_CERT);
         message.setMessage(request);
