@@ -89,7 +89,7 @@ public class StoreIngestor {
         String key = apiKey.map(String::trim).orElse("");
         if (key.isEmpty() || "VIA_ENV".equals(key)) {
             apiKeyPresent.set(false);
-            Log.errorf("no embedding API key configured (set QUARKUS_LANGCHAIN4J_OPENAI_API_KEY)");
+            Log.warnf("no embedding API key configured (set QUARKUS_LANGCHAIN4J_OPENAI_API_KEY)");
         } else {
             apiKeyPresent.set(true);
             Log.infof("embedding API key configured");
@@ -97,13 +97,13 @@ public class StoreIngestor {
     }
 
     public void ingest() {
-        if (apiKeyPresent.get()) {
-            Log.errorf("Skipping StoreIngestor.ingest(): store ingestion is disabled");
+        if (!apiKeyPresent.get()) {
+            Log.warnf("Skipping StoreIngestor.ingest(): store ingestion is disabled");
             return;
         }
         Log.infof("Starting StoreIngestor.ingest()");
         for (StoreDTO dto : storeBO.list(null, true)) {
-            if (apiKeyPresent.get()) {
+            if (!apiKeyPresent.get()) {
                 break;
             }
             upsertOne(dto);
@@ -111,7 +111,7 @@ public class StoreIngestor {
     }
 
     public void ingestAsync(StoreDTO dto) {
-        if (apiKeyPresent.get() || dto == null || (dto.getApp() == null && dto.getModel() == null)) {
+        if (!apiKeyPresent.get() || dto == null || (dto.getApp() == null && dto.getModel() == null)) {
             return;
         }
 
@@ -134,7 +134,7 @@ public class StoreIngestor {
 
     public void upsertOne(StoreDTO dto) {
         boolean ignoreStartUpCheck = config.ingestor().ignoreStartUpCheck();
-        if (apiKeyPresent.get() || dto == null || (dto.getApp() == null && dto.getModel() == null)) {
+        if (!apiKeyPresent.get() || dto == null || (dto.getApp() == null && dto.getModel() == null)) {
             return;
         }
 
