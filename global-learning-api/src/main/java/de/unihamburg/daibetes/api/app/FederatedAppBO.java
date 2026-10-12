@@ -430,8 +430,11 @@ public class FederatedAppBO extends BaseBo<FederatedAppDTO, FederatedAppEntity, 
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
-    public FederatedAppDetailDTO publishImportedTransactional(Long versionId, boolean createUnpublished) {
-        FederatedAppVersionDTO published = versionBO.publishImported(versionId, createUnpublished);
+    public FederatedAppDetailDTO publishImportedTransactional(Long versionId, boolean createUnpublishedFollowUpVersion) {
+        FederatedAppVersionDTO published = versionBO.publishAfterBuildPipeline(versionId);
+        if (createUnpublishedFollowUpVersion) {
+            versionBO.createUnpublishedFollowUpVersion(versionId);
+        }
         FederatedAppDetailDTO detail = getById(published.getFederatedAppId());
         storeIngestor.ingestAsync(new StoreDTO(detail));
         return detail;
