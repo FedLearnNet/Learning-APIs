@@ -1,4 +1,4 @@
-package eval.agent.etl.harmonization;
+package eval.agent.etl.harmonization.pipeline;
 
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.core.api.model.workflow.chat.ModelWorkflowChatMessageDTO;
@@ -19,7 +19,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 import static bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType.APPLY;
-
 
 @ApplicationScoped
 public class HarmonizationFileAssistant {

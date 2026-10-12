@@ -79,7 +79,7 @@ public class HarmonizationServiceImpl implements HarmonizationService {
     public HarmonizationResultDTO run(Long id) {
         String keycloakId = userIdentity.getKeycloakId();
         HarmonizationResultDTO result = runBO.run(bo.getById(id, keycloakId), keycloakId);
-        bo.setOutputFile(id, result.outputFileId(), keycloakId);
+        bo.setOutputFile(id, result.getOutputFileId(), keycloakId);
         return result;
     }
 
