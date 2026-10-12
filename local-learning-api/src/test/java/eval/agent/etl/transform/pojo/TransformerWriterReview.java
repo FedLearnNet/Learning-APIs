@@ -26,4 +26,6 @@ public class TransformerWriterReview {
     private long rejectedValues;
     private Map<String, Long> importedValues = new LinkedHashMap<>();
     private Map<String, Long> rejections = new LinkedHashMap<>();
+    /** How far the stored values are from the correct ones of the reference connector, see TransformerWriterTruth.shift. */
+    private Double truthShift;
 }

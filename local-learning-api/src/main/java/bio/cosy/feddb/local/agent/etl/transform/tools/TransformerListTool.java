@@ -7,12 +7,7 @@ import bio.cosy.feddb.core.api.app.config.ToolConfigDTO;
 import bio.cosy.feddb.core.api.app.config.ToolHyperParamConfigDTO;
 import bio.cosy.feddb.core.api.store.StoreDTO;
 import bio.cosy.feddb.core.base.PagedResponse;
-import bio.cosy.feddb.local.api.importer.functions.FunctionExecutionMode;
-import bio.cosy.feddb.local.api.importer.functions.FunctionManagementBO;
-import bio.cosy.feddb.local.api.importer.functions.FunctionParameterDTO;
-import bio.cosy.feddb.local.api.importer.functions.FunctionParameterType;
-import bio.cosy.feddb.local.api.importer.functions.FunctionParameterUsage;
-import bio.cosy.feddb.local.api.importer.functions.FunctionsDetailDTO;
+import bio.cosy.feddb.local.api.importer.functions.*;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerBO;
 import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerDTO;
@@ -25,19 +20,15 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
+
+import static bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerStatics.CODE_MODULE;
+import static bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerStatics.TOOLS_MODULE;
 
 @ApplicationScoped
 public class TransformerListTool {
 
-    public static final String TOOLS_MODULE = "tools";
-    public static final String CODE_MODULE = "Custom code";
     public static final String PATIENT_ID_HYPERPARAM = "patient_id_column";
     public static final String CODE_RETURN_KEY = "value";
     private static final int PAGE_SIZE = 100;
@@ -90,18 +81,6 @@ public class TransformerListTool {
                 .findFirst();
     }
 
-    public static boolean isCodeTransformer(ConnectorTransformerDTO transformer) {
-        return CODE_MODULE.equals(transformer.getModuleName());
-    }
-
-    public static boolean isStoreTool(ConnectorTransformerDTO transformer) {
-        return TOOLS_MODULE.equals(transformer.getModuleName())
-                || transformer.getAppVersionId() != null
-                || transformer.getAppImage() != null && !transformer.getAppImage().isBlank();
-    }
-
-
-
     public boolean isBuiltInFunction(ConnectorTransformerDTO transformer) {
         return functionManagementBO.getAllDetail().stream()
                 .anyMatch(function -> Objects.equals(function.getModuleName(), transformer.getModuleName())
@@ -109,7 +88,7 @@ public class TransformerListTool {
     }
 
     public boolean resolveAppTransformer(ConnectorTransformerDTO transformer, String patientIdColumn) {
-        return isCodeTransformer(transformer)
+        return transformer.isCodeTransformer()
                 ? resolveCodeTransformer(transformer, patientIdColumn)
                 : resolveStoreTool(transformer);
     }

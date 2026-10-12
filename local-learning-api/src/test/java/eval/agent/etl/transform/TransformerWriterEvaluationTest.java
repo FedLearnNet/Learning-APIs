@@ -17,6 +17,7 @@ import eval.agent.etl.transform.pojo.TransformerWriterSuggestion;
 import eval.agent.etl.transform.report.TransformerWriterReport;
 import eval.agent.etl.transform.setting.TransformerWriterDataset;
 import eval.agent.etl.transform.setting.TransformerWriterDatasets;
+import eval.agent.etl.transform.setting.TransformerWriterTruth;
 import eval.agent.etl.transform.setting.TransformerWriterEvaluationProfile;
 import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
@@ -30,6 +31,8 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
 @TestProfile(TransformerWriterEvaluationProfile.class)
@@ -51,6 +54,9 @@ public class TransformerWriterEvaluationTest {
     TransformerWriterReviews reviews;
 
     @Inject
+    TransformerWriterTruth truth;
+
+    @Inject
     TransformerWriterJudge judge;
 
     @Inject
@@ -62,15 +68,21 @@ public class TransformerWriterEvaluationTest {
     @Test
     void evaluateTransformerAssistant() throws IOException {
         Map<String, List<TransformerWriterResult>> results = new LinkedHashMap<>();
-        for (TransformerWriterDataset dataset : TransformerWriterDatasets.DATASETS) {
+        for (TransformerWriterDataset dataset : TransformerWriterDatasets.selected()) {
             ConnectorDTO connector = uploader.upload(dataset);
             TransformerWriterSuggestion suggestion = assistant.suggest(connector, dataset.getPatientIdColumn());
             ConnectorRunDTO run = importer.importWith(connector.getId(), suggestion.getConnector());
-            results.put(dataset.getName(), reviews.of(connector, suggestion.getNodes(), run).stream()
+            results.put(dataset.getName(), reviews.of(connector, suggestion.getNodes(), run, truth.values(dataset)).stream()
                     .map(review -> new TransformerWriterResult(dataset.getName(), review, judge(review)))
                     .toList());
             TransformerWriterReport.save(model, results);
         }
+        List<String> wrong = results.values().stream().flatMap(List::stream)
+                .filter(result -> result.getReview().getTruthShift() != null
+                        && result.getReview().getTruthShift() > TransformerWriterReport.CORRECT_SHIFT)
+                .map(result -> result.getDataset() + " " + result.getReview().getSchemaNode())
+                .toList();
+        assertTrue(wrong.isEmpty(), "Every schema node has to store the values of the original file: " + wrong);
     }
 
     @AfterEach

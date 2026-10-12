@@ -4,7 +4,6 @@ import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
-import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorHelper;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
@@ -19,6 +18,7 @@ import eval.agent.etl.transform.pipeline.TransformerWriterAssistant;
 import eval.agent.etl.transform.pipeline.TransformerWriterImporter;
 import eval.agent.etl.transform.pojo.TransformerWriterReview;
 import eval.agent.etl.transform.pojo.TransformerWriterTransformation;
+import eval.agent.etl.transform.setting.TransformerWriterTruth;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -56,8 +56,9 @@ public class TransformerWriterReviews {
     @Inject
     TransformerWriterImporter importer;
 
+    /** @param truth per schema node path the correct values, see TransformerWriterTruth */
     public List<TransformerWriterReview> of(ConnectorDTO connector, List<TransformerAssistantMessageDTO> nodes,
-                                            ConnectorRunDTO run) {
+                                            ConnectorRunDTO run, Map<String, Map<String, Long>> truth) {
         Map<Long, LocalSchemaNodeWithPathDTO> schemaNodes = loadSchemaNodes(connector.getCohortId());
         Map<String, CodeTransformerDTO> code = loadCode();
         Map<String, ColumnProfile> sourceColumns = loadSourceColumns(connector);
@@ -70,9 +71,11 @@ public class TransformerWriterReviews {
             if (TransformerWriterAssistant.isFound(node)) {
                 addMapping(review, node.getSelectedTransformer(), code, sourceColumns);
                 review.setVisitMapping(node.getVisitMapping());
-                addImport(review, schemaNode, connector.getCohortId(), run);
+                Map<String, Long> imported = addImport(review, schemaNode, connector.getCohortId(), run);
+                review.setTruthShift(TransformerWriterTruth.shift(imported, truth.get(node.getMappingPath())));
             } else {
                 addNotFound(review, node.getSelectedTransformer(), sourceColumns);
+                review.setTruthShift(TransformerWriterTruth.shift(Map.of(), truth.get(node.getMappingPath())));
             }
             reviews.add(review);
         }
@@ -86,7 +89,7 @@ public class TransformerWriterReviews {
     }
 
     @Transactional
-    Map<String, CodeTransformerDTO> loadCode() {
+    public Map<String, CodeTransformerDTO> loadCode() {
         return codeTransformerBO.list().stream()
                 .filter(code -> code.getImageName() != null)
                 .collect(Collectors.toMap(CodeTransformerDTO::getImageName, Function.identity(), (first, second) -> first));
@@ -107,7 +110,7 @@ public class TransformerWriterReviews {
         return review;
     }
 
-    private static void addMapping(TransformerWriterReview review, ConnectorSelectedTransformer selected,
+    public static void addMapping(TransformerWriterReview review, ConnectorSelectedTransformer selected,
                                    Map<String, CodeTransformerDTO> code, Map<String, ColumnProfile> sourceColumns) {
         review.setFound(true);
         review.setMappedColumn(selected.getMappedColumn());
@@ -119,7 +122,7 @@ public class TransformerWriterReviews {
                 .forEach(column -> review.getSourceColumns().add(profile(column, MAPPED_COLUMN_VALUES)));
     }
 
-    private void addImport(TransformerWriterReview review, LocalSchemaNodeWithPathDTO node, Long cohortId,
+    private Map<String, Long> addImport(TransformerWriterReview review, LocalSchemaNodeWithPathDTO node, Long cohortId,
                            ConnectorRunDTO run) {
         Map<String, Long> importedValues = importer.storedValues(cohortId, node.getId());
         Map<String, Long> rejections = importer.rejectedValues(run, node, review.getMappedColumn());
@@ -127,15 +130,16 @@ public class TransformerWriterReviews {
         review.setImportedValues(mostFrequent(importedValues));
         review.setRejectedValues(sum(rejections));
         review.setRejections(mostFrequent(rejections));
+        return importedValues;
     }
 
-    private static void addNotFound(TransformerWriterReview review, ConnectorSelectedTransformer selected,
+    public static void addNotFound(TransformerWriterReview review, ConnectorSelectedTransformer selected,
                                     Map<String, ColumnProfile> sourceColumns) {
         review.setNotFoundReason(selected == null ? null : selected.getNeededTransformerFunction());
         sourceColumns.values().forEach(column -> review.getSourceColumns().add(profile(column, OTHER_COLUMN_VALUES)));
     }
 
-    private static String describe(DataTypeNodeDTO dataType) {
+    public static String describe(DataTypeNodeDTO dataType) {
         StringBuilder text = new StringBuilder(String.valueOf(dataType.getType()));
         if (dataType.getOptions() != null && !dataType.getOptions().isEmpty()) {
             text.append(", allowed values ").append(dataType.getOptions());
@@ -163,7 +167,7 @@ public class TransformerWriterReviews {
 
     private static TransformerWriterTransformation createTransformation(ConnectorTransformerDTO transformer,
                                                                         CodeTransformerDTO code) {
-        StringBuilder configuration = new StringBuilder(TransformerListTool.isCodeTransformer(transformer) && code != null
+        StringBuilder configuration = new StringBuilder(transformer.isCodeTransformer() && code != null
                 ? "Custom code transformer '" + code.getName() + "' (" + code.getMode() + "): " + code.getDescription()
                 : transformer.getModuleName() + " / " + transformer.getMethodName());
         appendIfPresent(configuration, "column", transformer.getColumn());
@@ -173,7 +177,7 @@ public class TransformerWriterReviews {
         return new TransformerWriterTransformation(configuration.toString(), code == null ? null : code.getBody());
     }
 
-    private static String profile(ColumnProfile column, int maxValues) {
+    public static String profile(ColumnProfile column, int maxValues) {
         StringBuilder text = new StringBuilder(column.name()).append(" (").append(column.type()).append(", ")
                 .append(column.missing()).append(" of ").append(column.count()).append(" empty");
         if (column.min() != null) {

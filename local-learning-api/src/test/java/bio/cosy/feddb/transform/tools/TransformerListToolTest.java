@@ -9,6 +9,7 @@ import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterDTO;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterUsage;
 import bio.cosy.feddb.local.api.importer.functions.FunctionsDetailDTO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerStatics;
 import bio.cosy.feddb.local.services.GlobalAPIStoreService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,7 +52,7 @@ class TransformerListToolTest {
     void describesStoreToolsLikeFunctions() {
         FunctionsDetailDTO grouper = tool.getAllStoreDetailed().getFirst();
 
-        assertEquals(TransformerListTool.TOOLS_MODULE, grouper.getModuleName());
+        assertEquals(ConnectorTransformerStatics.TOOLS_MODULE, grouper.getModuleName());
         assertEquals("ICD Grouper", grouper.getMethodName());
         assertEquals(7L, grouper.getAppVersionId());
         assertEquals("registry/icd-grouper:1.0", grouper.getAppImage());

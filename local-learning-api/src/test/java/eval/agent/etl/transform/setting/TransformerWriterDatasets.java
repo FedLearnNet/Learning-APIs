@@ -1,5 +1,6 @@
 package eval.agent.etl.transform.setting;
 
+import java.util.Arrays;
 import java.util.List;
 
 public final class TransformerWriterDatasets {
@@ -13,6 +14,14 @@ public final class TransformerWriterDatasets {
             new TransformerWriterDataset(US_130_SCHEMA_ID, "US 130 Site 5", "/connectors/site_05.csv", ",", "patient_nbr", null),
             mimic());
 
+    public static List<TransformerWriterDataset> selected() {
+        String names = System.getProperty("eval.datasets", "");
+        if (names.isBlank()) {
+            return DATASETS;
+        }
+        List<String> selected = Arrays.stream(names.split(",")).map(String::strip).toList();
+        return DATASETS.stream().filter(dataset -> selected.contains(dataset.getName())).toList();
+    }
 
     private static TransformerWriterDataset mimic() {
         TransformerWriterDataset mimic = new TransformerWriterDataset(US_130_SCHEMA_ID, "MIMIC IV Demo",

@@ -23,6 +23,9 @@ public final class TransformerWriterReport {
 
     private static final ObjectMapper JSON = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
+    /** Only values exactly like the gold standard are correct. */
+    public static final double CORRECT_SHIFT = 0;
+
     private final StringBuilder text = new StringBuilder();
 
     private TransformerWriterReport() {
@@ -58,17 +61,18 @@ public final class TransformerWriterReport {
             line("Import " + results.getFirst().getReview().getImportRun());
             line("");
         }
-        line("| Schema node | Mapped column | Transformation | Visit | Imported | Rejected | LLM judge |");
-        line("|---|---|---|---|---|---|---|");
+        line("| Schema node | Mapped column | Transformation | Visit | Imported | Rejected | Shift from the gold standard | LLM judge |");
+        line("|---|---|---|---|---|---|---|---|");
         for (TransformerWriterResult result : results) {
             TransformerWriterReview review = result.getReview();
-            line("| %s | %s | %s | %s | %s | %s | %s |".formatted(
+            line("| %s | %s | %s | %s | %s | %s | %s | %s |".formatted(
                     review.getSchemaNode(),
                     review.isFound() ? review.getMappedColumn() : "not found",
                     kind(review),
                     visit(review.getVisitMapping()),
                     review.isFound() ? String.valueOf(review.getImportedEntries()) : "-",
                     review.isFound() ? String.valueOf(review.getRejectedValues()) : "-",
+                    truth(review.getTruthShift()),
                     flags(result.getVerdict())));
         }
     }
@@ -87,6 +91,12 @@ public final class TransformerWriterReport {
                 count(reviews, review -> kind(review).equals("custom code")),
                 count(reviews, review -> !review.isFound()),
                 count(reviews, review -> review.getRejectedValues() > 0)));
+        List<Double> shifts = reviews.stream().map(TransformerWriterReview::getTruthShift).filter(Objects::nonNull).toList();
+        if (!shifts.isEmpty()) {
+            line("- Gold standard (original clinic file): %d compared, %d exactly correct (shift %.2f), mean shift %.2f".formatted(shifts.size(),
+                    shifts.stream().filter(shift -> shift <= CORRECT_SHIFT).count(), CORRECT_SHIFT,
+                    shifts.stream().mapToDouble(Double::doubleValue).average().orElse(0)));
+        }
         line("- LLM judge: %d judged, %d correct (%.0f%%), mapping correct %d, transformation correct %d".formatted(
                 verdicts.size(), correct, verdicts.isEmpty() ? 0.0 : 100.0 * correct / verdicts.size(),
                 count(verdicts, TransformerWriterVerdict::isMappingCorrect),
@@ -141,6 +151,10 @@ public final class TransformerWriterReport {
             return "custom code";
         }
         return review.getTransformations().isEmpty() ? "direct" : review.getTransformations().size() + " function(s)";
+    }
+
+    private static String truth(Double shift) {
+        return shift == null ? "-" : "%.2f %s".formatted(shift, mark(shift <= CORRECT_SHIFT));
     }
 
     private static String visit(VisitMapping visit) {
