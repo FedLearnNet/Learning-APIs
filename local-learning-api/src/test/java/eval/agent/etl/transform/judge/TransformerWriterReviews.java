@@ -101,7 +101,7 @@ public class TransformerWriterReviews {
                 .collect(Collectors.toMap(ColumnProfile::name, Function.identity(), (first, second) -> first));
     }
 
-    private TransformerWriterReview createReview(LocalSchemaNodeWithPathDTO node, String mappingPath, String importRun) {
+    public TransformerWriterReview createReview(LocalSchemaNodeWithPathDTO node, String mappingPath, String importRun) {
         TransformerWriterReview review = new TransformerWriterReview();
         review.setSchemaNode(mappingPath);
         review.setDescription(node.getDescription());
@@ -125,12 +125,15 @@ public class TransformerWriterReviews {
     private Map<String, Long> addImport(TransformerWriterReview review, LocalSchemaNodeWithPathDTO node, Long cohortId,
                            ConnectorRunDTO run) {
         Map<String, Long> importedValues = importer.storedValues(cohortId, node.getId());
-        Map<String, Long> rejections = importer.rejectedValues(run, node, review.getMappedColumn());
-        review.setImportedEntries(sum(importedValues));
-        review.setImportedValues(mostFrequent(importedValues));
+        addValues(review, importedValues, importer.rejectedValues(run, node, review.getMappedColumn()));
+        return importedValues;
+    }
+
+    public static void addValues(TransformerWriterReview review, Map<String, Long> imported, Map<String, Long> rejections) {
+        review.setImportedEntries(sum(imported));
+        review.setImportedValues(mostFrequent(imported));
         review.setRejectedValues(sum(rejections));
         review.setRejections(mostFrequent(rejections));
-        return importedValues;
     }
 
     public static void addNotFound(TransformerWriterReview review, ConnectorSelectedTransformer selected,
