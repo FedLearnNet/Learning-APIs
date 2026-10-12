@@ -108,7 +108,6 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         return steps;
     }
 
-    // for callers without a request, e.g. the build of imported tools
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public PipelineDTO createTransactional(PipelineCreateDTO dto, String keycloakId) {
         return create(dto, keycloakId);
