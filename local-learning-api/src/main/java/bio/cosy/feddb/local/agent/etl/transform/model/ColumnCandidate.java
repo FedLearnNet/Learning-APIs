@@ -9,8 +9,7 @@ public class ColumnCandidate {
     private double nameScore;
     private double semanticScore = 0;
     private double validRatio;
-    private boolean direct;
-    private boolean nameMatch;
+    private boolean clear;
     private String summary;
 
     public ColumnCandidate withNote(String note) {
@@ -20,8 +19,7 @@ public class ColumnCandidate {
         copy.setNameScore(nameScore);
         copy.setSemanticScore(semanticScore);
         copy.setValidRatio(validRatio);
-        copy.setDirect(direct);
-        copy.setNameMatch(nameMatch);
+        copy.setClear(clear);
         copy.setSummary(summary == null ? note : summary + ", " + note);
         return copy;
     }
@@ -35,21 +33,11 @@ public class ColumnCandidate {
         return Math.max(this.getNameScore(), semantic);
     }
 
-    public void setNameMatch(double runnerUpText, double semanticBaseline, double confidentText, double confidentMargin) {
+    public void setClear(double runnerUpScore, double runnerUpText, double semanticBaseline, double confidentText,
+                         double confidentMargin) {
         double text = getTextScore(semanticBaseline);
-        setNameMatch(text >= confidentText && text - runnerUpText >= confidentMargin);
-    }
-
-    public void setDirect(double runnerUpScore, double semanticBaseline, double confidentText, double confidentMargin) {
-        if (this.getValidRatio() < 1) {
-            setDirect(false);
-            return;
-        }
-        if (this.getNameScore() == 1) {
-            setDirect(true);
-            return;
-        }
-        setDirect(this.getTextScore(semanticBaseline) >= confidentText
-                && this.getScore() - runnerUpScore >= confidentMargin);
+        setClear(getNameScore() == 1
+                || text >= confidentText && (text - runnerUpText >= confidentMargin
+                || getValidRatio() == 1 && getScore() - runnerUpScore >= confidentMargin));
     }
 }

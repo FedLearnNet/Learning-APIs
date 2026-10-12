@@ -58,16 +58,16 @@ class ColumnMatcherTest {
     ColumnMatcher matcher;
 
     @Test
-    void mapsColumnsWithTheNameOfTheSchemaNodeDirectly() {
+    void takesColumnsWithTheNameOfTheSchemaNode() {
         node(1L, "Patient.age", "age", type(DataTypes.INT));
         node(2L, "Lab.A1C result", "A1C result", categorical(">7", ">8", "Norm", "None"));
         node(3L, "Patient.gender", "gender", categorical("Male", "Female"));
 
         Map<Long, List<ColumnCandidate>> candidates = match();
 
-        assertDirect(candidates, 1L, "age");
-        assertDirect(candidates, 2L, "A1Cresult");
-        assertDirect(candidates, 3L, "gender");
+        assertClear(candidates, 1L, "age");
+        assertClear(candidates, 2L, "A1Cresult");
+        assertClear(candidates, 3L, "gender");
     }
 
     @Test
@@ -78,29 +78,29 @@ class ColumnMatcherTest {
 
         assertEquals("gender", best.getColumn());
         assertEquals(1.0, best.getValidRatio());
-        assertFalse(best.isDirect());
+        assertFalse(best.isClear());
     }
 
     @Test
-    void assignsEachColumnDirectlyToOneSchemaNodeOnly() {
+    void assignsEachColumnToOneSchemaNodeOnly() {
         node(1L, "Patient.age", "age", type(DataTypes.INT));
         node(2L, "Patient.age group", "age group", type(DataTypes.INT));
 
         Map<Long, List<ColumnCandidate>> candidates = match();
 
-        assertDirect(candidates, 1L, "age");
-        assertFalse(candidates.get(2L).getFirst().isDirect());
+        assertClear(candidates, 1L, "age");
+        assertFalse(candidates.get(2L).getFirst().isClear());
     }
 
     @Test
-    void leavesColumnsWithMissingValuePlaceholdersToTheTransformerSelection() {
+    void takesColumnsWithMissingValuePlaceholdersByNameAndLeavesTheValuesToTheTransformerSelection() {
         node(1L, "Encounter.Payer Code", "Payer Code", type(DataTypes.STRING));
 
         ColumnCandidate best = match().get(1L).getFirst();
 
         assertEquals("payer_code", best.getColumn());
         assertEquals(0.5, best.getValidRatio());
-        assertFalse(best.isDirect());
+        assertTrue(best.isClear());
     }
 
     @Test
@@ -130,10 +130,10 @@ class ColumnMatcherTest {
         return matcher.match(sample, nodes, Map.of());
     }
 
-    private void assertDirect(Map<Long, List<ColumnCandidate>> candidates, Long schemaId, String column) {
+    private void assertClear(Map<Long, List<ColumnCandidate>> candidates, Long schemaId, String column) {
         ColumnCandidate best = candidates.get(schemaId).getFirst();
         assertEquals(column, best.getColumn());
-        assertTrue(best.isDirect(), column + " should be mapped directly");
+        assertTrue(best.isClear(), column + " should be clear without the column bot");
     }
 
     private void node(Long id, String path, String name, DataTypeDTO dataType) {

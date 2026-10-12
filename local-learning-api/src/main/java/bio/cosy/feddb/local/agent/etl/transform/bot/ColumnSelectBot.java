@@ -24,8 +24,9 @@ public interface ColumnSelectBot {
             Pick every column the value depends on (e.g. both dates for a duration), but no column that only looks similar.
             A column whose values are coded or written differently (codes, other words or language, units) still holds
             the information, its values are converted later. The share of values that fit unconverted only decides
-            whether a conversion is needed, it is no reason to leave a column out. When the description lists the
-            share of each value, prefer the column whose values have about the same shares.
+            whether a conversion is needed, it is no reason to leave a column out. A cell can also hold several values
+            joined by a separator (e.g. a list of codes); such a column still holds the information, it is split later.
+            When the description lists the share of each value, prefer the column whose values have about the same shares.
             Return the exact column names, or an empty list if no column holds the information.
             The tool lists the available transformer functions, in case this helps to judge which inputs are needed.
             If several columns fit equally well, ask the user.
@@ -40,8 +41,8 @@ public interface ColumnSelectBot {
             - {candidate.column}: {candidate.summary}
             {/for}
 
-            All columns with example values, in case the value needs other columns than the candidates, e.g. one part
-            of a packed column:
+            All columns with example values, in case the value needs other columns than the candidates, e.g. a column
+            whose cells hold several values:
             {#for column in columns}
             - {column}
             {/for}

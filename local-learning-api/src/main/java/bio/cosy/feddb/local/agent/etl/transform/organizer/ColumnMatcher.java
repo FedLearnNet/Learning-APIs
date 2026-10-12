@@ -48,7 +48,7 @@ public class ColumnMatcher {
             candidates.put(node.getId(), candidates(node, columns, values, fileProfiles,
                     semantic == null ? null : semantic[nodeIndex]));
         }
-        markDirectMappings(candidates);
+        markClearColumns(candidates);
         return candidates;
     }
 
@@ -79,7 +79,7 @@ public class ColumnMatcher {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    private void markDirectMappings(Map<Long, List<ColumnCandidate>> candidatesByNode) {
+    private void markClearColumns(Map<Long, List<ColumnCandidate>> candidatesByNode) {
         List<CandidateAssignment> rankedAssignments = rankCandidateAssignments(candidatesByNode);
         Set<Long> assignedNodeIds = new HashSet<>();
         Set<String> assignedColumns = new HashSet<>();
@@ -91,16 +91,18 @@ public class ColumnMatcher {
                 continue;
             }
 
-            // Reserve the pair even if it is not confident enough for a direct mapping.
+            // Reserve the pair even if it is not clear enough to skip the column bot.
             assignedNodeIds.add(nodeId);
             assignedColumns.add(candidate.getColumn());
 
             List<ColumnCandidate> nodeCandidates = candidatesByNode.get(nodeId);
             nodeCandidates.remove(candidate);
             nodeCandidates.addFirst(candidate);
-            // Score of the next-best candidate for confidence comparison.
             double runnerUpScore = nodeCandidates.size() > 1 ? nodeCandidates.get(1).getScore() : 0;
-            candidate.setDirect(runnerUpScore, config.semanticBaseline(), config.confidentText(), config.confidentMargin());
+            double runnerUpText = nodeCandidates.stream().skip(1)
+                    .mapToDouble(other -> other.getTextScore(config.semanticBaseline())).max().orElse(0);
+            candidate.setClear(runnerUpScore, runnerUpText, config.semanticBaseline(), config.confidentText(),
+                    config.confidentMargin());
         }
     }
 
@@ -150,7 +152,7 @@ public class ColumnMatcher {
         }
 
         return summary.append(", ").append(Math.round(candidate.getValidRatio() * 100))
-                .append("% of the values are valid for the schema node")
+                .append("% of the values fit the schema node unconverted")
                 .toString();
     }
 }
