@@ -29,7 +29,8 @@ public interface TransformerSelectAgent {
               1. Built-in functions (getAllDetail). Use a chain of several functions in execution order when one is
                  not enough, e.g. first merge or convert, then map values. A single wrong value (e.g. the
                  missing-value placeholder '?') is fixed with the Replace Value function (search = the value,
-                 replace = null or the allowed value), several with the Generic Value Mapper.
+                 replace = null or the allowed value), several with the Generic Value Mapper. A cell holding several
+                 values joined by a separator is split first (e.g. Split Column), then its parts are mapped.
               2. ETL tools from the store (getAllStoreDetailed): moduleName 'tools', methodName the tool name,
                  appVersionId and appImage copied exactly, column the comma separated source columns for the tool,
                  returnMapping from a tool output column to a new column, hyperparams keyed by the listed parameter

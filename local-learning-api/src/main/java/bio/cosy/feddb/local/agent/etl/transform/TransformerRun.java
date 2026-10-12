@@ -8,25 +8,13 @@ import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantUs
 import bio.cosy.feddb.local.agent.etl.transform.helper.EtlAgentLog;
 import io.quarkus.logging.Log;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType.DONE;
-import static bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType.ERROR;
-import static bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType.NODE_RESULT;
-import static bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType.PATIENT_ID;
+import static bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType.*;
 
 /**
  * One transformer assistant run of a WebSocket session: streams events to the client, collects the node results
