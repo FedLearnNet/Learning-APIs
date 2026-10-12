@@ -1,0 +1,233 @@
+{
+  "name": "US130-Hospital Readmission Federated NN",
+  "uniqueAppId": "de70ee5d-1d92-46cf-9d4c-77cf96bc2498",
+  "slug": "us130-hospital-readmission-federated-nn",
+  "type": "ANALYSIS",
+  "supportsFederatedLearning": true,
+  "sourceUrl": "https://github.com/FedLearnNet/FL-Net-Tool-US-130-FL-NN.git",
+  "authors": [
+    {
+      "keycloakId": "admin"
+    }
+  ],
+  "versions": [
+    {
+      "appVersion": "0.0.0",
+      "changelog": "",
+      "needsInternetAccess": false,
+      "needsHostAccess": false,
+      "shortDescription": "Predict 30-day hospital readmission for diabetic patients using a federated neural network",
+      "longDescription": "",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "name": "batch_size",
+            "variableName": "batch_size",
+            "type": "STRING",
+            "description": "MLP batch size.",
+            "mode": "BOTH",
+            "options": [],
+            "default": "10"
+          },
+          {
+            "name": "communication_id",
+            "variableName": "communication_id",
+            "type": "STRING",
+            "description": "Base communication id. For multi-round training the app appends -round-N so every round has a unique id.",
+            "mode": "BOTH",
+            "options": [],
+            "default": "hospital-readmission"
+          },
+          {
+            "name": "output_filename",
+            "variableName": "output_filename",
+            "type": "STRING",
+            "description": "CSV file written by each client into its local output directory.",
+            "mode": "BOTH",
+            "options": [],
+            "default": "federated_readmission_predictions.csv"
+          },
+          {
+            "name": "federated_rounds",
+            "variableName": "federated_rounds",
+            "type": "INTEGER",
+            "description": "Number of federated train/aggregate rounds.",
+            "mode": "BOTH",
+            "options": [],
+            "minValue": 1.0,
+            "default": "10"
+          },
+          {
+            "name": "local_max_iter",
+            "variableName": "local_max_iter",
+            "type": "INTEGER",
+            "description": "Local MLP iteration budget per federated round.",
+            "mode": "BOTH",
+            "options": [],
+            "minValue": 1.0,
+            "default": "15"
+          },
+          {
+            "name": "random_state",
+            "variableName": "random_state",
+            "type": "INTEGER",
+            "description": "Random seed for reproducibility",
+            "mode": "BOTH",
+            "options": [],
+            "default": "42"
+          },
+          {
+            "name": "test_size",
+            "variableName": "test_size",
+            "type": "FLOAT",
+            "description": "Fraction of data held out for validation",
+            "mode": "BOTH",
+            "options": [],
+            "default": "0.2"
+          },
+          {
+            "name": "target_column",
+            "variableName": "target_column",
+            "type": "STRING",
+            "description": "Name of the readmission target column (<30 / >30 / NO)",
+            "mode": "BOTH",
+            "options": [],
+            "default": "hospital_readmission"
+          },
+          {
+            "name": "standardize",
+            "variableName": "standardize",
+            "type": "BOOLEAN",
+            "description": "Reserved for compatibility with the reference app.",
+            "mode": "BOTH",
+            "options": [],
+            "default": "0"
+          },
+          {
+            "name": "hidden_layer_sizes",
+            "variableName": "hidden_layer_sizes",
+            "type": "STRING",
+            "description": "Comma-separated hidden layer sizes. Default mirrors a simple diabetes NN with 12 hidden units, then 8 hidden units.",
+            "mode": "BOTH",
+            "options": [],
+            "default": "12,8"
+          },
+          {
+            "name": "activation",
+            "variableName": "activation",
+            "type": "CATEGORICAL",
+            "description": "MLP activation function.",
+            "mode": "BOTH",
+            "options": [
+              "relu",
+              "tanh",
+              "logistic"
+            ],
+            "default": "relu"
+          },
+          {
+            "name": "max_iter",
+            "variableName": "max_iter",
+            "type": "INTEGER",
+            "description": "Total iteration budget for standalone local baselines.",
+            "mode": "BOTH",
+            "options": [],
+            "default": "150"
+          },
+          {
+            "name": "solver",
+            "variableName": "solver",
+            "type": "CATEGORICAL",
+            "description": "MLP optimization algorithm",
+            "mode": "BOTH",
+            "options": [
+              "adam",
+              "sgd"
+            ],
+            "default": "adam"
+          },
+          {
+            "name": "alpha",
+            "variableName": "alpha",
+            "type": "FLOAT",
+            "description": "L2 regularization strength.",
+            "mode": "BOTH",
+            "options": [],
+            "default": "0.0001"
+          },
+          {
+            "name": "learning_rate_init",
+            "variableName": "learning_rate_init",
+            "type": "FLOAT",
+            "description": "Initial learning rate for adam/sgd.",
+            "mode": "BOTH",
+            "options": [],
+            "default": "0.001"
+          },
+          {
+            "name": "class_weight",
+            "variableName": "class_weight",
+            "type": "CATEGORICAL",
+            "description": "Class weighting — use 'balanced' to counter the ~11% readmission base rate",
+            "mode": "BOTH",
+            "options": [
+              "balanced",
+              "none"
+            ],
+            "default": "balanced"
+          }
+        ],
+        "input": [
+          {
+            "name": "data",
+            "variableName": "data",
+            "type": "CSV",
+            "description": "US130 clinics dataset",
+            "mode": "BOTH",
+            "delimiter": ",",
+            "hasHeader": true,
+            "required": true
+          }
+        ],
+        "output": [
+          {
+            "name": "predictions",
+            "variableName": "predictions",
+            "type": "CSV",
+            "description": "Per-patient predicted readmission label and probability (validation split during training, all rows during prediction)",
+            "mode": "BOTH",
+            "delimiter": ",",
+            "hasHeader": true
+          },
+          {
+            "name": "coefficients",
+            "variableName": "coefficients",
+            "type": "CSV",
+            "description": "Long-form first-layer feature-weight table sorted by magnitude",
+            "mode": "BOTH",
+            "delimiter": ",",
+            "hasHeader": true
+          },
+          {
+            "name": "explanation",
+            "variableName": "explanation",
+            "type": "HTML",
+            "description": "Interactive report: metrics, confusion matrix, ROC curve, feature importance bar chart",
+            "mode": "BOTH",
+            "delimiter": ",",
+            "hasHeader": true
+          },
+          {
+            "name": "report",
+            "variableName": "report",
+            "type": "TEXT",
+            "description": "Plain-text training / prediction summary",
+            "mode": "BOTH",
+            "delimiter": ",",
+            "hasHeader": true
+          }
+        ]
+      }
+    }
+  ]
+}
