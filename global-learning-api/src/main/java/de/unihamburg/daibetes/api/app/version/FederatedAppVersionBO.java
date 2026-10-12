@@ -207,7 +207,14 @@ public class FederatedAppVersionBO extends BaseBo<FederatedAppVersionDTO, Federa
         return mapper.entityToDto(createEntity(dto, app));
     }
 
+    /**
+     * Overrides a version with imported values. A version that has an image is never overridden, its build results
+     * and publish state belong to this installation.
+     */
     public FederatedAppVersionEntity overrideEntity(FederatedAppVersionDTO dto, FederatedAppVersionEntity existingVersion) {
+        if (existingVersion.hasImage()) {
+            throw new BadRequestException("Version having image cannot be overridden");
+        }
         mapper.updateEntityFromDto(dto, existingVersion);
         ao.persist(existingVersion);
         return existingVersion;

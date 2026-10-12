@@ -337,9 +337,7 @@ public class FederatedAppBO extends BaseBo<FederatedAppDTO, FederatedAppEntity, 
     }
 
     /**
-     * Imports an app description. Image, scan results and publish hash are never taken from the import,
-     * they are created by the build pipeline afterwards (see ToolImportBuildBO).
-     * As soon as any version of the app has an image, its versions are left untouched.
+     * Imports a tool based on the given external app data (from the JSON import in ressources)
      */
     public void createExternal(FederatedAppDetailDTO external, boolean overrideExisting) {
         Log.debugf("Creating external app with name %s", external.getName());

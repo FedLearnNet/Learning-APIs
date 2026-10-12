@@ -49,11 +49,6 @@ public interface FederatedAppVersionMapper extends BaseMapper<FederatedAppVersio
             @Mapping(target = "updatedAt", ignore = true),
             @Mapping(target = "version", ignore = true),
             @Mapping(target = "federatedApp", ignore = true),
-            // owned by the build pipeline and the publish step, never by an import
-            @Mapping(target = "imageName", ignore = true),
-            @Mapping(target = "publishInfo", ignore = true),
-            @Mapping(target = "publishHash", ignore = true),
-            @Mapping(target = "versionPublishStatus", ignore = true),
             @Mapping(target = "majorVersion", source = "appVersion"),
             @Mapping(target = "minorVersion", source = "appVersion"),
             @Mapping(target = "patchVersion", source = "appVersion"),
