@@ -16,6 +16,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType.USER_MESSAGE;
 
@@ -32,11 +34,16 @@ public class TransformerWriterAssistant {
     FLNetClientConfig config;
 
     public TransformerWriterSuggestion suggest(ConnectorDTO connector, String patientIdColumn) {
+        return suggest(patientIdColumn, (session, send) ->
+                starter.start(session, connector, config.user().systemUserName(), send));
+    }
+
+    public TransformerWriterSuggestion suggest(String patientIdColumn,
+                                               BiConsumer<String, Consumer<TransformerAssistantMessageDTO>> start) {
         String session = UUID.randomUUID().toString();
         List<TransformerAssistantMessageDTO> nodes = new CopyOnWriteArrayList<>();
         CompletableFuture<Void> done = new CompletableFuture<>();
-        starter.start(session, connector, config.user().systemUserName(),
-                message -> handle(session, message, patientIdColumn, nodes, done));
+        start.accept(session, message -> handle(session, message, patientIdColumn, nodes, done));
         try {
             done.orTimeout(TIMEOUT_HOURS, TimeUnit.HOURS).join();
             return new TransformerWriterSuggestion(List.copyOf(nodes), starter.apply(session, foundSchemaIds(nodes)));
@@ -74,7 +81,8 @@ public class TransformerWriterAssistant {
         starter.message(session, createAnswer(question, patientIdColumn));
     }
 
-    private static TransformerAssistantMessageDTO createAnswer(HumanInTheLoopDTO question, String patientIdColumn) {
+    /** The answer of the evaluation: the patient id column when asked for it, otherwise the agent decides. */
+    public static TransformerAssistantMessageDTO createAnswer(HumanInTheLoopDTO question, String patientIdColumn) {
         TransformerAssistantMessageDTO answer = new TransformerAssistantMessageDTO(USER_MESSAGE);
         if (isPatientIdQuestion(question)) {
             answer.setColumns(List.of(patientIdColumn));

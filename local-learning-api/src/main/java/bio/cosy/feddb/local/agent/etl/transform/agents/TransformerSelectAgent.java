@@ -40,13 +40,14 @@ public interface TransformerSelectAgent {
                  moduleName 'Custom code', methodName and appImage copied exactly, column for CELL, inputMapping
                  (input key -> source column) and returnMapping (return key -> new output column) for ROW and PATIENT.
               Map every value of the whole file listed below, not only the values of the rows.
-              Codes (e.g. R1, 2) are mapped to the allowed values. When a pairing by the shares is listed below, map
-              every code to the value it is paired with, unless its meaning clearly contradicts it; a code paired with
-              '(empty)' stands for no value and becomes empty (null), never an allowed value. Without a pairing, a code
-              with about the same share as a value of the description is that value. Otherwise numeric codes follow the
-              order of the meaning: 0 is the absent value (no, none, not measured), never an active one like a change
-              or a result, and the higher codes rise from there (e.g. a lower, an equal, a higher state; normal before
-              abnormal, mild before severe). A column holding a single code holds the absent value. A negative code
+              Codes (e.g. R1, 2) are mapped to the allowed values. When the description gives the share of each value,
+              compare it with the counts of the file values below: a code with about the same share is that value, and
+              a code about as frequent as the empty rows of the description stands for no value and becomes empty
+              (null), never an allowed value. If codes are too close in share to tell apart, ask the user what they
+              mean. Without shares, numeric codes follow the order of the meaning: 0 is the absent value (no, none, not
+              measured), never an active one like a change or a result, and the higher codes rise from there (e.g. a
+              lower, an equal, a higher state; normal before abnormal, mild before severe). A column holding a single
+              code holds the absent value. A negative code
               like -1 is a missing value and becomes empty (null).
               A missing-value placeholder the description lists as a value of its own (e.g. '?') is kept: missing
               values of the file become that placeholder, not empty.

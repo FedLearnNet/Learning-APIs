@@ -73,15 +73,24 @@ public class TransformerLoop {
                     Consumer<TransformerAssistantMessageDTO> events,
                     Supplier<String> instructions,
                     TransformerAssistantUser user) {
+        run(connector, getSchemaNodesTransactional(connector), fileProfiles(connector), keycloakId, events, instructions,
+                user);
+    }
 
-        List<LocalSchemaNodeWithPathDTO> schemaNodes = getSchemaNodesTransactional(connector);
+    public void run(ConnectorDTO connector,
+                    List<LocalSchemaNodeWithPathDTO> schemaNodes,
+                    Map<String, ColumnProfile> fileProfiles,
+                    String keycloakId,
+                    Consumer<TransformerAssistantMessageDTO> events,
+                    Supplier<String> instructions,
+                    TransformerAssistantUser user) {
         transformerListTool.resetStoreTools();
         TableSample preview = loadPreview(connector);
         String patientIdColumn = patientIdColumn(connector, preview, user, events);
         setPatientIdMapping(connector, patientIdColumn);
         ConnectorConfigDTO connectorConfig = config(connector, patientIdColumn);
         TransformerRunContext context = new TransformerRunContext(connectorConfig, patientIdColumn, keycloakId,
-                fileProfiles(connector), mappedColumns(connectorConfig), new ArrayList<>(), user);
+                fileProfiles, mappedColumns(connectorConfig), new ArrayList<>(), user);
         Map<Long, List<ColumnCandidate>> candidates = columnMatcher.match(preview, schemaNodes, context.fileProfiles());
         EtlAgentLog.step("start", "Map %d schema nodes from %d columns, patient id column '%s'", schemaNodes.size(),
                 preview.getColumns().size(), patientIdColumn);
@@ -94,7 +103,6 @@ public class TransformerLoop {
         EtlAgentLog.step("done", "Went through all %d schema nodes", schemaNodes.size());
     }
 
-
     public TableSample runForOneSchemaNode(LocalSchemaNodeWithPathDTO node,
                                            TableSample preview,
                                            TransformerRunContext context,
@@ -102,6 +110,15 @@ public class TransformerLoop {
                                            Supplier<String> instructions,
                                            Consumer<TransformerAssistantMessageDTO> events
     ) {
+        return apply(select(node, preview, context, candidates, instructions, events), preview, context, node);
+    }
+
+    private ConnectorSelectedTransformer select(LocalSchemaNodeWithPathDTO node,
+                                                TableSample preview,
+                                                TransformerRunContext context,
+                                                Map<Long, List<ColumnCandidate>> candidates,
+                                                Supplier<String> instructions,
+                                                Consumer<TransformerAssistantMessageDTO> events) {
         events.accept(TransformerAssistantMessageDTO.node(NODE_STARTED, node.getId(), node.getPath(), null));
         context.steps().clear();
 
@@ -114,7 +131,12 @@ public class TransformerLoop {
         events.accept(result);
         EtlAgentLog.step("node", "%s -> %s%s | %s", node.getPath(), EtlAgentLog.describe(selected),
                 EtlAgentLog.describe(result.getVisitMapping()), String.join(" ; ", context.steps()));
-        if (!selected.isFoundTransformer()) {
+        return selected;
+    }
+
+    private TableSample apply(ConnectorSelectedTransformer selected, TableSample preview, TransformerRunContext context,
+                              LocalSchemaNodeWithPathDTO node) {
+        if (selected == null || !selected.isFoundTransformer()) {
             return preview;
         }
         context.mappedColumns().put(selected.getMappedColumn(), node.getPath());

@@ -78,14 +78,14 @@ public class TransformerValidateTool {
         }
         List<ConnectorTransformerDTO> transformers = selected.getSelectedTransformers();
         boolean knownStoreTools = transformers.stream()
-                .filter(TransformerListTool::isStoreTool)
+                .filter(ConnectorTransformerDTO::isStoreTool)
                 .allMatch(transformer -> listTool.resolveAppTransformer(transformer, context.patientIdColumn()));
         if (!knownStoreTools) {
             return new ConnectorValidationResultDTO("Unknown store tool or custom code transformer. Copy appVersionId "
                     + "and appImage exactly from getAllStoreDetailed, moduleName, methodName and appImage from getAllCodeDetailed.", schemaId);
         }
         List<String> unknownFunctions = transformers.stream()
-                .filter(transformer -> !TransformerListTool.isStoreTool(transformer))
+                .filter(transformer -> !transformer.isStoreTool())
                 .filter(transformer -> !listTool.isBuiltInFunction(transformer))
                 .map(transformer -> transformer.getModuleName() + "/" + transformer.getMethodName())
                 .toList();
@@ -131,7 +131,7 @@ public class TransformerValidateTool {
     }
 
     private Map<Object, String> rejectedFileValues(List<ConnectorTransformerDTO> transformers, String column) {
-        if (transformers.isEmpty() || valueRows.isEmpty() || transformers.stream().anyMatch(TransformerListTool::isStoreTool)) {
+        if (transformers.isEmpty() || valueRows.isEmpty() || transformers.stream().anyMatch(ConnectorTransformerDTO::isStoreTool)) {
             return Map.of();
         }
         List<Map<String, Object>> rows;

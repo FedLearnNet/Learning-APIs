@@ -13,6 +13,7 @@ import bio.cosy.feddb.local.api.importer.functions.managed.builtin.ReplaceValueF
 import bio.cosy.feddb.local.api.importer.run.preview.ConnectorPreviewRunnerBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerStatics;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationBO;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO;
 import bio.cosy.feddb.local.api.importer.validation.PreviewValidationBO;
@@ -36,6 +37,9 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TransformerValidateToolTest {
+
+    private static final String ROW_FUNCTION = "Split Column";
+    private static final String PATIENT_FUNCTION = "First Value Of Patient";
 
     private final ReplaceValueFunction replaceValue = new ReplaceValueFunction();
     private TransformerRunContext context;
@@ -69,8 +73,8 @@ class TransformerValidateToolTest {
             }
             return rows;
         });
-        lenient().when(listTool.isBuiltInFunction(any())).thenAnswer(invocation ->
-                replaceValue.methodName().equals(invocation.<ConnectorTransformerDTO>getArgument(0).getMethodName()));
+        lenient().when(listTool.isBuiltInFunction(any())).thenAnswer(invocation -> Set.of(replaceValue.methodName(), ROW_FUNCTION,
+                PATIENT_FUNCTION).contains(invocation.<ConnectorTransformerDTO>getArgument(0).getMethodName()));
         lenient().when(transformationBO.applyBuiltInTransformations(any(), any(), any())).thenAnswer(invocation -> {
             List<ConnectorTransformerDTO> transformers = invocation.getArgument(0);
             List<Map<String, Object>> rows = invocation.getArgument(1);
@@ -116,7 +120,7 @@ class TransformerValidateToolTest {
     void rejectsUnknownStoreToolsWithoutStartingThem() {
         init("payer_code", List.of("MC"), DataTypes.STRING, null);
         ConnectorTransformerDTO storeTool = new ConnectorTransformerDTO();
-        storeTool.setModuleName(TransformerListTool.TOOLS_MODULE);
+        storeTool.setModuleName(ConnectorTransformerStatics.TOOLS_MODULE);
         storeTool.setMethodName("Invented Tool");
 
         ConnectorValidationResultDTO result = tool.validate(
@@ -185,6 +189,68 @@ class TransformerValidateToolTest {
         assertTrue(result.getMessage().contains("'-'"), result.getMessage());
     }
 
+    @Test
+    void acceptsARowFunctionWithSeveralInputsAndOutputs() {
+        initMedications();
+
+        ConnectorValidationResultDTO result = tool.validate(ConnectorSelectedTransformer.mapping("combination",
+                List.of(function(ROW_FUNCTION, Map.of("first", "metformin_rx", "second", "rosiglitazone_rx"),
+                        Map.of("combination", "combination", "rest", "rest")))));
+
+        assertTrue(result.isValid(), result.getMessage());
+    }
+
+    @Test
+    void readsAColumnOfAnotherNodeIntoANewColumn() {
+        initMedications();
+        context.mappedColumns().put("metformin_rx", "metformin");
+
+        ConnectorValidationResultDTO result = tool.validate(ConnectorSelectedTransformer.mapping("combination",
+                List.of(function(PATIENT_FUNCTION, Map.of("value", "metformin_rx"), Map.of("value", "combination")))));
+
+        assertTrue(result.isValid(), result.getMessage());
+    }
+
+    @Test
+    void rejectsWritingTheColumnOfAnotherNode() {
+        initMedications();
+        context.mappedColumns().put("metformin_rx", "metformin");
+
+        ConnectorValidationResultDTO result = tool.validate(ConnectorSelectedTransformer.mapping("metformin_rx",
+                List.of(function(ROW_FUNCTION, Map.of("first", "rosiglitazone_rx"), Map.of("value", "metformin_rx")))));
+
+        assertFalse(result.isValid());
+        assertTrue(result.getMessage().contains("already holds metformin") && result.getMessage().contains("new output column"),
+                result.getMessage());
+    }
+
+    @Test
+    void readsTheOutputOfAnEarlierTransformer() {
+        initMedications();
+
+        ConnectorValidationResultDTO result = tool.validate(ConnectorSelectedTransformer.mapping("combination", List.of(
+                function(ROW_FUNCTION, Map.of("first", "metformin_rx"), Map.of("value", "copy")),
+                function(PATIENT_FUNCTION, Map.of("value", "copy"), Map.of("value", "combination")))));
+
+        assertTrue(result.isValid(), result.getMessage());
+    }
+
+    private void initMedications() {
+        init("metformin_rx", List.of("No", "Up"), DataTypes.STRING, null);
+        previewRows = List.of(Map.of("patient", "p1", "metformin_rx", "No", "rosiglitazone_rx", "Up"));
+        tool.init(context, node, dataType, previewRows);
+    }
+
+    private static ConnectorTransformerDTO function(String method, Map<String, Object> inputMapping, Map<String, Object> returnMapping) {
+        ConnectorTransformerDTO transformer = new ConnectorTransformerDTO();
+        transformer.setModuleName("builtin");
+        transformer.setMethodName(method);
+        transformer.setInputMapping(new LinkedHashMap<>(inputMapping));
+        transformer.setReturnMapping(new LinkedHashMap<>(returnMapping));
+        transformer.setHyperparams(new LinkedHashMap<>(PATIENT_FUNCTION.equals(method) ? Map.of("patient_id_column", "patient") : Map.of()));
+        return transformer;
+    }
+
     private void init(String column, List<String> values, DataTypes type, List<String> options) {
         node = new LocalSchemaNodeDTO();
         node.setId(1L);
@@ -203,6 +269,15 @@ class TransformerValidateToolTest {
     }
 
     private List<Map<String, Object>> replace(ConnectorTransformerDTO transformer, List<Map<String, Object>> rows) {
+        if (!replaceValue.methodName().equals(transformer.getMethodName())) {
+            // A ROW or PATIENT function: every output gets the value of its first input
+            String input = String.valueOf(transformer.getInputMapping().values().iterator().next());
+            return rows.stream().<Map<String, Object>>map(row -> {
+                Map<String, Object> copy = new LinkedHashMap<>(row);
+                transformer.getReturnMapping().values().forEach(output -> copy.put(String.valueOf(output), row.get(input)));
+                return copy;
+            }).toList();
+        }
         Map<String, String> inputMapping = new HashMap<>();
         transformer.getInputMapping().forEach((key, value) -> inputMapping.put(key, String.valueOf(value)));
         return replaceValue.apply(rows, transformer.getColumn(), inputMapping, Map.of(),
