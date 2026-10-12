@@ -37,7 +37,8 @@ public class ConnectorTransformerEntity extends BaseEntity {
     @Column(name = "return_mapping", columnDefinition = "jsonb")
     private Map<String, Object> returnMapping;
 
-    @Column(name = "column_name", length = 255)
+    // Comma separated, a combined transformer runs on many columns at once
+    @Column(name = "column_name", columnDefinition = "TEXT")
     private String column;
 
     @Column(name = "app_version_id")

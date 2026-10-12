@@ -13,6 +13,7 @@ import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerContainerBO;
 import bio.cosy.feddb.local.api.importer.transformer.session.AppTransformerSessionBO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
+import com.fasterxml.jackson.core.type.TypeReference;
 import eval.agent.etl.harmonization.judge.HarmonizationFileReviews;
 import eval.agent.etl.harmonization.pipeline.HarmonizationFileAssistant;
 import eval.agent.etl.harmonization.pojo.HarmonizationFileColumnResult;
@@ -24,6 +25,7 @@ import eval.agent.etl.transform.judge.TransformerWriterVerdict;
 import eval.agent.etl.transform.pojo.TransformerWriterReview;
 import eval.agent.etl.transform.pojo.TransformerWriterSuggestion;
 import eval.agent.etl.transform.report.TransformerWriterReport;
+import eval.agent.etl.transform.setting.EvaluationRun;
 import eval.agent.etl.transform.setting.TransformerWriterDataset;
 import eval.agent.etl.transform.setting.TransformerWriterDatasets;
 import eval.agent.etl.transform.setting.TransformerWriterEvaluationProfile;
@@ -95,17 +97,32 @@ public class HarmonizationFileEvaluationTest {
 
     @Test
     void harmonizeOntoTheFirstClinic() throws IOException {
-        String keycloakId = config.user().systemUserName();
-        Long referenceId = upload(REFERENCE_PATH, keycloakId);
-        List<HarmonizationTargetDTO> targets = transaction(() -> targetBO.targets(referenceId, REFERENCE_KEY, keycloakId));
-        List<ColumnProfile> reference = transaction(() -> fileBO.profiles(referenceId, keycloakId));
-        targets.forEach(target -> Log.infof("[Harmonization-Eval:schema] %s (%s%s): %s", target.getName(),
-                target.getDataType().getType(), target.isStaticColumn() ? ", static" : "", target.getDataType().getDescription()));
-
-        List<HarmonizationFileResult> results = new ArrayList<>();
-        for (TransformerWriterDataset dataset : TransformerWriterDatasets.selected()) {
-            results.add(evaluate(dataset, referenceId, targets, reference, keycloakId));
-            HarmonizationFileReport.save(model, REFERENCE_PATH, results);
+        Path directory = EvaluationRun.directory(model);
+        List<HarmonizationFileResult> results = EvaluationRun.load(directory.resolve(HarmonizationFileReport.RESULTS_FILE),
+                new TypeReference<ArrayList<HarmonizationFileResult>>() {
+                }, new ArrayList<>());
+        // A dataset the LLM failed on, e.g. because its server crashed, is evaluated again
+        results.removeIf(HarmonizationFileEvaluationTest::failed);
+        Set<String> done = results.stream().map(HarmonizationFileResult::getDataset).collect(Collectors.toSet());
+        List<TransformerWriterDataset> open = TransformerWriterDatasets.selected().stream()
+                .filter(dataset -> !done.contains(dataset.getName()))
+                .toList();
+        if (!open.isEmpty()) {
+            String keycloakId = config.user().systemUserName();
+            Long referenceId = upload(REFERENCE_PATH, keycloakId);
+            List<HarmonizationTargetDTO> targets = transaction(() -> targetBO.targets(referenceId, REFERENCE_KEY, keycloakId));
+            List<ColumnProfile> reference = transaction(() -> fileBO.profiles(referenceId, keycloakId));
+            targets.forEach(target -> Log.infof("[Harmonization-Eval:schema] %s (%s%s): %s", target.getName(),
+                    target.getDataType().getType(), target.isStaticColumn() ? ", static" : "", target.getDataType().getDescription()));
+            for (TransformerWriterDataset dataset : open) {
+                results.add(evaluate(dataset, referenceId, targets, reference, keycloakId));
+                HarmonizationFileReport.save(directory, EvaluationRun.label(model), REFERENCE_PATH, results);
+            }
+        }
+        Set<String> evaluated = results.stream().map(HarmonizationFileResult::getDataset).collect(Collectors.toSet());
+        if (TransformerWriterDatasets.selected().stream().allMatch(dataset -> evaluated.contains(dataset.getName()))
+                && results.stream().noneMatch(HarmonizationFileEvaluationTest::failed)) {
+            EvaluationRun.markComplete(directory, "harmonization-file");
         }
 
         List<String> incomplete = results.stream()
@@ -120,6 +137,10 @@ public class HarmonizationFileEvaluationTest {
                 .toList();
         assertTrue(incomplete.isEmpty() && wrong.isEmpty(), "Every column of the reference has to be mapped: " + incomplete
                 + ", and every value has to be the one of the original file: " + wrong);
+    }
+
+    private static boolean failed(HarmonizationFileResult result) {
+        return result.getColumns().stream().anyMatch(column -> EvaluationRun.failed(column.getReview(), column.getVerdict()));
     }
 
     @AfterEach

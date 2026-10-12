@@ -21,6 +21,7 @@ import java.util.function.Predicate;
 
 public final class TransformerWriterReport {
 
+    public static final String RESULTS_FILE = "transformer-writer.json";
     private static final ObjectMapper JSON = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
     /** Only values exactly like the gold standard are correct. */
@@ -31,11 +32,11 @@ public final class TransformerWriterReport {
     private TransformerWriterReport() {
     }
 
-    public static void save(String model, Map<String, List<TransformerWriterResult>> resultsByDataset) throws IOException {
-        Path directory = Path.of("results", "eval", model.replace(":latest", ""));
+    public static void save(Path directory, String label, Map<String, List<TransformerWriterResult>> resultsByDataset)
+            throws IOException {
         Files.createDirectories(directory);
-        JSON.writeValue(directory.resolve("transformer-writer.json").toFile(), resultsByDataset);
-        Files.writeString(directory.resolve("transformer-writer-report.md"), write(model, resultsByDataset),
+        JSON.writeValue(directory.resolve(RESULTS_FILE).toFile(), resultsByDataset);
+        Files.writeString(directory.resolve("transformer-writer-report.md"), write(label, resultsByDataset),
                 StandardCharsets.UTF_8);
         Log.infof("[ETL-Eval:report] Saved the results to %s", directory.toAbsolutePath());
     }

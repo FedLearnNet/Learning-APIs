@@ -14,6 +14,7 @@ import java.util.List;
 
 public final class HarmonizationFileReport {
 
+    public static final String RESULTS_FILE = "harmonization-file.json";
     private static final ObjectMapper JSON = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     /** From this shift on the harmonized values of a column are clearly not distributed like the reference ones. */
     private static final double SUSPICIOUS_SHIFT = 0.3;
@@ -21,11 +22,11 @@ public final class HarmonizationFileReport {
     private HarmonizationFileReport() {
     }
 
-    public static void save(String model, String reference, List<HarmonizationFileResult> results) throws IOException {
-        Path directory = Path.of("results", "eval", model.replace(":latest", ""));
+    public static void save(Path directory, String label, String reference, List<HarmonizationFileResult> results)
+            throws IOException {
         Files.createDirectories(directory);
-        JSON.writeValue(directory.resolve("harmonization-file.json").toFile(), results);
-        Files.writeString(directory.resolve("harmonization-file-report.md"), write(model, reference, results),
+        JSON.writeValue(directory.resolve(RESULTS_FILE).toFile(), results);
+        Files.writeString(directory.resolve("harmonization-file-report.md"), write(label, reference, results),
                 StandardCharsets.UTF_8);
         Log.infof("[Harmonization-Eval:report] Saved the results to %s", directory.toAbsolutePath());
     }

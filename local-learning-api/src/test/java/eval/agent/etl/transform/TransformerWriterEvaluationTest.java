@@ -4,6 +4,7 @@ import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerContainerBO;
 import bio.cosy.feddb.local.api.importer.transformer.session.AppTransformerSessionBO;
+import com.fasterxml.jackson.core.type.TypeReference;
 import eval.agent.etl.transform.judge.TransformerWriterJudge;
 import eval.agent.etl.transform.judge.TransformerWriterPrompt;
 import eval.agent.etl.transform.judge.TransformerWriterReviews;
@@ -15,6 +16,7 @@ import eval.agent.etl.transform.pojo.TransformerWriterResult;
 import eval.agent.etl.transform.pojo.TransformerWriterReview;
 import eval.agent.etl.transform.pojo.TransformerWriterSuggestion;
 import eval.agent.etl.transform.report.TransformerWriterReport;
+import eval.agent.etl.transform.setting.EvaluationRun;
 import eval.agent.etl.transform.setting.TransformerWriterDataset;
 import eval.agent.etl.transform.setting.TransformerWriterDatasets;
 import eval.agent.etl.transform.setting.TransformerWriterTruth;
@@ -28,6 +30,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,15 +70,27 @@ public class TransformerWriterEvaluationTest {
 
     @Test
     void evaluateTransformerAssistant() throws IOException {
-        Map<String, List<TransformerWriterResult>> results = new LinkedHashMap<>();
+        Path directory = EvaluationRun.directory(model);
+        Map<String, List<TransformerWriterResult>> results = EvaluationRun.load(directory.resolve(TransformerWriterReport.RESULTS_FILE),
+                new TypeReference<LinkedHashMap<String, List<TransformerWriterResult>>>() {
+                }, new LinkedHashMap<>());
+        // A dataset the LLM failed on, e.g. because its server crashed, is evaluated again
+        results.values().removeIf(TransformerWriterEvaluationTest::failed);
         for (TransformerWriterDataset dataset : TransformerWriterDatasets.selected()) {
+            if (results.containsKey(dataset.getName())) {
+                continue;
+            }
             ConnectorDTO connector = uploader.upload(dataset);
             TransformerWriterSuggestion suggestion = assistant.suggest(connector, dataset.getPatientIdColumn());
             ConnectorRunDTO run = importer.importWith(connector.getId(), suggestion.getConnector());
             results.put(dataset.getName(), reviews.of(connector, suggestion.getNodes(), run, truth.values(dataset)).stream()
                     .map(review -> new TransformerWriterResult(dataset.getName(), review, judge(review)))
                     .toList());
-            TransformerWriterReport.save(model, results);
+            TransformerWriterReport.save(directory, EvaluationRun.label(model), results);
+        }
+        if (TransformerWriterDatasets.selected().stream().allMatch(dataset -> results.containsKey(dataset.getName()))
+                && results.values().stream().noneMatch(TransformerWriterEvaluationTest::failed)) {
+            EvaluationRun.markComplete(directory, "transformer-writer");
         }
         List<String> wrong = results.values().stream().flatMap(List::stream)
                 .filter(result -> result.getReview().getTruthShift() != null
@@ -83,6 +98,10 @@ public class TransformerWriterEvaluationTest {
                 .map(result -> result.getDataset() + " " + result.getReview().getSchemaNode())
                 .toList();
         assertTrue(wrong.isEmpty(), "Every schema node has to store the values of the original file: " + wrong);
+    }
+
+    private static boolean failed(List<TransformerWriterResult> dataset) {
+        return dataset.stream().anyMatch(result -> EvaluationRun.failed(result.getReview(), result.getVerdict()));
     }
 
     @AfterEach

@@ -32,6 +32,8 @@ import java.util.stream.Stream;
 @ApplicationScoped
 public class TransformerOrganizer {
 
+    public static final String SELECTION_FAILED = "Transformer selection failed: ";
+
     @Inject
     ColumnSelectBot columnSelectBot;
 
@@ -148,7 +150,7 @@ public class TransformerOrganizer {
             selected = transformerWorkflow.select(selectedData, schemaNode, columns, hints, fileValues);
         } catch (RuntimeException e) {
             Log.warnf(e, "Transformer selection for schema node %s failed", schemaNode.getName());
-            return ConnectorSelectedTransformer.notFound("Transformer selection failed: " + e.getMessage());
+            return ConnectorSelectedTransformer.notFound(SELECTION_FAILED + e.getMessage());
         }
         if (selected == null) {
             return ConnectorSelectedTransformer.notFound("No transformer found");
