@@ -150,7 +150,7 @@ public class TransformerHelper {
         return text.toString();
     }
 
-    private static List<Map.Entry<String, Integer>> valueCounts(ColumnProfile profile) {
+    public static List<Map.Entry<String, Integer>> valueCounts(ColumnProfile profile) {
         List<Map.Entry<String, Integer>> counts = profile.valueCounts() != null ? profile.valueCounts() : profile.topCategories();
         return counts == null ? List.of() : counts.stream().filter(Objects::nonNull).toList();
     }
