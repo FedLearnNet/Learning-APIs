@@ -155,7 +155,7 @@ public class HarmonizationServiceImpl implements HarmonizationService {
     @Override
     @Transactional
     public Response downloadFile(Long fileId) {
-        FileResult result = fileBO.download(fileId, userIdentity.getKeycloakId());
+        FileResult result = fileBO.loadFile(fileId, userIdentity.getKeycloakId());
         return Response.ok(result.file())
                 .header("Content-Disposition", "attachment; filename=\"" + result.fileName() + "\"")
                 .build();
