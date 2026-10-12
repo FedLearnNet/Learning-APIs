@@ -9,6 +9,7 @@ import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerWriterTool;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
 import bio.cosy.feddb.local.api.importer.functions.FunctionExecutionMode;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerStatics;
 import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerBO;
 import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerStatus;
@@ -16,6 +17,7 @@ import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerC
 import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerCheckResultDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerContainerBO;
 import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerRequestBO;
+import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerSampleDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.save.CodeTransformerSaveDTO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -119,7 +121,7 @@ class TransformerWriterToolTest {
 
         assertTrue(saved.isSaved(), saved.getMessage());
         ConnectorTransformerDTO transformer = saved.getTransformer();
-        assertEquals(TransformerListTool.CODE_MODULE, transformer.getModuleName());
+        assertEquals(ConnectorTransformerStatics.CODE_MODULE, transformer.getModuleName());
         assertEquals("Join names", transformer.getMethodName());
         assertEquals("fl-net/code/transformer-3:abc", transformer.getAppImage());
         assertEquals(Map.of("first", "first", "second", "second"), transformer.getInputMapping());
@@ -157,6 +159,45 @@ class TransformerWriterToolTest {
         verify(codeTransformerBO).delete(3L);
     }
 
+    @Test
+    void rejectsCodeThatReturnsNoValueForAnyInput() {
+        when(requestBO.check(any(), anyString())).thenReturn(result(true, sample("Ada", null), sample("Alan", null)));
+
+        CodeTransformerCheckResultDTO result = tool.checkCode(FunctionExecutionMode.CELL, List.of("first"), "value.upper()");
+
+        assertFalse(result.getIsSuccess());
+        assertTrue(result.getMessage().startsWith("transform returns no value"), result.getMessage());
+    }
+
+    @Test
+    void rejectsPatientCodeThatReturnsPlainValues() {
+        when(requestBO.check(any(), anyString())).thenReturn(result(true, sample(Map.of("first", "Alan"), "Alan")));
+
+        CodeTransformerCheckResultDTO result = tool.checkCode(FunctionExecutionMode.PATIENT, List.of("first"),
+                "return [row['first'] for row in rows]");
+
+        assertFalse(result.getIsSuccess());
+        assertTrue(result.getMessage().contains("one dict per row"), result.getMessage());
+    }
+
+    @Test
+    void savedPatientCodeReadsThePatientAndWritesANewColumn() {
+        when(requestBO.check(any(), anyString())).thenReturn(result(true, sample(Map.of("first", "Alan"), Map.of("value", "Alan"))));
+        CodeTransformerDTO code = code(FunctionExecutionMode.PATIENT);
+        code.setReturnKeys(List.of("value"));
+        when(codeTransformerBO.save(any(), anyString())).thenReturn(code);
+        assertTrue(tool.checkCode(FunctionExecutionMode.PATIENT, List.of("first", "second"),
+                "return [{'value': row['first']} for row in rows]").getIsSuccess());
+
+        SavedCodeTransformer saved = tool.saveCode("First name of the patient", "");
+
+        ConnectorTransformerDTO transformer = saved.getTransformer();
+        assertEquals(Map.of("first", "first", "second", "second"), transformer.getInputMapping());
+        assertEquals(Map.of("value", "full_name"), transformer.getReturnMapping());
+        assertEquals("patient", transformer.getHyperparams().get(TransformerListTool.PATIENT_ID_HYPERPARAM));
+        assertEquals("full_name", saved.getMappedColumn());
+    }
+
     private CodeTransformerCheckDTO sentCheck() {
         ArgumentCaptor<CodeTransformerCheckDTO> request = ArgumentCaptor.forClass(CodeTransformerCheckDTO.class);
         verify(requestBO).check(request.capture(), anyString());
@@ -168,6 +209,19 @@ class TransformerWriterToolTest {
         result.setIsSuccess(success);
         result.setMessage(success ? "Test successful" : "1 of 3 results do not match the goal");
         return result;
+    }
+
+    private static CodeTransformerCheckResultDTO result(boolean success, CodeTransformerSampleDTO... samples) {
+        CodeTransformerCheckResultDTO result = result(success);
+        result.setSamples(List.of(samples));
+        return result;
+    }
+
+    private static CodeTransformerSampleDTO sample(Object input, Object output) {
+        CodeTransformerSampleDTO sample = new CodeTransformerSampleDTO();
+        sample.setInput(input);
+        sample.setOutput(output);
+        return sample;
     }
 
     private static CodeTransformerDTO code(FunctionExecutionMode mode) {

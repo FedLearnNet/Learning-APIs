@@ -15,6 +15,8 @@ import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerC
 import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerCheckResultDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerContainerBO;
 import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerRequestBO;
+import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerSampleDTO;
+import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationBO;
 import bio.cosy.feddb.local.api.importer.transformer.code.save.CodeTransformerSaveDTO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
 import dev.langchain4j.agent.tool.P;
@@ -38,8 +40,12 @@ import java.util.stream.Collectors;
 @RequestScoped
 public class TransformerWriterTool {
 
-    static final Duration BUILD_TIMEOUT = Duration.ofMinutes(10);
-    static final Duration BUILD_POLL = Duration.ofSeconds(3);
+    private static final Duration BUILD_TIMEOUT = Duration.ofMinutes(10);
+    private static final Duration BUILD_POLL = Duration.ofSeconds(3);
+    private static final String EMPTY_RESULTS = "transform returns no value for any input, so every value would become "
+            + "empty. Return the converted value, and pass only the body of transform without the def line.";
+    private static final String PATIENT_RESULTS = "A PATIENT transformer returns a list with one dict per row, the result "
+            + "under the key 'value', e.g. [{'value': 3}, {'value': None}]; plain values fail in the import.";
 
     @Inject
     CodeTransformerContainerBO containerBO;
@@ -93,9 +99,18 @@ public class TransformerWriterTool {
         request.setGoal(goal);
         request.setData(data(mode, inputColumns));
         CodeTransformerCheckResultDTO result = requestBO.check(request, context.keycloakId());
-        context.step("%s code on %s %s", mode, inputColumns, Boolean.TRUE.equals(result.getIsSuccess())
-                ? "valid" : "failed (" + EtlAgentLog.shorten(result.getMessage()) + ")");
         if (Boolean.TRUE.equals(result.getIsSuccess())) {
+            List<CodeTransformerSampleDTO> samples = result.getSamples() == null ? List.of() : result.getSamples();
+            if (onlyEmptyResults(samples)) {
+                result = CodeTransformerCheckResultDTO.failed(result.getRequestId(), EMPTY_RESULTS);
+            } else if (mode == FunctionExecutionMode.PATIENT && returnsPlainValues(samples)) {
+                result = CodeTransformerCheckResultDTO.failed(result.getRequestId(), PATIENT_RESULTS);
+            }
+        }
+        boolean valid = Boolean.TRUE.equals(result.getIsSuccess());
+        context.step("%s code on %s %s", mode, inputColumns, valid
+                ? "valid" : "failed (" + EtlAgentLog.shorten(result.getMessage()) + ")");
+        if (valid) {
             checked = request;
             checkedColumns = List.copyOf(inputColumns);
         }
@@ -155,6 +170,23 @@ public class TransformerWriterTool {
             Log.infof("Keeping the custom transformer %s: %s", saved.getName(), e.getMessage());
         }
         saved = null;
+    }
+
+    private boolean onlyEmptyResults(List<CodeTransformerSampleDTO> samples) {
+        return samples.stream().anyMatch(sample -> hasValue(sample.getInput()))
+                && samples.stream().noneMatch(sample -> hasValue(sample.getOutput()));
+    }
+
+    private boolean returnsPlainValues(List<CodeTransformerSampleDTO> samples) {
+        return samples.stream()
+                .anyMatch(sample -> sample.getOutput() != null && !(sample.getOutput() instanceof Map<?, ?>));
+    }
+
+    private boolean hasValue(Object value) {
+        if (value instanceof Map<?, ?> map) {
+            return map.values().stream().anyMatch(this::hasValue);
+        }
+        return value != null && !String.valueOf(value).isBlank() && !ConnectorValidationBO.isMissingPlaceholder(value, null);
     }
 
     private String rejectInput(FunctionExecutionMode mode, List<String> inputColumns) {
