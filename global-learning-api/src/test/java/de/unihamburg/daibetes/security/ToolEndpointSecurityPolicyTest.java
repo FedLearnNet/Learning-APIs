@@ -29,9 +29,14 @@ class ToolEndpointSecurityPolicyTest {
                 Scope.MODEL_WORKFLOW_RUN, 42L);
         assertGrant("GET", "/project/experiment/local/42/app", "websocket",
                 Scope.LOCAL_EXPERIMENT_RUN, 42L);
+        assertGrant("GET", "/pipeline/42/info", null, Scope.PIPELINE_RUN, 42L);
+        assertGrant("GET", "/pipeline/42/zip", null, Scope.PIPELINE_RUN, 42L);
+        assertGrant("PUT", "/pipeline/42/update", null, Scope.PIPELINE_RUN, 42L);
+        assertGrant("PUT", "/pipeline/42/summary", null, Scope.PIPELINE_RUN, 42L);
         assertFalse(ToolEndpointSecurityPolicy.match("POST", "/pipeline/start/42", null).isPresent());
-        assertFalse(ToolEndpointSecurityPolicy.match("PUT", "/pipeline/42/update", null).isPresent());
-        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/pipeline/42/zip", null).isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/pipeline/42", null).isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/pipeline/42/stream", null).isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("PUT", "/pipeline/42/stop", null).isPresent());
         assertFalse(ToolEndpointSecurityPolicy.match("GET", "/model/run/workflow/42/download", null).isPresent());
         assertFalse(ToolEndpointSecurityPolicy.match("GET", "/project", null).isPresent());
         assertFalse(ToolEndpointSecurityPolicy.match("GET", "/testembed/42/app", "websocket").isPresent());

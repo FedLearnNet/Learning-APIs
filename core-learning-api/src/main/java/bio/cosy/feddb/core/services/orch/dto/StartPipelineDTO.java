@@ -19,9 +19,9 @@ public class StartPipelineDTO {
 
     private List<String> environments = new ArrayList<>();
 
-    public void addEnvironment(String token, Long id, String secret) {
+    public void addEnvironment(String apiKey, Long id, String secret) {
         environments.add("DOCKER_LOGIN=True");
-        environments.add("OAUTH_TOKEN=" + token);
+        environments.add("PIPELINE_API_KEY=" + apiKey);
         environments.add("PIPELINE_ID=" + id);
         environments.add("PIPELINE_SECRET=" + secret);
     }

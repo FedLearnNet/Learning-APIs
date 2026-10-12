@@ -1,7 +1,6 @@
 package de.unihamburg.daibetes.api.build.pipeline;
 
 import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
-import bio.cosy.feddb.core.api.file.FileDTO;
 import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
 import jakarta.transaction.Transactional;
@@ -219,14 +218,14 @@ public interface PipelineService {
     @GET
     @Path("/{id}/zip")
     @Operation(
-            summary = "List pipeline file metadata",
-            description = "Returns metadata for files associated with the pipeline (no file content).",
+            summary = "Download pipeline files",
+            description = "Returns a zip with the files to inject into the build. Only model pipelines have files.",
             operationId = "getPipelineFiles"
     )
     @APIResponses({
-            @APIResponse(responseCode = "200", description = "List of file metadata",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(type = SchemaType.ARRAY, implementation = FileDTO.class))),
+            @APIResponse(responseCode = "200", description = "Zip with the files of the pipeline",
+                    content = @Content(mediaType = "application/zip")),
+            @APIResponse(responseCode = "204", description = "The pipeline has no files (app pipeline)"),
             @APIResponse(responseCode = "401", description = "Unauthorized"),
             @APIResponse(responseCode = "403", description = "Forbidden (invalid secret)"),
             @APIResponse(responseCode = "404", description = "Pipeline not found")
