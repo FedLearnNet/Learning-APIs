@@ -154,7 +154,7 @@ public class HarmonizationFileEvaluationTest {
         Map<String, Double> wrongRows = new HashMap<>();
         targets.forEach(target -> Optional.ofNullable(TransformerWriterTruth.wrongRows(original, harmonized, target.getName()))
                 .ifPresent(wrong -> wrongRows.put(target.getName(), wrong)));
-        List<HarmonizationFileColumnResult> columns = reviews.of(saved, suggestion.getNodes(), source, reference, output, result,
+        List<HarmonizationFileColumnResult> columns = reviews.reviewColumns(saved, suggestion.getNodes(), source, reference, output, result,
                         wrongRows).stream()
                 .map(column -> column.judged(judge(column.getReview())))
                 .toList();
