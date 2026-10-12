@@ -40,21 +40,25 @@ public class ToolExternalHandler {
     @Inject
     ModelBO modelBO;
 
+    /**
+     * @return unique ids of all apps found in the import sources
+     */
     @Transactional
-    public void importAllToolsTransactional() {
+    public Set<UUID> importAllToolsTransactional() {
+        Set<UUID> importedAppIds = new LinkedHashSet<>();
         if (!flnet.toolImports().enabled()) {
-            return;
+            return importedAppIds;
         }
 
         if (flnet.toolImports().paths().isEmpty()) {
             Log.warnf("Tool import enabled but no paths configured");
-            return;
+            return importedAppIds;
         }
 
         List<Path> roots = flnet.toolImports().paths().get();
         if (roots.isEmpty()) {
             Log.warnf("Tool import enabled but no paths configured");
-            return;
+            return importedAppIds;
         }
 
         List<PathOrUrl> jsonSources = PathOrUrl.filterByWhitelist(roots
@@ -66,7 +70,10 @@ public class ToolExternalHandler {
         List<FederatedAppDetailDTO> tools = loadAllApps(jsonSources);
         for (FederatedAppDetailDTO tool : tools) {
             try {
-                appBO.createExternal(tool, flnet.toolImports().createUnpublishedVersion(), flnet.toolImports().overrideExisting());
+                appBO.createExternal(tool, flnet.toolImports().overrideExisting());
+                if (tool.getUniqueAppId() != null) {
+                    importedAppIds.add(tool.getUniqueAppId());
+                }
             } catch (Exception e) {
                 Log.warnf(e, "Failed to import tool from source: %s", tool.getName());
             }
@@ -79,13 +86,16 @@ public class ToolExternalHandler {
                 continue;
             }
             try {
-                appBO.createExternal(model.getFederatedApp(), flnet.toolImports().createUnpublishedVersion(), flnet.toolImports().overrideExisting());
+                appBO.createExternal(model.getFederatedApp(), flnet.toolImports().overrideExisting());
+                if (model.getFederatedApp().getUniqueAppId() != null) {
+                    importedAppIds.add(model.getFederatedApp().getUniqueAppId());
+                }
                 modelBO.createExternal(model);
             } catch (Exception e) {
                 Log.warnf(e, "Failed to import model from source: %s", model.getName());
             }
         }
-
+        return importedAppIds;
     }
 
     public List<FederatedAppDetailDTO> loadAllApps(List<PathOrUrl> jsonSources) {

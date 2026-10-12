@@ -3,6 +3,7 @@ package de.unihamburg.daibetes;
 import de.unihamburg.daibetes.agent.embedding.EmbeddingAO;
 import de.unihamburg.daibetes.agent.store.StoreIngestor;
 import de.unihamburg.daibetes.api.app.ToolExternalHandler;
+import de.unihamburg.daibetes.api.app.ToolImportBuildBO;
 import de.unihamburg.daibetes.api.workflow.export.WorkflowExportBO;
 import de.unihamburg.daibetes.config.FLNetConfig;
 import io.quarkus.logging.Log;
@@ -10,6 +11,9 @@ import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
+
+import java.util.Set;
+import java.util.UUID;
 
 @ApplicationScoped
 public class Startup {
@@ -19,6 +23,9 @@ public class Startup {
 
     @Inject
     ToolExternalHandler toolExternalHandler;
+
+    @Inject
+    ToolImportBuildBO toolImportBuildBO;
 
     @Inject
     WorkflowExportBO workflowExportBO;
@@ -45,7 +52,13 @@ public class Startup {
             }
             if (config.toolImports().enabled()) {
                 Log.infof("Starting tool imports");
-                toolExternalHandler.importAllToolsTransactional();
+                Set<UUID> importedAppIds = toolExternalHandler.importAllToolsTransactional();
+                // the import is committed here, which the pipeline needs to read the new versions
+                if (config.toolImports().buildOnImport()) {
+                    toolImportBuildBO.buildMissingImagesAsync(importedAppIds);
+                } else {
+                    Log.infof("Builds of imported tools have been disabled");
+                }
             } else {
                 Log.infof("Tool imports have been disabled");
             }

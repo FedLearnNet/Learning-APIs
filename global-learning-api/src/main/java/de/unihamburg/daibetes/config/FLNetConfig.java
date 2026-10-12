@@ -120,6 +120,14 @@ public interface FLNetConfig {
 
         @WithDefault("true")
         boolean overrideExisting();
+
+        // Runs the build pipeline for imported tools that have no image yet
+        @WithDefault("true")
+        boolean buildOnImport();
+
+        // Max duration of a single import build, an unfinished pipeline older than this counts as stale
+        @WithDefault("60M")
+        Duration buildTimeout();
     }
 
     interface Ingestor {

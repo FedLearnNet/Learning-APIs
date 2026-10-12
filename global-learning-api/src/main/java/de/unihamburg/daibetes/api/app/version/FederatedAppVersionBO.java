@@ -113,15 +113,29 @@ public class FederatedAppVersionBO extends BaseBo<FederatedAppVersionDTO, Federa
         return createUnpublishedVersion(existingVersionEntity, publishDTO.getVersion());
     }
 
-    public void createUnpublished(Long appVersionId) {
-        FederatedAppVersionEntity existingVersionEntity = ao.findLastVersionByAppIdOptional(appVersionId)
-                .orElseThrow(() -> new BadRequestException("No version found for app"));
-
-        if (existingVersionEntity.getVersionPublishStatus().equalsName(PublishStatus.UNPUBLISHED)) {
-            Log.warnf("Unpublished version already exists for app %d with version id %d, creating another unpublished version", appVersionId, existingVersionEntity.getId());
+    /**
+     * Publishes an imported version after its build succeeded. Unlike a publish by a user, version number and
+     * changelog stay as imported.
+     */
+    public FederatedAppVersionDTO publishImported(Long versionId, boolean createUnpublished) {
+        FederatedAppVersionEntity entity = ao.findByIdOptional(versionId)
+                .orElseThrow(() -> new NotFoundException("Cannot find version " + versionId));
+        if (!entity.hasImage()) {
+            throw new BadRequestException("Cannot publish version without image");
         }
-
-        createUnpublishedVersion(existingVersionEntity, existingVersionEntity.getVersionFormatted());
+        if (entity.getVersionPublishStatus() == PublishStatus.PUBLISHED) {
+            return mapper.entityToDto(entity);
+        }
+        entity.setVersionPublishStatus(PublishStatus.PUBLISHED);
+        entity.setPublishHash(HashUtil.sha256(mapper.entityToDto(entity)));
+        ao.persist(entity);
+        Log.infof("Published imported image %s for app %d with version id %d", entity.getImageName(),
+                entity.getFederatedApp().getId(), entity.getId());
+        FederatedAppVersionDTO published = mapper.entityToDto(entity);
+        if (createUnpublished) {
+            createUnpublishedVersion(entity, entity.getVersionFormatted());
+        }
+        return published;
     }
 
     public FederatedAppVersionDTO createUnpublishedVersion(FederatedAppVersionEntity existingVersionEntity, String version) {

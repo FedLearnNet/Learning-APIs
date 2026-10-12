@@ -44,6 +44,15 @@ public class ToolExternalCleaner {
             app.setVersions(app.getVersions().stream()
                     .filter(v -> v.getVersionPublishStatus().equals(PublishStatus.PUBLISHED))
                     .peek(ToolExternalCleaner::setBaseValuesNull)
+                    // build results are recreated by the pipeline on import
+                    .peek(v -> {
+                        v.setPublishInfo(null);
+                        v.setImageName(null);
+                        v.setPublishHash(null);
+                        v.setVersionPublishStatus(null);
+                        v.setFederatedAppId(null);
+                        v.setAudits(null);
+                    })
                     .peek(v -> {
                         v.getAppConfig()
                                 .setInput(v.getAppConfig()

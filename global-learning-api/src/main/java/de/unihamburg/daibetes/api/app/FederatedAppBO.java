@@ -18,6 +18,7 @@ import de.unihamburg.daibetes.dto.URLDTO;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
@@ -335,7 +336,12 @@ public class FederatedAppBO extends BaseBo<FederatedAppDTO, FederatedAppEntity, 
         }
     }
 
-    public void createExternal(FederatedAppDetailDTO external, boolean createUnpublished, boolean overrideExisting) {
+    /**
+     * Imports an app description. Image, scan results and publish hash are never taken from the import,
+     * they are created by the build pipeline afterwards (see ToolImportBuildBO).
+     * As soon as any version of the app has an image, its versions are left untouched.
+     */
+    public void createExternal(FederatedAppDetailDTO external, boolean overrideExisting) {
         Log.debugf("Creating external app with name %s", external.getName());
         if (external.getUniqueAppId() == null) {
             Log.infof("External app %s has no unique app id, skipping", external.getName());
@@ -355,13 +361,12 @@ public class FederatedAppBO extends BaseBo<FederatedAppDTO, FederatedAppEntity, 
             }
         }
         setBaseValuesNull(external);
+        List<FederatedAppAuthorDTO> authors = external.getAuthors() == null ? List.of() : external.getAuthors();
         FederatedAppEntity entity;
-        // only a single version on both sides can be matched unambiguously, so only then values may be replaced
-        boolean overrideSingleVersion = false;
         if (existingAppOptional.isEmpty()) {
             entity = mapper.dtoToEntity(external);
             ao.persist(entity);
-            for (FederatedAppAuthorDTO author : external.getAuthors()) {
+            for (FederatedAppAuthorDTO author : authors) {
                 authorBO.create(entity, author.getKeycloakId());
             }
         } else {
@@ -370,7 +375,7 @@ public class FederatedAppBO extends BaseBo<FederatedAppDTO, FederatedAppEntity, 
                 entity.setAuthors(Set.of());
             } else {
                 Set<String> currentAuthorIds = entity.getAuthors().stream().map(FederatedAppAuthorEntity::getKeycloakId).collect(Collectors.toSet());
-                for (FederatedAppAuthorDTO author : external.getAuthors()) {
+                for (FederatedAppAuthorDTO author : authors) {
                     if (currentAuthorIds.contains(author.getKeycloakId())) {
                         continue;
                     }
@@ -383,59 +388,105 @@ public class FederatedAppBO extends BaseBo<FederatedAppDTO, FederatedAppEntity, 
                 mapper.updateEntityFromDto(external, entity);
                 ao.persist(entity);
             }
-            overrideSingleVersion = overrideExisting
-                    && external.getVersions() != null && external.getVersions().size() == 1
-                    && versionAO.findAllByAppId(entity.getId()).size() == 1;
-        }
-        //Save basic config for new app version
-        boolean overrodeExistingVersion = false;
-        for (FederatedAppVersionDTO version : external.getVersions()) {
-            String appNameVersion = external.getName() + " (" + version.getVersion() + ")";
-            if (version.getVersionPublishStatus().equals(PublishStatus.UNPUBLISHED)) {
-                Log.infof("External app version %s with version publish status unpublished, skipping", appNameVersion);
-                continue;
-            }
-            if (version.getPublishHash() == null) {
-                Log.infof("External app version %s has no publish hash, skipping", appNameVersion);
-                continue;
-            }
-            if (overrideSingleVersion) {
-                try {
-                    FederatedAppVersionEntity existingVersion = versionAO.findAllByAppId(entity.getId()).getFirst();
-                    versionBO.overrideEntity(version, existingVersion);
-                    configBO.setBaseValuesNull(version.getAppConfig());
-                    configBO.persist(version.getAppConfig(), existingVersion.getId(), external.getType());
-                    overrodeExistingVersion = true;
-                    Log.infof("External app version %s overrode existing version with id %d", appNameVersion, existingVersion.getId());
-                } catch (Exception e) {
-                    Log.warnf("Failed to override external app version %s: %s", appNameVersion, e.getMessage());
-                }
-                continue;
-            }
-            if (versionAO.existsByPublishHash(version.getPublishHash(), external.getUniqueAppId())) {
-                Log.infof("External app version %s with publish hash %s already exists, skipping", appNameVersion, version.getPublishHash());
-                continue;
-            }
-            try {
-                FederatedAppVersionEntity updatedVersion = versionBO.createEntity(version, entity);
-                Log.infof("External app version %s created with id %d", appNameVersion, updatedVersion.getId());
-                configBO.setBaseValuesNull(version.getAppConfig());
-                configBO.create(version.getAppConfig(), updatedVersion);
-            } catch (Exception e) {
-                Log.warnf("Failed to create external app version %s: %s", appNameVersion, e.getMessage());
+            if (versionAO.existsWithImageByAppId(entity.getId())) {
+                Log.infof("External app %s already has a built version, leaving its versions untouched", external.getName());
+                return;
             }
         }
-        // an additional unpublished version would make the app ambiguous for future overrides
-        if (createUnpublished && !overrodeExistingVersion) {
-            Log.infof("Creating unpublished version for external app %s", external.getName());
-            try {
-                versionBO.createUnpublished(entity.getId());
-            } catch (Exception e) {
-                Log.warnf("Failed to create unpublished version for external app %s: %s", external.getName(), e.getMessage());
-            }
-        }
-        Log.infof("External app with name %s created successfully", external.getName());
 
+        FederatedAppVersionDTO version = latestExternalVersion(external);
+        if (version == null) {
+            Log.warnf("External app %s has no version to import", external.getName());
+            return;
+        }
+        // build results and publish state belong to this installation, not to the import
+        setBaseValuesNull(version);
+        version.setImageName(null);
+        version.setPublishInfo(null);
+        version.setPublishHash(null);
+        version.setVersionPublishStatus(PublishStatus.UNPUBLISHED);
+        version.setAudits(null);
+        String appNameVersion = external.getName() + " (" + version.getAppVersion() + ")";
+
+        List<FederatedAppVersionEntity> existingVersions = versionAO.findAllByAppId(entity.getId());
+        if (existingVersions.isEmpty()) {
+            FederatedAppVersionEntity created = versionBO.createEntity(version, entity);
+            Log.infof("External app version %s created with id %d", appNameVersion, created.getId());
+            if (version.getAppConfig() != null) {
+                configBO.setBaseValuesNull(version.getAppConfig());
+                configBO.create(version.getAppConfig(), created);
+            }
+        } else if (overrideExisting) {
+            // no version has an image yet, so the newest one is the one waiting for its build
+            FederatedAppVersionEntity existingVersion = existingVersions.getFirst();
+            versionBO.overrideEntity(version, existingVersion);
+            if (version.getAppConfig() != null) {
+                configBO.setBaseValuesNull(version.getAppConfig());
+                configBO.persist(version.getAppConfig(), existingVersion.getId(), external.getType());
+            }
+            Log.infof("External app version %s overrode existing version with id %d", appNameVersion, existingVersion.getId());
+        }
+        Log.infof("External app with name %s imported successfully", external.getName());
+    }
+
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    public FederatedAppDetailDTO publishImportedTransactional(Long versionId, boolean createUnpublished) {
+        FederatedAppVersionDTO published = versionBO.publishImported(versionId, createUnpublished);
+        FederatedAppDetailDTO detail = getById(published.getFederatedAppId());
+        storeIngestor.ingestAsync(new StoreDTO(detail));
+        return detail;
+    }
+
+    public record ImportBuildTarget(Long versionId, String authorKeycloakId) {
+    }
+
+    /**
+     * @return version an import build has to be run for and the author it runs as, empty if the app needs no build
+     */
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    public Optional<ImportBuildTarget> findImportBuildTargetTransactional(UUID uniqueAppId) {
+        Optional<FederatedAppEntity> app = ao.findByUniqueAppId(uniqueAppId);
+        if (app.isEmpty() || versionAO.existsWithImageByAppId(app.get().getId())) {
+            return Optional.empty();
+        }
+        if (StringUtils.isBlank(app.get().getSourceUrl())) {
+            Log.warnf("Imported app %s has no source url, cannot build it", app.get().getName());
+            return Optional.empty();
+        }
+        Optional<String> author = authorBO.getAllForApp(app.get().getId()).stream()
+                .map(FederatedAppAuthorDTO::getKeycloakId)
+                .filter(StringUtils::isNotBlank)
+                .findFirst();
+        if (author.isEmpty()) {
+            Log.warnf("Imported app %s has no author, cannot build it", app.get().getName());
+            return Optional.empty();
+        }
+        return versionAO.findLastVersionByAppIdOptional(app.get().getId())
+                .map(version -> new ImportBuildTarget(version.getId(), author.get()));
+    }
+
+    // One build creates one image from the head of the repository, so only the newest version can be imported
+    private FederatedAppVersionDTO latestExternalVersion(FederatedAppDetailDTO external) {
+        if (external.getVersions() == null || external.getVersions().isEmpty()) {
+            return null;
+        }
+        if (external.getVersions().size() > 1) {
+            Log.warnf("External app %s lists %d versions, only the newest one is imported", external.getName(), external.getVersions().size());
+        }
+        return external.getVersions().stream()
+                .max(Comparator.comparing((FederatedAppVersionDTO v) -> versionPart(v, 0))
+                        .thenComparing(v -> versionPart(v, 1))
+                        .thenComparing(v -> versionPart(v, 2)))
+                .orElse(null);
+    }
+
+    private static long versionPart(FederatedAppVersionDTO version, int index) {
+        String[] parts = StringUtils.defaultString(version.getAppVersion()).split("\\.");
+        try {
+            return index < parts.length ? Long.parseLong(parts[index].trim()) : 0L;
+        } catch (NumberFormatException e) {
+            return 0L;
+        }
     }
 
     public FederatedAppDetailDTO mapVersionToDetail(FederatedAppVersionEntity versionEntity) {
