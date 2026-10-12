@@ -3,6 +3,7 @@ package bio.cosy.feddb.transform.tools;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypes;
 import bio.cosy.feddb.core.api.file.analytics.FileAnalytics;
+import bio.cosy.feddb.local.agent.etl.transform.helper.SyntheticData;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
@@ -56,6 +57,9 @@ class TransformerValidateToolTest {
     @Mock
     ConnectorTransformationBO transformationBO;
 
+    @Mock
+    SyntheticData syntheticData;
+
     @Spy
     PreviewValidationBO previewValidationBO = previewValidation();
 
@@ -64,6 +68,8 @@ class TransformerValidateToolTest {
 
     @BeforeEach
     void setUp() {
+        // Synthetic data is off, the agent sees the real rejected values
+        lenient().when(syntheticData.rejected(any(), any())).thenAnswer(invocation -> invocation.getArgument(0));
         // The preview runs the Replace Value transformers on the rows; the unknown store tool never gets that far
         lenient().when(previewRunnerBO.run(any(), eq("keycloak-user"))).thenAnswer(invocation -> {
             ConnectorConfigDTO config = invocation.getArgument(0);

@@ -1,7 +1,7 @@
 package bio.cosy.feddb.transform.organizer;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypes;
-import bio.cosy.feddb.local.agent.etl.transform.config.ColumnMatcherConfig;
+import bio.cosy.feddb.local.agent.etl.transform.config.TransformerAgentConfig;
 import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
 import bio.cosy.feddb.local.agent.etl.transform.organizer.ColumnMatcher;
 import bio.cosy.feddb.local.agent.text.SapbertSimilartity;
@@ -15,6 +15,7 @@ import bio.cosy.feddb.local.api.schema.schemanode.LocalSchemaNodeWithPathDTO;
 import bio.cosy.feddb.local.helper.text.TextSimilarity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -42,8 +43,8 @@ class ColumnMatcherTest {
             null
     );
 
-    @Mock
-    ColumnMatcherConfig config;
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    TransformerAgentConfig config;
 
     @Mock
     SapbertSimilartity sapbertSimilartity;
@@ -119,12 +120,12 @@ class ColumnMatcherTest {
     }
 
     private Map<Long, List<ColumnCandidate>> match() {
-        when(config.candidates()).thenReturn(8);
-        when(config.summaryValues()).thenReturn(8);
-        when(config.textWeight()).thenReturn(0.6);
-        when(config.semanticBaseline()).thenReturn(0.6);
-        when(config.confidentText()).thenReturn(0.85);
-        when(config.confidentMargin()).thenReturn(0.1);
+        when(config.columnMatcher().candidates()).thenReturn(8);
+        when(config.columnMatcher().summaryValues()).thenReturn(8);
+        when(config.columnMatcher().textWeight()).thenReturn(0.6);
+        when(config.columnMatcher().semanticBaseline()).thenReturn(0.6);
+        when(config.columnMatcher().confidentText()).thenReturn(0.85);
+        when(config.columnMatcher().confidentMargin()).thenReturn(0.1);
         // Without semantic scores the matching relies on the names and values only
         when(sapbertSimilartity.semanticScoresNodeNames(any(), any())).thenReturn(null);
         return matcher.match(sample, nodes, Map.of());

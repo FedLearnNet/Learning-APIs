@@ -2,6 +2,7 @@ package bio.cosy.feddb.local.agent.etl.transform.tools;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.local.agent.etl.transform.helper.EtlAgentLog;
+import bio.cosy.feddb.local.agent.etl.transform.helper.SyntheticData;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
 import bio.cosy.feddb.local.api.importer.run.preview.ConnectorPreviewRunnerBO;
@@ -26,6 +27,9 @@ import java.util.stream.Collectors;
 public class TransformerValidateTool {
 
     private static final int MAX_REPORTED_ERRORS = 10;
+
+    @Inject
+    SyntheticData syntheticData;
 
     @Inject
     ConnectorPreviewRunnerBO previewRunnerBO;
@@ -111,7 +115,9 @@ public class TransformerValidateTool {
             } catch (RuntimeException e) {
                 return new ConnectorValidationResultDTO("Running the transformer failed: " + e.getMessage(), schemaId);
             }
-            rejected = previewValidationBO.rejectedValues(rows, column, schemaId, dataType);
+            // The preview runs on the real file, so the values the agent did not see are replaced
+            Map<Object, String> real = previewValidationBO.rejectedValues(rows, column, schemaId, dataType);
+            rejected = real == null ? null : syntheticData.rejected(real, context.fileProfiles());
         }
 
         if (rejected == null) {

@@ -82,7 +82,7 @@ public class HarmonizationFileBO
 
     public Map<String, ColumnProfile> profilesByName(Long id, String keycloakId) {
         return profiles(id, keycloakId).stream()
-                .collect(Collectors.toMap(ColumnProfile::name, Function.identity(), (a, b) -> a));
+                .collect(Collectors.toMap(ColumnProfile::name, Function.identity(), (a, b) -> a, LinkedHashMap::new));
     }
 
     public List<Map<String, Object>> rows(Long id, SheetMergeResultDTO mergeConfig) {

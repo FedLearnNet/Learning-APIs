@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.api.harmonization;
 
+import bio.cosy.feddb.local.agent.etl.transform.helper.SyntheticData;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -27,10 +28,13 @@ public class HarmonizationTargetBO {
     @Inject
     HarmonizationConnectorMapper connectorMapper;
 
+    @Inject
+    SyntheticData syntheticData;
+
     public List<HarmonizationTargetDTO> targets(Long fileId, String key, String keycloakId) {
         Set<String> staticColumns = staticColumns(fileBO.rows(fileId, null), key);
-        List<HarmonizationTargetDTO> targets = fileBO.profiles(fileId, keycloakId).stream()
-                .filter(profile -> profile != null && !profile.name().equals(key))
+        List<HarmonizationTargetDTO> targets = syntheticData.profiles(fileBO.profilesByName(fileId, keycloakId)).values().stream()
+                .filter(profile -> !profile.name().equals(key))
                 .map(profile -> connectorMapper.toTarget(profile, staticColumns.contains(profile.name())))
                 .toList();
         Map<String, String> meanings = meanings(targets);

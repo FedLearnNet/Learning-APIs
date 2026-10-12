@@ -2,7 +2,7 @@ package bio.cosy.feddb.local.agent.etl.transform.organizer;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
-import bio.cosy.feddb.local.agent.etl.transform.config.ColumnMatcherConfig;
+import bio.cosy.feddb.local.agent.etl.transform.config.TransformerAgentConfig;
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerHelper;
 import bio.cosy.feddb.local.agent.etl.transform.model.CandidateAssignment;
 import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class ColumnMatcher {
 
     @Inject
-    ColumnMatcherConfig config;
+    TransformerAgentConfig config;
 
     @Inject
     SapbertSimilartity sapbertSimilartity;
@@ -69,12 +69,12 @@ public class ColumnMatcher {
                 candidate.setSemanticScore(semantic[columnIndex]);
             }
             candidate.setValidRatio(validRatio(valuesOf(column, values, profiles), node.getId(), dataType));
-            candidate.calculateAndSetScore(config.textWeight(), config.semanticBaseline());
+            candidate.calculateAndSetScore(config.columnMatcher().textWeight(), config.columnMatcher().semanticBaseline());
             scored.add(candidate);
         }
         return scored.stream()
                 .sorted(Comparator.comparingDouble(ColumnCandidate::getScore).reversed())
-                .limit(config.candidates())
+                .limit(config.columnMatcher().candidates())
                 .peek(candidate -> candidate.setSummary(summary(values, profiles, candidate)))
                 .collect(Collectors.toCollection(ArrayList::new));
     }
@@ -100,9 +100,9 @@ public class ColumnMatcher {
             nodeCandidates.addFirst(candidate);
             double runnerUpScore = nodeCandidates.size() > 1 ? nodeCandidates.get(1).getScore() : 0;
             double runnerUpText = nodeCandidates.stream().skip(1)
-                    .mapToDouble(other -> other.getTextScore(config.semanticBaseline())).max().orElse(0);
-            candidate.setClear(runnerUpScore, runnerUpText, config.semanticBaseline(), config.confidentText(),
-                    config.confidentMargin());
+                    .mapToDouble(other -> other.getTextScore(config.columnMatcher().semanticBaseline())).max().orElse(0);
+            candidate.setClear(runnerUpScore, runnerUpText, config.columnMatcher().semanticBaseline(), config.columnMatcher().confidentText(),
+                    config.columnMatcher().confidentMargin());
         }
     }
 
@@ -142,12 +142,12 @@ public class ColumnMatcher {
         StringBuilder summary = new StringBuilder();
         if (profile != null) {
             summary.append(profile.type()).append(", ").append(profile.uniqueValues()).append(" distinct ")
-                    .append(TransformerHelper.describeFileValues(profile, config.summaryValues()));
+                    .append(TransformerHelper.describeFileValues(profile, config.columnMatcher().summaryValues()));
         } else {
             summary.append("values: ").append(values == null ? "" : values.stream()
                     .map(String::valueOf)
                     .filter(value -> !value.isBlank())
-                    .limit(config.summaryValues())
+                    .limit(config.columnMatcher().summaryValues())
                     .collect(Collectors.joining(" | ")));
         }
 

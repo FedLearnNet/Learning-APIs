@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.api.harmonization;
 
+import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeValueGenerator;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypes;
 import bio.cosy.feddb.core.api.datamodler.validation.DataTypeValidationDTO;
 import bio.cosy.feddb.core.api.datamodler.validation.DataTypeValidationType;
@@ -77,7 +78,7 @@ public class HarmonizationProfileHelper {
         List<Map.Entry<String, Integer>> values = TransformerHelper.valueCounts(profile);
         boolean number = NUMBER_TYPES.contains(profile.type()) && profile.min() != null && profile.max() != null;
         if (number && (values.isEmpty() || values.size() > CATEGORY_LIMIT)) {
-            double value = profile.min() + random.nextDouble() * (profile.max() - profile.min());
+            double value = DataTypeValueGenerator.randomDouble(profile.min(), profile.max(), random);
             return "INTEGER".equals(profile.type()) ? (Object) Math.round(value) : number(value);
         }
         if (values.isEmpty()) {
