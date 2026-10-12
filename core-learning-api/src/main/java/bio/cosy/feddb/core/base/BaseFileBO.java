@@ -15,13 +15,10 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 import org.jboss.resteasy.reactive.server.multipart.FormValue;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.io.*;
+import java.nio.file.Files;
+import java.util.*;
+import java.util.stream.Stream;
 
 public abstract class BaseFileBO<Dto extends BaseDTO, Entity extends BaseFileEntity, Ao extends PanacheRepository<Entity>,
         Mapper extends BaseMapper<Dto, Entity>> extends BaseBo<Dto, Entity, Ao, Mapper> {
@@ -349,6 +346,17 @@ public abstract class BaseFileBO<Dto extends BaseDTO, Entity extends BaseFileEnt
             ao.persist(file);
         }
 
+    }
+
+    public String delimiter(File file) {
+        try (BufferedReader reader = Files.newBufferedReader(file.toPath())) {
+            String header = Objects.requireNonNullElse(reader.readLine(), "");
+            return Stream.of(",", ";", "\t", "|")
+                    .max(Comparator.comparingLong(separator -> header.chars().filter(c -> c == separator.charAt(0)).count()))
+                    .orElse(",");
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
 }
