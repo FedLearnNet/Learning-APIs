@@ -57,7 +57,8 @@ public class PrivacyStatisticsBO {
                 .toList();
     }
 
-    private ColumnProfile sanitizeProfile(ColumnProfile profile) {
+    /** The column statistics as other sites may see them: rounded counts, no rare categories, no minimum and maximum. */
+    public ColumnProfile sanitizeProfile(ColumnProfile profile) {
         long count = roundUp(profile.count(), countRoundingBase());
         long missing = roundUp(profile.missing(), countRoundingBase());
         int uniqueValues = roundUp(profile.uniqueValues(), uniqueRoundingBase());

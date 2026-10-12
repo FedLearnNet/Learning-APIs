@@ -5,7 +5,7 @@ import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantUser;
 import bio.cosy.feddb.local.agent.etl.transform.helper.EtlAgentLog;
-import bio.cosy.feddb.local.agent.etl.transform.helper.SyntheticData;
+import bio.cosy.feddb.local.agent.etl.transform.helper.AgentDataPrivacy;
 import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
@@ -49,7 +49,7 @@ public class TransformerLoop {
     ColumnMatcher columnMatcher;
 
     @Inject
-    SyntheticData syntheticData;
+    AgentDataPrivacy dataPrivacy;
 
     @Inject
     TransformerListTool transformerListTool;
@@ -89,13 +89,12 @@ public class TransformerLoop {
                     Supplier<String> instructions,
                     TransformerAssistantUser user) {
         transformerListTool.resetStoreTools();
-        // With synthetic data the agent sees random values, see SyntheticData
-        TableSample preview = syntheticData.sample(loadPreview(connector), fileProfiles);
+        TableSample preview = dataPrivacy.sample(loadPreview(connector), fileProfiles);
         String patientIdColumn = patientIdColumn(connector, preview, user, events);
         setPatientIdMapping(connector, patientIdColumn);
         ConnectorConfigDTO connectorConfig = config(connector, patientIdColumn);
         TransformerRunContext context = new TransformerRunContext(connectorConfig, patientIdColumn, keycloakId,
-                syntheticData.profiles(fileProfiles), mappedColumns(connectorConfig), new ArrayList<>(), user);
+                dataPrivacy.profiles(fileProfiles), mappedColumns(connectorConfig), new ArrayList<>(), user);
         Map<Long, List<ColumnCandidate>> candidates = columnMatcher.match(preview, schemaNodes, context.fileProfiles());
         EtlAgentLog.step("start", "Map %d schema nodes from %d columns, patient id column '%s'", schemaNodes.size(),
                 preview.getColumns().size(), patientIdColumn);

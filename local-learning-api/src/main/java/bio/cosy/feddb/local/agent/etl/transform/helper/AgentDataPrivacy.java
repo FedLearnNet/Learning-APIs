@@ -4,6 +4,7 @@ import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeValueGenerator;
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.config.TransformerAgentConfig;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
+import bio.cosy.feddb.local.api.privacy.PrivacyStatisticsBO;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -20,21 +21,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
-/**
- * Replaces the values of a file by random ones before the LLM sees them, when flnet.connector.agent.synthetic-data is
- * enabled. The statistics and the shape of the values stay, so the agent can still find and convert the columns:
- * <ul>
- *   <li>categories, i.e. columns with few distinct values, keep their values: they are the codebook to map</li>
- *   <li>numbers become a random number in the range of their column</li>
- *   <li>dates move by a random number of days and keep their format</li>
- *   <li>everything else, e.g. ids, names or free text, gets random letters and digits of the same shape: AB-12 -> QX-07</li>
- * </ul>
- * The same value always gets the same random one, so a patient keeps its rows and a column keeps its value counts.
- */
 @ApplicationScoped
-public class SyntheticData {
+public class AgentDataPrivacy {
 
     private static final Set<String> NUMBER_TYPES = Set.of("INTEGER", "NUMBER");
     private static final int MAX_DAYS_SHIFT = 365;
@@ -46,15 +37,14 @@ public class SyntheticData {
     @Inject
     TransformerAgentConfig config;
 
-    public boolean isEnabled() {
-        return config.syntheticData().enabled();
-    }
+    @Inject
+    PrivacyStatisticsBO privacyStatisticsBO;
 
-    /** The preview rows with random values, the real ones when synthetic data is off. */
-    public TableSample sample(TableSample real, Map<String, ColumnProfile> profiles) {
-        if (!isEnabled()) {
+    public TableSample sample(TableSample real, Map<String, ColumnProfile> realProfiles) {
+        if (!isSynthetic()) {
             return real;
         }
+        Map<String, ColumnProfile> profiles = profiles(realProfiles);
         List<Map<String, Object>> rows = real.getRows().stream()
                 .filter(Objects::nonNull)
                 .map(row -> {
@@ -63,29 +53,26 @@ public class SyntheticData {
                     return synthetic;
                 })
                 .toList();
-        return new TableSample(real.getColumns(), rows, List.copyOf(profiles(profiles).values()));
+        return new TableSample(real.getColumns(), rows, List.copyOf(profiles.values()));
     }
 
-    /** The statistics with random values in place of the real ones, the counts stay. */
     public Map<String, ColumnProfile> profiles(Map<String, ColumnProfile> real) {
-        if (!isEnabled()) {
-            return real;
+        Map<String, ColumnProfile> profiles = real;
+        if (config.useStatisticPrivacy()) {
+            profiles = map(profiles, privacyStatisticsBO::sanitizeProfile);
         }
-        return real.values().stream().collect(Collectors.toMap(ColumnProfile::name, this::profile, (a, b) -> a,
-                LinkedHashMap::new));
+        if (isSynthetic()) {
+            profiles = map(profiles, this::randomProfile);
+        }
+        return profiles;
     }
 
-    /**
-     * Real values a validation rejected, with random values in place of the ones the agent did not see as category;
-     * the reasons mention the value as well.
-     */
     public Map<Object, String> rejected(Map<Object, String> real, Map<String, ColumnProfile> profiles) {
-        if (!isEnabled()) {
+        if (!isSynthetic()) {
             return real;
         }
         Set<String> categories = profiles.values().stream()
-                .filter(this::isCategory)
-                .flatMap(profile -> profile.valueCounts().stream().map(Map.Entry::getKey))
+                .flatMap(profile -> categories(profile).stream())
                 .collect(Collectors.toSet());
         Map<Object, String> synthetic = new LinkedHashMap<>();
         real.forEach((value, reason) -> {
@@ -95,8 +82,17 @@ public class SyntheticData {
         return synthetic;
     }
 
-    private ColumnProfile profile(ColumnProfile real) {
-        if (isCategory(real)) {
+    private boolean isSynthetic() {
+        return config.syntheticData().enabled();
+    }
+
+    private Map<String, ColumnProfile> map(Map<String, ColumnProfile> profiles, UnaryOperator<ColumnProfile> change) {
+        return profiles.values().stream().collect(Collectors.toMap(ColumnProfile::name, change, (a, b) -> a,
+                LinkedHashMap::new));
+    }
+
+    private ColumnProfile randomProfile(ColumnProfile real) {
+        if (!categories(real).isEmpty()) {
             return real;
         }
         return new ColumnProfile(real.name(), real.type(), real.count(), real.missing(), real.uniqueValues(), real.mean(),
@@ -115,7 +111,7 @@ public class SyntheticData {
     }
 
     private Object randomValue(ColumnProfile profile, Object value) {
-        if (value == null || String.valueOf(value).isBlank() || profile != null && isCategory(profile)) {
+        if (value == null || String.valueOf(value).isBlank() || profile != null && categories(profile).contains(String.valueOf(value))) {
             return value;
         }
         String text = String.valueOf(value).strip();
@@ -125,11 +121,12 @@ public class SyntheticData {
                 .orElseGet(() -> DataTypeValueGenerator.randomLike(text, random));
     }
 
-    private boolean isCategory(ColumnProfile profile) {
-        return profile.valueCounts() != null && profile.uniqueValues() <= config.syntheticData().categoryLimit();
+    private Set<String> categories(ColumnProfile profile) {
+        List<Map.Entry<String, Integer>> counts = TransformerHelper.valueCounts(profile);
+        return counts.isEmpty() || profile.uniqueValues() > config.syntheticData().categoryLimit() ? Set.of()
+                : counts.stream().map(Map.Entry::getKey).collect(Collectors.toSet());
     }
 
-    // A number in the range of its column, with as many decimals as the real one
     private Optional<Object> randomNumber(ColumnProfile profile, String text, Random random) {
         if (profile == null || !NUMBER_TYPES.contains(profile.type()) || profile.min() == null || profile.max() == null) {
             return Optional.empty();
@@ -143,7 +140,6 @@ public class SyntheticData {
         }
     }
 
-    // A date moved by up to a year, in the format of the real one
     private Optional<Object> shiftedDate(String text, Random random) {
         long days = random.nextInt(2 * MAX_DAYS_SHIFT + 1) - MAX_DAYS_SHIFT;
         for (DateTimeFormatter format : DATE_TIME_FORMATS) {

@@ -6,6 +6,9 @@ import io.smallrye.config.WithDefault;
 @ConfigMapping(prefix = "flnet.connector.agent")
 public interface TransformerAgentConfig {
 
+    @WithDefault("false")
+    boolean useStatisticPrivacy();
+
     ColumnMatcherConfig columnMatcher();
 
     SyntheticDataConfig syntheticData();
