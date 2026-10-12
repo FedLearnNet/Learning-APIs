@@ -60,6 +60,7 @@ global-learning-api/results/.venv
 global-learning-api/results/
 local-learning-api/results/.venv
 local-learning-api/results/
+local-learning-api/logs/
 
 /research/
 
