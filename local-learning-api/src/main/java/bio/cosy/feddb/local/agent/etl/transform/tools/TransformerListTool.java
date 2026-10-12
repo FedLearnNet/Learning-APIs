@@ -87,6 +87,10 @@ public class TransformerListTool {
                         && Objects.equals(function.getMethodName(), transformer.getMethodName()));
     }
 
+    public List<String> builtInFunctionNames() {
+        return functionManagementBO.getAllDetail().stream().map(FunctionsDetailDTO::getMethodName).toList();
+    }
+
     public boolean resolveAppTransformer(ConnectorTransformerDTO transformer, String patientIdColumn) {
         return transformer.isCodeTransformer()
                 ? resolveCodeTransformer(transformer, patientIdColumn)

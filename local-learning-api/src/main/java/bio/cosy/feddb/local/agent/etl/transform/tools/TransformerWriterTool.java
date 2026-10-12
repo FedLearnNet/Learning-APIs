@@ -63,6 +63,8 @@ public class TransformerWriterTool {
     private CodeTransformerCheckDTO checked;
     private List<String> checkedColumns;
     private CodeTransformerDTO saved;
+    private SavedCodeTransformer savedAnswer;
+    private String unavailable;
 
     public void init(TransformerRunContext context, LocalSchemaNodeDTO schemaNode, DataTypeNodeDTO goal, TableSample sample) {
         this.context = context;
@@ -72,6 +74,16 @@ public class TransformerWriterTool {
         this.checked = null;
         this.checkedColumns = null;
         this.saved = null;
+        this.savedAnswer = null;
+        this.unavailable = null;
+    }
+
+    public SavedCodeTransformer savedAnswer() {
+        return savedAnswer;
+    }
+
+    public String unavailable() {
+        return unavailable;
     }
 
     @Tool("""
@@ -91,7 +103,8 @@ public class TransformerWriterTool {
         try {
             containerBO.start(context.keycloakId());
         } catch (RuntimeException e) {
-            return CodeTransformerCheckResultDTO.failed(null, "The code runner could not be started: " + e.getMessage());
+            unavailable = "The code runner could not be started: " + e.getMessage();
+            return CodeTransformerCheckResultDTO.failed(null, unavailable);
         }
         CodeTransformerCheckDTO request = new CodeTransformerCheckDTO();
         request.setMode(mode);
@@ -144,11 +157,13 @@ public class TransformerWriterTool {
         saved = awaitBuild(saved);
         context.step("custom code '%s' built: %s", name, saved.getStatus());
         if (saved.getStatus() != CodeTransformerStatus.READY) {
-            return SavedCodeTransformer.failed(saved.getStatus() == CodeTransformerStatus.BUILDING
+            unavailable = saved.getStatus() == CodeTransformerStatus.BUILDING
                     ? "The image was not built within " + BUILD_TIMEOUT.toMinutes() + " minutes"
-                    : "Building the image failed");
+                    : "Building the image failed";
+            return SavedCodeTransformer.failed(unavailable);
         }
-        return configure(saved);
+        savedAnswer = configure(saved);
+        return savedAnswer;
     }
 
     @Tool("The code saved in a previous attempt for this schema node, to continue from it")
@@ -170,6 +185,7 @@ public class TransformerWriterTool {
             Log.infof("Keeping the custom transformer %s: %s", saved.getName(), e.getMessage());
         }
         saved = null;
+        savedAnswer = null;
     }
 
     private boolean onlyEmptyResults(List<CodeTransformerSampleDTO> samples) {

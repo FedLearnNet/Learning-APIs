@@ -2,7 +2,9 @@ package bio.cosy.feddb.transform.tools;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypes;
+import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.core.api.file.analytics.FileAnalytics;
+import bio.cosy.feddb.local.api.importer.files.table.TableData;
 import bio.cosy.feddb.local.agent.etl.transform.helper.AgentDataPrivacy;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
@@ -99,6 +101,29 @@ class TransformerValidateToolTest {
 
         assertFalse(result.isValid());
         assertTrue(result.getMessage().contains("'?': a missing-value placeholder"), result.getMessage());
+    }
+
+    @Test
+    void rejectsAChainThatEmptiesEveryValue() {
+        init("payer_code", List.of("MC", "HM"), DataTypes.STRING, null);
+        withFileProfiles("payer_code", List.of("MC", "HM"));
+
+        ConnectorValidationResultDTO result = tool.validate(
+                ConnectorSelectedTransformer.mapping("payer_code", List.of(replace("MC", "null"), replace("HM", "null"))));
+
+        assertFalse(result.isValid());
+        assertTrue(result.getMessage().startsWith("Every value of 'payer_code' is empty"), result.getMessage());
+    }
+
+    @Test
+    void acceptsEmptyingAColumnOfPlaceholdersOnly() {
+        init("payer_code", List.of("?", "?"), DataTypes.STRING, null);
+        withFileProfiles("payer_code", List.of("?", "?"));
+
+        ConnectorValidationResultDTO result = tool.validate(
+                ConnectorSelectedTransformer.mapping("payer_code", List.of(replace("?", "null"))));
+
+        assertTrue(result.isValid(), result.getMessage());
     }
 
     @Test
@@ -270,7 +295,18 @@ class TransformerValidateToolTest {
         previewRows = values.stream().<Map<String, Object>>map(value -> Map.of(column, value)).toList();
         ConnectorConfigDTO config = new ConnectorConfigDTO();
         config.setTransformer(new ArrayList<>());
-        context = new TransformerRunContext(config, null, "keycloak-user", Map.of(), new HashMap<>(), new ArrayList<>(), null);
+        context = new TransformerRunContext(config, null, "keycloak-user", Map.of(), new HashMap<>(), new ArrayList<>(), new ArrayList<>(), null);
+        tool.init(context, node, dataType, List.of());
+    }
+
+    private void withFileProfiles(String column, List<String> values) {
+        List<Map<String, Object>> rows = values.stream().<Map<String, Object>>map(value -> new LinkedHashMap<>(Map.of(column, value))).toList();
+        try (TableData data = new TableData(new ArrayList<>(List.of(column)), new ArrayList<>(rows), null)) {
+            Map<String, ColumnProfile> profiles = new HashMap<>();
+            new TableDataProfileBO(new FileAnalytics()).profiles(data).forEach(profile -> profiles.put(profile.name(), profile));
+            context = new TransformerRunContext(context.config(), null, "keycloak-user", profiles, new HashMap<>(),
+                    new ArrayList<>(), new ArrayList<>(), null);
+        }
         tool.init(context, node, dataType, List.of());
     }
 

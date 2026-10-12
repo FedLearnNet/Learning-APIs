@@ -3,11 +3,14 @@ package bio.cosy.feddb.local.agent.etl.transform.tools;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.local.agent.etl.transform.helper.EtlAgentLog;
 import bio.cosy.feddb.local.agent.etl.transform.helper.AgentDataPrivacy;
+import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerHelper;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
+import bio.cosy.feddb.local.api.importer.connector.ConnectorHelper;
 import bio.cosy.feddb.local.api.importer.run.preview.ConnectorPreviewRunnerBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
+import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationBO;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO;
 import bio.cosy.feddb.local.api.importer.validation.PreviewValidationBO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
@@ -21,6 +24,7 @@ import jakarta.inject.Inject;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RequestScoped
@@ -118,6 +122,11 @@ public class TransformerValidateTool {
             // The preview runs on the real file, so the values the agent did not see are replaced
             Map<Object, String> real = previewValidationBO.rejectedValues(rows, column, schemaId, dataType);
             rejected = real == null ? null : dataPrivacy.rejected(real, context.fileProfiles());
+            if (real != null && rows.stream().noneMatch(row -> hasValue(row.get(column))) && inputsHaveValues(transformers)) {
+                return new ConnectorValidationResultDTO("Every value of '" + column + "' is empty after the "
+                        + "transformation, although its input columns hold values. Check the parameters, e.g. the "
+                        + "input mapping, the return key and the output column.", schemaId);
+            }
         }
 
         if (rejected == null) {
@@ -134,6 +143,19 @@ public class TransformerValidateTool {
                 .map(entry -> "'" + entry.getKey() + "': " + entry.getValue())
                 .collect(Collectors.joining("\n"));
         return new ConnectorValidationResultDTO(rejected.size() + " rejected values of '" + column + "':\n" + errors, schemaId);
+    }
+
+    private boolean inputsHaveValues(List<ConnectorTransformerDTO> transformers) {
+        return transformers.stream()
+                .flatMap(transformer -> ConnectorHelper.transformerInputs(transformer).stream())
+                .map(context.fileProfiles()::get)
+                .filter(Objects::nonNull)
+                .anyMatch(profile -> TransformerHelper.fileValues(profile).stream().anyMatch(this::hasValue));
+    }
+
+    private boolean hasValue(Object value) {
+        return value != null && !String.valueOf(value).isBlank()
+                && !ConnectorValidationBO.isMissingPlaceholder(value, dataType == null ? null : dataType.getOptions());
     }
 
     private Map<Object, String> rejectedFileValues(List<ConnectorTransformerDTO> transformers, String column) {

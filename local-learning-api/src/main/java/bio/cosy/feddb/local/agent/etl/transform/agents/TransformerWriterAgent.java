@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.agent.etl.transform.agents;
 
+import bio.cosy.feddb.local.agent.etl.transform.guardrails.TransformerWriterGuardrail;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.PreviousValidation;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
@@ -12,6 +13,7 @@ import dev.langchain4j.agentic.Agent;
 import dev.langchain4j.agentic.declarative.K;
 import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.V;
+import dev.langchain4j.service.guardrail.OutputGuardrails;
 import io.quarkiverse.langchain4j.ToolBox;
 
 import java.util.List;
@@ -43,7 +45,9 @@ public interface TransformerWriterAgent {
             - Then save it with saveCode, with a general name and description of what it does. Answer with the
               transformer saveCode returns as the only selectedTransformers entry, its mappedColumn and
               foundTransformer set.
-            - If the meaning of the values is unclear (e.g. date format, unit, codes), ask the user.
+            - If the meaning of the values is unclear (e.g. date format, unit, codes), ask the user with askUser.
+              Never write a question into neededTransformerFunction, nobody reads it there.
+            - Never answer with a transformer you did not get from getAllDetail, getAllCodeDetailed or saveCode.
             - If no code can compute the schema node from the columns, set foundTransformer to false and explain why.
             {#if instructions}Instructions of the user: {instructions}{/if}
 
@@ -69,6 +73,7 @@ public interface TransformerWriterAgent {
             Result of the last attempt: {validation.message}
             """)
     @Agent(name = NAME, description = "Writes, checks and saves a custom Python transformer for a schema node", outputKey = "selectedTransformer")
+    @OutputGuardrails(value = TransformerWriterGuardrail.class, maxRetries = 2)
     @ToolBox({TransformerListTool.class, TransformerWriterTool.class, TransformerUserTool.class})
     ConnectorSelectedTransformer write(TableSample selectedData,
                                        LocalSchemaNodeDTO schemaNode,

@@ -94,7 +94,7 @@ public class TransformerLoop {
         setPatientIdMapping(connector, patientIdColumn);
         ConnectorConfigDTO connectorConfig = config(connector, patientIdColumn);
         TransformerRunContext context = new TransformerRunContext(connectorConfig, patientIdColumn, keycloakId,
-                dataPrivacy.profiles(fileProfiles), mappedColumns(connectorConfig), new ArrayList<>(), user);
+                dataPrivacy.profiles(fileProfiles), mappedColumns(connectorConfig), new ArrayList<>(), new ArrayList<>(), user);
         Map<Long, List<ColumnCandidate>> candidates = columnMatcher.match(preview, schemaNodes, context.fileProfiles());
         EtlAgentLog.step("start", "Map %d schema nodes from %d columns, patient id column '%s'", schemaNodes.size(),
                 preview.getColumns().size(), patientIdColumn);

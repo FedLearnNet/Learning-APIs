@@ -1,23 +1,29 @@
 package bio.cosy.feddb.local.agent.etl.transform.organizer;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
+import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.agents.TransformerWorkflowAgent;
 import bio.cosy.feddb.local.agent.etl.transform.bot.ColumnSelectBot;
 import bio.cosy.feddb.local.agent.etl.transform.bot.VisitColumnBot;
+import bio.cosy.feddb.local.agent.etl.transform.guardrails.AnswerHints;
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerCombiner;
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerHelper;
 import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
+import bio.cosy.feddb.local.agent.etl.transform.model.MappedColumn;
 import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
 import bio.cosy.feddb.local.agent.etl.transform.model.VisitMapping;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerUserTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerValidateTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerWriterTool;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
 import bio.cosy.feddb.local.api.schema.datatype.DataTypeDTO;
 import bio.cosy.feddb.local.api.schema.datatype.DataTypeEntityMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
@@ -26,13 +32,16 @@ import jakarta.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @ApplicationScoped
 public class TransformerOrganizer {
 
     public static final String SELECTION_FAILED = "Transformer selection failed: ";
+    private static final int COLUMN_SELECT_ATTEMPTS = 2;
 
     @Inject
     ColumnSelectBot columnSelectBot;
@@ -58,6 +67,12 @@ public class TransformerOrganizer {
     @Inject
     TransformerCombiner combiner;
 
+    @Inject
+    AnswerHints hints;
+
+    @Inject
+    ObjectMapper objectMapper;
+
     @ActivateRequestContext
     public ConnectorSelectedTransformer selectTransformer(TransformerRunContext context,
                                                           TableSample previewData,
@@ -74,14 +89,23 @@ public class TransformerOrganizer {
             columns = List.of(candidates.getFirst().getColumn());
             context.step("matcher: '%s' fits by name", columns.getFirst());
         } else {
-            columns = selectColumns(context, previewData, schemaNode, instructions, candidates);
+            try {
+                columns = selectColumns(context, previewData, schemaNode, instructions, candidates);
+            } catch (RuntimeException e) {
+                return ConnectorSelectedTransformer.notFound(SELECTION_FAILED + "the column selection failed: " + e.getMessage());
+            }
         }
         if (columns.isEmpty()) {
             return ConnectorSelectedTransformer.notFound("No source column holds the information of this schema node");
         }
         ConnectorSelectedTransformer selected = selectForColumns(context, previewData, schemaNode, instructions, columns, nodeDTO);
         if (!selected.isFoundTransformer() && clear) {
-            List<String> asked = selectColumns(context, previewData, schemaNode, instructions, candidates);
+            List<String> asked;
+            try {
+                asked = selectColumns(context, previewData, schemaNode, instructions, candidates);
+            } catch (RuntimeException e) {
+                asked = List.of();
+            }
             if (!asked.isEmpty() && !Set.copyOf(asked).equals(Set.copyOf(columns))) {
                 selected = selectForColumns(context, previewData, schemaNode, instructions, asked, nodeDTO);
             }
@@ -120,6 +144,7 @@ public class TransformerOrganizer {
         validateTool.init(context, schemaNode, nodeDTO,
                 TransformerHelper.valueRows(previewData, columns, context.fileProfiles(), patientIdColumn));
         writerTool.init(context, schemaNode, nodeDTO, previewData);
+        this.hints.reset();
 
         if (columns.size() == 1) {
             ConnectorSelectedTransformer direct = ConnectorSelectedTransformer.mapping(columns.getFirst(), List.of());
@@ -128,6 +153,7 @@ public class TransformerOrganizer {
                 return direct;
             }
             hints += "\nMapping column '" + columns.getFirst() + "' directly is rejected: " + validation.getMessage();
+            hints += earlierCodedColumn(context, columns.getFirst(), nodeDTO);
         }
 
         List<String> keep = new ArrayList<>(columns);
@@ -139,8 +165,55 @@ public class TransformerOrganizer {
         if (!selected.isFoundTransformer()) {
             // A custom transformer written for this node but not taken is not worth keeping
             writerTool.discard();
+        } else if (columns.size() == 1) {
+            rememberCodedColumn(context, columns.getFirst(), selected, nodeDTO);
         }
         return selected;
+    }
+
+    private String earlierCodedColumn(TransformerRunContext context, String column, DataTypeNodeDTO dataType) {
+        Set<String> values = codedValues(context.fileProfiles().get(column));
+        if (values.isEmpty()) {
+            return "";
+        }
+        return context.codedColumns().reversed().stream()
+                .filter(earlier -> earlier.fits(dataType, values))
+                .findFirst()
+                .map(earlier -> "\nColumn '" + earlier.getColumn() + "' has the same values and was mapped onto a schema "
+                        + "node of the same data type with " + json(earlier.getTransformers()) + ". If the values of '"
+                        + column + "' mean the same, map them the same way.")
+                .orElse("");
+    }
+
+    private String json(Object value) {
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (JsonProcessingException e) {
+            return String.valueOf(value);
+        }
+    }
+
+    private void rememberCodedColumn(TransformerRunContext context, String column, ConnectorSelectedTransformer selected,
+                                     DataTypeNodeDTO dataType) {
+        List<ConnectorTransformerDTO> transformers = selected.getSelectedTransformers();
+        boolean onColumn = !transformers.isEmpty() && column.equals(selected.getMappedColumn())
+                && transformers.stream().allMatch(transformer -> transformer.isCellBased() && column.equals(transformer.getColumn()));
+        Set<String> values = codedValues(context.fileProfiles().get(column));
+        if (onColumn && !values.isEmpty()) {
+            context.codedColumns().add(new MappedColumn(column, values, dataType, transformers));
+        }
+    }
+
+    private static Set<String> codedValues(ColumnProfile profile) {
+        if (profile == null) {
+            return Set.of();
+        }
+        List<Map.Entry<String, Integer>> counts = TransformerHelper.valueCounts(profile);
+        Set<String> values = counts.stream()
+                .map(Map.Entry::getKey)
+                .filter(value -> value != null && !value.isBlank())
+                .collect(Collectors.toSet());
+        return values.size() < profile.uniqueValues() ? Set.of() : values;
     }
 
     private ConnectorSelectedTransformer runWorkflow(TableSample selectedData, LocalSchemaNodeDTO schemaNode,
@@ -176,20 +249,25 @@ public class TransformerOrganizer {
                         + ", pick it only if this node is computed from it as well")
                         : candidate)
                 .toList();
-        try {
-            userTool.askedBy(ColumnSelectBot.NAME);
-            List<String> selected = columnSelectBot.select(previewData, schemaNode, hints.strip(), annotated,
-                    TransformerHelper.columnExamples(previewData));
-            List<String> columns = selected == null ? List.of() : selected.stream()
-                    .flatMap(answer -> columnNames(answer, previewData.getColumns()))
-                    .distinct()
-                    .toList();
-            context.step("%s: %s of %s", ColumnSelectBot.NAME, columns, candidates.stream().map(ColumnCandidate::getColumn).toList());
-            return columns;
-        } catch (RuntimeException e) {
-            Log.warnf(e, "Column selection for schema node %s failed", schemaNode.getName());
-            return List.of();
+        RuntimeException failure = null;
+        for (int attempt = 0; attempt < COLUMN_SELECT_ATTEMPTS; attempt++) {
+            try {
+                userTool.askedBy(ColumnSelectBot.NAME);
+                List<String> selected = columnSelectBot.select(previewData, schemaNode, hints.strip(), annotated,
+                        TransformerHelper.columnExamples(previewData));
+                List<String> columns = selected == null ? List.of() : selected.stream()
+                        .flatMap(answer -> columnNames(answer, previewData.getColumns()))
+                        .distinct()
+                        .toList();
+                context.step("%s: %s of %s", ColumnSelectBot.NAME, columns, candidates.stream().map(ColumnCandidate::getColumn).toList());
+                return columns;
+            } catch (RuntimeException e) {
+                Log.warnf(e, "Column selection for schema node %s failed", schemaNode.getName());
+                failure = e;
+            }
         }
+        context.step("%s failed: %s", ColumnSelectBot.NAME, failure.getMessage());
+        throw failure;
     }
 
     private Stream<String> columnNames(String answer, List<String> columns) {
