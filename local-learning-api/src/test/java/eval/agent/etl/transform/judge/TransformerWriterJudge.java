@@ -27,7 +27,8 @@ public interface TransformerWriterJudge {
             - A value that is valid for the data type can still be wrong; a valid looking output is no proof.
             - Rejected values, a suspicious distribution (e.g. everything empty or one value only) or a failed run
               point to errors.
-            Explain the verdicts in the reason, naming the wrong conversions if there are any.
+            Explain the verdicts in the reason, naming the wrong conversions if there are any. Keep the reason to
+            at most three plain sentences, without Markdown, the answer is cut off otherwise.
             """)
     @UserMessage("""
             Judge this mapping:

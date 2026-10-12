@@ -4,10 +4,7 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionParameterDTO;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterType;
 import bio.cosy.feddb.local.api.importer.functions.managed.AbstractManagedRowFunction;
 import bio.cosy.feddb.local.api.importer.functions.managed.RowFunctionExecutionContext;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,9 +31,6 @@ import java.util.regex.Pattern;
  */
 @ApplicationScoped
 public class SplitColumnFunction extends AbstractManagedRowFunction {
-
-    @Inject
-    ObjectMapper objectMapper;
 
     @Override
     public String methodName() {
@@ -67,13 +61,7 @@ public class SplitColumnFunction extends AbstractManagedRowFunction {
 
         Object packed = row.get("source");
         String delimiter = String.valueOf(params.get("delimiter"));
-        List<String> parts;
-        try {
-            parts = objectMapper.readValue(String.valueOf(params.get("parts")), new TypeReference<>() {
-            });
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid 'parts' JSON array", e);
-        }
+        List<String> parts = BuiltInFunctionSupport.readStringList(params.get("parts"), "parts");
 
         Map<String, Object> result = new LinkedHashMap<>();
         if (packed == null) {

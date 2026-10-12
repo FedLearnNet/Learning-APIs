@@ -4,10 +4,7 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionParameterDTO;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterType;
 import bio.cosy.feddb.local.api.importer.functions.managed.AbstractManagedRowFunction;
 import bio.cosy.feddb.local.api.importer.functions.managed.RowFunctionExecutionContext;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 import java.util.List;
 import java.util.Map;
@@ -32,9 +29,6 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class MergeColumnsFunction extends AbstractManagedRowFunction {
 
-    @Inject
-    ObjectMapper objectMapper;
-
     @Override
     public String methodName() {
         return "Merge Columns";
@@ -56,18 +50,17 @@ public class MergeColumnsFunction extends AbstractManagedRowFunction {
     }
 
     @Override
+    public List<String> returnKeys() {
+        return List.of("value");
+    }
+
+    @Override
     public Map<String, Object> execute(RowFunctionExecutionContext context) {
         Map<String, Object> row = context.getRow();
         Map<String, Object> params = context.getParams();
 
         String delimiter = String.valueOf(params.get("delimiter"));
-        List<String> parts;
-        try {
-            parts = objectMapper.readValue(String.valueOf(params.get("parts")), new TypeReference<>() {
-            });
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid 'parts' JSON array", e);
-        }
+        List<String> parts = BuiltInFunctionSupport.readStringList(params.get("parts"), "parts");
 
         String merged = parts.stream()
                 .map(part -> {

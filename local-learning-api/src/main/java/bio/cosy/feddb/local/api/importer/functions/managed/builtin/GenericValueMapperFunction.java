@@ -5,18 +5,13 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionParameterType;
 import bio.cosy.feddb.local.api.importer.functions.managed.AbstractManagedCellFunction;
 import bio.cosy.feddb.local.api.importer.functions.managed.CellFunctionExecutionContext;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 import java.util.List;
 import java.util.Map;
 
 @ApplicationScoped
 public class GenericValueMapperFunction extends AbstractManagedCellFunction {
-
-    @Inject
-    ObjectMapper objectMapper;
 
     @Override
     public String methodName() {
@@ -40,14 +35,8 @@ public class GenericValueMapperFunction extends AbstractManagedCellFunction {
     public Object execute(CellFunctionExecutionContext context) {
         Object value = context.getValue();
         String key = value == null ? null : String.valueOf(value);
-        String mapString = String.valueOf(context.getParams().get("map"));
-
-        try {
-            Map<String, Object> mapping = objectMapper.readValue(mapString, new TypeReference<>() {
-            });
-            return mapping.getOrDefault(key, value);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid map_string JSON", e);
-        }
+        Map<String, Object> mapping = BuiltInFunctionSupport.readJson(context.getParams().get("map"), new TypeReference<>() {
+        }, "map");
+        return mapping == null ? value : mapping.getOrDefault(key, value);
     }
 }

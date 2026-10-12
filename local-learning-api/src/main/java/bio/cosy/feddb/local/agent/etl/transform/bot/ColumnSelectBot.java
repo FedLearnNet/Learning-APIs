@@ -22,6 +22,10 @@ public interface ColumnSelectBot {
     @UserMessage("""
             Your job is to select the columns which are needed to calculate the value of the schema node below.
             Pick every column the value depends on (e.g. both dates for a duration), but no column that only looks similar.
+            A column whose values are coded or written differently (codes, other words or language, units) still holds
+            the information, its values are converted later. The share of values that fit unconverted only decides
+            whether a conversion is needed, it is no reason to leave a column out. When the description lists the
+            share of each value, prefer the column whose values have about the same shares.
             Return the exact column names, or an empty list if no column holds the information.
             The tool lists the available transformer functions, in case this helps to judge which inputs are needed.
             If several columns fit equally well, ask the user.
@@ -31,14 +35,18 @@ public interface ColumnSelectBot {
             {#if schemaNode.description}Description: {schemaNode.description}{/if}
             {#if schemaNode.dataType}Data type: {schemaNode.dataType.name} ({schemaNode.dataType.type}){/if}
 
-            Candidate columns, ranked by name similarity, meaning and how many of their values are valid for the schema node:
+            Candidate columns, ranked by name similarity, meaning and how many of their values fit unconverted:
             {#for candidate in candidates}
             - {candidate.column}: {candidate.summary}
             {/for}
 
-            Names of all columns, in case a value needs other columns than the candidates: {previewData.columns}
+            All columns with example values, in case the value needs other columns than the candidates, e.g. one part
+            of a packed column:
+            {#for column in columns}
+            - {column}
+            {/for}
             """)
     @ToolBox({TransformerListTool.class, TransformerUserTool.class})
     List<String> select(TableSample previewData, LocalSchemaNodeDTO schemaNode, String instructions,
-                        List<ColumnCandidate> candidates);
+                        List<ColumnCandidate> candidates, List<String> columns);
 }

@@ -4,10 +4,7 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionParameterDTO;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterType;
 import bio.cosy.feddb.local.api.importer.functions.managed.AbstractManagedCellFunction;
 import bio.cosy.feddb.local.api.importer.functions.managed.CellFunctionExecutionContext;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 import java.util.List;
 import java.util.Locale;
@@ -24,9 +21,6 @@ import java.util.Map;
  */
 @ApplicationScoped
 public class NormalizeMissingFunction extends AbstractManagedCellFunction {
-
-    @Inject
-    ObjectMapper objectMapper;
 
     @Override
     public String methodName() {
@@ -59,13 +53,7 @@ public class NormalizeMissingFunction extends AbstractManagedCellFunction {
         }
         String candidate = value.toString().strip().toLowerCase(Locale.ROOT);
 
-        List<String> tokens;
-        try {
-            tokens = objectMapper.readValue(String.valueOf(params.get("tokens")), new TypeReference<>() {
-            });
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid 'tokens' JSON array", e);
-        }
+        List<String> tokens = BuiltInFunctionSupport.readStringList(params.get("tokens"), "tokens");
 
         for (String token : tokens) {
             if (token != null && token.strip().toLowerCase(Locale.ROOT).equals(candidate)) {

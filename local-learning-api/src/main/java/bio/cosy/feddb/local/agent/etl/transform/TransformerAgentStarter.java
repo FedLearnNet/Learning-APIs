@@ -1,10 +1,12 @@
 package bio.cosy.feddb.local.agent.etl.transform;
 
+import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerCombiner;
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerHelper;
 import bio.cosy.feddb.local.agent.etl.transform.organizer.TransformerLoop;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
+import bio.cosy.feddb.local.api.schema.schemanode.LocalSchemaNodeWithPathDTO;
 import io.quarkus.virtual.threads.VirtualThreads;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -33,9 +35,19 @@ public class TransformerAgentStarter {
     private final Map<String, TransformerRun> runs = new ConcurrentHashMap<>();
 
     public void start(String sessionId, ConnectorDTO connector, String keycloakId, Consumer<TransformerAssistantMessageDTO> send) {
+        start(sessionId, send, run -> transformerLoop.run(connector, keycloakId, run::emit, run::instructions, run));
+    }
+
+    public void start(String sessionId, ConnectorDTO connector, List<LocalSchemaNodeWithPathDTO> schemaNodes,
+                      Map<String, ColumnProfile> fileProfiles, String keycloakId, Consumer<TransformerAssistantMessageDTO> send) {
+        start(sessionId, send, run -> transformerLoop.run(connector, schemaNodes, fileProfiles, keycloakId, run::emit,
+                run::instructions, run));
+    }
+
+    private void start(String sessionId, Consumer<TransformerAssistantMessageDTO> send, Consumer<TransformerRun> work) {
         TransformerRun run = new TransformerRun(send);
         Optional.ofNullable(runs.put(sessionId, run)).ifPresent(TransformerRun::cancel);
-        run.start(executor, () -> transformerLoop.run(connector, keycloakId, run::emit, run::instructions, run));
+        run.start(executor, () -> work.accept(run));
     }
 
     public void message(String sessionId, TransformerAssistantMessageDTO message) {
