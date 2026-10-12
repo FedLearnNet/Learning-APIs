@@ -33,17 +33,8 @@ public class EmbeddingAO {
         }
     }
 
-    // The table is created by the embedding store on its first use. Querying it before that would
-    // fail and abort the surrounding transaction, so its existence is checked with a statement that cannot fail.
-    private boolean embeddingsTableExists() {
-        return Boolean.TRUE.equals(em.createNativeQuery("SELECT to_regclass('embeddings') IS NOT NULL").getSingleResult());
-    }
-
     public boolean hasAppEmbedding(@NotNull Long appId) {
         try {
-            if (!embeddingsTableExists()) {
-                return false;
-            }
             Number count = (Number) em.createNativeQuery("SELECT COUNT(*)  FROM embeddings WHERE metadata->>'appId' = :appId")
                     .setParameter("appId", appId.toString())
                     .getSingleResult();
@@ -56,9 +47,6 @@ public class EmbeddingAO {
 
     public boolean hasModelEmbedding(@NotNull Long modelId) {
         try {
-            if (!embeddingsTableExists()) {
-                return false;
-            }
             Number count = (Number) em.createNativeQuery("SELECT COUNT(*)  FROM embeddings WHERE metadata->>'modelId' = :modelId")
                     .setParameter("modelId", modelId.toString())
                     .getSingleResult();
@@ -71,9 +59,6 @@ public class EmbeddingAO {
 
     public void deleteModelEmbeddings(@NotNull Long modelId) {
         try {
-            if (!embeddingsTableExists()) {
-                return;
-            }
             em.createNativeQuery("DELETE FROM embeddings WHERE metadata->>'modelId' = :modelId")
                     .setParameter("modelId", modelId.toString())
                     .executeUpdate();
@@ -84,9 +69,6 @@ public class EmbeddingAO {
 
     public void deleteAppEmbeddings(@NotNull Long appId) {
         try {
-            if (!embeddingsTableExists()) {
-                return;
-            }
             em.createNativeQuery("DELETE FROM embeddings WHERE metadata->>'appId' = :appId")
                     .setParameter("appId", appId.toString())
                     .executeUpdate();

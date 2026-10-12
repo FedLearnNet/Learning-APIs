@@ -19,6 +19,7 @@ import dev.langchain4j.exception.HttpException;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore;
+import io.quarkus.arc.ClientProxy;
 import io.quarkus.logging.Log;
 import io.smallrye.context.api.ManagedExecutorConfig;
 import jakarta.annotation.PostConstruct;
@@ -93,6 +94,18 @@ public class StoreIngestor {
         } else {
             apiKeyPresent.set(true);
             Log.infof("embedding API key configured");
+        }
+    }
+
+    // The store bean is created lazily and creates the embeddings table on creation. Forcing the creation
+    // on startup guarantees that the table exists before EmbeddingAO queries it.
+    public boolean initEmbeddingStore() {
+        try {
+            ClientProxy.unwrap(store);
+            return true;
+        } catch (Exception e) {
+            Log.error("Error while initializing embedding store", e);
+            return false;
         }
     }
 
