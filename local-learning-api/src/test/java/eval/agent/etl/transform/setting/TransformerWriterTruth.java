@@ -1,7 +1,7 @@
 package eval.agent.etl.transform.setting;
 
 import bio.cosy.feddb.core.helper.ResourceLoader;
-import bio.cosy.feddb.local.api.harmonization.HarmonizationRunBO;
+import bio.cosy.feddb.local.api.harmonization.HarmonizationProfileHelper;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
 import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeBO;
@@ -153,7 +153,7 @@ public class TransformerWriterTruth {
     private static String normalize(Object value) {
         // The importer eval writes stored values as 'value' and empty ones as (empty)
         String text = StringUtils.unwrap(Objects.toString(value, "").strip(), '\'').strip();
-        if (text.isEmpty() || text.equals(HarmonizationRunBO.EMPTY) || text.equals(MISSING)) {
+        if (text.isEmpty() || text.equals(HarmonizationProfileHelper.EMPTY) || text.equals(MISSING)) {
             return null;
         }
         try {

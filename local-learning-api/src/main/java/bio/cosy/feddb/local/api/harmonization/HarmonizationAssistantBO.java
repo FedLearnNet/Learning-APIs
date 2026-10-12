@@ -3,6 +3,9 @@ package bio.cosy.feddb.local.api.harmonization;
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.TransformerAgentStarter;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
+import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
+import bio.cosy.feddb.local.api.schema.schemanode.LocalSchemaNodeWithPathDTO;
+import bio.cosy.feddb.local.config.FLNetClientConfig;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Multi;
 import jakarta.annotation.PreDestroy;
@@ -10,9 +13,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType.APPLIED;
 
@@ -25,7 +32,10 @@ public class HarmonizationAssistantBO {
     TransformerAgentStarter agentStarter;
 
     @Inject
-    HarmonizationRunBO runBO;
+    HarmonizationConnectorMapper connectorMapper;
+
+    @Inject
+    FLNetClientConfig config;
 
     private final Map<Long, HarmonizationAssistantRun> runs = new ConcurrentHashMap<>();
 
@@ -35,8 +45,20 @@ public class HarmonizationAssistantBO {
         }
         HarmonizationAssistantRun run = new HarmonizationAssistantRun();
         Optional.ofNullable(runs.put(harmonization.getId(), run)).ifPresent(HarmonizationAssistantRun::close);
-        agentStarter.start(SESSION_PREFIX + harmonization.getId(), runBO.connector(harmonization), runBO.schemaNodes(harmonization),
-                fileProfiles, keycloakId, run::emit);
+        agentStarter.start(SESSION_PREFIX + harmonization.getId(),
+                connectorMapper.toConnector(harmonization, config.connector().externalIdColumn()),
+                unmappedTargets(harmonization), fileProfiles, keycloakId, run::emit);
+    }
+
+    private List<LocalSchemaNodeWithPathDTO> unmappedTargets(HarmonizationDTO harmonization) {
+        Set<String> mapped = harmonization.getMapping().stream()
+                .map(ConnectorMappingDTO::getMapping)
+                .collect(Collectors.toSet());
+        List<HarmonizationTargetDTO> targets = harmonization.getTargets();
+        return IntStream.range(0, targets.size())
+                .filter(index -> !mapped.contains(targets.get(index).getName()))
+                .mapToObj(index -> connectorMapper.toSchemaNode(targets.get(index), index))
+                .toList();
     }
 
     public boolean isRunning(Long id) {

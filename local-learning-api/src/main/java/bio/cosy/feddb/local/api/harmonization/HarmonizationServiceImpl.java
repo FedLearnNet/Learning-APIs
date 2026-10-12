@@ -28,6 +28,9 @@ public class HarmonizationServiceImpl implements HarmonizationService {
     HarmonizationRunBO runBO;
 
     @Inject
+    HarmonizationTargetBO targetBO;
+
+    @Inject
     HarmonizationFileBO fileBO;
 
     @Inject
@@ -70,7 +73,7 @@ public class HarmonizationServiceImpl implements HarmonizationService {
     @Transactional
     @TransactionConfiguration(timeout = 3600)
     public List<HarmonizationTargetDTO> targets(Long fileId, String key) {
-        return runBO.targets(fileId, key, userIdentity.getKeycloakId());
+        return targetBO.targets(fileId, key, userIdentity.getKeycloakId());
     }
 
     @Override
@@ -88,7 +91,7 @@ public class HarmonizationServiceImpl implements HarmonizationService {
     public void startAssistant(Long id) {
         String keycloakId = userIdentity.getKeycloakId();
         HarmonizationDTO harmonization = bo.getById(id, keycloakId);
-        assistantBO.start(harmonization, runBO.fileProfiles(harmonization, keycloakId), keycloakId);
+        assistantBO.start(harmonization, fileBO.profilesByName(harmonization.getSourceFileId(), keycloakId), keycloakId);
     }
 
     @Override
@@ -130,7 +133,7 @@ public class HarmonizationServiceImpl implements HarmonizationService {
     @Override
     @Transactional
     public List<Map<String, Object>> sample(Long fileId, int rows) {
-        return runBO.sample(fileId, rows, userIdentity.getKeycloakId());
+        return fileBO.sample(fileId, rows, userIdentity.getKeycloakId());
     }
 
     @Override

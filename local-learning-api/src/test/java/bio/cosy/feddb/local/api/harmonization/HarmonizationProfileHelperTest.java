@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class HarmonizationRunBOPatternTest {
+class HarmonizationProfileHelperTest {
 
     @Test
     void describesTheShapesOfTheReferenceValues() {
@@ -31,6 +31,6 @@ class HarmonizationRunBOPatternTest {
 
     @SafeVarargs
     private static String pattern(Map.Entry<String, Integer>... values) {
-        return HarmonizationRunBO.pattern(List.of(values)).orElseThrow().getValidator();
+        return HarmonizationProfileHelper.pattern(List.of(values)).orElseThrow().getValidator();
     }
 }

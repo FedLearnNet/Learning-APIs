@@ -2,9 +2,9 @@ package eval.agent.etl.harmonization.judge;
 
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
+import bio.cosy.feddb.local.api.harmonization.HarmonizationConnectorMapper;
 import bio.cosy.feddb.local.api.harmonization.HarmonizationDTO;
 import bio.cosy.feddb.local.api.harmonization.HarmonizationResultDTO;
-import bio.cosy.feddb.local.api.harmonization.HarmonizationRunBO;
 import bio.cosy.feddb.local.api.harmonization.HarmonizationTargetDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerDTO;
 import eval.agent.etl.harmonization.pojo.HarmonizationFileColumnResult;
@@ -32,6 +32,9 @@ public class HarmonizationFileReviews {
     @Inject
     TransformerWriterReviews reviews;
 
+    @Inject
+    HarmonizationConnectorMapper connectorMapper;
+
     public List<HarmonizationFileColumnResult> reviewColumns(HarmonizationDTO harmonization,
                                                              List<TransformerAssistantMessageDTO> suggestions,
                                                              Map<String, ColumnProfile> source, List<ColumnProfile> reference,
@@ -53,7 +56,7 @@ public class HarmonizationFileReviews {
             int rejected = result.getRejected().getOrDefault(target.getName(), 0);
 
             TransformerWriterReview review = reviewForJudge(index, target, referenceColumn, result.getUnmatched().size());
-            addSuggestion(review, suggestionByTarget.get(HarmonizationRunBO.targetId(index)), code, source);
+            addSuggestion(review, suggestionByTarget.get(HarmonizationConnectorMapper.targetId(index)), code, source);
             TransformerWriterReviews.addValues(review, harmonizedValues, rejected > 0 ? Map.of(REJECTED, (long) rejected) : Map.of());
             columns.add(new HarmonizationFileColumnResult(target.getName(), review, null,
                     shiftFromReference(referenceColumn, outputColumn, harmonizedValues),
@@ -65,7 +68,7 @@ public class HarmonizationFileReviews {
 
     private TransformerWriterReview reviewForJudge(int index, HarmonizationTargetDTO target, ColumnProfile referenceColumn,
                                                    int unmatchedKeys) {
-        return reviews.createReview(HarmonizationRunBO.schemaNode(index, target), target.getName(), String.format(
+        return reviews.createReview(connectorMapper.toSchemaNode(target, index), target.getName(), String.format(
                 "The source is harmonized onto the reference file, %d of its keys are not in it. The column in the "
                         + "reference file: %s", unmatchedKeys,
                 referenceColumn == null ? "-" : TransformerWriterReviews.profile(referenceColumn, REFERENCE_VALUES)));

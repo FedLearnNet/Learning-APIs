@@ -4,16 +4,28 @@ import bio.cosy.feddb.core.api.file.FileParsingSettingsDTO;
 import bio.cosy.feddb.core.api.file.FileParsingType;
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.core.base.BaseFileBO;
+import bio.cosy.feddb.local.api.cohort.patient.export.PatientDataExportHelper;
+import bio.cosy.feddb.local.api.importer.extract.ConnectorExtractBO;
+import bio.cosy.feddb.local.api.importer.extract.SheetMergeResultDTO;
 import bio.cosy.feddb.local.api.importer.files.*;
 import bio.cosy.feddb.local.api.importer.files.read.FileAnalysis;
 import bio.cosy.feddb.local.api.importer.files.read.FileAnalysisBO;
 import bio.cosy.feddb.local.api.importer.files.read.TableReadSpec;
+import bio.cosy.feddb.local.api.importer.files.table.TableData;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 
 @ApplicationScoped
@@ -24,6 +36,12 @@ public class HarmonizationFileBO
 
     @Inject
     FileAnalysisBO fileAnalysisBO;
+
+    @Inject
+    ConnectorExtractBO extractBO;
+
+    @Inject
+    HarmonizationConnectorMapper connectorMapper;
 
     public List<ConnectorFilesDetailDTO> list(String keycloakId) {
         return ao.getFilesWithoutCohort(keycloakId).stream()
@@ -60,5 +78,42 @@ public class HarmonizationFileBO
         return uploadInfo == null || uploadInfo.isEmpty() || uploadInfo.getFirst().getColumnProfiles() == null
                 ? List.of()
                 : uploadInfo.getFirst().getColumnProfiles();
+    }
+
+    public Map<String, ColumnProfile> profilesByName(Long id, String keycloakId) {
+        return profiles(id, keycloakId).stream()
+                .collect(Collectors.toMap(ColumnProfile::name, Function.identity(), (a, b) -> a));
+    }
+
+    public List<Map<String, Object>> rows(Long id, SheetMergeResultDTO mergeConfig) {
+        try (TableData data = extractBO.loadConnectorData(connectorMapper.toInput(id), null, mergeConfig, null)) {
+            return data.getRows();
+        }
+    }
+
+    public List<Map<String, Object>> previewRows(Long id, SheetMergeResultDTO mergeConfig, int rows, String keycloakId) {
+        getEntityById(id, keycloakId);
+        try (TableData data = extractBO.loadPreviewData(connectorMapper.toInput(id), null, rows, mergeConfig, null)) {
+            return data.getRows();
+        }
+    }
+
+    public List<Map<String, Object>> sample(Long id, int rows, String keycloakId) {
+        Random random = new Random(id);
+        List<ColumnProfile> profiles = profiles(id, keycloakId);
+        return IntStream.range(0, rows).mapToObj(row -> {
+            Map<String, Object> sample = new LinkedHashMap<>();
+            profiles.forEach(profile -> sample.put(profile.name(), HarmonizationProfileHelper.sampleValue(profile, random)));
+            return sample;
+        }).toList();
+    }
+
+    public ConnectorFilesDetailDTO save(List<Map<String, Object>> rows, String fileName, String keycloakId) {
+        Path csv = PatientDataExportHelper.writeExportedRowsToTempFile(rows);
+        try {
+            return upload(csv.toFile(), fileName, keycloakId);
+        } finally {
+            FileUtils.deleteQuietly(csv.toFile());
+        }
     }
 }

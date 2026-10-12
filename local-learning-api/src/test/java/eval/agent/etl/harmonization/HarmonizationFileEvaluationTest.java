@@ -7,6 +7,7 @@ import bio.cosy.feddb.local.api.harmonization.HarmonizationDTO;
 import bio.cosy.feddb.local.api.harmonization.HarmonizationFileBO;
 import bio.cosy.feddb.local.api.harmonization.HarmonizationResultDTO;
 import bio.cosy.feddb.local.api.harmonization.HarmonizationRunBO;
+import bio.cosy.feddb.local.api.harmonization.HarmonizationTargetBO;
 import bio.cosy.feddb.local.api.harmonization.HarmonizationTargetDTO;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerContainerBO;
@@ -72,6 +73,9 @@ public class HarmonizationFileEvaluationTest {
     HarmonizationRunBO runBO;
 
     @Inject
+    HarmonizationTargetBO targetBO;
+
+    @Inject
     HarmonizationFileAssistant assistant;
 
     @Inject
@@ -93,7 +97,7 @@ public class HarmonizationFileEvaluationTest {
     void harmonizeOntoTheFirstClinic() throws IOException {
         String keycloakId = config.user().systemUserName();
         Long referenceId = upload(REFERENCE_PATH, keycloakId);
-        List<HarmonizationTargetDTO> targets = transaction(() -> runBO.targets(referenceId, REFERENCE_KEY, keycloakId));
+        List<HarmonizationTargetDTO> targets = transaction(() -> targetBO.targets(referenceId, REFERENCE_KEY, keycloakId));
         List<ColumnProfile> reference = transaction(() -> fileBO.profiles(referenceId, keycloakId));
         targets.forEach(target -> Log.infof("[Harmonization-Eval:schema] %s (%s%s): %s", target.getName(),
                 target.getDataType().getType(), target.isStaticColumn() ? ", static" : "", target.getDataType().getDescription()));
@@ -136,7 +140,7 @@ public class HarmonizationFileEvaluationTest {
         harmonization.setSourceMergeConfig(dataset.getMerge());
         HarmonizationDTO created = transaction(() -> harmonizationBO.create(harmonization, keycloakId));
 
-        Map<String, ColumnProfile> source = transaction(() -> runBO.fileProfiles(created, keycloakId));
+        Map<String, ColumnProfile> source = transaction(() -> fileBO.profilesByName(created.getSourceFileId(), keycloakId));
         TransformerWriterSuggestion suggestion = assistant.suggest(created, source, keycloakId);
         created.setTransformer(suggestion.getConnector().getTransformer());
         created.setMapping(suggestion.getConnector().getSchemaMapping());
