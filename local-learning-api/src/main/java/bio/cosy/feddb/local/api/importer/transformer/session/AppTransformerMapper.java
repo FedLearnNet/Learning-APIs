@@ -85,11 +85,7 @@ public interface AppTransformerMapper {
         }
         return connector.getTransformer().stream()
                 .filter(Objects::nonNull)
-                .filter(this::isApp)
+                .filter(ConnectorTransformerDTO::isAppBased)
                 .toList();
-    }
-
-    default boolean isApp(ConnectorTransformerDTO transformer) {
-        return transformer != null && transformer.getAppImage() != null && !transformer.getAppImage().isBlank();
     }
 }

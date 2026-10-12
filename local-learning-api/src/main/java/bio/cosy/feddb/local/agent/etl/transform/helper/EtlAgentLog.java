@@ -2,7 +2,6 @@ package bio.cosy.feddb.local.agent.etl.transform.helper;
 
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.VisitMapping;
-import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import io.quarkus.logging.Log;
 
@@ -32,10 +31,10 @@ public final class EtlAgentLog {
     }
 
     public static String kind(ConnectorTransformerDTO transformer) {
-        if (TransformerListTool.isCodeTransformer(transformer)) {
+        if (transformer.isCodeTransformer()) {
             return "custom code";
         }
-        return TransformerListTool.isStoreTool(transformer) ? "ETL tool" : "native";
+        return transformer.isStoreTool() ? "ETL tool" : "native";
     }
 
     public static String describe(VisitMapping visit) {

@@ -2,6 +2,7 @@ package bio.cosy.feddb.transform.helper;
 
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerCombiner;
 import bio.cosy.feddb.local.api.importer.functions.FunctionRegistry;
+import bio.cosy.feddb.local.api.importer.functions.managed.builtin.FilterRowsByValueFunction;
 import bio.cosy.feddb.local.api.importer.functions.managed.builtin.ReplaceValueFunction;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,7 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.when;
 class TransformerCombinerTest {
 
     private final ReplaceValueFunction replaceValue = new ReplaceValueFunction();
+    private final FilterRowsByValueFunction filterRows = new FilterRowsByValueFunction();
 
     @Mock
     FunctionRegistry functionRegistry;
@@ -38,8 +40,9 @@ class TransformerCombinerTest {
 
     @BeforeEach
     void setUp() {
-        when(functionRegistry.get(any(), any())).thenAnswer(invocation ->
-                replaceValue.methodName().equals(invocation.getArgument(1)) ? Optional.of(replaceValue) : Optional.empty());
+        when(functionRegistry.get(any(), any())).thenAnswer(invocation -> Stream.of(replaceValue, filterRows)
+                .filter(function -> function.methodName().equals(invocation.getArgument(1)))
+                .findFirst());
     }
 
     @Test
@@ -57,6 +60,13 @@ class TransformerCombinerTest {
         other.setInputMapping(Map.of("search", "[VALUE]None", "replace", "[VALUE]null"));
 
         List<ConnectorTransformerDTO> combined = combiner.combine(List.of(replaceMissing("payer_code"), other));
+
+        assertEquals(2, combined.size());
+    }
+
+    @Test
+    void keepsPatientFunctionsApart() {
+        List<ConnectorTransformerDTO> combined = combiner.combine(List.of(filterRows("payer_code"), filterRows("weight")));
 
         assertEquals(2, combined.size());
     }
@@ -91,6 +101,21 @@ class TransformerCombinerTest {
     }
 
     @Test
+    void movesOnlyTheColumnsNoTransformerInBetweenTouches() {
+        ConnectorTransformerDTO date = new ConnectorTransformerDTO();
+        date.setModuleName("builtin");
+        date.setMethodName("datetime_to_date");
+        date.setColumn("weight");
+
+        List<ConnectorTransformerDTO> combined = combiner.combine(List.of(
+                replaceMissing("payer_code"), date, replaceMissing("weight,medical_specialty")));
+
+        assertEquals(3, combined.size());
+        assertEquals("payer_code,medical_specialty", combined.getFirst().getColumn());
+        assertEquals("weight", combined.getLast().getColumn());
+    }
+
+    @Test
     void movesInputParametersTheAgentPutIntoTheHyperparametersToTheInputMapping() {
         ConnectorTransformerDTO transformer = replaceMissingAsHyperparameters("payer_code");
 
@@ -107,6 +132,15 @@ class TransformerCombinerTest {
 
         assertEquals(1, combined.size());
         assertEquals("medical_specialty,weight,payer_code", combined.getFirst().getColumn());
+    }
+
+    private ConnectorTransformerDTO filterRows(String column) {
+        ConnectorTransformerDTO transformer = new ConnectorTransformerDTO();
+        transformer.setModuleName(filterRows.module());
+        transformer.setMethodName(filterRows.methodName());
+        transformer.setColumn(column);
+        transformer.setInputMapping(new HashMap<>(Map.of("value", "[VALUE]?")));
+        return transformer;
     }
 
     private static ConnectorTransformerDTO replaceMissing(String column) {

@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.agent.etl.transform.helper;
 
 import bio.cosy.feddb.local.api.importer.connector.ConnectorHelper;
+import bio.cosy.feddb.local.api.importer.functions.FunctionExecutionMode;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterDTO;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterUsage;
 import bio.cosy.feddb.local.api.importer.functions.FunctionRegistry;
@@ -58,23 +59,32 @@ public class TransformerCombiner {
         List<ConnectorTransformerDTO> combined = new ArrayList<>();
         for (ConnectorTransformerDTO original : transformers) {
             ConnectorTransformerDTO transformer = normalize(objectMapper.convertValue(original, ConnectorTransformerDTO.class));
-            ConnectorTransformerDTO target = combineTarget(combined, transformer);
-            if (target == null) {
+            if (!isCellTransformer(transformer)) {
                 combined.add(transformer);
-            } else {
-                LinkedHashSet<String> columns = new LinkedHashSet<>(ConnectorHelper.commaSeparated(target.getColumn()));
-                columns.addAll(ConnectorHelper.commaSeparated(transformer.getColumn()));
-                target.setColumn(String.join(",", columns));
+                continue;
+            }
+            // Every column joins the earliest equal transformer it can, the ones a step in between touches stay here
+            LinkedHashSet<String> remaining = new LinkedHashSet<>();
+            for (String column : ConnectorHelper.commaSeparated(transformer.getColumn())) {
+                ConnectorTransformerDTO target = combineTarget(combined, transformer, column);
+                if (target == null) {
+                    remaining.add(column);
+                } else {
+                    LinkedHashSet<String> columns = new LinkedHashSet<>(ConnectorHelper.commaSeparated(target.getColumn()));
+                    columns.add(column);
+                    target.setColumn(String.join(",", columns));
+                }
+            }
+            if (!remaining.isEmpty()) {
+                transformer.setColumn(String.join(",", remaining));
+                combined.add(transformer);
             }
         }
         return combined;
     }
 
-    private static ConnectorTransformerDTO combineTarget(List<ConnectorTransformerDTO> combined, ConnectorTransformerDTO transformer) {
-        if (!isCellTransformer(transformer)) {
-            return null;
-        }
-        Set<String> columns = ConnectorHelper.commaSeparated(transformer.getColumn());
+    private ConnectorTransformerDTO combineTarget(List<ConnectorTransformerDTO> combined, ConnectorTransformerDTO transformer,
+                                                         String column) {
         for (int index = combined.size() - 1; index >= 0; index--) {
             ConnectorTransformerDTO candidate = combined.get(index);
             if (isCellTransformer(candidate)
@@ -86,19 +96,17 @@ public class TransformerCombiner {
             }
             Set<String> touched = new HashSet<>(ConnectorHelper.transformerInputs(candidate));
             touched.addAll(ConnectorHelper.transformerOutputs(candidate));
-            if (touched.stream().anyMatch(columns::contains)) {
+            if (touched.contains(column)) {
                 return null;
             }
         }
         return null;
     }
 
-    private static boolean isCellTransformer(ConnectorTransformerDTO transformer) {
-        return transformer.getColumn() != null && !transformer.getColumn().isBlank()
-                && (transformer.getInputMapping() == null || transformer.getInputMapping().values().stream()
-                .allMatch(value -> String.valueOf(value).startsWith(VALUE_PREFIX)))
-                && (transformer.getReturnMapping() == null || transformer.getReturnMapping().isEmpty())
-                && (transformer.getAppImage() == null || transformer.getAppImage().isBlank());
+    private boolean isCellTransformer(ConnectorTransformerDTO transformer) {
+        return functionRegistry.get(transformer.getModuleName(), transformer.getMethodName())
+                .map(function -> function.mode() != FunctionExecutionMode.PATIENT).orElse(true)
+                && transformer.isCellBased();
     }
 
     private String text(Object value) {

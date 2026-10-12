@@ -160,7 +160,7 @@ public class PreviewValidationBO {
                     continue;
                 }
                 hasTransformers = true;
-                if (transformer.getAppImage() != null && !transformer.getAppImage().isBlank()) {
+                if (transformer.isAppBased()) {
                     allColumns = true;
                 }
                 columns.addAll(transformerOutputColumns(transformer));
@@ -340,7 +340,7 @@ public class PreviewValidationBO {
                 }
                 Set<String> outputs = transformerOutputColumns(transformer);
                 transformerOutputs.addAll(outputs);
-                if (transformer.getAppImage() != null && !transformer.getAppImage().isBlank()) {
+                if (transformer.isAppBased()) {
                     appTransformerOutputs.addAll(outputs);
                 }
             }
