@@ -391,7 +391,7 @@ public class TransformedStatisticsBO {
         }
         return transformers.stream()
                 .filter(Objects::nonNull)
-                .filter(transformer -> transformer.getAppImage() == null || transformer.getAppImage().isBlank())
+                .filter(transformer -> !transformer.isAppBased())
                 .toList();
     }
 

@@ -91,7 +91,7 @@ public class ConnectorPreviewBO {
             throw new BadRequestException("There is no transformation step " + stepIndex + " to run");
         }
         ConnectorTransformerDTO transformer = transformers.get(stepIndex - 1);
-        if (!isAppBased(transformer)) {
+        if (transformer == null || !transformer.isAppBased()) {
             throw new BadRequestException("Transformation step " + stepIndex + " is not app based");
         }
 
@@ -137,7 +137,7 @@ public class ConnectorPreviewBO {
         for (int index = 0; index < upTo; index++) {
             ConnectorTransformerDTO transformer = transformers.get(index);
             int stepIndex = index + 1;
-            boolean appBased = isAppBased(transformer);
+            boolean appBased = transformer != null && transformer.isAppBased();
             fingerprint = cacheBO.stageFingerprint(fingerprint, transformer);
             Optional<ConnectorPreviewTransformationCacheStage> cached = blockedBy == null
                     ? cacheBO.find(connectorId, stepIndex, fingerprint)
@@ -234,9 +234,6 @@ public class ConnectorPreviewBO {
         return columns == null || columns.isEmpty() ? stage.getColumns() : columns;
     }
 
-    static boolean isAppBased(ConnectorTransformerDTO transformer) {
-        return transformer != null && transformer.getAppImage() != null && !transformer.getAppImage().isBlank();
-    }
 
     private static int size(List<ConnectorTransformerDTO> transformers) {
         return transformers == null ? 0 : transformers.size();
@@ -364,7 +361,7 @@ public class ConnectorPreviewBO {
             return false;
         }
         return transformers.stream()
-                .filter(transformer -> transformer.getAppImage() == null || transformer.getAppImage().isBlank())
+                .filter(transformer -> !transformer.isAppBased())
                 .anyMatch(transformer -> functionRunnerBO.mode(transformer) == FunctionExecutionMode.PATIENT);
     }
 

@@ -6,7 +6,6 @@ import bio.cosy.feddb.local.api.importer.connector.ConnectorEntity;
 import bio.cosy.feddb.local.api.importer.functions.FunctionRunnerBO;
 import bio.cosy.feddb.local.api.importer.run.message.ConnectorRunMessagesAO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepAO;
-import bio.cosy.feddb.local.api.importer.transformer.session.AppTransformerMapper;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -38,13 +37,10 @@ public class ConnectorTransformerBO extends BaseBo<
     @Inject
     ConnectorRunMessagesAO runMessagesAO;
 
-    @Inject
-    AppTransformerMapper appMapper;
-
     @Override
     public ConnectorTransformerDTO create(ConnectorTransformerDTO data) {
         Objects.requireNonNull(data, "Transformer must not be null");
-        if (!appMapper.isApp(data) && !functionRunnerBO.exists(data.getModuleName(), data.getMethodName())) {
+        if (!data.isAppBased() && !functionRunnerBO.exists(data.getModuleName(), data.getMethodName())) {
             throw new NotFoundException("Function could not be found");
         }
         ConnectorTransformerEntity entity = connectNodes(data, mapper.dtoToEntity(data));

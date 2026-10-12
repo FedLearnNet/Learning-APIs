@@ -4,7 +4,6 @@ import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import bio.cosy.feddb.local.api.importer.functions.FunctionExecutionMode;
 import bio.cosy.feddb.local.api.importer.functions.FunctionRunnerBO;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
-import bio.cosy.feddb.local.api.importer.transformer.session.AppTransformerMapper;
 import bio.cosy.feddb.local.api.importer.transformer.session.AppTransformerSessionBO;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -26,9 +25,6 @@ public class ConnectorTransformationBO {
     @Inject
     AppTransformerSessionBO sessionBO;
 
-    @Inject
-    AppTransformerMapper appMapper;
-
     public List<Map<String, Object>> applyTransformations(ConnectorDTO connector, ConnectorRunDTO run,
                                                          List<Map<String, Object>> rows) {
         Objects.requireNonNull(connector, "connector must not be null");
@@ -46,7 +42,7 @@ public class ConnectorTransformationBO {
                                                          List<Map<String, Object>> rows) {
         Objects.requireNonNull(transformer, "transformer must not be null");
         Objects.requireNonNull(run, "run must not be null");
-        if (appMapper.isApp(transformer)) {
+        if (transformer.isAppBased()) {
             return sessionBO.transform(run.getId(), transformer, rows);
         }
         String cohortId = run.getCohortId() == null ? null : String.valueOf(run.getCohortId());
@@ -67,7 +63,7 @@ public class ConnectorTransformationBO {
                                                                 List<Map<String, Object>> rows,
                                                                 String patientIdColumn) {
         Objects.requireNonNull(transformer, "transformer must not be null");
-        if (appMapper.isApp(transformer)) {
+        if (transformer.isAppBased()) {
             Log.infof("Skipping app-based transformer '%s'; it requires the execution subsystem", transformer.getMethodName());
             return rows;
         }
