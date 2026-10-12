@@ -58,6 +58,7 @@ datamodeler-api/sapbert
 
 global-learning-api/results/.venv
 global-learning-api/results/
+local-learning-api/results/
 
 /research/
 
