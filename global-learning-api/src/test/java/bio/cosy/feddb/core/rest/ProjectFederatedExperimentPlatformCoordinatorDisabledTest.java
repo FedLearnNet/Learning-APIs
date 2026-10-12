@@ -6,10 +6,8 @@ import bio.cosy.feddb.core.api.project.ProjectStatus;
 import bio.cosy.feddb.core.rest.helper.RestAssuredConfigUtil;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
-import de.unihamburg.daibetes.api.project.ProjectAO;
 import de.unihamburg.daibetes.api.project.ProjectBO;
 import de.unihamburg.daibetes.api.project.ProjectCreateDTO;
-import de.unihamburg.daibetes.api.project.ProjectEntity;
 import de.unihamburg.daibetes.api.project.experiment.federated.CreateProjectFederatedExperimentDTO;
 import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentAO;
 import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentBO;
@@ -47,9 +45,6 @@ class ProjectFederatedExperimentPlatformCoordinatorDisabledTest {
     ProjectBO projectBO;
 
     @Inject
-    ProjectAO projectAO;
-
-    @Inject
     WorkflowAO workflowAO;
 
     @Inject
@@ -73,13 +68,14 @@ class ProjectFederatedExperimentPlatformCoordinatorDisabledTest {
     @TestSecurity(user = "test", roles = "admin")
     void startFederatedExperimentFailsWhenPlatformAggregatorDisabled() {
         // platformIsCoordinator=true was set while the capability was enabled elsewhere, then this
-        // deployment disabled it again before the run starts (create()/update() validation would
-        // otherwise block setting this combination directly). Participants already accepted this
-        // run on the understanding the platform would aggregate - silently substituting a random
-        // clinic instead would change that without their consent, so the start must fail instead.
+        // deployment disabled it again before the run starts (create() validation would otherwise
+        // block setting this directly, so it's written straight onto the entity here instead, same
+        // as the old project-level test used to do). Participants already accepted this run on the
+        // understanding the platform would aggregate - silently substituting a random clinic
+        // instead would change that without their consent, so the start must fail instead.
         long projectId = createProjectWithSingleNodeWorkflow(false);
-        setPlatformIsCoordinator(projectId, true);
         long experimentId = createExperiment(projectId);
+        setPlatformIsCoordinator(experimentId, true);
         ProjectFederatedExperimentEntity created = loadExperiment(experimentId);
 
         acceptParticipant(created.getGlobalUniqueId(), 12, "clinic-a", true);
@@ -97,11 +93,30 @@ class ProjectFederatedExperimentPlatformCoordinatorDisabledTest {
         assertNull(afterFailedStart.getCoordinator());
     }
 
-    private void setPlatformIsCoordinator(long projectId, boolean platformIsCoordinator) {
+    @Test
+    @TestSecurity(user = "test", roles = "admin")
+    void createFederatedExperimentRejectsPlatformIsCoordinatorWhenDisabled() {
+        long projectId = createProjectWithSingleNodeWorkflow(false);
+
+        CreateProjectFederatedExperimentDTO dto = new CreateProjectFederatedExperimentDTO();
+        dto.setName("Federated Platform Disabled " + UUID.randomUUID());
+        dto.setDescription("Should be rejected at creation time");
+        dto.setPlatformIsCoordinator(true);
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(dto)
+                .when()
+                .post("/project/{id}/experiment/federated", projectId)
+                .then()
+                .statusCode(405);
+    }
+
+    private void setPlatformIsCoordinator(long experimentId, boolean platformIsCoordinator) {
         QuarkusTransaction.requiringNew().run(() -> {
-            ProjectEntity project = projectAO.findById(projectId);
-            project.setPlatformIsCoordinator(platformIsCoordinator);
-            projectAO.persist(project);
+            ProjectFederatedExperimentEntity experiment = experimentAO.findById(experimentId);
+            experiment.setPlatformIsCoordinator(platformIsCoordinator);
+            experimentAO.persist(experiment);
         });
     }
 

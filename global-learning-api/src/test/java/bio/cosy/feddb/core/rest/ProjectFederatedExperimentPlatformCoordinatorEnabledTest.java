@@ -6,10 +6,8 @@ import bio.cosy.feddb.core.api.project.ProjectStatus;
 import bio.cosy.feddb.core.rest.helper.RestAssuredConfigUtil;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
-import de.unihamburg.daibetes.api.project.ProjectAO;
 import de.unihamburg.daibetes.api.project.ProjectBO;
 import de.unihamburg.daibetes.api.project.ProjectCreateDTO;
-import de.unihamburg.daibetes.api.project.ProjectEntity;
 import de.unihamburg.daibetes.api.project.experiment.federated.CreateProjectFederatedExperimentDTO;
 import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentAO;
 import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentBO;
@@ -54,9 +52,6 @@ class ProjectFederatedExperimentPlatformCoordinatorEnabledTest {
     ProjectBO projectBO;
 
     @Inject
-    ProjectAO projectAO;
-
-    @Inject
     WorkflowAO workflowAO;
 
     @Inject
@@ -80,8 +75,7 @@ class ProjectFederatedExperimentPlatformCoordinatorEnabledTest {
     @TestSecurity(user = "test", roles = "admin")
     void startFederatedExperimentMarksNoClinicCoordinatorWhenPlatformAggregatorEnabled() {
         long projectId = createProjectWithSingleNodeWorkflow(false);
-        setPlatformIsCoordinator(projectId, true);
-        long experimentId = createExperiment(projectId);
+        long experimentId = createExperiment(projectId, true);
         ProjectFederatedExperimentEntity created = loadExperiment(experimentId);
 
         acceptParticipant(created.getGlobalUniqueId(), 12, "clinic-a", true);
@@ -95,19 +89,12 @@ class ProjectFederatedExperimentPlatformCoordinatorEnabledTest {
                 + "no clinic should be marked coordinator");
     }
 
-    private void setPlatformIsCoordinator(long projectId, boolean platformIsCoordinator) {
-        QuarkusTransaction.requiringNew().run(() -> {
-            ProjectEntity project = projectAO.findById(projectId);
-            project.setPlatformIsCoordinator(platformIsCoordinator);
-            projectAO.persist(project);
-        });
-    }
-
-    private long createExperiment(long projectId) {
+    private long createExperiment(long projectId, boolean platformIsCoordinator) {
         CreateProjectFederatedExperimentDTO dto = new CreateProjectFederatedExperimentDTO();
         dto.setName("Federated Platform Enabled " + UUID.randomUUID());
         dto.setDescription("Platform-coordinator-enabled regression test");
         dto.setModelNeedToBePublic(false);
+        dto.setPlatformIsCoordinator(platformIsCoordinator);
 
         Number experimentId = given()
                 .contentType(ContentType.JSON)

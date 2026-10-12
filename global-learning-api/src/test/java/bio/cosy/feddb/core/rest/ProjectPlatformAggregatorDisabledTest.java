@@ -1,14 +1,12 @@
 package bio.cosy.feddb.core.rest;
 
 import bio.cosy.feddb.core.rest.helper.RestAssuredConfigUtil;
-import de.unihamburg.daibetes.api.project.ProjectCreateDTO;
 import de.unihamburg.daibetes.api.project.ProjectService;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.security.TestSecurity;
-import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -40,22 +38,10 @@ class ProjectPlatformAggregatorDisabledTest {
                 .body(is("false"));
     }
 
-    @Test
-    @TestSecurity(user = "keycloak9", roles = {"admin"})
-    void createProjectRejectsPlatformIsCoordinatorWhenDisabled() {
-        ProjectCreateDTO newProject = new ProjectCreateDTO();
-        newProject.setName("Platform Coordinator Project");
-        newProject.setDescription("Should be rejected");
-        newProject.setQueryId(1L);
-        newProject.setPlatformIsCoordinator(true);
-
-        given()
-                .contentType(ContentType.JSON)
-                .body(newProject)
-                .when().post()
-                .then()
-                .statusCode(405);
-    }
+    // Coverage for the create-time platform-aggregator gate (now on
+    // ProjectFederatedExperimentBO.create(), not ProjectBO.create()) lives in
+    // ProjectFederatedExperimentPlatformCoordinatorDisabledTest instead, since creating an
+    // experiment requires a project with an attached workflow, which that test already sets up.
 
     public static class PlatformAggregatorDisabledProfile implements QuarkusTestProfile {
         @Override

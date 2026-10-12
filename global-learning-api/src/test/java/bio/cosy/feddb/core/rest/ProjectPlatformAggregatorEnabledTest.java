@@ -1,19 +1,16 @@
 package bio.cosy.feddb.core.rest;
 
 import bio.cosy.feddb.core.rest.helper.RestAssuredConfigUtil;
-import de.unihamburg.daibetes.api.project.ProjectCreateDTO;
 import de.unihamburg.daibetes.api.project.ProjectService;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.security.TestSecurity;
-import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
-import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
@@ -41,24 +38,11 @@ class ProjectPlatformAggregatorEnabledTest {
                 .body(is("true"));
     }
 
-    @Test
-    @TestSecurity(user = "keycloak9", roles = {"admin"})
-    void createProjectAcceptsPlatformIsCoordinatorWhenEnabled() {
-        ProjectCreateDTO newProject = new ProjectCreateDTO();
-        newProject.setName("Platform Coordinator Project " + UUID.randomUUID());
-        newProject.setDescription("Should be accepted");
-        newProject.setQueryId(1L);
-        newProject.setPlatformIsCoordinator(true);
-
-        given()
-                .contentType(ContentType.JSON)
-                .body(newProject)
-                .when().post()
-                .then()
-                .statusCode(201)
-                .contentType(ContentType.JSON)
-                .body("platformIsCoordinator", is(true));
-    }
+    // Coverage for the create-time platform-aggregator gate (now on
+    // ProjectFederatedExperimentBO.create(), not ProjectBO.create()) lives in
+    // ProjectFederatedExperimentPlatformCoordinatorEnabledTest/DisabledTest instead, since
+    // creating an experiment requires a project with an attached workflow, which those tests
+    // already set up.
 
     public static class PlatformAggregatorEnabledProfile implements QuarkusTestProfile {
         @Override

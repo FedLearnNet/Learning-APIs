@@ -134,6 +134,7 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
                                                 String keycloakId,
                                                 Set<String> roles) {
         projectMembershipAO.checkProjectAndUser(projectId, keycloakId);
+        projectBO.checkPlatformIsCoordinatorAllowed(Boolean.TRUE.equals(dto.getPlatformIsCoordinator()));
 
 
         ProjectDetailDTO projectDetail = projectBO.getById(projectId);
@@ -202,7 +203,7 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
         // If platform-coordination is no longer possible by the time the run actually starts,
         // silently substituting a random clinic instead would change that without their consent -
         // fail the start instead and let the project owner reconcile and retry.
-        boolean platformIsCoordinatorRequested = Boolean.TRUE.equals(entity.getProject().getPlatformIsCoordinator());
+        boolean platformIsCoordinatorRequested = entity.isPlatformIsCoordinator();
         if (platformIsCoordinatorRequested) {
             if (!projectBO.isPlatformAggregatorSupported()) {
                 Log.warnf("Platform-coordinator requested for experiment %d but platform aggregator support " +
