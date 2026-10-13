@@ -50,11 +50,6 @@ public class Startup {
             } else {
                 Log.infof("Skipping vector extension creation on startup");
             }
-            if (storeIngestor.initEmbeddingStore()) {
-                Log.infof("Embedding store is ready");
-            } else {
-                Log.errorf("Failed to initialize embedding store");
-            }
             if (config.toolImports().enabled()) {
                 Log.infof("Starting tool imports");
                 Set<UUID> importedAppIds = toolExternalHandler.importAllToolsTransactional();

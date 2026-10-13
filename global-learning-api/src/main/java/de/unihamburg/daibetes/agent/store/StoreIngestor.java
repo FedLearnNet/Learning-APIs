@@ -97,18 +97,6 @@ public class StoreIngestor {
         }
     }
 
-    // The store bean is created lazily and creates the embeddings table on creation. Forcing the creation
-    // on startup guarantees that the table exists before EmbeddingAO queries it.
-    public boolean initEmbeddingStore() {
-        try {
-            ClientProxy.unwrap(store);
-            return true;
-        } catch (Exception e) {
-            Log.error("Error while initializing embedding store", e);
-            return false;
-        }
-    }
-
     public void ingest() {
         if (!apiKeyPresent.get()) {
             Log.warnf("Skipping StoreIngestor.ingest(): store ingestion is disabled");
