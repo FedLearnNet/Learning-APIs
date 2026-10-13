@@ -6,4 +6,5 @@ import lombok.Data;
 public class PipelineRunInfoDTO {
     private String gitRepoUrl;
     private String imageName;
+    private String commitHash;
 }

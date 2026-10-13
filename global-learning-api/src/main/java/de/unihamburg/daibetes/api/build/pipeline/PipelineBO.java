@@ -232,6 +232,9 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         FederatedAppEntity appEntity = getFederatedAppEntity(entity);
         dto.setGitRepoUrl(appEntity.getSourceUrl());
         dto.setImageName(appEntity.getSlug());
+        if (entity.getAppVersion() != null && entity.getAppVersion().getPublishInfo() != null) {
+            dto.setCommitHash(entity.getAppVersion().getPublishInfo().getCommitHash());
+        }
         return dto;
     }
 

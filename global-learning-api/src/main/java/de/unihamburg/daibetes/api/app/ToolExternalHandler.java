@@ -16,6 +16,7 @@ import io.quarkus.runtime.LaunchMode;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.net.URI;
@@ -24,6 +25,7 @@ import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @ApplicationScoped
 public class ToolExternalHandler {
@@ -340,7 +342,9 @@ public class ToolExternalHandler {
 
         try {
             Files.createDirectories(outRoot);
-            String json = writer.writerWithDefaultPrettyPrinter().writeValueAsString(tool);
+            ObjectNode root = writer.valueToTree(tool);
+            makeImageReferencesPortable(root);
+            String json = writer.writerWithDefaultPrettyPrinter().writeValueAsString(root);
             Files.writeString(outFile, json, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             Log.infof("Saved tool JSON: %s -> %s", slug, outFile);
             return Optional.of(outFile);
@@ -356,16 +360,39 @@ public class ToolExternalHandler {
         if (outFile == null || !Files.exists(outFile)) return saveToolAsJson(tool);
         try {
             JsonNode root = objectMapper.readTree(outFile.toFile());
-            JsonNode version = root.path("versions").path(0);
+            JsonNode version = StreamSupport.stream(root.path("versions").spliterator(), false)
+                    .filter(value -> Objects.equals(value.path("appVersion").asText(), tool.getLatestVersion()))
+                    .findFirst().orElse(root.path("versions").path(0));
             if (!(version instanceof ObjectNode target) || tool.getPublishInfo() == null || tool.getImageName() == null)
                 return Optional.empty();
             target.set("publishInfo", objectMapper.valueToTree(tool.getPublishInfo()));
             target.put("imageName", tool.getImageName());
+            makeImageReferencesPortable((ObjectNode) root);
             Files.writeString(outFile, objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(root), StandardOpenOption.TRUNCATE_EXISTING);
             return Optional.of(outFile);
         } catch (Exception e) {
             Log.warnf(e, "Failed to replace build information in %s", outFile);
             return Optional.empty();
+        }
+    }
+
+    private void makeImageReferencesPortable(ObjectNode tool) {
+        String slug = tool.path("slug").asText(null);
+        if (StringUtils.isBlank(slug)) {
+            return;
+        }
+        for (JsonNode version : tool.path("versions")) {
+            if (!(version instanceof ObjectNode target)
+                    || !(version.path("publishInfo") instanceof ObjectNode publishInfo)) {
+                continue;
+            }
+            String commitHash = publishInfo.path("commitHash").asText(null);
+            if (StringUtils.isBlank(commitHash)) {
+                continue;
+            }
+            String imageName = slug + ":" + commitHash.toLowerCase(Locale.ROOT);
+            target.put("imageName", imageName);
+            publishInfo.put("imageName", imageName);
         }
     }
 

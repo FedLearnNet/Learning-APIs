@@ -1,5 +1,6 @@
 package de.unihamburg.daibetes.api.app;
 
+import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
 import bio.cosy.feddb.core.api.app.FederatedAppAuthorDTO;
 import bio.cosy.feddb.core.api.app.FederatedAppDetailDTO;
 import bio.cosy.feddb.core.api.app.FederatedAppVersionDTO;
@@ -12,11 +13,13 @@ import de.unihamburg.daibetes.api.app.version.FederatedAppVersionBO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.build.pipeline.ToolImportBuildBO;
 import de.unihamburg.daibetes.config.FLNetConfig;
+import de.unihamburg.daibetes.services.OrchDockerServiceClient;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +56,10 @@ public class FederatedAppCreateImportBO {
 
     @Inject
     ToolImportBuildBO buildBO;
+
+    @Inject
+    @RestClient
+    OrchDockerServiceClient dockerClient;
 
     @Transactional
     public void createExternal(FederatedAppDetailDTO external) {
@@ -171,6 +178,10 @@ public class FederatedAppCreateImportBO {
                 continue;
             }
             if (existingVersion.isPresent()) {
+                FederatedAppVersionEntity current = existingVersion.get();
+                if (!current.isRebuilding()) {
+                    current.setImageName(resolveImageName(current.getImageName(), current.getPublishInfo(), entity.getSlug()));
+                }
                 Log.infof("External app version %s with publish hash %s already exists, skipping", appNameVersion, version.getPublishHash());
                 buildBO.enqueue(existingVersion.get(), true);
                 continue;
@@ -180,6 +191,15 @@ public class FederatedAppCreateImportBO {
         return versionOverridden;
     }
 
+    private String resolveImageName(String imageName, AppPublishInfoDTO publishInfo, String slug) {
+        if (publishInfo == null || StringUtils.isBlank(publishInfo.getCommitHash())) {
+            return imageName;
+        }
+        String resolved = dockerClient.resolveToolImage(slug, publishInfo.getCommitHash());
+        publishInfo.setImageName(resolved);
+        return resolved;
+    }
+
     private boolean overrideVersion(FederatedAppVersionDTO version, FederatedAppVersionEntity existingVersion,
                                     FederatedAppDetailDTO external, String appNameVersion) {
         if (existingVersion.isRebuilding()) {
@@ -187,6 +207,7 @@ public class FederatedAppCreateImportBO {
             return false;
         }
         try {
+            version.setImageName(resolveImageName(version.getImageName(), version.getPublishInfo(), existingVersion.getFederatedApp().getSlug()));
             version.setRebuilding(false);
             versionBO.overrideEntity(version, existingVersion);
             configBO.setBaseValuesNull(version.getAppConfig());
@@ -201,6 +222,7 @@ public class FederatedAppCreateImportBO {
 
     private void createVersion(FederatedAppVersionDTO version, FederatedAppEntity entity, String appNameVersion) {
         try {
+            version.setImageName(resolveImageName(version.getImageName(), version.getPublishInfo(), entity.getSlug()));
             version.setRebuilding(false);
             FederatedAppVersionEntity createdVersion = versionBO.createEntity(version, entity);
             configBO.setBaseValuesNull(version.getAppConfig());

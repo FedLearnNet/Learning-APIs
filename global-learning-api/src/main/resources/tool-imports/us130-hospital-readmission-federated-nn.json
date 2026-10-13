@@ -140,14 +140,14 @@
         "infectedCount" : 0,
         "findings" : [ ]
       },
-      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us130-hospital-readmission-federated-nn:MkSRaOLR"
+      "imageName" : "us130-hospital-readmission-federated-nn:ec86a7d62aa9c18c8ec72dff8817584f15b3020b"
     },
     "changelog" : "",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
     "certificationLevel" : 0,
-    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us130-hospital-readmission-federated-nn:MkSRaOLR",
+    "imageName" : "us130-hospital-readmission-federated-nn:ec86a7d62aa9c18c8ec72dff8817584f15b3020b",
     "shortDescription" : "Predict 30-day hospital readmission for diabetic patients using a federated neural network",
     "longDescription" : "",
     "appConfig" : {

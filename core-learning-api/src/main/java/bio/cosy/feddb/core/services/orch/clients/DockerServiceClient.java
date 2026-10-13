@@ -16,6 +16,11 @@ public interface DockerServiceClient {
     @Path("image/exists")
     boolean imageExistsInRegistry(@QueryParam("name") String name);
 
+    @GET
+    @Path("image/resolve")
+    @Produces("text/plain")
+    String resolveToolImage(@QueryParam("slug") String slug, @QueryParam("commitHash") String commitHash);
+
 
     @DELETE
     @Path("workflow/{workflowId}/cleanup")
