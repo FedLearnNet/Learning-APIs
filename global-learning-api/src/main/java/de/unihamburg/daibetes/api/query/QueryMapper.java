@@ -1,39 +1,38 @@
 package de.unihamburg.daibetes.api.query;
 
 import bio.cosy.feddb.core.api.query.EnhancedQueryItemDTO;
+import bio.cosy.feddb.core.api.query.Lang2QueryDocuments;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.query.QueryDetailDTO;
 import bio.cosy.feddb.core.api.query.QueryItemDTO;
 import bio.cosy.feddb.core.base.BaseMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.unihamburg.daibetes.api.project.ProjectEntity;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
-import io.quarkus.logging.Log;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Mapper(config = QuarkusMappingConfig.class)
 public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
 
-    ObjectMapper objectMapper = new ObjectMapper();
-
 
     @Mappings({
-            @Mapping(target = "query", source = "queryString", qualifiedByName = "jsonStringToQueryItems"),
+            @Mapping(target = "query", ignore = true),
+            @Mapping(target = "lang2Query", ignore = true),
             @Mapping(target = "projectIds", source = "projects", qualifiedByName = "projectEntityToIds"),
             @Mapping(target = "roles", ignore = true)
     })
     QueryDTO entityToDto(QueryEntity entity);
 
     @Mappings({
-            @Mapping(target = "query", source = "queryString", qualifiedByName = "jsonStringToQueryItems"),
+            @Mapping(target = "query", ignore = true),
+            @Mapping(target = "lang2Query", ignore = true),
             @Mapping(target = "projectIds", source = "projects", qualifiedByName = "projectEntityToIds"),
             @Mapping(target = "roles", ignore = true),
             @Mapping(target = "enhancedQuery", ignore = true),
@@ -49,7 +48,7 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
 
     @Mappings({
             @Mapping(target = "groupId", source = "groupId"),
-            @Mapping(target = "queryString", source = "query", qualifiedByName = "queryItemsToJsonString"),
+            @Mapping(target = "queryString", source = ".", qualifiedByName = "dtoToQueryString"),
             @Mapping(target = "projects", source = "projectIds", qualifiedByName = "queryDTOToProjectEntity")
     })
     QueryEntity dtoToEntity(QueryDTO dto);
@@ -61,7 +60,7 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
             @Mapping(target = "hasResult", ignore = true),
             @Mapping(target = "latestDataStatisticsRequest", ignore = true),
             @Mapping(target = "latestDataStatisticsRequestTimestamp", ignore = true),
-            @Mapping(target = "queryString", source = "query", qualifiedByName = "queryItemsToJsonString"),
+            @Mapping(target = "queryString", source = ".", qualifiedByName = "dtoToQueryString"),
             @Mapping(target = "projects", ignore = true),
             @Mapping(target = "result", ignore = true),
     })
@@ -93,7 +92,7 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
             @Mapping(target = "globalUniqueId", ignore = true),
             @Mapping(target = "name", source = "request.name"),
             @Mapping(target = "description", source = "request.description"),
-            @Mapping(target = "queryString", source = "request.query", qualifiedByName = "queryItemsToJsonString"),
+            @Mapping(target = "queryString", source = "request", qualifiedByName = "dtoToQueryString"),
             @Mapping(target = "result", ignore = true),
             @Mapping(target = "error", ignore = true),
             @Mapping(target = "hasResult", constant = "false"),
@@ -103,31 +102,19 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
     })
     QueryEntity createVersionFromRequest(QueryEntity source, QueryDTO request);
 
-    @Named("jsonStringToQueryItems")
-    default List<QueryItemDTO> jsonStringToQueryItems(String jsonString) {
-        if (jsonString == null || jsonString.isEmpty()) {
-            return Collections.emptyList();
-        }
-        try {
-            return objectMapper.readValue(jsonString, objectMapper.getTypeFactory().constructCollectionType(List.class,
-                    QueryItemDTO.class));
-        } catch (IOException e) {
-            Log.error("Error parsing JSON string to QueryItemDTO list", e);
-            return new ArrayList<>();
-        }
+    @AfterMapping
+    default void readQueryDocument(QueryEntity entity, @MappingTarget QueryDTO dto) {
+        Lang2QueryDocuments.readInto(entity.getQueryString(), dto);
     }
 
-    @Named("queryItemsToJsonString")
-    default String queryItemsToJsonString(List<QueryItemDTO> queryItems) {
-        if (queryItems == null || queryItems.isEmpty()) {
-            return "";
-        }
-        try {
-            return objectMapper.writeValueAsString(queryItems);
-        } catch (JsonProcessingException e) {
-            Log.error("Error converting QueryItemDTO list to JSON string", e);
-            return "";
-        }
+    @AfterMapping
+    default void readQueryDocument(QueryEntity entity, @MappingTarget QueryDetailDTO dto) {
+        Lang2QueryDocuments.readInto(entity.getQueryString(), dto);
+    }
+
+    @Named("dtoToQueryString")
+    default String dtoToQueryString(QueryDTO dto) {
+        return Lang2QueryDocuments.toQueryString(dto);
     }
 
     @Named("queryDTOToProjectEntity")

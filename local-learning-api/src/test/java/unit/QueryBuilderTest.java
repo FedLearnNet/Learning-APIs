@@ -1,5 +1,6 @@
 package unit;
 
+import bio.cosy.feddb.core.api.query.Lang2QueryNodeDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.query.QueryItemDTO;
 import bio.cosy.feddb.core.api.query.QueryOperatorDTO;
@@ -195,6 +196,99 @@ public class QueryBuilderTest {
         String sqlStringQuery = queryBuilderBO.buildCountDistinctSql(stringQuery);
         Assertions.assertTrue(sqlStringQuery.contains("value_string IS NOT NULL"));
         assertSqlExecutes(sqlStringQuery);
+    }
+
+    @Test
+    @Order(9)
+    void testLang2QueryAndMatchesLegacyIntersect() {
+        QueryDTO lang2 = lang2Query(and(
+                leaf("2001", "1001", "exists", null),
+                leaf("2002", "1002", "<", 28)
+        ));
+
+        String lang2Sql = queryBuilderBO.buildCountDistinctSql(lang2);
+        Assertions.assertTrue(lang2Sql.contains("INTERSECT"));
+        assertSqlExecutes(lang2Sql);
+
+        QueryResultWrapperDTO response = queryBO.runQuery(lang2, List.of(1L, 5L));
+        Assertions.assertEquals(List.of(1L), matchedPatientIds(response));
+    }
+
+    @Test
+    @Order(10)
+    void testLang2QueryOrUnionsPatients() {
+        QueryDTO lang2 = lang2Query(or(
+                leaf("2008", "1001", "=", "Diabetes Type 1"),
+                leaf("2002", "1002", "<", 28)
+        ));
+
+        String sql = queryBuilderBO.buildCountDistinctSql(lang2);
+        Assertions.assertTrue(sql.contains(" UNION "));
+        assertSqlExecutes(sql);
+
+        QueryResultWrapperDTO response = queryBO.runQuery(lang2, List.of(1L, 5L));
+        Assertions.assertEquals(List.of(1L, 9L), matchedPatientIds(response));
+    }
+
+    @Test
+    @Order(11)
+    void testLang2QueryNestedAndOr() {
+        QueryDTO lang2 = lang2Query(and(
+                leaf("2001", "1001", "exists", null),
+                or(
+                        leaf("2002", "1002", "<", 28),
+                        leaf("2008", "1001", "=", "Diabetes Type 1")
+                )
+        ));
+
+        String sql = queryBuilderBO.buildCountDistinctSql(lang2);
+        Assertions.assertTrue(sql.contains("INTERSECT"));
+        Assertions.assertTrue(sql.contains(" UNION "));
+        assertSqlExecutes(sql);
+
+        QueryResultWrapperDTO response = queryBO.runQuery(lang2, List.of(1L, 5L));
+        Assertions.assertEquals(List.of(1L), matchedPatientIds(response));
+    }
+
+    @Test
+    @Order(12)
+    void testLang2QueryRejectsTemporalRelations() {
+        Lang2QueryNodeDTO group = and(leaf("2001", "1001", "exists", null));
+        group.setTemporalRelations(List.of("same visit"));
+        QueryDTO lang2 = lang2Query(group);
+
+        Assertions.assertThrows(QueryRejectedException.class,
+                () -> queryBuilderBO.buildCountDistinctSql(lang2));
+    }
+
+    private QueryDTO lang2Query(Lang2QueryNodeDTO root) {
+        QueryDTO queryDTO = new QueryDTO();
+        queryDTO.setLang2Query(root);
+        return queryDTO;
+    }
+
+    private Lang2QueryNodeDTO and(Lang2QueryNodeDTO... conditions) {
+        return group("$and", conditions);
+    }
+
+    private Lang2QueryNodeDTO or(Lang2QueryNodeDTO... conditions) {
+        return group("$or", conditions);
+    }
+
+    private Lang2QueryNodeDTO group(String connectingOperator, Lang2QueryNodeDTO... conditions) {
+        Lang2QueryNodeDTO group = new Lang2QueryNodeDTO();
+        group.setConnectingOperator(connectingOperator);
+        group.setConditions(List.of(conditions));
+        return group;
+    }
+
+    private Lang2QueryNodeDTO leaf(String ontologyId, String dataTypeId, String operator, Object value) {
+        Lang2QueryNodeDTO leaf = new Lang2QueryNodeDTO();
+        leaf.setOntologyId(ontologyId);
+        leaf.setDataTypeId(dataTypeId);
+        leaf.setOperator(operator);
+        leaf.setValue(value);
+        return leaf;
     }
 
     private QueryDTO singleItemQuery(String ontologyId, String dataTypeId, QueryOperatorTypes operator, String value) {

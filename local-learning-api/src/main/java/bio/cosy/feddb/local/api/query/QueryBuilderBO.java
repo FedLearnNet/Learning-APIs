@@ -1,6 +1,8 @@
 package bio.cosy.feddb.local.api.query;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypes;
+import bio.cosy.feddb.core.api.query.Lang2QueryDocuments;
+import bio.cosy.feddb.core.api.query.Lang2QueryNodeDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.query.QueryItemDTO;
 import bio.cosy.feddb.core.api.query.QueryOperatorDTO;
@@ -13,8 +15,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -34,6 +38,9 @@ public class QueryBuilderBO {
      * Builds a SQL to count distinct patient IDs matching all query items via INTERSECT
      */
     public String buildCountDistinctSql(QueryDTO dto) {
+        if (dto != null && dto.getLang2Query() != null) {
+            return wrapDistinct(buildNode(dto.getLang2Query()));
+        }
         if (dto == null || dto.getQuery() == null || dto.getQuery().isEmpty()) {
             return EMPTY_PATIENT_QUERY;
         }
@@ -43,18 +50,146 @@ public class QueryBuilderBO {
                 .filter(Objects::nonNull)
                 .filter(clause -> !clause.isBlank())
                 .collect(Collectors.toList());
-        if (clauses.isEmpty()) {
+        return wrapDistinct(joinClauses(clauses, " INTERSECT "));
+    }
+
+    private String wrapDistinct(String inner) {
+        if (inner == null || inner.isBlank() || EMPTY_PATIENT_QUERY.equals(inner)) {
             return EMPTY_PATIENT_QUERY;
         }
-        String joined = String.join(" INTERSECT ", clauses);
-        return new StringBuilder()
-                .append("SELECT DISTINCT ")
-                .append(PATIENT_ID_NAME)
-                .append(" FROM (")
-                .append(joined)
-                .append(") AS ")
-                .append(RESULT_ALIAS)
-                .toString();
+        return "SELECT DISTINCT " + PATIENT_ID_NAME + " FROM (" + inner + ") AS " + RESULT_ALIAS;
+    }
+
+    private String joinClauses(List<String> clauses, String separator) {
+        if (clauses == null || clauses.isEmpty()) {
+            return EMPTY_PATIENT_QUERY;
+        }
+        if (clauses.size() == 1) {
+            return clauses.getFirst();
+        }
+        return String.join(separator, clauses);
+    }
+
+    private String buildNode(Lang2QueryNodeDTO node) {
+        if (node == null) {
+            throw new QueryRejectedException("Lang2Query node is missing");
+        }
+        rejectUnsupported(node);
+        if (node.isGroup()) {
+            return buildGroup(node);
+        }
+        QueryItemDTO item = Lang2QueryDocuments.toQueryItem(node);
+        if (item == null || item.getOperator() == null || item.getOperator().isEmpty()) {
+            throw new QueryRejectedException("Lang2Query leaf is missing a supported operator");
+        }
+        return buildClause(item);
+    }
+
+    private String buildGroup(Lang2QueryNodeDTO group) {
+        String connectingOperator = group.getConnectingOperator().trim().toLowerCase(Locale.ROOT);
+        if ("$or".equals(connectingOperator)) {
+            Lang2QueryNodeDTO collapsed = collapseEqualOr(group);
+            if (collapsed != null) {
+                return buildNode(collapsed);
+            }
+        }
+        String separator = switch (connectingOperator) {
+            case "$and" -> " INTERSECT ";
+            case "$or" -> " UNION ";
+            default -> throw new QueryRejectedException(
+                    "Unsupported connecting_operator: " + group.getConnectingOperator());
+        };
+        if (group.getConditions() == null || group.getConditions().isEmpty()) {
+            throw new QueryRejectedException("Lang2Query group has no conditions");
+        }
+        if (group.getOntologyId() != null && !group.getOntologyId().isBlank()) {
+            throw new QueryRejectedException("A Lang2Query group cannot also be a leaf condition");
+        }
+        List<String> clauses = group.getConditions().stream()
+                .map(this::buildNode)
+                .filter(Objects::nonNull)
+                .filter(clause -> !clause.isBlank())
+                .toList();
+        String joined = joinClauses(clauses, separator);
+        if (EMPTY_PATIENT_QUERY.equals(joined)) {
+            return joined;
+        }
+        return "(" + joined + ")";
+    }
+
+    private Lang2QueryNodeDTO collapseEqualOr(Lang2QueryNodeDTO group) {
+        if (group.getConditions() == null || group.getConditions().size() < 2) {
+            return null;
+        }
+        String ontologyId = null;
+        String dataTypeId = null;
+        List<String> values = new ArrayList<>();
+        for (Lang2QueryNodeDTO child : group.getConditions()) {
+            if (child == null || child.isGroup()) {
+                return null;
+            }
+            rejectUnsupported(child);
+            QueryOperatorTypes operator = QueryOperatorTypes.fromOperator(child.getOperator());
+            if (operator != QueryOperatorTypes.EQUAL || child.getOntologyId() == null || child.getOntologyId().isBlank()) {
+                return null;
+            }
+            String value = child.valueAsString();
+            if (value == null || value.isBlank()) {
+                return null;
+            }
+            if (ontologyId == null) {
+                ontologyId = child.getOntologyId();
+                dataTypeId = child.getDataTypeId();
+            } else if (!ontologyId.equals(child.getOntologyId()) || !Objects.equals(dataTypeId, child.getDataTypeId())) {
+                return null;
+            }
+            values.add(value);
+        }
+        Lang2QueryNodeDTO leaf = new Lang2QueryNodeDTO();
+        leaf.setOntologyId(ontologyId);
+        leaf.setDataTypeId(dataTypeId);
+        leaf.setOperator("IN");
+        leaf.setValue(String.join(",", values));
+        return leaf;
+    }
+
+    private void rejectUnsupported(Lang2QueryNodeDTO node) {
+        if (node.getTemporalRelations() != null && !node.getTemporalRelations().isEmpty()) {
+            throw new QueryRejectedException("temporal_relations is not supported yet");
+        }
+        if (notBlank(node.getValueMode()) && !"absolute".equalsIgnoreCase(node.getValueMode())) {
+            throw new QueryRejectedException("value_mode is not supported yet: " + node.getValueMode());
+        }
+        if (node.getTimeFilter() != null && !isAnytime(node.getTimeFilter())) {
+            throw new QueryRejectedException("time_filter is not supported yet");
+        }
+        if (notBlank(node.getTimeAggregationMethod()) && !"none".equalsIgnoreCase(node.getTimeAggregationMethod())) {
+            throw new QueryRejectedException("time_aggregation_method is not supported yet");
+        }
+        if (notBlank(node.getValueAggregationMethod()) && !"none".equalsIgnoreCase(node.getValueAggregationMethod())) {
+            throw new QueryRejectedException("value_aggregation_method is not supported yet");
+        }
+        if (node.getAtLeast() != null || node.getAtMost() != null) {
+            throw new QueryRejectedException("at_least / at_most is not supported yet");
+        }
+        if (notBlank(node.getScale())) {
+            throw new QueryRejectedException("scale is not supported yet");
+        }
+        String operator = node.getOperator();
+        if (operator != null) {
+            String normalized = operator.trim().toLowerCase(Locale.ROOT);
+            if (normalized.equals("has_changed") || normalized.equals("changed_from") || normalized.equals("changed_to")) {
+                throw new QueryRejectedException("Operator is not supported yet: " + operator);
+            }
+        }
+    }
+
+    private boolean notBlank(String value) {
+        return value != null && !value.isBlank();
+    }
+
+    private boolean isAnytime(Object timeFilter) {
+        return timeFilter instanceof String text && "anytime".equalsIgnoreCase(text);
     }
 
     /**
@@ -78,8 +213,7 @@ public class QueryBuilderBO {
             Log.infof("Found %d schema nodes for ontology %s", schemaNodes.size(), item.getOntologyId());
         }
 
-        List<String> perSchemaClauses = new ArrayList<>();
-
+        Map<String, List<SchemaNodeEntity>> nodesByColumn = new LinkedHashMap<>();
         for (SchemaNodeEntity schemaNode : schemaNodes) {
             DataTypeEntity dataType = schemaNode.getDataType();
             String columnName = getColumnName(dataType.getType());
@@ -87,38 +221,51 @@ public class QueryBuilderBO {
                 Log.errorf("Unsupported data type for schema: %s", schemaNode.getName());
                 continue;
             }
+            String groupKey = dataType.getType().name() + "|" + columnName;
+            nodesByColumn.computeIfAbsent(groupKey, key -> new ArrayList<>()).add(schemaNode);
+        }
 
-            // Build a SELECT DISTINCT clause per schema
-            StringBuilder clause = new StringBuilder();
-            clause.append("(SELECT DISTINCT ")
-                    .append(PATIENT_ID_NAME)
-                    .append(" FROM ")
-                    .append(TABLE_NAME)
-                    .append(" WHERE ")
-                    .append(SCHEMA_ID_NAME)
-                    .append(" = ")
-                    .append(schemaNode.getId())
-                    .append(" AND ");
-
-            String operatorClause = buildOperatorClause(item.getOperator(), dataType.getType(), columnName);
+        List<String> perColumnClauses = new ArrayList<>();
+        for (List<SchemaNodeEntity> group : nodesByColumn.values()) {
+            DataTypes dataType = group.getFirst().getDataType().getType();
+            String columnName = getColumnName(dataType);
+            String operatorClause = buildOperatorClause(item.getOperator(), dataType, columnName);
             if (operatorClause == null || operatorClause.isBlank()) {
                 continue;
             }
-            clause.append(operatorClause);
-            clause.append(")");
-            perSchemaClauses.add(clause.toString());
+            List<Long> schemaNodeIds = group.stream().map(SchemaNodeEntity::getId).toList();
+            perColumnClauses.add("(SELECT DISTINCT "
+                    + PATIENT_ID_NAME
+                    + " FROM "
+                    + TABLE_NAME
+                    + " WHERE "
+                    + schemaIdPredicate(schemaNodeIds)
+                    + " AND "
+                    + operatorClause
+                    + ")");
         }
 
-        // Combine schemaNodes of one Ontology with OR, then wrap
-        if (perSchemaClauses.isEmpty()) {
+        if (perColumnClauses.isEmpty()) {
             throw new QueryRejectedException(
                     "No evaluable clause could be built for ontology " + item.getOntologyId()
                             + "; required AND condition cannot be evaluated on this node");
         }
-        return "(" + String.join(" UNION ", perSchemaClauses) + ")";
+        return "(" + String.join(" UNION ", perColumnClauses) + ")";
+    }
+
+    private String schemaIdPredicate(List<Long> schemaNodeIds) {
+        if (schemaNodeIds.size() == 1) {
+            return SCHEMA_ID_NAME + " = " + schemaNodeIds.getFirst();
+        }
+        return SCHEMA_ID_NAME + " IN (" + schemaNodeIds.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(", ")) + ")";
     }
 
     public List<SchemaNodeEntity> getSchemaNodesForQueryItem(String ontologyId, String dataTypeId) {
+        if (dataTypeId == null || dataTypeId.isBlank()) {
+            return schemaNodeAO.findByOntologyGlobalId(ontologyId);
+        }
         return schemaNodeAO.findByOntologyAndDatatypeGlobalId(ontologyId, dataTypeId);
     }
 

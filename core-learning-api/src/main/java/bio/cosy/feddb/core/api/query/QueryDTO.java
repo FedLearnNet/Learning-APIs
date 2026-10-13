@@ -23,6 +23,9 @@ public class QueryDTO extends BaseAuthDTO {
     // Array of QueryItem
     private List<QueryItemDTO> query;
 
+    // Optional Lang2Query group. When set, this is the document that is stored and compiled.
+    private Lang2QueryNodeDTO lang2Query;
+
     private String description;
     private String name;
     private Integer result;
@@ -43,6 +46,7 @@ public class QueryDTO extends BaseAuthDTO {
                 "projectIds=" + projectIds +
                 ", description='" + description + '\'' +
                 ", query=" + query +
+                ", lang2Query=" + lang2Query +
                 ", name='" + name + '\'' +
                 '}';
     }

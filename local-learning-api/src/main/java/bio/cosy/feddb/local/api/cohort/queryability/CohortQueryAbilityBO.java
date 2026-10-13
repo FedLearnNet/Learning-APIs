@@ -113,6 +113,11 @@ public class CohortQueryAbilityBO extends BaseBo<CohortQueryAbilityDTO, CohortQu
         if (item.getOntologyId() == null || item.getOntologyId().isBlank()) {
             return List.of();
         }
+        if (item.getDataTypeId() == null || item.getDataTypeId().isBlank()) {
+            return schemaNodeAO.findByOntologyGlobalId(item.getOntologyId()).stream()
+                    .filter(Objects::nonNull)
+                    .toList();
+        }
         return schemaNodeAO.findByOntologyAndDatatypeGlobalId(item.getOntologyId(), item.getDataTypeId()).stream()
                 .filter(Objects::nonNull)
                 .toList();

@@ -35,8 +35,11 @@ public enum QueryOperatorTypes {
         }
 
         String normalized = normalize(operator);
+        if ("=".equals(normalized)) {
+            return EQUAL;
+        }
         for (QueryOperatorTypes type : values()) {
-            if (type.inputOperator.equals(normalized)) {
+            if (type.inputOperator.equals(normalized) || type.name().equalsIgnoreCase(normalized)) {
                 return type;
             }
         }

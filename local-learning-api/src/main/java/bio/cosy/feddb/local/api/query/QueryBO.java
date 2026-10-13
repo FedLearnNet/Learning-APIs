@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.api.query;
 
+import bio.cosy.feddb.core.api.query.Lang2QueryDocuments;
 import bio.cosy.feddb.core.api.query.QueryClientResponseDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.base.BaseBo;
@@ -176,7 +177,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
             createTransactional(query, message, QueryStatusEnum.REJECTED_EAM_PRE_HARMONIZED);
             return QueryClientResponseDTO.createErrorResponse("Permission denied", queryGlobalUniqueId);
         }
-        allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(query.getQuery(), allowedCohortIds);
+        allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(Lang2QueryDocuments.leavesOf(query), allowedCohortIds);
 
         if (allowedCohorts.isEmpty()) {
             String message = "Cohort QueryAbility is rejecting the query";
@@ -269,7 +270,8 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         LocalQueryDTO localQueryDTO = new LocalQueryDTO();
         localQueryDTO.setGlobalQueryId(query.getGlobalUniqueId());
         localQueryDTO.setKeycloakId(query.getKeycloakId());
-        localQueryDTO.setQuery(query.getQuery());
+        localQueryDTO.setQuery(Lang2QueryDocuments.leavesOf(query));
+        localQueryDTO.setLang2Query(query.getLang2Query());
         localQueryDTO.setStatusMessage(message);
         localQueryDTO.setStatus(status);
         localQueryDTO.setReceivedAt(LocalDateTime.now());
@@ -295,7 +297,11 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
             logger.warn(message);
         }
 
-        allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(query.getQuery(), allowedCohortIds);
+        allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(
+                query.getLang2Query() != null
+                        ? Lang2QueryDocuments.flattenLeaves(query.getLang2Query())
+                        : query.getQuery(),
+                allowedCohortIds);
         if (allowedCohorts.isEmpty()) {
             String message = "Cohort QueryAbility is rejecting the query";
             logger.warn(message);
@@ -305,6 +311,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         queryDTO.setGlobalUniqueId(query.getGlobalQueryId());
         queryDTO.setKeycloakId(keycloakId);
         queryDTO.setQuery(query.getQuery());
+        queryDTO.setLang2Query(query.getLang2Query());
         try {
             return runQuery(queryDTO, allowedCohortIds);
         } catch (QueryRejectedException e) {
