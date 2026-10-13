@@ -109,11 +109,7 @@ public class PatientLearningBO extends BaseBo<PatientLearningDTO, PatientLearnin
             return Set.of();
         }
 
-        return requestIds.stream()
-                .distinct()
-                .flatMap(requestId -> ao.getAllForRequest(requestId).stream())
-                .map(entity -> entity.getPatient().getCohort().getId())
-                .collect(Collectors.toSet());
+        return ao.findCohortIdsForRequests(requestIds);
     }
 
 }
