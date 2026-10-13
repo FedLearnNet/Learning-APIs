@@ -237,8 +237,14 @@ public class ToolImportBuildBO {
         return switch (config.toolImports().buildOnImport()) {
             case ALWAYS -> true;
             case IF_NOT_EXISTS_IN_STORE -> !existsInStore;
-            case IF_NOT_EXISTS_IN_REGISTRY ->
-                    !version.hasImage() || !dockerClient.imageExistsInRegistry(version.getImageName());
+            case IF_NOT_EXISTS_IN_REGISTRY -> {
+                try {
+                    yield !version.hasImage() || !dockerClient.imageExistsInRegistry(version.getImageName());
+                } catch (Exception e) {
+                    Log.warnf(e, "Failed to check registry image for imported tool version %d; proceeding with build", version.getId());
+                    yield true;
+                }
+            }
             case NEVER -> false;
         };
     }
