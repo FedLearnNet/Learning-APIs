@@ -18,7 +18,6 @@ import de.unihamburg.daibetes.api.model.sub.ModelSubAO;
 import de.unihamburg.daibetes.api.model.sub.ModelSubEntity;
 import de.unihamburg.daibetes.api.model.sub.file.ModelSubFileBO;
 import de.unihamburg.daibetes.config.FLNetConfig;
-import de.unihamburg.daibetes.services.KeycloakService;
 import de.unihamburg.daibetes.services.OrchContainerServiceClient;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Multi;
@@ -79,6 +78,25 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
     protected int serverPort;
 
     public PipelineDTO create(PipelineCreateDTO dto, String keycloakId) {
+        if (dto.getPipelineType().equals(PipelineType.MODEL)) {
+            if (dto.getModelSubId() == null) {
+                throw new BadRequestException("Model subscription ID must be provided for model pipelines");
+            }
+            if (!modelAccessBO.hasUserAnyRightsBySubId(keycloakId, dto.getModelSubId())) {
+                throw new ForbiddenException();
+            }
+        } else {
+            if (dto.getAppVersionId() == null) {
+                throw new BadRequestException("App version ID must be provided for app pipelines");
+            }
+            if (!appAuthorBO.isUserAuthorVersionId(keycloakId, dto.getAppVersionId())) {
+                throw new ForbiddenException();
+            }
+        }
+        return create(dto);
+    }
+
+    public PipelineDTO create(PipelineCreateDTO dto) {
         PipelineDTO pipeline = new PipelineDTO();
         pipeline.setPipelineType(dto.getPipelineType());
         pipeline.setPipelineStatus(PipelineStatus.PENDING);
@@ -88,28 +106,33 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
             if (dto.getModelSubId() == null) {
                 throw new BadRequestException("Model subscription ID must be provided for model pipelines");
             }
-            if (!modelAccessBO.hasUserAnyRightsBySubId(keycloakId, dto.getModelSubId())) {
-                throw new ForbiddenException();
-            }
             pipeline.setModelSubId(dto.getModelSubId());
         } else {
             if (dto.getAppVersionId() == null) {
                 throw new BadRequestException("App version ID must be provided for app pipelines");
-            }
-            if (!appAuthorBO.isUserAuthorVersionId(keycloakId, dto.getAppVersionId())) {
-                throw new ForbiddenException();
             }
             pipeline.setAppVersionId(dto.getAppVersionId());
         }
         PipelineDTO created = create(pipeline);
         PipelineDTO steps = stepBO.createSteps(created);
         if (dto.getAutoStart()) {
-            return start(steps.getId(), keycloakId);
+            return start(steps.getId());
         }
         return steps;
     }
 
+
     public PipelineDTO start(Long id, String keycloakId) {
+
+        Optional<PipelineEntity> entityOptional = ao.findByIdOptional(id);
+        if (entityOptional.isEmpty()) {
+            throw new NotFoundException(String.format("Property with the ID %s not found", id));
+        }
+        userHasRights(entityOptional.get(), keycloakId);
+        return start(id);
+    }
+
+    public PipelineDTO start(Long id) {
         if (config.pipelineBuilderImage().isEmpty()) {
             throw new IllegalStateException("Pipeline builder image is not configured");
         }
@@ -118,7 +141,6 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         if (entityOptional.isEmpty()) {
             throw new NotFoundException(String.format("Property with the ID %s not found", id));
         }
-        userHasRights(entityOptional.get(), keycloakId);
         PipelineEntity entity = entityOptional.get();
         String apiKey = toolApiKeyService.issue(Scope.PIPELINE_RUN, id);
         StartPipelineDTO startApp = new StartPipelineDTO();
@@ -140,6 +162,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
             throw new IllegalStateException("Failed to start container for pipeline " + id);
         }
         entity.setContainerId(containerId);
+        updateRebuilding(entity);
         ao.persist(entity);
         return mapper.entityToDto(entity);
     }
@@ -247,6 +270,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
 
         if (hasFailedStep) {
             pipeline.setPipelineStatus(PipelineStatus.FAILED);
+            updateRebuilding(pipeline);
             toolApiKeyService.revoke(Scope.PIPELINE_RUN, pipeline.getId());
             return;
         }
@@ -261,10 +285,18 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
             pipeline.setPipelineStatus(PipelineStatus.RUNNING);
         }
         pipeline.setUpdatedAt(new Date());
+        updateRebuilding(pipeline);
         ao.persist(pipeline);
         //Set image tag if all steps succeeded and there are at least 5 steps and the pipeline is successfully persisted
         if (allStepsSucceeded && pipeline.getSteps().size() >= 8) {
             setImageTagTransactional(pipeline);
+        }
+    }
+
+    private void updateRebuilding(PipelineEntity pipeline) {
+        if (pipeline.getAppVersion() != null) {
+            pipeline.getAppVersion().setRebuilding(pipeline.getPipelineStatus() == PipelineStatus.PENDING
+                    || pipeline.getPipelineStatus() == PipelineStatus.RUNNING);
         }
     }
 
@@ -376,6 +408,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
 
         PipelineEntity entity = entityOptional.get();
         entity.setPipelineStatus(status);
+        updateRebuilding(entity);
         ao.persist(entity);
         PipelineDTO updated = mapper.entityToDto(entity);
         UPDATES.onNext(updated);

@@ -10,6 +10,7 @@ import de.unihamburg.daibetes.api.app.config.FederatedAppConfigBO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionBO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
+import de.unihamburg.daibetes.api.build.pipeline.ToolImportBuildBO;
 import de.unihamburg.daibetes.config.FLNetConfig;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -49,6 +50,9 @@ public class FederatedAppCreateImportBO {
 
     @Inject
     FLNetConfig config;
+
+    @Inject
+    ToolImportBuildBO buildBO;
 
     @Transactional
     public void createExternal(FederatedAppDetailDTO external) {
@@ -158,12 +162,17 @@ public class FederatedAppCreateImportBO {
                 Log.infof("External app version %s has no publish hash, skipping", appNameVersion);
                 continue;
             }
+            Optional<FederatedAppVersionEntity> existingVersion = versionAO.findByPublishHash(version.getPublishHash(), external.getUniqueAppId());
             if (versionToOverride.isPresent()) {
                 versionOverridden = overrideVersion(version, versionToOverride.get(), external, appNameVersion);
+                if (versionOverridden) {
+                    buildBO.enqueue(versionToOverride.get(), existingVersion.isPresent());
+                }
                 continue;
             }
-            if (versionAO.existsByPublishHash(version.getPublishHash(), external.getUniqueAppId())) {
+            if (existingVersion.isPresent()) {
                 Log.infof("External app version %s with publish hash %s already exists, skipping", appNameVersion, version.getPublishHash());
+                buildBO.enqueue(existingVersion.get(), true);
                 continue;
             }
             createVersion(version, entity, appNameVersion);
@@ -196,6 +205,7 @@ public class FederatedAppCreateImportBO {
             FederatedAppVersionEntity createdVersion = versionBO.createEntity(version, entity);
             configBO.setBaseValuesNull(version.getAppConfig());
             configBO.create(version.getAppConfig(), createdVersion);
+            buildBO.enqueue(createdVersion, false);
             Log.infof("External app version %s created with id %d", appNameVersion, createdVersion.getId());
         } catch (Exception e) {
             Log.warnf(e, "Failed to create external app version %s", appNameVersion);

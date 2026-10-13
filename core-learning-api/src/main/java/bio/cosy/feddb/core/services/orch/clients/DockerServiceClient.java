@@ -12,6 +12,10 @@ public interface DockerServiceClient {
     @Path("info")
     InfoDTO getInfo();
 
+    @GET
+    @Path("image/exists")
+    boolean imageExistsInRegistry(@QueryParam("name") String name);
+
 
     @DELETE
     @Path("workflow/{workflowId}/cleanup")
