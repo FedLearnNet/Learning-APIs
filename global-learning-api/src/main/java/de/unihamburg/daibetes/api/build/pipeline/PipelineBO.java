@@ -101,7 +101,6 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         pipeline.setPipelineType(dto.getPipelineType());
         pipeline.setPipelineStatus(PipelineStatus.PENDING);
         pipeline.setSecret(RandomStringUtils.secureStrong().nextAlphabetic(32));
-        pipeline.setDockerTag(RandomStringUtils.secureStrong().nextAlphabetic(8));
         if (dto.getPipelineType().equals(PipelineType.MODEL)) {
             if (dto.getModelSubId() == null) {
                 throw new BadRequestException("Model subscription ID must be provided for model pipelines");
@@ -233,7 +232,6 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         FederatedAppEntity appEntity = getFederatedAppEntity(entity);
         dto.setGitRepoUrl(appEntity.getSourceUrl());
         dto.setImageName(appEntity.getSlug());
-        dto.setDockerTag(entity.getDockerTag());
         return dto;
     }
 
@@ -257,6 +255,9 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         }
         PipelineEntity entity = entityOptional.get();
         entity.setPublishInfo(dto);
+        if (StringUtils.isNotBlank(dto.getCommitHash())) {
+            entity.setDockerTag(dto.getCommitHash());
+        }
         ao.persist(entity);
         PipelineDTO updated = mapper.entityToDto(entity);
         UPDATES.onNext(updated);
