@@ -17,7 +17,7 @@
     "publishHash" : "91401b9192b3703a059e1d5fa71aeff47f1616a4947b078867647fd7513e2062",
     "publishInfo" : {
       "commitHash" : "ec86a7d62aa9c18c8ec72dff8817584f15b3020b",
-      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/us-130-fl-nn/-/blob/ec86a7d62aa9c18c8ec72dff8817584f15b3020b/data/test_us130_wide_c85ce744.csv", "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/us-130-fl-nn/-/blob/ec86a7d62aa9c18c8ec72dff8817584f15b3020b/data/test_us130_wide.csv" ],
+      "filePaths" : [ "https://raw.githubusercontent.com/FedLearnNet/FL-Tool-US-130-NN/refs/heads/main/data/test_us130_wide_c85ce744.csv", "https://raw.githubusercontent.com/FedLearnNet/FL-Tool-US-130-NN/refs/heads/main/data/test_us130_wide.csv" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
         "target" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us130-hospital-readmission-federated-nn:MkSRaOLR",
