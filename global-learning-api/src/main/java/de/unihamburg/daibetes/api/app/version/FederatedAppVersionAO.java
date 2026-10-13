@@ -47,8 +47,8 @@ public class FederatedAppVersionAO implements PanacheRepository<FederatedAppVers
                 appId);
     }
 
-    public boolean existsWithImageByAppId(Long appId) {
-        return count("federatedApp.id = ?1 AND imageName IS NOT NULL AND imageName <> ''", appId) > 0;
+    public boolean existsByAppId(Long appId) {
+        return count("federatedApp.id", appId) > 0;
     }
 
     public boolean existsByPublishHash(String publishHash, UUID uniqueAppId) {

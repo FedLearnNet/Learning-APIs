@@ -1,13 +1,15 @@
 package de.unihamburg.daibetes.api.build.pipeline;
 
 import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
-import de.unihamburg.daibetes.api.build.pipeline.steps.StepName;
+import de.unihamburg.daibetes.api.app.FederatedAppAO;
+import de.unihamburg.daibetes.api.app.FederatedAppEntity;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
+import de.unihamburg.daibetes.api.build.pipeline.steps.StepName;
 import de.unihamburg.daibetes.config.FLNetConfig;
 import de.unihamburg.daibetes.config.ToolImportBuildingOnStart;
-import de.unihamburg.daibetes.services.OrchDockerServiceClient;
 import de.unihamburg.daibetes.services.OrchContainerServiceClient;
+import de.unihamburg.daibetes.services.OrchDockerServiceClient;
 import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.smallrye.context.api.ManagedExecutorConfig;
@@ -19,6 +21,7 @@ import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.event.TransactionPhase;
 import jakarta.inject.Inject;
 import jakarta.persistence.LockModeType;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.context.ManagedExecutor;
 import org.eclipse.microprofile.context.ThreadContext;
@@ -28,7 +31,6 @@ import org.eclipse.microprofile.reactive.messaging.OnOverflow;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,6 +44,9 @@ public class ToolImportBuildBO {
 
     @Inject
     FederatedAppVersionAO versionAO;
+
+    @Inject
+    FederatedAppAO appAO;
 
     @Inject
     PipelineAO pipelineAO;
@@ -88,7 +93,8 @@ public class ToolImportBuildBO {
         }
         Uni.createFrom().deferred(() -> buildEmitter.send(request))
                 .onFailure().invoke(e -> queuedVersions.remove(request.getAppVersionId()))
-                .subscribe().with(ignored -> { },
+                .subscribe().with(ignored -> {
+                        },
                         e -> Log.warnf(e, "Failed to queue imported tool version %d", request.getAppVersionId()));
     }
 
@@ -97,13 +103,13 @@ public class ToolImportBuildBO {
         // The ordered channel waits for completion before starting the next build.
         return Uni.createFrom().item(() -> createBuild(request))
                 .runSubscriptionOn(executor)
-                .onItem().transformToUni(this::startBuild)
+                .onItem().transformToUni(run -> startBuild(run, request))
                 .onTermination().invoke(() -> queuedVersions.remove(request.getAppVersionId()))
                 .onFailure().invoke(e -> Log.warnf(e, "Failed to build imported tool version %d", request.getAppVersionId()))
                 .onFailure().recoverWithNull();
     }
 
-    private Uni<Void> startBuild(CurrentPipelineRuns run) {
+    private Uni<Void> startBuild(CurrentPipelineRuns run, PipelineRebuildDTO request) {
         if (run == null) {
             return Uni.createFrom().voidItem();
         }
@@ -112,7 +118,9 @@ public class ToolImportBuildBO {
                 .runSubscriptionOn(executor)
                 .onItem().transformToUni(ignored -> awaitBuild(run))
                 .onFailure().call(e -> Uni.createFrom().voidItem()
-                        .invoke(() -> failBuild(run)).runSubscriptionOn(executor));
+                        .invoke(() -> failBuild(run)).runSubscriptionOn(executor))
+                .onTermination().call(() -> Uni.createFrom().voidItem()
+                        .invoke(() -> finishBuild(run, request)).runSubscriptionOn(executor));
     }
 
     private CurrentPipelineRuns createBuild(PipelineRebuildDTO request) {
@@ -124,12 +132,12 @@ public class ToolImportBuildBO {
         return QuarkusTransaction.requiringNew().call(() -> {
             FederatedAppVersionEntity current = versionAO.findById(request.getAppVersionId(), LockModeType.PESSIMISTIC_WRITE);
             if (current == null || current.isRebuilding() || StringUtils.isBlank(current.getFederatedApp().getSourceUrl())
-                    || pipelineAO.count("appVersion.id = ?1 and pipelineStatus in ?2", current.getId(),
-                    List.of(PipelineStatus.PENDING, PipelineStatus.RUNNING)) > 0) {
+                    || pipelineAO.existsActiveByAppVersionId(current.getId())) {
                 return null;
             }
             request.setAutoStart(false);
             PipelineDTO pipeline = pipelineBO.create(request);
+            current.setRebuilding(true);
             CurrentPipelineRuns run = new CurrentPipelineRuns();
             run.setPipelineId(pipeline.getId());
             run.setToken(pipeline.getSecret());
@@ -171,6 +179,52 @@ public class ToolImportBuildBO {
             }
         } catch (Exception e) {
             Log.warnf(e, "Failed to clean up imported tool build pipeline %d", run.getPipelineId());
+        }
+    }
+
+    private void finishBuild(CurrentPipelineRuns run, PipelineRebuildDTO request) {
+        PipelineStatus status = finishBuildTransactional(run, request);
+        if (status != PipelineStatus.FAILED || request.isExistsInStore()) {
+            return;
+        }
+        try {
+            removeFailedVersionTransactional(request.getAppVersionId());
+        } catch (Exception e) {
+            Log.warnf(e, "Failed to remove newly imported app version %d after its build failed", request.getAppVersionId());
+        }
+    }
+
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    public PipelineStatus finishBuildTransactional(CurrentPipelineRuns run, PipelineRebuildDTO request) {
+        PipelineEntity pipeline = pipelineAO.findByIdAndSecretOptional(run.getPipelineId(), run.getToken(), LockModeType.PESSIMISTIC_READ)
+                .orElse(null);
+        if (pipeline == null || pipeline.getPipelineStatus() == PipelineStatus.PENDING
+                || pipeline.getPipelineStatus() == PipelineStatus.RUNNING) {
+            return null;
+        }
+        FederatedAppVersionEntity version = versionAO.findById(request.getAppVersionId(), LockModeType.PESSIMISTIC_WRITE);
+        if (version != null && !pipelineAO.existsActiveByAppVersionId(version.getId())) {
+            version.setRebuilding(false);
+        }
+        return pipeline.getPipelineStatus();
+    }
+
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    public void removeFailedVersionTransactional(Long appVersionId) {
+        FederatedAppVersionEntity version = versionAO.findById(appVersionId, LockModeType.PESSIMISTIC_WRITE);
+        if (version == null || version.isRebuilding()
+                || pipelineAO.existsActiveByAppVersionId(appVersionId)) {
+            return;
+        }
+        FederatedAppEntity app = appAO.findById(version.getFederatedApp().getId(), LockModeType.PESSIMISTIC_WRITE);
+        pipelineAO.detachAppVersion(appVersionId);
+        app.getVersions().remove(version);
+        versionAO.delete(version);
+        versionAO.flush();
+        Log.infof("Removed newly imported app version %d after its build failed", appVersionId);
+        if (!versionAO.existsByAppId(app.getId())) {
+            appAO.delete(app);
+            Log.infof("Removed app %d because it has no remaining versions", app.getId());
         }
     }
 

@@ -166,7 +166,7 @@ public class FederatedAppCreateImportBO {
             if (versionToOverride.isPresent()) {
                 versionOverridden = overrideVersion(version, versionToOverride.get(), external, appNameVersion);
                 if (versionOverridden) {
-                    buildBO.enqueue(versionToOverride.get(), existingVersion.isPresent());
+                    buildBO.enqueue(versionToOverride.get(), true);
                 }
                 continue;
             }
