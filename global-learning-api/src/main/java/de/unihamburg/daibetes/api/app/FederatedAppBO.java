@@ -341,34 +341,39 @@ public class FederatedAppBO extends BaseBo<FederatedAppDTO, FederatedAppEntity, 
      */
     public void createExternal(FederatedAppDetailDTO external, boolean overrideExisting) {
         Log.debugf("Creating external app with name %s", external.getName());
-        if (external.getUniqueAppId() == null) {
-            Log.infof("External app %s has no unique app id, skipping", external.getName());
-            return;
-        }
-        Optional<FederatedAppEntity> existingAppOptional = ao.findByUniqueAppId(external.getUniqueAppId());
 
-        if (external.getName() == null || external.getSlug() == null || external.getType() == null) {
-            Log.infof("External app with unique id %s is missing required fields, skipping", external.getUniqueAppId());
+        // Validation, ignore if we miss fields
+        if (external.getUniqueAppId() == null) {
+            Log.warnf("External app %s has no unique app id, skipping", external.getName());
             return;
         }
-        if (existingAppOptional.isEmpty()) {
-            existingAppOptional = ao.findBySlug(external.getSlug());
-            if (existingAppOptional.isPresent() && existingAppOptional.get().getUniqueAppId() != null) {
-                Log.infof("External app with slug %s already exists, skipping", external.getSlug());
-                return;
+        if (external.getName() == null || external.getSlug() == null || external.getType() == null) {
+            Log.warnf("External app with unique id %s is missing required fields, skipping", external.getUniqueAppId());
+            return;
+        }
+
+        // if it exists already
+        Optional<FederatedAppEntity> existingToolOptional = ao.findByUniqueAppId(external.getUniqueAppId());
+        if (existingToolOptional.isEmpty()) {
+            existingToolOptional = ao.findBySlug(external.getSlug());
+            if (existingToolOptional.isPresent() && existingToolOptional.get().getUniqueAppId() != null) {
+                Log.infof("External app with slug %s already exists, potentially overwriting", external.getSlug());
             }
         }
+
+        FederatedAppEntity entity;
         setBaseValuesNull(external);
         List<FederatedAppAuthorDTO> authors = external.getAuthors() == null ? List.of() : external.getAuthors();
-        FederatedAppEntity entity;
-        if (existingAppOptional.isEmpty()) {
+
+        // Create or overwrite
+        if (existingToolOptional.isEmpty()) {
             entity = mapper.dtoToEntity(external);
             ao.persist(entity);
             for (FederatedAppAuthorDTO author : authors) {
                 authorBO.create(entity, author.getKeycloakId());
             }
         } else {
-            entity = existingAppOptional.get();
+            entity = existingToolOptional.get();
             if (entity.getAuthors() == null) {
                 entity.setAuthors(Set.of());
             } else {
@@ -392,6 +397,7 @@ public class FederatedAppBO extends BaseBo<FederatedAppDTO, FederatedAppEntity, 
             }
         }
 
+        // Create an initial version (not published and no image yet)
         FederatedAppVersionDTO version = latestExternalVersion(external);
         if (version == null) {
             Log.warnf("External app %s has no version to import", external.getName());
@@ -442,7 +448,9 @@ public class FederatedAppBO extends BaseBo<FederatedAppDTO, FederatedAppEntity, 
     }
 
     /**
-     * @return version an import build has to be run for and the author it runs as, empty if the app needs no build
+     * Returns the build target based on the tools id
+     * If the tool either doesnt exist, has no author or already has a version with an image no build target
+     * is returned.
      */
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public Optional<ImportBuildTarget> findImportBuildTargetTransactional(UUID uniqueAppId) {

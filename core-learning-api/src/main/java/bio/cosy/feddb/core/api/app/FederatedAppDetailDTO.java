@@ -42,4 +42,3 @@ public class FederatedAppDetailDTO extends FederatedAppDTO {
         return true;
     }
 }
-

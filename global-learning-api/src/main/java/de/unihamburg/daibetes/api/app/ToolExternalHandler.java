@@ -41,6 +41,7 @@ public class ToolExternalHandler {
     ModelBO modelBO;
 
     /**
+     * Imports any Tools (creates them in the store/updates) BUT doesn't build any version for them.
      * @return unique ids of all apps found in the import sources
      */
     @Transactional
@@ -71,7 +72,8 @@ public class ToolExternalHandler {
         for (FederatedAppDetailDTO tool : tools) {
             try {
                 appBO.createExternal(tool, flnet.toolImports().overrideExisting());
-                if (tool.getUniqueAppId() != null) {
+                if (tool.getUniqueAppId() != null && tool.getName() != null && tool.getSlug() != null && tool.getType() != null) {
+                    // Only add if it has required fields
                     importedAppIds.add(tool.getUniqueAppId());
                 }
             } catch (Exception e) {
@@ -87,7 +89,7 @@ public class ToolExternalHandler {
             }
             try {
                 appBO.createExternal(model.getFederatedApp(), flnet.toolImports().overrideExisting());
-                if (model.getFederatedApp().getUniqueAppId() != null) {
+                if (model.getFederatedApp().getUniqueAppId() != null || model.getFederatedApp().getName() == null || model.getFederatedApp().getSlug() == null || model.getFederatedApp().getType() == null) {
                     importedAppIds.add(model.getFederatedApp().getUniqueAppId());
                 }
                 modelBO.createExternal(model);
