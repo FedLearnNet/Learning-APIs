@@ -3,6 +3,8 @@ package de.unihamburg.daibetes.api.build.pipeline;
 import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
 import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
 import bio.cosy.feddb.core.base.BaseBo;
+import bio.cosy.feddb.core.security.Scope;
+import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.services.orch.dto.CreateContainerResponseDTO;
 import bio.cosy.feddb.core.services.orch.dto.StartPipelineDTO;
 import de.unihamburg.daibetes.api.app.FederatedAppEntity;
@@ -50,7 +52,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
     OrchContainerServiceClient containerClient;
 
     @Inject
-    KeycloakService keycloakService;
+    ToolApiKeyService toolApiKeyService;
 
     @Inject
     PipelineStepBO stepBO;
@@ -118,11 +120,11 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         }
         userHasRights(entityOptional.get(), keycloakId);
         PipelineEntity entity = entityOptional.get();
-        String token = keycloakService.getServiceAccountToken();
+        String apiKey = toolApiKeyService.issue(Scope.PIPELINE_RUN, id);
         StartPipelineDTO startApp = new StartPipelineDTO();
         startApp.setPipelineId(id);
         startApp.setAppImage(builderImage);
-        startApp.addEnvironment(token, id, entity.getSecret());
+        startApp.addEnvironment(apiKey, id, entity.getSecret());
         Log.info("Starting container for pipeline " + id);
         CreateContainerResponseDTO resp;
         try {
@@ -130,6 +132,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         } catch (Exception e) {
             String statusCode = e.getMessage() != null ? e.getMessage().split(" ")[0] : "Unknown";
             Log.error("Failed to start container (Status code: " + statusCode + "): " + e.getMessage(), e);
+            toolApiKeyService.revoke(Scope.PIPELINE_RUN, id);
             throw new IllegalStateException("Failed to start container: " + e.getMessage(), e);
         }
         String containerId = resp.getId();
@@ -244,6 +247,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
 
         if (hasFailedStep) {
             pipeline.setPipelineStatus(PipelineStatus.FAILED);
+            toolApiKeyService.revoke(Scope.PIPELINE_RUN, pipeline.getId());
             return;
         }
         boolean allStepsSucceeded = pipeline.getSteps().stream()
@@ -251,6 +255,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
                 .allMatch(s -> s.getStepStatus() == PipelineStatus.SUCCESS || s.getStepStatus() == PipelineStatus.WARNING);
 
         if (allStepsSucceeded && pipeline.getSteps().size() >= 8) {
+            toolApiKeyService.revoke(Scope.PIPELINE_RUN, pipeline.getId());
             pipeline.setPipelineStatus(PipelineStatus.SUCCESS);
         } else {
             pipeline.setPipelineStatus(PipelineStatus.RUNNING);
@@ -342,6 +347,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
 
     public PipelineDTO stopPipeline(Long id, String keycloakId) {
         PipelineDTO stopped = setPipelineStatusTransactional(id, keycloakId, PipelineStatus.STOPPED);
+        toolApiKeyService.revoke(Scope.PIPELINE_RUN, id);
 
         boolean cleanupOk = true;
         try {
@@ -376,17 +382,20 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         return updated;
     }
 
-    public byte[] getFilesForPipeline(Long id, String secret) {
+    public Optional<byte[]> getFilesForPipeline(Long id, String secret) {
         Optional<PipelineEntity> entityOptional = ao.findByIdAndSecretOptional(id, secret, LockModeType.PESSIMISTIC_READ);
         if (entityOptional.isEmpty()) {
             throw new NotFoundException(String.format("Property with the ID %s not found", id));
         }
         PipelineEntity entity = entityOptional.get();
+        if (entity.getPipelineType() != PipelineType.MODEL) {
+            return Optional.empty();
+        }
         ModelSubEntity subEntity = entity.getModelSub();
         if (subEntity == null) {
             throw new NotFoundException("No model associated with this pipeline");
         }
-        return modelSubFileBO.getFilesForPipeline(subEntity);
+        return Optional.of(modelSubFileBO.getFilesForPipeline(subEntity));
     }
 
 

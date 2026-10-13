@@ -35,7 +35,7 @@ public class ToolExternalHandler {
     ObjectMapper objectMapper;
 
     @Inject
-    FederatedAppBO appBO;
+    FederatedAppCreateImportBO federatedAppCreateImportBO;
 
     @Inject
     ModelBO modelBO;
@@ -66,7 +66,7 @@ public class ToolExternalHandler {
         List<FederatedAppDetailDTO> tools = loadAllApps(jsonSources);
         for (FederatedAppDetailDTO tool : tools) {
             try {
-                appBO.createExternal(tool, flnet.toolImports().createUnpublishedVersion(), flnet.toolImports().overrideExisting());
+                federatedAppCreateImportBO.createExternal(tool, flnet.toolImports().createUnpublishedVersion(), flnet.toolImports().overrideExisting());
             } catch (Exception e) {
                 Log.warnf(e, "Failed to import tool from source: %s", tool.getName());
             }
@@ -79,7 +79,7 @@ public class ToolExternalHandler {
                 continue;
             }
             try {
-                appBO.createExternal(model.getFederatedApp(), flnet.toolImports().createUnpublishedVersion(), flnet.toolImports().overrideExisting());
+                federatedAppCreateImportBO.createExternal(model.getFederatedApp(), flnet.toolImports().createUnpublishedVersion(), flnet.toolImports().overrideExisting());
                 modelBO.createExternal(model);
             } catch (Exception e) {
                 Log.warnf(e, "Failed to import model from source: %s", model.getName());

@@ -54,6 +54,14 @@ public abstract class BaseToolEndpointSecurityPolicy implements HttpSecurityPoli
         return new Rule("POST", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), false, scope);
     }
 
+    protected static Rule put(Scope scope, String path) {
+        return new Rule("PUT", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), false, scope);
+    }
+
+    protected static Rule get(Scope scope, String path) {
+        return new Rule("GET", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), false, scope);
+    }
+
     protected static Rule websocket(Scope scope, String path) {
         return new Rule("GET", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), true, scope);
     }
