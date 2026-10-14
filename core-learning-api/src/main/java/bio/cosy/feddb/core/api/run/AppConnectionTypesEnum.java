@@ -16,8 +16,7 @@ package bio.cosy.feddb.core.api.run;
  */
 public enum AppConnectionTypesEnum {
     APP, // The Docker container/or test application that is running the test/learning/model
-    CLIENT, // The frontend application that is used to connect to the Docker container. Only needed if you wanna forward async messages to the FE
-    CONTROLLER; // the controller for learning
+    CLIENT; // The frontend application that is used to connect to the Docker container. Only needed if you wanna forward async messages to the FE
 
 
     public static AppConnectionTypesEnum getOpposite(String value) {
@@ -32,8 +31,6 @@ public enum AppConnectionTypesEnum {
             return APP;
         } else if (CLIENT.isEqual(value)) {
             return CLIENT;
-        } else if (CONTROLLER.isEqual(value)) {
-            return CONTROLLER;
         } else {
             throw new IllegalArgumentException("Unknown value: " + value);
         }

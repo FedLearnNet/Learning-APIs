@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.Optional;
+import io.quarkus.logging.Log;
 
 /** Keeps one ephemeral, fingerprint-only credential for each active tool run. */
 @ApplicationScoped

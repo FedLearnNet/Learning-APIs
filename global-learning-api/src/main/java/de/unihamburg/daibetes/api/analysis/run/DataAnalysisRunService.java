@@ -6,6 +6,8 @@ import bio.cosy.feddb.core.api.model.prediction.DataAnalysisRunModesEnum;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisStopPredictionDTO;
 import bio.cosy.feddb.core.api.run.AppRunUploadData;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
+import jakarta.annotation.security.RolesAllowed;
 import bio.cosy.feddb.core.security.Scope;
 import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
@@ -101,6 +103,7 @@ public interface DataAnalysisRunService {
     @POST
     @Path("/{mode}/{runId}/upload/output")
     @ToolAuthenticated({Scope.MODEL_PREDICTION_RUN, Scope.MODEL_WORKFLOW_RUN})
+    @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
     @Operation(summary = "Create output")
     @APIResponses({
             @APIResponse(responseCode = "201", description = "created"),
