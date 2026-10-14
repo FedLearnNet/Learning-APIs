@@ -198,13 +198,17 @@ public class SchemaDAO extends BaseDAO<SchemaNodeDTO, SchemaEdgeDTO, SchemaMappe
 
         String cypher = CypherTemplate.of("""
                         MATCH (root:${ROOT_LABEL} {${ID_PROP}: $unique_id})
+                        // take the write lock before reading, parallel calls would otherwise work on a stale list
+                        SET root._lock = true
                         WITH root, coalesce(root.subscriptions, []) AS subs
-                        SET root.subscriptions =
+                        WITH root,
                            CASE
                              WHEN $user_id IN subs THEN subs
                              ELSE subs + $user_id
-                        END
-                        RETURN ($user_id IN root.subscriptions) AS subscribed
+                        END AS newSubs
+                        SET root.subscriptions = newSubs
+                        REMOVE root._lock
+                        RETURN ($user_id IN newSubs) AS subscribed
                         """)
                 .bind("ROOT_LABEL", getNodeLabel())
                 .bind("ID_PROP", idPropertyName)
@@ -226,13 +230,13 @@ public class SchemaDAO extends BaseDAO<SchemaNodeDTO, SchemaEdgeDTO, SchemaMappe
 
         String cypher = CypherTemplate.of("""
                         MATCH (root:${ROOT_LABEL} {${ID_PROP}: $unique_id})
+                        // take the write lock before reading, parallel calls would otherwise work on a stale list
+                        SET root._lock = true
                         WITH root, coalesce(root.subscriptions, []) AS subs
-                        SET root.subscriptions =
-                           CASE
-                            WHEN $user_id IN subs THEN [x IN subs WHERE x <> $user_id]
-                            ELSE subs
-                        END
-                        RETURN NOT ($user_id IN root.subscriptions) AS unsubscribed
+                        WITH root, [x IN subs WHERE x <> $user_id] AS newSubs
+                        SET root.subscriptions = newSubs
+                        REMOVE root._lock
+                        RETURN NOT ($user_id IN newSubs) AS unsubscribed
                         """)
                 .bind("ROOT_LABEL", getNodeLabel())
                 .bind("ID_PROP", idPropertyName)

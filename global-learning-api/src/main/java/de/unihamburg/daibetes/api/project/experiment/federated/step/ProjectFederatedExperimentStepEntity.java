@@ -15,9 +15,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.type.SqlTypes;
 
+import java.util.Map;
 import java.util.Set;
 
 @Setter
@@ -44,4 +46,14 @@ public class ProjectFederatedExperimentStepEntity extends BaseWorkflowStepEntity
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "platform_relay_info", columnDefinition = "jsonb")
     private FederatedLearningRelayInfoDTO platformRelayInfo;
+
+    // Relay client id assigned to each clinic (unique random clinic id -> relay client id) for the relay run
+    // of this step. Used to only sign relay certificates for the client id a clinic actually owns.
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "relay_client_ids", columnDefinition = "jsonb")
+    private Map<String, String> relayClientIds;
+
+    // True once the relay run of this step was stopped on the relay server.
+    @Column(name = "relay_stopped")
+    private Boolean relayStopped;
 }
