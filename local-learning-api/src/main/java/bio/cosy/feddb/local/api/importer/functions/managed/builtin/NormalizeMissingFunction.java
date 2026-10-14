@@ -9,6 +9,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Collapse a site's heterogeneous missing-value sentinels onto a single
@@ -47,8 +48,7 @@ public class NormalizeMissingFunction extends AbstractManagedCellFunction {
     public Object execute(CellFunctionExecutionContext context) {
         Map<String, Object> params = context.getParams();
         // 'null' is the empty value, like in Replace Value
-        String replacement = params.get("replacement") == null || "null".equals(String.valueOf(params.get("replacement")))
-                ? "" : String.valueOf(params.get("replacement"));
+        String replacement = "null".equals(params.get("replacement")) ? "" : Objects.toString(params.get("replacement"), "");
 
         Object value = context.getValue();
         if (value == null) {

@@ -12,6 +12,8 @@ import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.*;
@@ -286,7 +288,8 @@ public class PreviewValidationBO {
             // The type is the one of most values, so entries like '?' or 'V45' can still be in the column
             Optional.ofNullable(profile.valueCounts() != null ? profile.valueCounts() : profile.topCategories())
                     .ifPresent(counts -> addCategoricalValues(values, counts.stream()
-                            .filter(entry -> entry != null && !isNumber(entry.getKey()))
+                            .filter(entry -> entry != null && !StringUtils.isBlank(entry.getKey())
+                                    && !NumberUtils.isCreatable(entry.getKey().strip()))
                             .toList()));
         } else if (profile.valueCounts() != null) {
             addCategoricalValues(values, profile.valueCounts());
@@ -317,18 +320,6 @@ public class PreviewValidationBO {
     private boolean isNumeric(ColumnProfile profile) {
         String type = profile.type();
         return "INTEGER".equalsIgnoreCase(type) || "NUMBER".equalsIgnoreCase(type);
-    }
-
-    private static boolean isNumber(String value) {
-        if (value == null || value.isBlank()) {
-            return true;
-        }
-        try {
-            Double.parseDouble(value.strip());
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 
     private void addNumericValue(LinkedHashSet<String> values, String type, Double value) {

@@ -4,6 +4,7 @@ import bio.cosy.feddb.core.api.datamodler.schema.SchemaNodeType;
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantUser;
+import bio.cosy.feddb.local.agent.etl.transform.config.TransformerAgentConfig;
 import bio.cosy.feddb.local.agent.etl.transform.helper.EtlAgentLog;
 import bio.cosy.feddb.local.agent.etl.transform.helper.AgentDataPrivacy;
 import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
@@ -49,6 +50,12 @@ public class TransformerLoop {
     ColumnMatcher columnMatcher;
 
     @Inject
+    TransformerReview transformerReview;
+
+    @Inject
+    TransformerAgentConfig agentConfig;
+
+    @Inject
     AgentDataPrivacy dataPrivacy;
 
     @Inject
@@ -89,22 +96,69 @@ public class TransformerLoop {
                     Supplier<String> instructions,
                     TransformerAssistantUser user) {
         transformerListTool.resetStoreTools();
-        TableSample preview = dataPrivacy.sample(loadPreview(connector), fileProfiles);
-        String patientIdColumn = patientIdColumn(connector, preview, user, events);
+        TableSample original = dataPrivacy.sample(loadPreview(connector), fileProfiles);
+        String patientIdColumn = patientIdColumn(connector, original, user, events);
         setPatientIdMapping(connector, patientIdColumn);
         ConnectorConfigDTO connectorConfig = config(connector, patientIdColumn);
         TransformerRunContext context = new TransformerRunContext(connectorConfig, patientIdColumn, keycloakId,
-                dataPrivacy.profiles(fileProfiles), mappedColumns(connectorConfig), new ArrayList<>(), new ArrayList<>(), user);
-        Map<Long, List<ColumnCandidate>> candidates = columnMatcher.match(preview, schemaNodes, context.fileProfiles());
+                dataPrivacy.profiles(fileProfiles), mappedColumns(connectorConfig), new ArrayList<>(), user);
+        Map<Long, List<ColumnCandidate>> candidates = columnMatcher.match(original, schemaNodes, context.fileProfiles());
         EtlAgentLog.step("start", "Map %d schema nodes from %d columns, patient id column '%s'", schemaNodes.size(),
-                preview.getColumns().size(), patientIdColumn);
+                original.getColumns().size(), patientIdColumn);
+        Map<Long, TransformerAssistantMessageDTO> results = new LinkedHashMap<>();
+        Consumer<TransformerAssistantMessageDTO> recorded = message -> {
+            if (message.getType() == NODE_RESULT) {
+                results.put(message.getSchemaId(), message);
+            }
+            events.accept(message);
+        };
 
         schemaNodes.forEach(node ->
                 events.accept(TransformerAssistantMessageDTO.node(NODE_PENDING, node.getId(), node.getPath(), null)));
+        TableSample preview = original;
         for (LocalSchemaNodeWithPathDTO node : schemaNodes) {
-            preview = runForOneSchemaNode(node, preview, context, candidates, instructions, events);
+            preview = runForOneSchemaNode(node, preview, context, candidates, instructions, recorded);
+        }
+        if (agentConfig.review()) {
+            review(schemaNodes, original, preview, results, context, instructions, recorded);
         }
         EtlAgentLog.step("done", "Went through all %d schema nodes", schemaNodes.size());
+    }
+
+    /**
+     * Maps the schema nodes without a column once more, with the columns no node uses or uses only in part as hint;
+     * the agents decide whether one of them holds the node.
+     */
+    private void review(List<LocalSchemaNodeWithPathDTO> schemaNodes,
+                        TableSample original,
+                        TableSample preview,
+                        Map<Long, TransformerAssistantMessageDTO> results,
+                        TransformerRunContext context,
+                        Supplier<String> instructions,
+                        Consumer<TransformerAssistantMessageDTO> events) {
+        for (LocalSchemaNodeWithPathDTO node : schemaNodes) {
+            TransformerAssistantMessageDTO earlier = results.get(node.getId());
+            if (earlier == null || earlier.getSelectedTransformer().isFoundTransformer()) {
+                continue;
+            }
+            // Left over columns are looked up per node, a column an earlier node of the review took is no longer offered
+            Optional<TransformerReview.Recheck> recheck = transformerReview.leftover(schemaNodes, selected(results),
+                    original, context);
+            if (recheck.isEmpty()) {
+                continue;
+            }
+            EtlAgentLog.step("review", "%s: %s", node.getPath(), EtlAgentLog.shorten(recheck.get().hint()));
+            Map<Long, List<ColumnCandidate>> candidates = columnMatcher.match(original.filterColumns(recheck.get().columns()),
+                    List.of(node), context.fileProfiles());
+            preview = runForOneSchemaNode(node, preview, context, candidates,
+                    () -> instructions.get() + "\n" + recheck.get().hint(), events);
+        }
+    }
+
+    private static Map<Long, ConnectorSelectedTransformer> selected(Map<Long, TransformerAssistantMessageDTO> results) {
+        Map<Long, ConnectorSelectedTransformer> selected = new HashMap<>();
+        results.forEach((schemaId, result) -> selected.put(schemaId, result.getSelectedTransformer()));
+        return selected;
     }
 
     public TableSample runForOneSchemaNode(LocalSchemaNodeWithPathDTO node,
