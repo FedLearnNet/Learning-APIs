@@ -9,33 +9,17 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
- * Shared enforcement for callbacks made by computational tool containers.
+ * Shared enforcement for callbacks made by Tool containers.
  * <p>
- * Subclasses are unnamed {@link HttpSecurityPolicy} beans, so Quarkus applies them globally to
- * every HTTP request and WebSocket upgrade, before any endpoint annotation is checked. Each module
- * (global-learning-api, local-learning-api) has one subclass, {@code ToolEndpointSecurityPolicy},
+ * Implements the {@link HttpSecurityPolicy} interface, so if a module uses this
+ * Quarkus applies this globally to every HTTP request and WebSocket upgrade
+ * Each module (global-learning-api, local-learning-api) has one subclass, {@code ToolEndpointSecurityPolicy},
  * that lists its tool callback paths in {@link #rules()}.
  * <p>
- * Tool identities come from {@link ToolApiKeyAuthenticationMechanism}: a valid API key yields an
- * identity with role {@link ToolApiKeyAuthenticationMechanism#ROLE} plus the scope and run id the
- * key was issued for in {@link ToolApiKeyService}. The policy decides as follows:
- * <table>
- *   <tr><th>Request path</th><th>Identity</th><th>Result</th></tr>
- *   <tr><td>matches a rule</td><td>API key with the rule's scope and the run id from the path</td>
- *       <td>permit</td></tr>
- *   <tr><td>matches a rule</td><td>anything else (other key, Keycloak user, anonymous)</td>
- *       <td>deny</td></tr>
- *   <tr><td>matches no rule</td><td>API key</td>
- *       <td>deny, so a key never works as a general-purpose credential</td></tr>
- *   <tr><td>matches no rule</td><td>anything else</td>
- *       <td>permit, the endpoint's own annotations ({@code @Authenticated}, ...) decide</td></tr>
- * </table>
- * <p>
- * IMPORTANT: if a tool callback has no rule here, the policy treats it like any other endpoint and
+ * IMPORTANT: if an endpoint has no rule here, the policy treats it like any other endpoint and
  * permits every non-key identity, including Keycloak users. That is why endpoints marked with
- * {@link ToolAuthenticated} must also carry {@code @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)}:
- * the rule binds the key's scope and run id to the path, the role annotation keeps out everyone
- * who is not a tool. {@code ToolAuthenticatedEndpointsTest} in each module checks both.
+ * {@link ToolAuthenticated} must also set a rule in the relevant subclass of this class.
+ * They should also carry {@code @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)}
  */
 public abstract class BaseToolEndpointSecurityPolicy implements HttpSecurityPolicy {
 
