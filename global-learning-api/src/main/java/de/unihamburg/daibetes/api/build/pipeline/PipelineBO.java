@@ -9,12 +9,10 @@ import bio.cosy.feddb.core.services.orch.dto.CreateContainerResponseDTO;
 import bio.cosy.feddb.core.services.orch.dto.StartPipelineDTO;
 import de.unihamburg.daibetes.api.app.FederatedAppEntity;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
-import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.build.pipeline.steps.PipelineStepBO;
 import de.unihamburg.daibetes.api.build.pipeline.steps.StepName;
 import de.unihamburg.daibetes.api.model.access.ModelAccessBO;
-import de.unihamburg.daibetes.api.model.sub.ModelSubAO;
 import de.unihamburg.daibetes.api.model.sub.ModelSubEntity;
 import de.unihamburg.daibetes.api.model.sub.file.ModelSubFileBO;
 import de.unihamburg.daibetes.config.FLNetConfig;
@@ -63,13 +61,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
     ModelAccessBO modelAccessBO;
 
     @Inject
-    ModelSubAO modelSubAO;
-
-    @Inject
     ModelSubFileBO modelSubFileBO;
-
-    @Inject
-    FederatedAppVersionAO appVersionAO;
 
     @Inject
     FLNetConfig config;
@@ -292,18 +284,16 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
                 .filter(f -> !f.getName().equals(StepName.PREFLIGHT))
                 .allMatch(s -> s.getStepStatus() == PipelineStatus.SUCCESS || s.getStepStatus() == PipelineStatus.WARNING);
 
-        if (allStepsSucceeded && pipeline.getSteps().size() >= 8) {
-            toolApiKeyService.revoke(Scope.PIPELINE_RUN, pipeline.getId());
-            pipeline.setPipelineStatus(PipelineStatus.SUCCESS);
-        } else {
-            pipeline.setPipelineStatus(PipelineStatus.RUNNING);
-        }
+        boolean succeeded = allStepsSucceeded && pipeline.getSteps().size() >= 8;
+        pipeline.setPipelineStatus(succeeded ? PipelineStatus.SUCCESS : PipelineStatus.RUNNING);
         pipeline.setUpdatedAt(new Date());
         updateRebuilding(pipeline);
+        if (succeeded) {
+            setImageTag(pipeline);
+        }
         ao.persist(pipeline);
-        //Set image tag if all steps succeeded and there are at least 5 steps and the pipeline is successfully persisted
-        if (allStepsSucceeded && pipeline.getSteps().size() >= 8) {
-            setImageTagTransactional(pipeline);
+        if (succeeded) {
+            toolApiKeyService.revoke(Scope.PIPELINE_RUN, pipeline.getId());
         }
     }
 
@@ -314,45 +304,40 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         }
     }
 
-    @Transactional(Transactional.TxType.REQUIRES_NEW)
-    public void setImageTagTransactional(PipelineEntity pipeline) {
+    private void setImageTag(PipelineEntity pipeline) {
         if (config.pipelineBuilderImage().isEmpty()) {
             throw new IllegalStateException("Pipeline builder image is not configured");
         }
         AppPublishInfoDTO info = pipeline.getPublishInfo();
-        String imageName = info.getImageName();
+        String imageName = info == null ? null : info.getImageName();
         if (StringUtils.isEmpty(imageName)) {
             Log.infof("No image name to set for pipeline %d", pipeline.getId());
             return;
         }
         if (pipeline.getPipelineType().equals(PipelineType.MODEL)) {
-            Log.infof("Try to persist image name for model sub %d to %s", pipeline.getModelSub().getId(), imageName);
-            if (pipeline.getModelSub() == null) {
+            ModelSubEntity modelSub = pipeline.getModelSub();
+            if (modelSub == null) {
                 Log.errorf("Pipeline %d has no model subscription associated", pipeline.getId());
                 throw new NotFoundException("No model associated with this pipeline");
             }
-            ModelSubEntity modelSub = modelSubAO.findById(pipeline.getModelSub().getId());
-            if (modelSub.getImageName() != null && modelSub.getImageName().equals(imageName)) {
+            if (imageName.equals(modelSub.getImageName())) {
                 return;
             }
             modelSub.setImageName(imageName);
             modelSub.setPublishInfo(info);
-            modelSubAO.persist(modelSub);
-            Log.infof("Setting image name for model sub %d to %s", modelSub.getId(), modelSub.getImageName());
+            Log.infof("Setting image name for model sub %d to %s", modelSub.getId(), imageName);
         } else {
-            Log.infof("Try to persist image name for app version %d to %s", pipeline.getAppVersion().getId(), imageName);
-            if (pipeline.getAppVersion() == null) {
+            FederatedAppVersionEntity appVersion = pipeline.getAppVersion();
+            if (appVersion == null) {
                 Log.errorf("Pipeline %d has no app version associated", pipeline.getId());
-                throw new NotFoundException("No model associated with this pipeline");
+                throw new NotFoundException("No app version associated with this pipeline");
             }
-            FederatedAppVersionEntity appVersion = appVersionAO.findById(pipeline.getAppVersion().getId());
-            if (appVersion.getImageName() != null && appVersion.getImageName().equals(imageName)) {
+            if (imageName.equals(appVersion.getImageName())) {
                 return;
             }
             appVersion.setImageName(imageName);
             appVersion.setPublishInfo(info);
-            appVersionAO.persist(appVersion);
-            Log.infof("Setting image name for app version %d to %s", appVersion.getId(), appVersion.getImageName());
+            Log.infof("Setting image name for app version %d to %s", appVersion.getId(), imageName);
         }
     }
 
