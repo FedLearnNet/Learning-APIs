@@ -2,6 +2,7 @@ package bio.cosy.feddb.transform.organizer;
 
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
+import bio.cosy.feddb.local.agent.etl.transform.model.Recheck;
 import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
 import bio.cosy.feddb.local.agent.etl.transform.organizer.TransformerReview;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
@@ -68,9 +69,9 @@ class TransformerReviewTest {
             context.config().getTransformer().addAll(mapping.getSelectedTransformers());
         });
 
-        Optional<TransformerReview.Recheck> leftover = review.leftover(nodes, selected, sample(), context);
+        Optional<Recheck> leftover = review.leftover(nodes, selected, sample(), context);
 
-        assertEquals(List.of("encounter_codes"), leftover.orElseThrow().columns());
+        assertEquals(List.of("encounter_codes"), leftover.orElseThrow().getColumns());
     }
 
     @Test
@@ -85,11 +86,11 @@ class TransformerReviewTest {
             context.config().getTransformer().addAll(mapping.getSelectedTransformers());
         });
 
-        TransformerReview.Recheck leftover = review.leftover(nodes, selected, sample(), context).orElseThrow();
+        Recheck leftover = review.leftover(nodes, selected, sample(), context).orElseThrow();
 
-        assertEquals(List.of("encounter_codes"), leftover.columns());
-        assertTrue(leftover.hint().contains("used by Medication.encounter_codes, which turns its 5 different values into 2 results"),
-                leftover.hint());
+        assertEquals(List.of("encounter_codes"), leftover.getColumns());
+        assertTrue(leftover.getHint().contains("used by Medication.encounter_codes, which turns its 5 different values into 2 results"),
+                leftover.getHint());
     }
 
     private void drug(Long id, String column, Map<String, String> map, String... values) {

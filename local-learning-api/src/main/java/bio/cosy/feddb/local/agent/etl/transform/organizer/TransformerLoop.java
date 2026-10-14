@@ -9,6 +9,7 @@ import bio.cosy.feddb.local.agent.etl.transform.helper.EtlAgentLog;
 import bio.cosy.feddb.local.agent.etl.transform.helper.AgentDataPrivacy;
 import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
+import bio.cosy.feddb.local.agent.etl.transform.model.Recheck;
 import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
@@ -142,16 +143,16 @@ public class TransformerLoop {
                 continue;
             }
             // Left over columns are looked up per node, a column an earlier node of the review took is no longer offered
-            Optional<TransformerReview.Recheck> recheck = transformerReview.leftover(schemaNodes, selected(results),
+            Optional<Recheck> recheck = transformerReview.leftover(schemaNodes, selected(results),
                     original, context);
             if (recheck.isEmpty()) {
                 continue;
             }
-            EtlAgentLog.step("review", "%s: %s", node.getPath(), EtlAgentLog.shorten(recheck.get().hint()));
-            Map<Long, List<ColumnCandidate>> candidates = columnMatcher.match(original.filterColumns(recheck.get().columns()),
+            EtlAgentLog.step("review", "%s: %s", node.getPath(), EtlAgentLog.shorten(recheck.get().getHint()));
+            Map<Long, List<ColumnCandidate>> candidates = columnMatcher.match(original.filterColumns(recheck.get().getColumns()),
                     List.of(node), context.fileProfiles());
             preview = runForOneSchemaNode(node, preview, context, candidates,
-                    () -> instructions.get() + "\n" + recheck.get().hint(), events);
+                    () -> instructions.get() + "\n" + recheck.get().getHint(), events);
         }
     }
 
