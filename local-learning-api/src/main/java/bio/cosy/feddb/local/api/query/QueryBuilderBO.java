@@ -14,6 +14,8 @@ import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,6 +29,7 @@ public class QueryBuilderBO {
     private static final String TABLE_NAME = "patient_data";
     private static final String PATIENT_ID_NAME = "patient_id";
     private static final String SCHEMA_ID_NAME = "schema_node_id";
+    private static final String VISIT_TIMESTAMP_NAME = "visit_timestamp";
     private static final String RESULT_ALIAS = "query_result";
     private static final String EMPTY_PATIENT_QUERY =
             "SELECT DISTINCT " + PATIENT_ID_NAME + " FROM " + TABLE_NAME + " WHERE 1 = 0";
@@ -38,19 +41,16 @@ public class QueryBuilderBO {
      * Builds a SQL to count distinct patient IDs matching all query items via INTERSECT
      */
     public String buildCountDistinctSql(QueryDTO dto) {
-        if (dto != null && dto.getLang2Query() != null) {
-            return wrapDistinct(buildNode(dto.getLang2Query()));
-        }
-        if (dto == null || dto.getQuery() == null || dto.getQuery().isEmpty()) {
+        if (dto == null || dto.getQuery() == null || isEmptyGroup(dto.getQuery())) {
             return EMPTY_PATIENT_QUERY;
         }
+        return wrapDistinct(buildNode(dto.getQuery()));
+    }
 
-        List<String> clauses = dto.getQuery().stream()
-                .map(this::buildClause)
-                .filter(Objects::nonNull)
-                .filter(clause -> !clause.isBlank())
-                .collect(Collectors.toList());
-        return wrapDistinct(joinClauses(clauses, " INTERSECT "));
+    private boolean isEmptyGroup(Lang2QueryNodeDTO node) {
+        return node.isGroup()
+                && (node.getConditions() == null || node.getConditions().isEmpty())
+                && (node.getOntologyId() == null || node.getOntologyId().isBlank());
     }
 
     private String wrapDistinct(String inner) {
@@ -82,7 +82,7 @@ public class QueryBuilderBO {
         if (item == null || item.getOperator() == null || item.getOperator().isEmpty()) {
             throw new QueryRejectedException("Lang2Query leaf is missing a supported operator");
         }
-        return buildClause(item);
+        return buildClause(item, node.getTimeFilter());
     }
 
     private String buildGroup(Lang2QueryNodeDTO group) {
@@ -111,7 +111,7 @@ public class QueryBuilderBO {
                 .filter(clause -> !clause.isBlank())
                 .toList();
         String joined = joinClauses(clauses, separator);
-        if (EMPTY_PATIENT_QUERY.equals(joined)) {
+        if (EMPTY_PATIENT_QUERY.equals(joined) || clauses.size() == 1) {
             return joined;
         }
         return "(" + joined + ")";
@@ -123,6 +123,8 @@ public class QueryBuilderBO {
         }
         String ontologyId = null;
         String dataTypeId = null;
+        Object timeFilter = null;
+        boolean timeFilterSet = false;
         List<String> values = new ArrayList<>();
         for (Lang2QueryNodeDTO child : group.getConditions()) {
             if (child == null || child.isGroup()) {
@@ -143,6 +145,12 @@ public class QueryBuilderBO {
             } else if (!ontologyId.equals(child.getOntologyId()) || !Objects.equals(dataTypeId, child.getDataTypeId())) {
                 return null;
             }
+            if (!timeFilterSet) {
+                timeFilter = child.getTimeFilter();
+                timeFilterSet = true;
+            } else if (!Objects.equals(timeFilter, child.getTimeFilter())) {
+                return null;
+            }
             values.add(value);
         }
         Lang2QueryNodeDTO leaf = new Lang2QueryNodeDTO();
@@ -150,6 +158,7 @@ public class QueryBuilderBO {
         leaf.setDataTypeId(dataTypeId);
         leaf.setOperator("IN");
         leaf.setValue(String.join(",", values));
+        leaf.setTimeFilter(timeFilter);
         return leaf;
     }
 
@@ -160,8 +169,8 @@ public class QueryBuilderBO {
         if (notBlank(node.getValueMode()) && !"absolute".equalsIgnoreCase(node.getValueMode())) {
             throw new QueryRejectedException("value_mode is not supported yet: " + node.getValueMode());
         }
-        if (node.getTimeFilter() != null && !isAnytime(node.getTimeFilter())) {
-            throw new QueryRejectedException("time_filter is not supported yet");
+        if (node.getTimeFilter() != null) {
+            validateTimeFilter(node.getTimeFilter());
         }
         if (notBlank(node.getTimeAggregationMethod()) && !"none".equalsIgnoreCase(node.getTimeAggregationMethod())) {
             throw new QueryRejectedException("time_aggregation_method is not supported yet");
@@ -192,6 +201,49 @@ public class QueryBuilderBO {
         return timeFilter instanceof String text && "anytime".equalsIgnoreCase(text);
     }
 
+    private void validateTimeFilter(Object timeFilter) {
+        timeFilterPredicate(timeFilter);
+    }
+
+    private String timeFilterPredicate(Object timeFilter) {
+        if (timeFilter == null || isAnytime(timeFilter)) {
+            return null;
+        }
+        if (!(timeFilter instanceof Map<?, ?> map)) {
+            throw new QueryRejectedException("Unsupported time_filter: " + timeFilter);
+        }
+        Object after = mapValue(map, "after");
+        Object before = mapValue(map, "before");
+        if (after == null && before == null) {
+            throw new QueryRejectedException("time_filter must be anytime or an after/before object");
+        }
+        List<String> parts = new ArrayList<>();
+        if (after != null) {
+            parts.add(VISIT_TIMESTAMP_NAME + " > date '" + requireIsoDate(after) + "'");
+        }
+        if (before != null) {
+            parts.add(VISIT_TIMESTAMP_NAME + " < date '" + requireIsoDate(before) + "'");
+        }
+        return String.join(" AND ", parts);
+    }
+
+    private Object mapValue(Map<?, ?> map, String key) {
+        if (map.containsKey(key)) {
+            return map.get(key);
+        }
+        return null;
+    }
+
+    private String requireIsoDate(Object value) {
+        String text = String.valueOf(value).trim();
+        try {
+            LocalDate.parse(text);
+        } catch (DateTimeParseException e) {
+            throw new QueryRejectedException("time_filter date must be YYYY-MM-DD: " + text);
+        }
+        return text;
+    }
+
     /**
      * Builds a clause for a single QueryItemDTO scoped to schema nodes and operators.
      * <p>
@@ -201,6 +253,10 @@ public class QueryBuilderBO {
      * query is rejected via {@link QueryRejectedException}.
      */
     public String buildClause(QueryItemDTO item) {
+        return buildClause(item, null);
+    }
+
+    public String buildClause(QueryItemDTO item, Object timeFilter) {
         if (item == null || item.getOntologyId() == null || item.getOntologyId().isBlank()) {
             throw new QueryRejectedException("Query item is missing an ontologyId and cannot be evaluated");
         }
@@ -225,6 +281,9 @@ public class QueryBuilderBO {
             nodesByColumn.computeIfAbsent(groupKey, key -> new ArrayList<>()).add(schemaNode);
         }
 
+        String timePredicate = timeFilterPredicate(timeFilter);
+        String timeSql = timePredicate == null ? "" : " AND " + timePredicate;
+
         List<String> perColumnClauses = new ArrayList<>();
         for (List<SchemaNodeEntity> group : nodesByColumn.values()) {
             DataTypes dataType = group.getFirst().getDataType().getType();
@@ -242,6 +301,7 @@ public class QueryBuilderBO {
                     + schemaIdPredicate(schemaNodeIds)
                     + " AND "
                     + operatorClause
+                    + timeSql
                     + ")");
         }
 

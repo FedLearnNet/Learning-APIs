@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,11 +19,7 @@ public class QueryDTO extends BaseAuthDTO {
     private String groupId;
     private String globalUniqueId;
 
-    // Array of QueryItem
-    private List<QueryItemDTO> query;
-
-    // Optional Lang2Query group. When set, this is the document that is stored and compiled.
-    private Lang2QueryNodeDTO lang2Query;
+    private Lang2QueryNodeDTO query;
 
     private String description;
     private String name;
@@ -46,7 +41,6 @@ public class QueryDTO extends BaseAuthDTO {
                 "projectIds=" + projectIds +
                 ", description='" + description + '\'' +
                 ", query=" + query +
-                ", lang2Query=" + lang2Query +
                 ", name='" + name + '\'' +
                 '}';
     }

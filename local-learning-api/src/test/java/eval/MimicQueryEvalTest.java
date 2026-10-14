@@ -1,6 +1,7 @@
 package eval;
 
 import bio.cosy.feddb.core.api.datamodler.schema.SchemaStructureDTO;
+import bio.cosy.feddb.core.api.query.Lang2QueryDocuments;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.query.QueryItemDTO;
 import bio.cosy.feddb.core.api.query.QueryOperatorDTO;
@@ -331,7 +332,7 @@ public class MimicQueryEvalTest {
 
     private QueryDTO query(QueryItemDTO... items) {
         QueryDTO dto = new QueryDTO();
-        dto.setQuery(List.of(items));
+        dto.setQuery(Lang2QueryDocuments.andGroup(items));
         return dto;
     }
 

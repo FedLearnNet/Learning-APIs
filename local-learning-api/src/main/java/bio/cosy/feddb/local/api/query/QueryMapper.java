@@ -19,7 +19,6 @@ public interface QueryMapper extends BaseMapper<LocalQueryDTO, QueryEntity> {
 
     @Mappings({
             @Mapping(target = "query", ignore = true),
-            @Mapping(target = "lang2Query", ignore = true),
             @Mapping(target = "enhancedQuery", ignore = true),
             @Mapping(target = "queriedCohortIds", ignore = true)
     })
@@ -40,8 +39,7 @@ public interface QueryMapper extends BaseMapper<LocalQueryDTO, QueryEntity> {
 
     @AfterMapping
     default void readQueryDocument(QueryEntity entity, @MappingTarget LocalQueryDTO dto) {
-        dto.setQuery(Lang2QueryDocuments.itemsOf(entity.getQueryString()));
-        dto.setLang2Query(Lang2QueryDocuments.groupOf(entity.getQueryString()));
+        dto.setQuery(Lang2QueryDocuments.parse(entity.getQueryString()));
     }
 
     @Named("dtoToQueryString")
@@ -49,7 +47,7 @@ public interface QueryMapper extends BaseMapper<LocalQueryDTO, QueryEntity> {
         if (dto == null) {
             return "";
         }
-        return Lang2QueryDocuments.toQueryString(dto.getQuery(), dto.getLang2Query());
+        return Lang2QueryDocuments.toQueryString(dto.getQuery());
     }
 
 }

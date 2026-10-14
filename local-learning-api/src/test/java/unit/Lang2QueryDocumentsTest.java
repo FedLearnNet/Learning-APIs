@@ -13,15 +13,19 @@ import java.util.List;
 class Lang2QueryDocumentsTest {
 
     @Test
-    void readsLegacyItemArray() {
+    void readsLegacyItemArrayAsAndGroup() {
         QueryDTO dto = new QueryDTO();
         Lang2QueryDocuments.readInto(
                 "[{\"ontologyId\":\"2001\",\"dataTypeId\":\"1001\",\"operator\":[{\"operator\":\"EQUAL\",\"value\":\"x\"}]}]",
                 dto);
 
-        Assertions.assertNull(dto.getLang2Query());
-        Assertions.assertEquals(1, dto.getQuery().size());
-        Assertions.assertEquals("2001", dto.getQuery().getFirst().getOntologyId());
+        Assertions.assertNotNull(dto.getQuery());
+        Assertions.assertEquals("$and", dto.getQuery().getConnectingOperator());
+        Assertions.assertEquals(1, dto.getQuery().getConditions().size());
+        Assertions.assertEquals("2001", dto.getQuery().getConditions().getFirst().getOntologyId());
+        List<QueryItemDTO> leaves = Lang2QueryDocuments.leavesOf(dto);
+        Assertions.assertEquals(1, leaves.size());
+        Assertions.assertEquals("2001", leaves.getFirst().getOntologyId());
     }
 
     @Test
@@ -36,8 +40,8 @@ class Lang2QueryDocumentsTest {
                 """,
                 dto);
 
-        Assertions.assertNotNull(dto.getLang2Query());
-        Assertions.assertEquals("$or", dto.getLang2Query().getConnectingOperator());
+        Assertions.assertNotNull(dto.getQuery());
+        Assertions.assertEquals("$or", dto.getQuery().getConnectingOperator());
         List<QueryItemDTO> leaves = Lang2QueryDocuments.leavesOf(dto);
         Assertions.assertEquals(2, leaves.size());
         Assertions.assertEquals(QueryOperatorTypes.EXISTS, leaves.getFirst().getOperator().getFirst().getOperator());
@@ -45,7 +49,7 @@ class Lang2QueryDocumentsTest {
     }
 
     @Test
-    void writesLang2QueryObjectWhenPresent() {
+    void writesQueryTree() {
         Lang2QueryNodeDTO group = new Lang2QueryNodeDTO();
         group.setConnectingOperator("$and");
         Lang2QueryNodeDTO leaf = new Lang2QueryNodeDTO();
@@ -54,10 +58,11 @@ class Lang2QueryDocumentsTest {
         group.setConditions(List.of(leaf));
 
         QueryDTO dto = new QueryDTO();
-        dto.setLang2Query(group);
+        dto.setQuery(group);
 
         String json = Lang2QueryDocuments.toQueryString(dto);
         Assertions.assertTrue(json.contains("\"connecting_operator\":\"$and\""));
         Assertions.assertTrue(json.contains("2001"));
+        Assertions.assertFalse(json.startsWith("["));
     }
 }

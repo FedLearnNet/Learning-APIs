@@ -125,7 +125,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         // Enhance the query with additional information if needed
         // This is a placeholder for any future enhancements
 
-        List<LocalQueryItemDTO> enhanced = query.getQuery().stream()
+        List<LocalQueryItemDTO> enhanced = Lang2QueryDocuments.flattenLeaves(query.getQuery()).stream()
                 .map(q -> {
                     List<SchemaNodeEntity> schemaNodeEntities = builderBO.getSchemaNodesForQueryItem(q.getOntologyId(), q.getDataTypeId());
                     List<LocalSchemaNodeDTO> schemaNodes = schemaNodeMapper.entitiesToDtos(schemaNodeEntities);
@@ -270,8 +270,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         LocalQueryDTO localQueryDTO = new LocalQueryDTO();
         localQueryDTO.setGlobalQueryId(query.getGlobalUniqueId());
         localQueryDTO.setKeycloakId(query.getKeycloakId());
-        localQueryDTO.setQuery(Lang2QueryDocuments.leavesOf(query));
-        localQueryDTO.setLang2Query(query.getLang2Query());
+        localQueryDTO.setQuery(query.getQuery());
         localQueryDTO.setStatusMessage(message);
         localQueryDTO.setStatus(status);
         localQueryDTO.setReceivedAt(LocalDateTime.now());
@@ -298,9 +297,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         }
 
         allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(
-                query.getLang2Query() != null
-                        ? Lang2QueryDocuments.flattenLeaves(query.getLang2Query())
-                        : query.getQuery(),
+                Lang2QueryDocuments.flattenLeaves(query.getQuery()),
                 allowedCohortIds);
         if (allowedCohorts.isEmpty()) {
             String message = "Cohort QueryAbility is rejecting the query";
@@ -311,7 +308,6 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         queryDTO.setGlobalUniqueId(query.getGlobalQueryId());
         queryDTO.setKeycloakId(keycloakId);
         queryDTO.setQuery(query.getQuery());
-        queryDTO.setLang2Query(query.getLang2Query());
         try {
             return runQuery(queryDTO, allowedCohortIds);
         } catch (QueryRejectedException e) {

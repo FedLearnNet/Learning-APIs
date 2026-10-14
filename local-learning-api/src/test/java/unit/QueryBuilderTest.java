@@ -1,5 +1,6 @@
 package unit;
 
+import bio.cosy.feddb.core.api.query.Lang2QueryDocuments;
 import bio.cosy.feddb.core.api.query.Lang2QueryNodeDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.query.QueryItemDTO;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @QuarkusTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -47,7 +49,7 @@ public class QueryBuilderTest {
         item.setDataTypeId("1001");
         item.setOperator(Collections.singletonList(op));
         QueryDTO queryDTO = new QueryDTO();
-        queryDTO.setQuery(Collections.singletonList(item));
+        queryDTO.setQuery(Lang2QueryDocuments.andGroup(item));
 
 
         String query = queryBuilderBO.buildCountDistinctSql(queryDTO);
@@ -82,7 +84,7 @@ public class QueryBuilderTest {
     @Order(3)
     void testEmptyQueryReturnsNoResults() {
         QueryDTO queryDTO = new QueryDTO();
-        queryDTO.setQuery(List.of());
+        queryDTO.setQuery(Lang2QueryDocuments.andGroup());
 
         String query = queryBuilderBO.buildCountDistinctSql(queryDTO);
         Assertions.assertEquals(
@@ -116,7 +118,7 @@ public class QueryBuilderTest {
         QueryDTO queryDTO = new QueryDTO();
         // Two patiennts exist, one with age 25,26,27, diagnosis diabetes and one with age 30, 31, daignosis asthma
         // Find only the younger one
-        queryDTO.setQuery(List.of(
+        queryDTO.setQuery(Lang2QueryDocuments.andGroup(
                 queryItem("2001", "1001", List.of(operator(QueryOperatorTypes.EXISTS, null))),
                 queryItem("2002", "1002", List.of(operator(QueryOperatorTypes.SMALLER, "28")))
         ));
@@ -130,7 +132,7 @@ public class QueryBuilderTest {
 
         // find both
         QueryDTO queryDTO2 = new QueryDTO();
-        queryDTO2.setQuery(List.of(
+        queryDTO2.setQuery(Lang2QueryDocuments.andGroup(
                 queryItem("2001", "1001", List.of(operator(QueryOperatorTypes.EXISTS, null))),
                 queryItem("2002", "1002", List.of(operator(QueryOperatorTypes.SMALLER, "50")))
         ));
@@ -201,7 +203,7 @@ public class QueryBuilderTest {
     @Test
     @Order(9)
     void testLang2QueryAndMatchesLegacyIntersect() {
-        QueryDTO lang2 = lang2Query(and(
+        QueryDTO lang2 = queryTree(and(
                 leaf("2001", "1001", "exists", null),
                 leaf("2002", "1002", "<", 28)
         ));
@@ -217,7 +219,7 @@ public class QueryBuilderTest {
     @Test
     @Order(10)
     void testLang2QueryOrUnionsPatients() {
-        QueryDTO lang2 = lang2Query(or(
+        QueryDTO lang2 = queryTree(or(
                 leaf("2008", "1001", "=", "Diabetes Type 1"),
                 leaf("2002", "1002", "<", 28)
         ));
@@ -233,7 +235,7 @@ public class QueryBuilderTest {
     @Test
     @Order(11)
     void testLang2QueryNestedAndOr() {
-        QueryDTO lang2 = lang2Query(and(
+        QueryDTO lang2 = queryTree(and(
                 leaf("2001", "1001", "exists", null),
                 or(
                         leaf("2002", "1002", "<", 28),
@@ -255,15 +257,64 @@ public class QueryBuilderTest {
     void testLang2QueryRejectsTemporalRelations() {
         Lang2QueryNodeDTO group = and(leaf("2001", "1001", "exists", null));
         group.setTemporalRelations(List.of("same visit"));
-        QueryDTO lang2 = lang2Query(group);
+        QueryDTO lang2 = queryTree(group);
 
         Assertions.assertThrows(QueryRejectedException.class,
                 () -> queryBuilderBO.buildCountDistinctSql(lang2));
     }
 
-    private QueryDTO lang2Query(Lang2QueryNodeDTO root) {
+    @Test
+    @Order(13)
+    void testTimeFilterAnytimeAddsNoVisitPredicate() {
+        Lang2QueryNodeDTO anytime = leaf("2001", "1001", "exists", null);
+        anytime.setTimeFilter("anytime");
+        QueryDTO queryDTO = queryTree(anytime);
+
+        String sql = queryBuilderBO.buildCountDistinctSql(queryDTO);
+        Assertions.assertFalse(sql.contains("visit_timestamp"));
+        assertSqlExecutes(sql);
+    }
+
+    @Test
+    @Order(14)
+    void testTimeFilterAfterBeforeAndRange() {
+        Lang2QueryNodeDTO after = leaf("2001", "1001", "exists", null);
+        after.setTimeFilter(Map.of("after", "2020-01-01"));
+        String afterSql = queryBuilderBO.buildCountDistinctSql(queryTree(after));
+        Assertions.assertTrue(afterSql.contains("visit_timestamp > date '2020-01-01'"));
+        assertSqlExecutes(afterSql);
+
+        Lang2QueryNodeDTO before = leaf("2001", "1001", "exists", null);
+        before.setTimeFilter(Map.of("before", "2020-01-01"));
+        String beforeSql = queryBuilderBO.buildCountDistinctSql(queryTree(before));
+        Assertions.assertTrue(beforeSql.contains("visit_timestamp < date '2020-01-01'"));
+        assertSqlExecutes(beforeSql);
+
+        Lang2QueryNodeDTO range = leaf("2001", "1001", "exists", null);
+        range.setTimeFilter(Map.of("after", "2020-01-01", "before", "2021-01-01"));
+        String rangeSql = queryBuilderBO.buildCountDistinctSql(queryTree(range));
+        Assertions.assertTrue(rangeSql.contains("visit_timestamp > date '2020-01-01'"));
+        Assertions.assertTrue(rangeSql.contains("visit_timestamp < date '2021-01-01'"));
+        assertSqlExecutes(rangeSql);
+    }
+
+    @Test
+    @Order(15)
+    void testTimeFilterRejectsInvalidValues() {
+        Lang2QueryNodeDTO invalidText = leaf("2001", "1001", "exists", null);
+        invalidText.setTimeFilter("last 30 days");
+        Assertions.assertThrows(QueryRejectedException.class,
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(invalidText)));
+
+        Lang2QueryNodeDTO invalidDate = leaf("2001", "1001", "exists", null);
+        invalidDate.setTimeFilter(Map.of("after", "01-01-2020"));
+        Assertions.assertThrows(QueryRejectedException.class,
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(invalidDate)));
+    }
+
+    private QueryDTO queryTree(Lang2QueryNodeDTO root) {
         QueryDTO queryDTO = new QueryDTO();
-        queryDTO.setLang2Query(root);
+        queryDTO.setQuery(root);
         return queryDTO;
     }
 
@@ -293,7 +344,7 @@ public class QueryBuilderTest {
 
     private QueryDTO singleItemQuery(String ontologyId, String dataTypeId, QueryOperatorTypes operator, String value) {
         QueryDTO queryDTO = new QueryDTO();
-        queryDTO.setQuery(Collections.singletonList(queryItem(
+        queryDTO.setQuery(Lang2QueryDocuments.andGroup(queryItem(
                 ontologyId,
                 dataTypeId,
                 Collections.singletonList(this.operator(operator, value))

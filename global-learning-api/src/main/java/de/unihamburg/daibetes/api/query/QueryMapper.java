@@ -24,7 +24,6 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
 
     @Mappings({
             @Mapping(target = "query", ignore = true),
-            @Mapping(target = "lang2Query", ignore = true),
             @Mapping(target = "projectIds", source = "projects", qualifiedByName = "projectEntityToIds"),
             @Mapping(target = "roles", ignore = true)
     })
@@ -32,7 +31,6 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
 
     @Mappings({
             @Mapping(target = "query", ignore = true),
-            @Mapping(target = "lang2Query", ignore = true),
             @Mapping(target = "projectIds", source = "projects", qualifiedByName = "projectEntityToIds"),
             @Mapping(target = "roles", ignore = true),
             @Mapping(target = "enhancedQuery", ignore = true),

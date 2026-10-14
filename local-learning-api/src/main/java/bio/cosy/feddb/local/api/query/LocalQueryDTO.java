@@ -1,7 +1,6 @@
 package bio.cosy.feddb.local.api.query;
 
 import bio.cosy.feddb.core.api.query.Lang2QueryNodeDTO;
-import bio.cosy.feddb.core.api.query.QueryItemDTO;
 import bio.cosy.feddb.core.base.BaseDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,8 +15,7 @@ public class LocalQueryDTO extends BaseDTO {
     private String globalQueryId;
     private String keycloakId;
     private Set<Long> queriedCohortIds;
-    private List<QueryItemDTO> query;
-    private Lang2QueryNodeDTO lang2Query;
+    private Lang2QueryNodeDTO query;
     private List<LocalQueryItemDTO> enhancedQuery;
     private String statusMessage;
     private QueryStatusEnum status = QueryStatusEnum.UNKNOWN;

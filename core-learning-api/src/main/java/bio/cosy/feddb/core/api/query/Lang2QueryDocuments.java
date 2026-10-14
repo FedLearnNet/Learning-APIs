@@ -6,12 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
- * Reads and writes the stored {@code query_string}: either the legacy item array
- * or a Lang2Query group object. Leaves are also flattened for queryability.
+ * Reads and writes the stored {@code query_string} as a Lang2Query tree.
+ * Legacy item arrays are wrapped as {@code $and} so the API always sees an object.
+ * Leaves are flattened only for queryability / enhance.
  */
 public final class Lang2QueryDocuments {
 
@@ -21,44 +21,50 @@ public final class Lang2QueryDocuments {
     }
 
     public static void readInto(String json, QueryDTO dto) {
-        ParsedQuery parsed = parse(json);
-        dto.setQuery(parsed.items());
-        dto.setLang2Query(parsed.group());
+        dto.setQuery(parse(json));
     }
 
-    public static List<QueryItemDTO> itemsOf(String json) {
-        return parse(json).items();
-    }
-
-    public static Lang2QueryNodeDTO groupOf(String json) {
-        return parse(json).group();
+    public static Lang2QueryNodeDTO parse(String json) {
+        if (json == null || json.isBlank()) {
+            return null;
+        }
+        try {
+            JsonNode tree = OBJECT_MAPPER.readTree(json);
+            if (tree == null || tree.isNull() || tree.isMissingNode()) {
+                return null;
+            }
+            if (tree.isArray()) {
+                List<QueryItemDTO> items = OBJECT_MAPPER.convertValue(
+                        tree,
+                        OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, QueryItemDTO.class));
+                return andGroup(items == null ? List.of() : items);
+            }
+            return OBJECT_MAPPER.treeToValue(tree, Lang2QueryNodeDTO.class);
+        } catch (Exception e) {
+            Log.error("Error parsing query document", e);
+            return null;
+        }
     }
 
     public static String toQueryString(QueryDTO dto) {
         if (dto == null) {
             return "";
         }
-        if (dto.getLang2Query() != null) {
-            return writeJson(dto.getLang2Query());
-        }
-        return writeItems(dto.getQuery());
+        return toQueryString(dto.getQuery());
     }
 
-    public static String toQueryString(List<QueryItemDTO> items, Lang2QueryNodeDTO group) {
-        if (group != null) {
-            return writeJson(group);
+    public static String toQueryString(Lang2QueryNodeDTO node) {
+        if (node == null) {
+            return "";
         }
-        return writeItems(items);
+        return writeJson(node);
     }
 
     public static List<QueryItemDTO> leavesOf(QueryDTO dto) {
         if (dto == null) {
             return List.of();
         }
-        if (dto.getLang2Query() != null) {
-            return flattenLeaves(dto.getLang2Query());
-        }
-        return dto.getQuery() == null ? List.of() : dto.getQuery();
+        return flattenLeaves(dto.getQuery());
     }
 
     public static List<QueryItemDTO> flattenLeaves(Lang2QueryNodeDTO node) {
@@ -79,6 +85,25 @@ public final class Lang2QueryDocuments {
         return item == null ? List.of() : List.of(item);
     }
 
+    public static Lang2QueryNodeDTO andGroup(QueryItemDTO... items) {
+        return andGroup(items == null ? List.of() : List.of(items));
+    }
+
+    public static Lang2QueryNodeDTO andGroup(List<QueryItemDTO> items) {
+        Lang2QueryNodeDTO group = new Lang2QueryNodeDTO();
+        group.setConnectingOperator("$and");
+        if (items == null || items.isEmpty()) {
+            group.setConditions(List.of());
+            return group;
+        }
+        List<Lang2QueryNodeDTO> conditions = new ArrayList<>();
+        for (QueryItemDTO item : items) {
+            conditions.add(fromQueryItem(item));
+        }
+        group.setConditions(conditions);
+        return group;
+    }
+
     public static QueryItemDTO toQueryItem(Lang2QueryNodeDTO leaf) {
         if (leaf == null) {
             return null;
@@ -96,34 +121,36 @@ public final class Lang2QueryDocuments {
         return item;
     }
 
-    private static ParsedQuery parse(String json) {
-        if (json == null || json.isBlank()) {
-            return new ParsedQuery(Collections.emptyList(), null);
+    public static Lang2QueryNodeDTO fromQueryItem(QueryItemDTO item) {
+        if (item == null) {
+            return new Lang2QueryNodeDTO();
         }
-        try {
-            JsonNode tree = OBJECT_MAPPER.readTree(json);
-            if (tree == null || tree.isNull() || tree.isMissingNode()) {
-                return new ParsedQuery(Collections.emptyList(), null);
-            }
-            if (tree.isArray()) {
-                List<QueryItemDTO> items = OBJECT_MAPPER.convertValue(
-                        tree,
-                        OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, QueryItemDTO.class));
-                return new ParsedQuery(items == null ? List.of() : items, null);
-            }
-            Lang2QueryNodeDTO group = OBJECT_MAPPER.treeToValue(tree, Lang2QueryNodeDTO.class);
-            return new ParsedQuery(flattenLeaves(group), group);
-        } catch (Exception e) {
-            Log.error("Error parsing query document", e);
-            return new ParsedQuery(new ArrayList<>(), null);
+        List<QueryOperatorDTO> operators = item.getOperator();
+        if (operators == null || operators.isEmpty()) {
+            return leafFrom(item, null);
         }
+        if (operators.size() == 1) {
+            return leafFrom(item, operators.getFirst());
+        }
+        Lang2QueryNodeDTO and = new Lang2QueryNodeDTO();
+        and.setConnectingOperator("$and");
+        List<Lang2QueryNodeDTO> conditions = new ArrayList<>();
+        for (QueryOperatorDTO operator : operators) {
+            conditions.add(leafFrom(item, operator));
+        }
+        and.setConditions(conditions);
+        return and;
     }
 
-    private static String writeItems(List<QueryItemDTO> queryItems) {
-        if (queryItems == null || queryItems.isEmpty()) {
-            return "";
+    private static Lang2QueryNodeDTO leafFrom(QueryItemDTO item, QueryOperatorDTO operator) {
+        Lang2QueryNodeDTO leaf = new Lang2QueryNodeDTO();
+        leaf.setOntologyId(item.getOntologyId());
+        leaf.setDataTypeId(item.getDataTypeId());
+        if (operator != null && operator.getOperator() != null) {
+            leaf.setOperator(operator.getOperator().name());
+            leaf.setValue(operator.getValue());
         }
-        return writeJson(queryItems);
+        return leaf;
     }
 
     private static String writeJson(Object value) {
@@ -133,8 +160,5 @@ public final class Lang2QueryDocuments {
             Log.error("Error converting query document to JSON string", e);
             return "";
         }
-    }
-
-    private record ParsedQuery(List<QueryItemDTO> items, Lang2QueryNodeDTO group) {
     }
 }
