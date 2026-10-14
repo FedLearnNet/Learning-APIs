@@ -120,6 +120,10 @@ public interface FLNetConfig {
 
         @WithDefault("true")
         boolean overrideExisting();
+
+        @WithDefault("IF_NOT_EXISTS_IN_REGISTRY")
+        ToolImportBuildingOnStart buildOnImport();
+
     }
 
     interface Ingestor {

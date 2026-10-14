@@ -32,7 +32,7 @@ public class PipelineEntity extends BaseEntity {
 
     private String secret;
 
-    @Column(length = 8, name = "docker_tag")
+    @Column(length = 64, name = "docker_tag")
     private String dockerTag;
 
     @Column(name = "container_id", nullable = true)

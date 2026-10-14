@@ -39,6 +39,10 @@ public class FederatedAppVersionEntity extends BaseStoreVersionEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private AppPublishInfoDTO publishInfo;
 
+    @ColumnDefault("false")
+    @Column(name = "rebuilding")
+    private boolean rebuilding;
+
     @ColumnDefault("0")
     @Column(name = "certification_level")
     private int certificationLevel = 0;

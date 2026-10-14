@@ -1,12 +1,11 @@
 package de.unihamburg.daibetes.security;
 
+import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
 import de.unihamburg.daibetes.api.analysis.run.DataAnalysisRunWebsocketService;
 import de.unihamburg.daibetes.api.testembed.TestEmbedService;
 import io.quarkus.security.Authenticated;
 import org.junit.jupiter.api.Test;
-
-import bio.cosy.feddb.core.security.Scope;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,14 +28,31 @@ class ToolEndpointSecurityPolicyTest {
                 Scope.MODEL_WORKFLOW_RUN, 42L);
         assertGrant("GET", "/project/experiment/local/42/app", "websocket",
                 Scope.LOCAL_EXPERIMENT_RUN, 42L);
+        assertGrant("GET", "/pipeline/42/info", null, Scope.PIPELINE_RUN, 42L);
+        assertGrant("GET", "/pipeline/42/zip", null, Scope.PIPELINE_RUN, 42L);
+        assertGrant("PUT", "/pipeline/42/update", null, Scope.PIPELINE_RUN, 42L);
+        assertGrant("PUT", "/pipeline/42/summary", null, Scope.PIPELINE_RUN, 42L);
+
         assertFalse(ToolEndpointSecurityPolicy.match("POST", "/pipeline/start/42", null).isPresent());
-        assertFalse(ToolEndpointSecurityPolicy.match("PUT", "/pipeline/42/update", null).isPresent());
-        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/pipeline/42/zip", null).isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/pipeline/42", null).isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/pipeline/42/stream", null).isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("PUT", "/pipeline/42/stop", null).isPresent());
         assertFalse(ToolEndpointSecurityPolicy.match("GET", "/model/run/workflow/42/download", null).isPresent());
         assertFalse(ToolEndpointSecurityPolicy.match("GET", "/project", null).isPresent());
         assertFalse(ToolEndpointSecurityPolicy.match("GET", "/testembed/42/app", "websocket").isPresent());
         assertFalse(ToolEndpointSecurityPolicy.match("GET", "/query/clients", "websocket").isPresent());
 
+    }
+
+    @Test
+    void matchesOnlyExactPipelineCallbackPaths() {
+        assertGrant("PUT", "/pipeline/42/update/", null, Scope.PIPELINE_RUN, 42L);
+
+        assertFalse(ToolEndpointSecurityPolicy.match("PUT", "/pipeline/abc/update", null).isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/pipeline/42/update", null).isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("POST", "/pipeline/42/update", null).isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("PUT", "/pipeline/42/update/extra", null).isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("PUT", "/x/pipeline/42/update", null).isPresent());
     }
 
     private static void assertGrant(String method, String path, String upgrade,
