@@ -9,6 +9,7 @@ public enum FedDBClientTypeEnum {
     STOP_LEARNING,
     CURRENT_LEARNINGS,
     RUN_METRICS,
+    RELAY_CERT,
     ERROR,
     NO_RESPONSE,
 }

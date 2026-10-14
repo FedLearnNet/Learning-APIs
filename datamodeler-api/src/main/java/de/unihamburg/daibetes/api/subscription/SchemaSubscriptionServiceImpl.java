@@ -26,7 +26,7 @@ public class SchemaSubscriptionServiceImpl implements SchemaSubscriptionService 
         return schemaDAO.subscribe(id, userId)
                 .onItem().transformToUni(success -> {
                     if (!success) {
-                        return Uni.createFrom().failure(new RuntimeException("Subscription failed"));
+                        return Uni.createFrom().failure(new RuntimeException("Subscription failed for schema " + id));
                     }
                     return schemaBO.getSubStructure(id);
                 });
