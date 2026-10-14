@@ -6,11 +6,13 @@ import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.core.api.file.analytics.FileAnalytics;
 import bio.cosy.feddb.local.api.importer.files.table.TableData;
 import bio.cosy.feddb.local.agent.etl.transform.helper.AgentDataPrivacy;
+import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerHelper;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerValidateTool;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
+import bio.cosy.feddb.local.api.importer.files.table.TableSample;
 import bio.cosy.feddb.local.api.importer.files.read.TableDataProfileBO;
 import bio.cosy.feddb.local.api.importer.functions.managed.builtin.ReplaceValueFunction;
 import bio.cosy.feddb.local.api.importer.run.preview.ConnectorPreviewRunnerBO;
@@ -21,6 +23,7 @@ import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationBO;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO;
 import bio.cosy.feddb.local.api.importer.validation.PreviewValidationBO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,6 +68,9 @@ class TransformerValidateToolTest {
     @Spy
     PreviewValidationBO previewValidationBO = previewValidation();
 
+    @Spy
+    ObjectMapper objectMapper = new ObjectMapper();
+
     @InjectMocks
     TransformerValidateTool tool;
 
@@ -94,13 +100,12 @@ class TransformerValidateToolTest {
     }
 
     @Test
-    void rejectsMissingValuePlaceholdersOfADirectMapping() {
+    void leavesTheMeaningOfAMarkerToTheAgent() {
         init("payer_code", List.of("?", "MC", "?"), DataTypes.STRING, null);
 
         ConnectorValidationResultDTO result = tool.validate(ConnectorSelectedTransformer.mapping("payer_code", List.of()));
 
-        assertFalse(result.isValid());
-        assertTrue(result.getMessage().contains("'?': a missing-value placeholder"), result.getMessage());
+        assertTrue(result.isValid(), result.getMessage());
     }
 
     @Test
@@ -116,12 +121,47 @@ class TransformerValidateToolTest {
     }
 
     @Test
-    void acceptsEmptyingAColumnOfPlaceholdersOnly() {
-        init("payer_code", List.of("?", "?"), DataTypes.STRING, null);
-        withFileProfiles("payer_code", List.of("?", "?"));
+    void acceptsAChainWhenOnlyThePreviewRowsAreMissingMarkers() {
+        init("payer_code", List.of(".", "."), DataTypes.STRING, null);
+        withFileProfiles("payer_code", List.of(".", ".", "MC"));
 
         ConnectorValidationResultDTO result = tool.validate(
-                ConnectorSelectedTransformer.mapping("payer_code", List.of(replace("?", "null"))));
+                ConnectorSelectedTransformer.mapping("payer_code", List.of(replace(".", "null"))));
+
+        assertTrue(result.isValid(), result.getMessage());
+    }
+
+    @Test
+    void rejectsEmptyingAColumnOfOneCode() {
+        init("payer_code", List.of("-", "-"), DataTypes.CATEGORICAL, List.of("No", "Up"));
+        withFileProfiles("payer_code", List.of("-", "-"));
+
+        ConnectorValidationResultDTO result = tool.validate(
+                ConnectorSelectedTransformer.mapping("payer_code", List.of(replace("-", "null"))));
+
+        assertFalse(result.isValid());
+        assertTrue(result.getMessage().startsWith("Every value of 'payer_code' is empty"), result.getMessage());
+    }
+
+    @Test
+    void saysWhichValuesWithContentAValidChainEmpties() {
+        init("payer_code", List.of("MC", "HM"), DataTypes.STRING, null);
+        withFileProfiles("payer_code", List.of("MC", "HM", "BC"));
+
+        ConnectorValidationResultDTO result = tool.validate(
+                ConnectorSelectedTransformer.mapping("payer_code", List.of(replace("HM", "null"))));
+
+        assertTrue(result.isValid() && result.getMessage().endsWith("1 of the 3 values of the file with content become empty, e.g. 'HM'."),
+                result.getMessage());
+    }
+
+    @Test
+    void acceptsEmptyingAColumnOfPlaceholdersOnly() {
+        init("payer_code", List.of("N/A", "N/A"), DataTypes.STRING, null);
+        withFileProfiles("payer_code", List.of("N/A", "N/A"));
+
+        ConnectorValidationResultDTO result = tool.validate(
+                ConnectorSelectedTransformer.mapping("payer_code", List.of(replace("N/A", "null"))));
 
         assertTrue(result.isValid(), result.getMessage());
     }
@@ -188,6 +228,17 @@ class TransformerValidateToolTest {
     }
 
     @Test
+    void quotesTheRejectedAnswerForTheNextAttempt() {
+        init("gender", List.of("M", "F"), DataTypes.CATEGORICAL, List.of("M", "F"));
+
+        ConnectorValidationResultDTO result = tool.validateAnswer(ConnectorSelectedTransformer.mapping("sex", List.of()));
+
+        assertFalse(result.isValid());
+        assertTrue(result.getMessage().startsWith("Your previous answer {") && result.getMessage().contains("\"mappedColumn\":\"sex\"")
+                && result.getMessage().contains("does not exist after the transformation"), result.getMessage());
+    }
+
+    @Test
     void reportsAMappedColumnTheTransformationDoesNotProduce() {
         init("gender", List.of("M", "F"), DataTypes.CATEGORICAL, List.of("M", "F"));
 
@@ -210,8 +261,8 @@ class TransformerValidateToolTest {
 
     @Test
     void rejectsFileValuesThePreviewRowsDoNotShow() {
-        init("payer_code", List.of("?", "MC"), DataTypes.STRING, null);
-        tool.init(context, node, dataType, List.of(Map.of("payer_code", "?"), Map.of("payer_code", "-")));
+        init("payer_code", List.of("?", "MC"), DataTypes.CATEGORICAL, List.of("MC"));
+        tool.init(context, node, dataType, List.of("payer_code"), List.of(Map.of("payer_code", "?"), Map.of("payer_code", "-")));
 
         ConnectorValidationResultDTO result = tool.validate(
                 ConnectorSelectedTransformer.mapping("payer_code", List.of(replace("?", "null"))));
@@ -269,7 +320,7 @@ class TransformerValidateToolTest {
     private void initMedications() {
         init("metformin_rx", List.of("No", "Up"), DataTypes.STRING, null);
         previewRows = List.of(Map.of("patient", "p1", "metformin_rx", "No", "rosiglitazone_rx", "Up"));
-        tool.init(context, node, dataType, previewRows);
+        tool.init(context, node, dataType, List.of("metformin_rx"), previewRows);
     }
 
     private static ConnectorTransformerDTO function(String method, Map<String, Object> inputMapping, Map<String, Object> returnMapping) {
@@ -295,8 +346,8 @@ class TransformerValidateToolTest {
         previewRows = values.stream().<Map<String, Object>>map(value -> Map.of(column, value)).toList();
         ConnectorConfigDTO config = new ConnectorConfigDTO();
         config.setTransformer(new ArrayList<>());
-        context = new TransformerRunContext(config, null, "keycloak-user", Map.of(), new HashMap<>(), new ArrayList<>(), new ArrayList<>(), null);
-        tool.init(context, node, dataType, List.of());
+        context = new TransformerRunContext(config, null, "keycloak-user", Map.of(), new HashMap<>(), new ArrayList<>(), null);
+        tool.init(context, node, dataType, List.of(column), List.of());
     }
 
     private void withFileProfiles(String column, List<String> values) {
@@ -305,9 +356,11 @@ class TransformerValidateToolTest {
             Map<String, ColumnProfile> profiles = new HashMap<>();
             new TableDataProfileBO(new FileAnalytics()).profiles(data).forEach(profile -> profiles.put(profile.name(), profile));
             context = new TransformerRunContext(context.config(), null, "keycloak-user", profiles, new HashMap<>(),
-                    new ArrayList<>(), new ArrayList<>(), null);
+                    new ArrayList<>(), null);
         }
-        tool.init(context, node, dataType, List.of());
+        // Like the organizer: one row per value of the whole file
+        tool.init(context, node, dataType, List.of(column), TransformerHelper.valueRows(
+                new TableSample(List.of(column), previewRows, null), List.of(column), context.fileProfiles(), null));
     }
 
     private List<Map<String, Object>> replace(ConnectorTransformerDTO transformer, List<Map<String, Object>> rows) {

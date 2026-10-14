@@ -67,7 +67,7 @@ class TransformerWriterToolTest {
                 Map.of("patient", "p1", "first", "Ada", "second", "Lovelace"),
                 Map.of("patient", "p2", "first", "Alan", "second", "Turing"),
                 Map.of("patient", "p2", "first", "Grace", "second", "Hopper")), null);
-        tool.init(new TransformerRunContext(null, "patient", "user", Map.of(), new HashMap<>(), new ArrayList<>(), new ArrayList<>(), null), node, goal, sample);
+        tool.init(new TransformerRunContext(null, "patient", "user", Map.of(), new HashMap<>(), new ArrayList<>(), null), node, goal, sample);
         // Checks succeed unless a test says otherwise; rejected input never reaches the runner
         lenient().when(requestBO.check(any(), anyString())).thenReturn(result(true));
     }
