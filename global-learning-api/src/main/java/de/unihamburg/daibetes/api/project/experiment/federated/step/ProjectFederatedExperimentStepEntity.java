@@ -1,5 +1,6 @@
 package de.unihamburg.daibetes.api.project.experiment.federated.step;
 
+import bio.cosy.feddb.core.api.socket.FederatedLearningRelayInfoDTO;
 import bio.cosy.feddb.core.api.workflow.base.step.BaseWorkflowStepEntity;
 import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
 import de.unihamburg.daibetes.api.project.experiment.federated.message.ProjectFederatedExperimentRunMetricsEntity;
@@ -12,6 +13,7 @@ import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.OnDeleteAction;
@@ -38,6 +40,12 @@ public class ProjectFederatedExperimentStepEntity extends BaseWorkflowStepEntity
 
     @Column(name = "relay_key", columnDefinition = "TEXT")
     private String relayKey;
+
+    // Relay credentials for the platform's own aggregator container, when platformIsCoordinator
+    // is active for this experiment. Null whenever a clinic is coordinating instead.
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "platform_relay_info", columnDefinition = "jsonb")
+    private FederatedLearningRelayInfoDTO platformRelayInfo;
 
     // Relay client id assigned to each clinic (unique random clinic id -> relay client id) for the relay run
     // of this step. Used to only sign relay certificates for the client id a clinic actually owns.

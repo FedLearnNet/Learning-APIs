@@ -46,9 +46,6 @@ public class ProjectEntity extends BaseEntity {
     @Column(name = "coordinator_has_data", columnDefinition = "boolean default true")
     private Boolean coordinatorHasData;
 
-    @Column(name = "platform_is_coordinator", columnDefinition = "boolean default false")
-    private Boolean platformIsCoordinator;
-
 
     @ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "query_id")
