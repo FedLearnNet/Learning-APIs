@@ -45,7 +45,9 @@ public class MergeColumnsFunction extends AbstractManagedRowFunction {
                 FunctionParameterDTO.of("delimiter", FunctionParameterType.STRING, true, null,
                         "Separator used to join the source columns."),
                 FunctionParameterDTO.of("parts", FunctionParameterType.MAP, true, null,
-                        "JSON array of row keys to join, in order.")
+                        "JSON array of the columns to join, in order, e.g. [\"first\", \"second\"]. The function only "
+                                + "reads columns of its inputMapping, so map each of them there onto itself, e.g. "
+                                + "{\"first\": \"first\", \"second\": \"second\"}. One column copies it to a new one.")
         );
     }
 

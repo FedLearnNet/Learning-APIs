@@ -18,7 +18,6 @@ public record TransformerRunContext(ConnectorConfigDTO config,
                                     Map<String, ColumnProfile> fileProfiles,
                                     Map<String, String> mappedColumns,
                                     List<String> steps,
-                                    List<MappedColumn> codedColumns,
                                     TransformerAssistantUser user) {
 
     public void step(String format, Object... args) {

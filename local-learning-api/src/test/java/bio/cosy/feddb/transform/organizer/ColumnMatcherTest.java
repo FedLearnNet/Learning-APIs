@@ -100,15 +100,17 @@ class ColumnMatcherTest {
         ColumnCandidate best = match().get(1L).getFirst();
 
         assertEquals("payer_code", best.getColumn());
-        assertEquals(0.5, best.getValidRatio());
+        // '?' is a value of free text, whether it marks a missing entry the agent decides later
+        assertEquals(1.0, best.getValidRatio());
         assertTrue(best.isClear());
     }
 
     @Test
     void detectsMissingValuePlaceholdersUnlessTheSchemaAllowsThem() {
-        assertTrue(ConnectorValidationBO.isMissingPlaceholder("?", null));
         assertTrue(ConnectorValidationBO.isMissingPlaceholder(" N/A ", List.of("Yes", "No")));
-        assertFalse(ConnectorValidationBO.isMissingPlaceholder("?", List.of("?")));
+        assertFalse(ConnectorValidationBO.isMissingPlaceholder("N/A", List.of("N/A")));
+        // What '?' or '-' means in a file the agent decides, e.g. with Replace Value
+        assertFalse(ConnectorValidationBO.isMissingPlaceholder("?", null));
         assertFalse(ConnectorValidationBO.isMissingPlaceholder("MC", null));
     }
 

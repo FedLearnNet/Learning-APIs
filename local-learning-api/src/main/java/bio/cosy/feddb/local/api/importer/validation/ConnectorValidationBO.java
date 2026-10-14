@@ -15,8 +15,6 @@ import java.util.*;
 @ApplicationScoped
 public class ConnectorValidationBO extends BaseValidationBO {
 
-    private static final Set<String> EXTRA_MISSING_PLACEHOLDERS = Set.of("?", "-", "--", ".");
-
     @Inject
     SchemaNodeAO schemaNodeAO;
 
@@ -114,7 +112,7 @@ public class ConnectorValidationBO extends BaseValidationBO {
     public static boolean isMissingPlaceholder(Object value, Collection<?> allowedValues) {
         String text = value == null ? "" : String.valueOf(value).strip();
         return !text.isEmpty()
-                && (RowProfiler.isMissing(text) || EXTRA_MISSING_PLACEHOLDERS.contains(text))
+                && RowProfiler.isMissing(text)
                 && (allowedValues == null || allowedValues.stream().map(String::valueOf).noneMatch(text::equals));
     }
 

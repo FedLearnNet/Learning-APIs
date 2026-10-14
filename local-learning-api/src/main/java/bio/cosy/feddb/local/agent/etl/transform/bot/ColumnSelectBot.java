@@ -2,6 +2,7 @@ package bio.cosy.feddb.local.agent.etl.transform.bot;
 
 import bio.cosy.feddb.local.agent.etl.transform.memory.ColumnSelectMemory;
 import bio.cosy.feddb.local.agent.etl.transform.model.ColumnCandidate;
+import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerColumnTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerUserTool;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
@@ -27,7 +28,8 @@ public interface ColumnSelectBot {
             whether a conversion is needed, it is no reason to leave a column out. A cell can also hold several values
             joined by a separator (e.g. a list of codes); such a column still holds the information, it is split later.
             When the description lists the share of each value, prefer the column whose values have about the same shares.
-            Return the exact column names, or an empty list if no column holds the information.
+            Return the exact column names, or an empty list if no column holds the information. Before you answer with
+            an empty list, look at the values of the columns that could still hold it with describeColumns.
             The tool lists the available transformer functions, in case this helps to judge which inputs are needed.
             If several columns fit equally well, ask the user.
             {#if instructions}Instructions of the user: {instructions}{/if}
@@ -47,7 +49,7 @@ public interface ColumnSelectBot {
             - {column}
             {/for}
             """)
-    @ToolBox({TransformerListTool.class, TransformerUserTool.class})
+    @ToolBox({TransformerListTool.class, TransformerColumnTool.class, TransformerUserTool.class})
     List<String> select(TableSample previewData, LocalSchemaNodeDTO schemaNode, String instructions,
                         List<ColumnCandidate> candidates, List<String> columns);
 }

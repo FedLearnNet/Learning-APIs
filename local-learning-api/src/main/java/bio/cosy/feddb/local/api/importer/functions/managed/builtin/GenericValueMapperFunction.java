@@ -20,14 +20,16 @@ public class GenericValueMapperFunction extends AbstractManagedCellFunction {
 
     @Override
     public String description() {
-        return "Map a value using a JSON map string.";
+        return "Translate cell values with a JSON map: a value found as a key becomes its mapped value, every other value "
+                + "stays unchanged. Keys match the whole cell exactly, case and spaces included (trim with Trim And Case first).";
     }
 
     @Override
     public List<FunctionParameterDTO> parameters() {
         return List.of(
                 FunctionParameterDTO.of("map", FunctionParameterType.MAP, true, null,
-                        "JSON object mapping input values to output values.")
+                        "JSON object from input value to output value, e.g. {\"1\": \"Male\", \"2\": \"Female\", \"9\": null}; null "
+                                + "makes the cell empty. List every value of the column, a value without a key is kept as it is.")
         );
     }
 

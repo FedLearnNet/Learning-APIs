@@ -9,6 +9,9 @@ public interface TransformerAgentConfig {
     @WithDefault("false")
     boolean useStatisticPrivacy();
 
+    @WithDefault("true")
+    boolean review();
+
     ColumnMatcherConfig columnMatcher();
 
     SyntheticDataConfig syntheticData();

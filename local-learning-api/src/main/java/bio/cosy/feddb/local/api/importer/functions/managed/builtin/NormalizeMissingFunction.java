@@ -29,7 +29,8 @@ public class NormalizeMissingFunction extends AbstractManagedCellFunction {
 
     @Override
     public String description() {
-        return "Map any of a set of missing-value sentinels (JSON array) to a single replacement (default empty).";
+        return "Turn every cell that equals one of several missing-value markers (trimmed, case insensitive) into one "
+                + "replacement, by default empty.";
     }
 
     @Override
@@ -38,14 +39,16 @@ public class NormalizeMissingFunction extends AbstractManagedCellFunction {
                 FunctionParameterDTO.of("tokens", FunctionParameterType.MAP, true, null,
                         "JSON array of sentinel strings to treat as missing (e.g. [\"?\", \"N/A\", \"-99\"])."),
                 FunctionParameterDTO.of("replacement", FunctionParameterType.STRING, false, "",
-                        "Value to write when a sentinel is matched (default empty string).")
+                        "Value for a matched marker; empty or 'null' leaves the cell empty.")
         );
     }
 
     @Override
     public Object execute(CellFunctionExecutionContext context) {
         Map<String, Object> params = context.getParams();
-        String replacement = params.get("replacement") == null ? "" : String.valueOf(params.get("replacement"));
+        // 'null' is the empty value, like in Replace Value
+        String replacement = params.get("replacement") == null || "null".equals(String.valueOf(params.get("replacement")))
+                ? "" : String.valueOf(params.get("replacement"));
 
         Object value = context.getValue();
         if (value == null) {

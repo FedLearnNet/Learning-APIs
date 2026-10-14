@@ -39,18 +39,20 @@ public class SplitColumnFunction extends AbstractManagedRowFunction {
 
     @Override
     public String description() {
-        return "Split one packed column into several columns by a delimiter (row-level inverse of Merge Columns).";
+        return "Split a column whose cells hold several values joined by a separator into one new column per part, in order "
+                + "(row-level inverse of Merge Columns).";
     }
 
     @Override
     public List<FunctionParameterDTO> parameters() {
         return List.of(
                 FunctionParameterDTO.of("source", FunctionParameterType.STRING, true, null,
-                        "Row key carrying the packed value to split (mapped via inputMapping)."),
+                        "Always the key 'source': map it in inputMapping onto the packed column, e.g. {\"source\": \"codes\"}."),
                 FunctionParameterDTO.of("delimiter", FunctionParameterType.STRING, true, null,
-                        "Separator to split the packed value on."),
+                        "The separator, taken literally (no regular expression)."),
                 FunctionParameterDTO.of("parts", FunctionParameterType.MAP, true, null,
-                        "JSON array of output piece names, in order (each name is also a returnMapping key).")
+                        "JSON array of names for the parts in order, e.g. [\"first\", \"second\"]; the last part keeps the rest. Each name "
+                                + "is a return key: map the parts you need in returnMapping onto new columns, e.g. {\"second\": \"second_code\"}.")
         );
     }
 

@@ -3,6 +3,7 @@ package bio.cosy.feddb.local.agent.etl.transform.agents;
 import bio.cosy.feddb.local.agent.etl.transform.guardrails.TransformerSelectGuardrail;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.PreviousValidation;
+import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerColumnTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerUserTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerValidateTool;
@@ -62,7 +63,8 @@ public interface TransformerSelectAgent {
               holds another schema node cannot be mapped again; then write the result to a new output column.
               ROW and PATIENT transformers read inputMapping (parameter -> source column) and write returnMapping
               (return key -> output column); write to a new output column and use it as mappedColumn.
-            - Check the whole chain with the validation tool before answering.
+            - Check the whole chain with the validation tool before answering. When it lists what the values of the
+              file become, check every line against the rules above and fix the chain if a value gets another meaning.
             - If none of the three levels fits, set foundTransformer to false and describe the needed function
               precisely (input columns, output and how the values are converted); only then new code is written.
             - If you are unsure which of several options the user wants, ask the user with askUser; let the user
@@ -92,7 +94,7 @@ public interface TransformerSelectAgent {
             """)
     @Agent(name = NAME, description = "Selects and configures the transformer for a schema node", outputKey = "selectedTransformer")
     @OutputGuardrails(value = TransformerSelectGuardrail.class, maxRetries = 2)
-    @ToolBox({TransformerListTool.class, TransformerValidateTool.class, TransformerUserTool.class})
+    @ToolBox({TransformerListTool.class, TransformerValidateTool.class, TransformerColumnTool.class, TransformerUserTool.class})
     ConnectorSelectedTransformer select(TableSample selectedData,
                                         LocalSchemaNodeDTO schemaNode,
                                         List<String> selectedColumns,

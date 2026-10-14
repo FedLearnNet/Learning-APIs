@@ -67,10 +67,10 @@ public interface FLNetClientConfig {
         @WithDefault("10")
         int previewRows();
 
-        @WithDefault("fl-net/etl-tool-factory-wrapper:dev")
+        @WithDefault("ghcr.io/fedlearnnet/python-tool-api/code-transformer-runtime:latest")
         String codeTransformerImage();
 
-        @WithDefault("fl-net/tool-build-pipeline:dev")
+        @WithDefault("ghcr.io/fedlearnnet/tool-build-pipeline/pipeline:staging")
         String codeTransformerPipelineImage();
 
         // importer file rows kept in memory before spilling to an NDJSON disk cache; 0 = disk first

@@ -174,6 +174,10 @@ final class BuiltInFunctionSupport {
 
     /** Reads a JSON array hyperparameter as a list of strings (an empty list when unset). */
     static List<String> readStringList(Object raw, String parameterName) {
+        if (raw instanceof Map<?, ?> || raw instanceof String text && text.strip().startsWith("{")) {
+            throw new IllegalArgumentException("Invalid '" + parameterName + "': expected a JSON array of strings, e.g. "
+                    + "[\"a\", \"b\"], not an object: " + raw);
+        }
         List<Object> values = readJson(raw, new TypeReference<List<Object>>() {
         }, parameterName);
         if (values == null) {

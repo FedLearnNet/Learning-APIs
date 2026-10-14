@@ -12,6 +12,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -68,7 +69,8 @@ public class TransformerWriterAssistant {
         }
     }
 
-    private static void addNode(List<TransformerAssistantMessageDTO> nodes, TransformerAssistantMessageDTO node) {
+    public static void addNode(List<TransformerAssistantMessageDTO> nodes, TransformerAssistantMessageDTO node) {
+        nodes.removeIf(earlier -> Objects.equals(earlier.getSchemaId(), node.getSchemaId()));
         nodes.add(node);
     }
 

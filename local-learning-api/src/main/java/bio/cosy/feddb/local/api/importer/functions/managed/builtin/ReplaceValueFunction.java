@@ -17,16 +17,17 @@ public class ReplaceValueFunction extends AbstractManagedCellFunction {
 
     @Override
     public String description() {
-        return "Replace Value with other value or null";
+        return "Replace one exact cell value by another value or by empty (null), other cells stay unchanged. For several "
+                + "values use Generic Value Mapper.";
     }
 
     @Override
     public List<FunctionParameterDTO> parameters() {
         return List.of(
                 FunctionParameterDTO.of("search", FunctionParameterType.STRING, true, null,
-                        "The value to search for in the cell (use 'null' to match null values)."),
+                        "The whole cell value to replace, matched exactly (no part of a cell, case sensitive); 'null' matches empty cells."),
                 FunctionParameterDTO.of("replace", FunctionParameterType.STRING, false, null,
-                        "The replacement value (use 'null' to replace with null).")
+                        "The new value; 'null' makes the cell empty.")
         );
     }
 

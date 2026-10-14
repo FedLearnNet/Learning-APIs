@@ -37,7 +37,7 @@ public class HarmonizationFileAssistant {
         Cancellable events = assistantBO.events(id).subscribe().with(message -> {
             switch (message.getType()) {
                 case CHAT_MESSAGE -> answer(id, message.getChatMessage(), harmonization.getSourceKey());
-                case NODE_RESULT -> nodes.add(message);
+                case NODE_RESULT -> TransformerWriterAssistant.addNode(nodes, message);
                 case DONE -> assistantBO.message(id, apply(nodes));
                 case APPLIED -> applied.complete(message.getConnector());
                 case ERROR -> applied.completeExceptionally(new IllegalStateException(message.getMessage()));
