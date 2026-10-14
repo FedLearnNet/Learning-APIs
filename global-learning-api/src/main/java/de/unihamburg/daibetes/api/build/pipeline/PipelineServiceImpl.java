@@ -23,14 +23,12 @@ public class PipelineServiceImpl implements PipelineService {
 
 
     @Override
-    @Transactional
     public PipelineDTO create(PipelineCreateDTO request) {
         String keycloakId = userIdentity.getKeycloakId();
         return bo.create(request, keycloakId);
     }
 
     @Override
-    @Transactional
     public PipelineDTO start(Long id) {
         String keycloakId = userIdentity.getKeycloakId();
         return bo.start(id, keycloakId);

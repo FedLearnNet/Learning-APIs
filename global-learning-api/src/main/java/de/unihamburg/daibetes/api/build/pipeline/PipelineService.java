@@ -7,7 +7,6 @@ import bio.cosy.feddb.core.security.ToolAuthenticated;
 import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
 import jakarta.annotation.security.RolesAllowed;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -32,7 +31,6 @@ import java.util.List;
 public interface PipelineService {
 
     @POST
-    @Transactional
     @Operation(
             summary = "Create a new pipeline",
             description = "Creates a pipeline for the authenticated user from the provided specification.",
@@ -52,7 +50,6 @@ public interface PipelineService {
 
     @POST
     @Path("start/{id}")
-    @Transactional
     @Operation(
             summary = "Start a new pipeline",
             description = "Start a pipeline for the authenticated user from the provided specification.",

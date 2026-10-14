@@ -112,7 +112,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
             }
             pipeline.setAppVersionId(dto.getAppVersionId());
         }
-        PipelineDTO created = create(pipeline);
+        PipelineDTO created = setPipelineEntityCreated(pipeline);
         PipelineDTO steps = stepBO.createSteps(created);
         if (dto.getAutoStart()) {
             return start(steps.getId());
@@ -120,6 +120,11 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         return steps;
     }
 
+    // For the initial creation of the entity before the pipeline is started
+    @Transactional
+    public PipelineDTO setPipelineEntityCreated(PipelineDTO dto) {
+        return create(dto);
+    }
 
     public PipelineDTO start(Long id, String keycloakId) {
 
@@ -162,8 +167,13 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         }
         entity.setContainerId(containerId);
         updateRebuilding(entity);
-        ao.persist(entity);
+        setPipelineEntityRunning(entity);
         return mapper.entityToDto(entity);
+    }
+
+    @Transactional
+    public void setPipelineEntityRunning(PipelineEntity ent) {
+        ao.persist(ent);
     }
 
     public List<PipelineDTO> getAll(String keycloakId, Long appVersionId, Long appId, Long modelSubId) {
