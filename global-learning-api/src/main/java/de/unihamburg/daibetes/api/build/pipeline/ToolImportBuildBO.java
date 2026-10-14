@@ -161,7 +161,7 @@ public class ToolImportBuildBO {
 
     private void failBuild(CurrentPipelineRuns run) {
         try {
-            String containerId = QuarkusTransaction.requiringNew().call(() -> {
+            QuarkusTransaction.requiringNew().run(() -> {
                 PipelineEntity pipeline = pipelineAO.findByIdAndSecretOptional(run.getPipelineId(), run.getToken(), LockModeType.PESSIMISTIC_WRITE)
                         .orElseThrow(() -> new IllegalStateException("Imported tool build pipeline not found"));
                 PipelineStatusUpdateDTO failure = new PipelineStatusUpdateDTO();
@@ -172,8 +172,18 @@ public class ToolImportBuildBO {
                 failure.setErrorCode("IMPORT_BUILD_FAILED");
                 failure.setErrorMessage("Imported tool build failed or exceeded the time limit");
                 pipelineBO.processStatusUpdate(run.getPipelineId(), run.getToken(), failure);
-                return pipeline.getContainerId();
             });
+        } catch (Exception e) {
+            Log.warnf(e, "Failed to mark imported tool build pipeline %d as failed", run.getPipelineId());
+        }
+    }
+
+    // The pipeline container is auto-removed on exit, but its dedicated network is only removed by orch's cleanup
+    private void cleanupContainer(CurrentPipelineRuns run) {
+        try {
+            String containerId = QuarkusTransaction.requiringNew().call(() ->
+                    pipelineAO.findByIdAndSecretOptional(run.getPipelineId(), run.getToken(), LockModeType.PESSIMISTIC_READ)
+                            .map(PipelineEntity::getContainerId).orElse(null));
             if (StringUtils.isNotBlank(containerId)) {
                 containerClient.cleanupWorkflow(containerId, true);
             }
@@ -184,6 +194,9 @@ public class ToolImportBuildBO {
 
     private void finishBuild(CurrentPipelineRuns run, PipelineRebuildDTO request) {
         PipelineStatus status = finishBuildTransactional(run, request);
+        if (status != null) {
+            cleanupContainer(run);
+        }
         if (status != PipelineStatus.FAILED || request.isExistsInStore()) {
             return;
         }
