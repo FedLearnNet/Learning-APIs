@@ -10,12 +10,10 @@ import java.util.regex.Pattern;
 
 /**
  * Shared enforcement for callbacks made by Tool containers.
- * <p>
  * Implements the {@link HttpSecurityPolicy} interface, so if a module uses this
  * Quarkus applies this globally to every HTTP request and WebSocket upgrade
  * Each module (global-learning-api, local-learning-api) has one subclass, {@code ToolEndpointSecurityPolicy},
  * that lists its tool callback paths in {@link #rules()}.
- * <p>
  * IMPORTANT: if an endpoint has no rule here, the policy treats it like any other endpoint and
  * permits every non-key identity, including Keycloak users. That is why endpoints marked with
  * {@link ToolAuthenticated} must also set a rule in the relevant subclass of this class.

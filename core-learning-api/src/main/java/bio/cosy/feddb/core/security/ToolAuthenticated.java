@@ -12,7 +12,6 @@ import java.lang.annotation.Target;
 /**
  * Marks an endpoint that is called by a tool container with a run-scoped API key
  * ({@link ToolApiKeyService#HEADER_NAME}), never by the frontend.
- * <p>
  * IMPORTANT: this annotation does not enforce anything by itself. When you add it, also add
  *   - {@code @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)} on the same method/class, so
  *       Keycloak users are rejected, and

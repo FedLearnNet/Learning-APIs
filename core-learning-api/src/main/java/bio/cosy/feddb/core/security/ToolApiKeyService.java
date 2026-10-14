@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.Optional;
+import io.quarkus.logging.Log;
 
 /** Keeps one ephemeral, fingerprint-only credential for each active tool run. */
 @ApplicationScoped
@@ -62,6 +63,7 @@ public class ToolApiKeyService {
             Grant grant = grants.remove(fingerprint);
             if (grant != null) {
                 activeKeys.remove(grant.target(), fingerprint);
+                Log.info("Revoked API key:");
             }
         }
     }
