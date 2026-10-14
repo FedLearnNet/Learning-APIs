@@ -44,6 +44,17 @@ class ToolEndpointSecurityPolicyTest {
 
     }
 
+    @Test
+    void matchesOnlyExactPipelineCallbackPaths() {
+        assertGrant("PUT", "/pipeline/42/update/", null, Scope.PIPELINE_RUN, 42L);
+
+        assertFalse(ToolEndpointSecurityPolicy.match("PUT", "/pipeline/abc/update", null).isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/pipeline/42/update", null).isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("POST", "/pipeline/42/update", null).isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("PUT", "/pipeline/42/update/extra", null).isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("PUT", "/x/pipeline/42/update", null).isPresent());
+    }
+
     private static void assertGrant(String method, String path, String upgrade,
                                     Scope scope, Long runId) {
         var grant = ToolEndpointSecurityPolicy.match(method, path, upgrade).orElseThrow();

@@ -1,9 +1,12 @@
 package de.unihamburg.daibetes.api.build.pipeline;
 
 import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
-import bio.cosy.feddb.core.api.file.FileDTO;
+import bio.cosy.feddb.core.security.Scope;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
+import bio.cosy.feddb.core.security.ToolAuthenticated;
 import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -115,6 +118,8 @@ public interface PipelineService {
 
     @PUT
     @Path("/{id}/update")
+    @ToolAuthenticated(Scope.PIPELINE_RUN)
+    @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
     @Operation(
             summary = "Process pipeline status update",
             description = "Updates the pipeline status and metadata. A shared secret may be required for CI/CD callbacks.",
@@ -144,6 +149,8 @@ public interface PipelineService {
 
     @PUT
     @Path("/{id}/summary")
+    @ToolAuthenticated(Scope.PIPELINE_RUN)
+    @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
     @Operation(
             summary = "Process pipeline summary update",
             description = "Updates the pipeline publishInfo. A shared secret may be required for CI/CD callbacks.",
@@ -195,6 +202,8 @@ public interface PipelineService {
 
     @GET
     @Path("/{id}/info")
+    @ToolAuthenticated(Scope.PIPELINE_RUN)
+    @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
     @Operation(
             summary = "Get pipeline run info",
             description = "Returns detailed runtime information for the pipeline.",
@@ -218,6 +227,8 @@ public interface PipelineService {
 
     @GET
     @Path("/{id}/zip")
+    @ToolAuthenticated(Scope.PIPELINE_RUN)
+    @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
     @Operation(
             summary = "Download pipeline files",
             description = "Returns a zip with the files to inject into the build. Only model pipelines have files.",
