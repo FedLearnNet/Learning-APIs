@@ -23,10 +23,6 @@ import java.util.regex.Pattern;
  */
 public abstract class BaseToolEndpointSecurityPolicy implements HttpSecurityPolicy {
 
-    /**
-     * The tool callback endpoints of this module. A request matching one of them is only permitted
-     * for an API key with the rule's scope and the run id captured from the path.
-     */
     protected abstract List<Rule> rules();
 
     @Override
@@ -58,7 +54,7 @@ public abstract class BaseToolEndpointSecurityPolicy implements HttpSecurityPoli
     }
 
     /**
-     * Returns the grant a request needs, or empty if it is not a tool callback.
+     * Returns the grant a request needs, or empty if it is not a tool endpoint.
      *
      * @param upgrade the request's {@code Upgrade} header, used to tell WebSocket rules apart
      */
@@ -85,13 +81,18 @@ public abstract class BaseToolEndpointSecurityPolicy implements HttpSecurityPoli
         return new Rule("GET", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), true, scope);
     }
 
-    /** The scope and run id an API key must have to call the matched callback. */
+    /** The scope and run id an API key must have to call the matched endpoint. */
     public record RequestGrant(Scope scope, Long runId) {
     }
 
-    /**
-     * One tool callback: HTTP method, anchored path pattern whose first group captures the run id
-     * (must be numeric, otherwise the rule does not match), and the scope the key must have.
+    /*
+     * We define the Rule record here to set the match method. Then in the subclass we
+     * just need to define the rule and match can be used automatically
+     * Logic is:
+     * - check whether the method matches (exception for websocket)
+     * - check whether the path matches (regex)
+     * - if both match, extract the runId from the path and return a RequestGrant
+     * That can then be checked against the API key's scope and runId in matchesToolIdentity
      */
     protected record Rule(String method, Pattern path, boolean websocket, Scope scope) {
         private Optional<RequestGrant> match(String requestMethod, String requestPath, String upgradeHeader) {
