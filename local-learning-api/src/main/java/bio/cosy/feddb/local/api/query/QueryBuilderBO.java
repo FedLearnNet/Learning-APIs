@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -33,6 +35,10 @@ public class QueryBuilderBO {
     private static final String RESULT_ALIAS = "query_result";
     private static final String EMPTY_PATIENT_QUERY =
             "SELECT DISTINCT " + PATIENT_ID_NAME + " FROM " + TABLE_NAME + " WHERE 1 = 0";
+    private static final Pattern INTERVAL_PART = Pattern.compile("(\\d+)\\s+(minutes?|hours?|days?|weeks?|months?|years?)");
+    private static final Pattern NUMERIC_LITERAL = Pattern.compile("-?\\d+(?:\\.\\d+)?");
+    private static final String INTEGER_TEXT = "^-?[0-9]+$";
+    private static final String FLOAT_TEXT = "^-?[0-9]+([.][0-9]+)?$";
 
     @Inject
     SchemaNodeAO schemaNodeAO;
@@ -78,11 +84,18 @@ public class QueryBuilderBO {
         if (node.isGroup()) {
             return buildGroup(node);
         }
+        ValueMode valueMode = parseValueMode(node.getValueMode());
+        if (isChangeOperator(node.getOperator())) {
+            return buildChangeClause(node, valueMode);
+        }
         QueryItemDTO item = Lang2QueryDocuments.toQueryItem(node);
         if (item == null || item.getOperator() == null || item.getOperator().isEmpty()) {
             throw new QueryRejectedException("Lang2Query leaf is missing a supported operator");
         }
-        return buildClause(item, node.getTimeFilter());
+        if (valueMode.isAbsolute()) {
+            return buildClause(item, node.getTimeFilter());
+        }
+        return buildDeltaClause(item, node.getTimeFilter(), valueMode, node.getDatatype());
     }
 
     private String buildGroup(Lang2QueryNodeDTO group) {
@@ -131,6 +144,9 @@ public class QueryBuilderBO {
                 return null;
             }
             rejectUnsupported(child);
+            if (!parseValueMode(child.getValueMode()).isAbsolute()) {
+                return null;
+            }
             QueryOperatorTypes operator = QueryOperatorTypes.fromOperator(child.getOperator());
             if (operator != QueryOperatorTypes.EQUAL || child.getOntologyId() == null || child.getOntologyId().isBlank()) {
                 return null;
@@ -166,9 +182,10 @@ public class QueryBuilderBO {
         if (node.getTemporalRelations() != null && !node.getTemporalRelations().isEmpty()) {
             throw new QueryRejectedException("temporal_relations is not supported yet");
         }
-        if (notBlank(node.getValueMode()) && !"absolute".equalsIgnoreCase(node.getValueMode())) {
-            throw new QueryRejectedException("value_mode is not supported yet: " + node.getValueMode());
+        if (node.isGroup() && notBlank(node.getValueMode())) {
+            throw new QueryRejectedException("value_mode is not allowed on a group");
         }
+        ValueMode valueMode = node.isGroup() ? ValueMode.absolute() : parseValueMode(node.getValueMode());
         if (node.getTimeFilter() != null) {
             validateTimeFilter(node.getTimeFilter());
         }
@@ -184,12 +201,406 @@ public class QueryBuilderBO {
         if (notBlank(node.getScale())) {
             throw new QueryRejectedException("scale is not supported yet");
         }
-        String operator = node.getOperator();
-        if (operator != null) {
-            String normalized = operator.trim().toLowerCase(Locale.ROOT);
-            if (normalized.equals("has_changed") || normalized.equals("changed_from") || normalized.equals("changed_to")) {
-                throw new QueryRejectedException("Operator is not supported yet: " + operator);
+        if (isChangeOperator(node.getOperator()) && valueMode.isAbsolute()) {
+            throw new QueryRejectedException(node.getOperator() + " requires value_mode delta");
+        }
+    }
+
+    private ValueMode parseValueMode(String raw) {
+        if (raw == null || raw.isBlank() || "absolute".equalsIgnoreCase(raw.trim())) {
+            return ValueMode.absolute();
+        }
+        String text = raw.trim().toLowerCase(Locale.ROOT);
+        if ("delta".equals(text)) {
+            return ValueMode.delta();
+        }
+        if (text.startsWith("delta")) {
+            String rest = text.substring("delta".length()).stripLeading();
+            if (!rest.isEmpty()) {
+                return ValueMode.window(requireInterval(rest));
             }
+        }
+        throw new QueryRejectedException("Unsupported value_mode: " + raw);
+    }
+
+    private String requireInterval(String text) {
+        String remaining = text.trim().toLowerCase(Locale.ROOT);
+        List<String> parts = new ArrayList<>();
+        while (!remaining.isEmpty()) {
+            Matcher matcher = INTERVAL_PART.matcher(remaining);
+            if (!matcher.lookingAt()) {
+                throw new QueryRejectedException("Unsupported value_mode interval: " + text);
+            }
+            int count;
+            try {
+                count = Integer.parseInt(matcher.group(1));
+            } catch (NumberFormatException e) {
+                throw new QueryRejectedException("Unsupported value_mode interval: " + text);
+            }
+            if (count <= 0) {
+                throw new QueryRejectedException("value_mode interval must be positive: " + text);
+            }
+            parts.add(count + " " + matcher.group(2));
+            remaining = remaining.substring(matcher.end()).stripLeading();
+        }
+        return String.join(" ", parts);
+    }
+
+    private boolean isChangeOperator(String operator) {
+        if (operator == null || operator.isBlank()) {
+            return false;
+        }
+        String normalized = operator.trim().toLowerCase(Locale.ROOT);
+        return normalized.equals("has_changed")
+                || normalized.equals("changed_from")
+                || normalized.equals("changed_to");
+    }
+
+    private String buildDeltaClause(QueryItemDTO item, Object timeFilter, ValueMode valueMode, String datatype) {
+        String timeSql = timeSql(timeFilter);
+        String predicate = deltaOperatorPredicate(item.getOperator());
+        NumericParse requested = numericParse(datatype);
+        if (requested == null) {
+            requested = NumericParse.FLOAT;
+        }
+        String comparison = predicate.replace("value_delta", "(later.numeric_value - earlier.numeric_value)");
+        List<String> perColumnClauses = new ArrayList<>();
+        for (List<SchemaNodeEntity> group : columnsFor(item.getOntologyId(), item.getDataTypeId()).values()) {
+            DataTypes dataType = group.getFirst().getDataType().getType();
+            if (dataType != DataTypes.INT && dataType != DataTypes.FLOAT
+                    && dataType != DataTypes.STRING && dataType != DataTypes.CATEGORICAL) {
+                throw new QueryRejectedException(
+                        "value_mode delta numeric comparison cannot read datatype " + dataType);
+            }
+            List<Long> schemaNodeIds = group.stream().map(SchemaNodeEntity::getId).toList();
+            String source = "(" + numericDeltaSource(schemaNodeIds, dataType, timeSql, requested) + ")";
+            if (valueMode.isWindowed()) {
+                perColumnClauses.add(windowPairSelect(source, "", comparison, valueMode.interval()));
+            } else {
+                perColumnClauses.add(lagNumericSelect(source, predicate + " AND " + gapPredicate(valueMode)));
+            }
+        }
+        return unionClauses(item.getOntologyId(), perColumnClauses);
+    }
+
+    private String buildChangeClause(Lang2QueryNodeDTO leaf, ValueMode valueMode) {
+        String operator = leaf.getOperator().trim().toLowerCase(Locale.ROOT);
+        if (!"has_changed".equals(operator) && (leaf.valueAsString() == null || leaf.valueAsString().isBlank())) {
+            throw new QueryRejectedException(operator + " requires a value");
+        }
+        String timeSql = timeSql(leaf.getTimeFilter());
+        List<String> perColumnClauses = new ArrayList<>();
+        for (List<SchemaNodeEntity> group : columnsFor(leaf.getOntologyId(), leaf.getDataTypeId()).values()) {
+            DataTypes dataType = group.getFirst().getDataType().getType();
+            String columnName = getColumnName(dataType);
+            String predicate = changePredicate(operator, dataType, leaf.valueAsString());
+            List<Long> schemaNodeIds = group.stream().map(SchemaNodeEntity::getId).toList();
+            if (valueMode.isWindowed()) {
+                String pairPredicate = predicate
+                        .replace("current_value", "later." + columnName)
+                        .replace("previous_value", "earlier." + columnName);
+                perColumnClauses.add(windowPairSelect(
+                        TABLE_NAME,
+                        nativePairWhere(schemaNodeIds, columnName, leaf.getTimeFilter()),
+                        pairPredicate,
+                        valueMode.interval()));
+            } else {
+                perColumnClauses.add(deltaSelect(
+                        schemaNodeIds,
+                        columnName + " AS current_value, LAG(" + columnName + ") OVER w AS previous_value",
+                        columnName,
+                        timeSql,
+                        "previous_value IS NOT NULL AND " + predicate + " AND " + gapPredicate(valueMode)));
+            }
+        }
+        return unionClauses(leaf.getOntologyId(), perColumnClauses);
+    }
+
+    private String deltaSelect(
+            List<Long> schemaNodeIds,
+            String projection,
+            String columnName,
+            String timeSql,
+            String outerPredicate) {
+        return "(SELECT DISTINCT "
+                + PATIENT_ID_NAME
+                + " FROM (SELECT "
+                + PATIENT_ID_NAME
+                + ", "
+                + projection
+                + ", "
+                + VISIT_TIMESTAMP_NAME
+                + " - LAG("
+                + VISIT_TIMESTAMP_NAME
+                + ") OVER w AS time_gap FROM "
+                + TABLE_NAME
+                + " WHERE "
+                + schemaIdPredicate(schemaNodeIds)
+                + " AND "
+                + columnName
+                + " IS NOT NULL AND "
+                + VISIT_TIMESTAMP_NAME
+                + " IS NOT NULL"
+                + timeSql
+                + " WINDOW w AS (PARTITION BY "
+                + PATIENT_ID_NAME
+                + ", "
+                + SCHEMA_ID_NAME
+                + " ORDER BY "
+                + VISIT_TIMESTAMP_NAME
+                + ", id)) steps WHERE "
+                + outerPredicate
+                + ")";
+    }
+
+    private String windowPairSelect(String sourceSql, String extraWhere, String comparison, String interval) {
+        return "(SELECT DISTINCT later."
+                + PATIENT_ID_NAME
+                + " FROM "
+                + sourceSql
+                + " later JOIN "
+                + sourceSql
+                + " earlier ON earlier."
+                + PATIENT_ID_NAME
+                + " = later."
+                + PATIENT_ID_NAME
+                + " AND earlier."
+                + SCHEMA_ID_NAME
+                + " = later."
+                + SCHEMA_ID_NAME
+                + " AND earlier."
+                + VISIT_TIMESTAMP_NAME
+                + " < later."
+                + VISIT_TIMESTAMP_NAME
+                + " AND later."
+                + VISIT_TIMESTAMP_NAME
+                + " <= earlier."
+                + VISIT_TIMESTAMP_NAME
+                + " + interval '"
+                + interval
+                + "' WHERE "
+                + comparison
+                + extraWhere
+                + ")";
+    }
+
+    private String nativePairWhere(List<Long> schemaNodeIds, String columnName, Object timeFilter) {
+        String schemaPredicate = schemaIdPredicate(schemaNodeIds);
+        String rowFilter = schemaPredicate
+                + " AND "
+                + columnName
+                + " IS NOT NULL AND "
+                + VISIT_TIMESTAMP_NAME
+                + " IS NOT NULL"
+                + timeSql(timeFilter);
+        return " AND "
+                + rowFilter.replace(SCHEMA_ID_NAME, "later." + SCHEMA_ID_NAME)
+                        .replace(columnName, "later." + columnName)
+                        .replace(VISIT_TIMESTAMP_NAME, "later." + VISIT_TIMESTAMP_NAME)
+                + " AND "
+                + rowFilter.replace(SCHEMA_ID_NAME, "earlier." + SCHEMA_ID_NAME)
+                        .replace(columnName, "earlier." + columnName)
+                        .replace(VISIT_TIMESTAMP_NAME, "earlier." + VISIT_TIMESTAMP_NAME);
+    }
+
+    private String numericDeltaSource(
+            List<Long> schemaNodeIds,
+            DataTypes dataType,
+            String timeSql,
+            NumericParse requested) {
+        String parsed = "CASE WHEN btrim(value_string) ~ '"
+                + requested.pattern()
+                + "' THEN btrim(value_string)::numeric END";
+        String valueExpr = switch (dataType) {
+            case INT -> "COALESCE(value_int, " + parsed + ")";
+            case FLOAT -> "COALESCE(value_float, " + parsed + ")";
+            case STRING, CATEGORICAL -> parsed;
+            default -> throw new QueryRejectedException(
+                    "value_mode delta numeric comparison cannot read datatype " + dataType);
+        };
+        return "SELECT "
+                + PATIENT_ID_NAME
+                + ", "
+                + SCHEMA_ID_NAME
+                + ", "
+                + VISIT_TIMESTAMP_NAME
+                + ", id, "
+                + valueExpr
+                + " AS numeric_value FROM "
+                + TABLE_NAME
+                + " WHERE "
+                + schemaIdPredicate(schemaNodeIds)
+                + " AND "
+                + VISIT_TIMESTAMP_NAME
+                + " IS NOT NULL AND "
+                + valueExpr
+                + " IS NOT NULL"
+                + timeSql;
+    }
+
+    private String lagNumericSelect(String sourceSql, String outerPredicate) {
+        return "(SELECT DISTINCT "
+                + PATIENT_ID_NAME
+                + " FROM (SELECT "
+                + PATIENT_ID_NAME
+                + ", numeric_value - LAG(numeric_value) OVER w AS value_delta, "
+                + VISIT_TIMESTAMP_NAME
+                + " - LAG("
+                + VISIT_TIMESTAMP_NAME
+                + ") OVER w AS time_gap FROM "
+                + sourceSql
+                + " parsed WINDOW w AS (PARTITION BY "
+                + PATIENT_ID_NAME
+                + ", "
+                + SCHEMA_ID_NAME
+                + " ORDER BY "
+                + VISIT_TIMESTAMP_NAME
+                + ", id)) steps WHERE "
+                + outerPredicate
+                + ")";
+    }
+
+    private NumericParse numericParse(String datatype) {
+        if (datatype == null || datatype.isBlank()) {
+            return null;
+        }
+        String normalized = datatype.trim().toLowerCase(Locale.ROOT);
+        return switch (normalized) {
+            case "integer", "int" -> NumericParse.INTEGER;
+            case "float" -> NumericParse.FLOAT;
+            default -> null;
+        };
+    }
+
+    private enum NumericParse {
+        INTEGER(INTEGER_TEXT),
+        FLOAT(FLOAT_TEXT);
+
+        private final String pattern;
+
+        NumericParse(String pattern) {
+            this.pattern = pattern;
+        }
+
+        private String pattern() {
+            return pattern;
+        }
+    }
+
+    private String deltaOperatorPredicate(List<QueryOperatorDTO> operators) {
+        if (operators == null || operators.isEmpty()) {
+            throw new QueryRejectedException("value_mode delta is missing an operator");
+        }
+        List<String> parts = new ArrayList<>();
+        for (QueryOperatorDTO operator : operators) {
+            if (operator == null || operator.getOperator() == null) {
+                throw new QueryRejectedException("value_mode delta is missing an operator");
+            }
+            String sqlOperator = switch (operator.getOperator()) {
+                case EQUAL -> "=";
+                case NOT_EQUAL -> "<>";
+                case SMALLER -> "<";
+                case SMALLER_EQUAL -> "<=";
+                case BIGGER -> ">";
+                case BIGGER_EQUAL -> ">=";
+                default -> throw new QueryRejectedException(
+                        "Operator is not valid for value_mode delta: " + operator.getOperator());
+            };
+            parts.add("value_delta " + sqlOperator + " " + requireNumericLiteral(operator.getValue()));
+        }
+        return String.join(" AND ", parts);
+    }
+
+    private String changePredicate(String operator, DataTypes dataType, String value) {
+        String changed = "current_value IS DISTINCT FROM previous_value";
+        return switch (operator) {
+            case "has_changed" -> changed;
+            case "changed_from" -> "previous_value = " + encodeValue(dataType, value) + " AND " + changed;
+            case "changed_to" -> "current_value = " + encodeValue(dataType, value) + " AND " + changed;
+            default -> throw new QueryRejectedException("Operator is not supported yet: " + operator);
+        };
+    }
+
+    private String requireNumericLiteral(String value) {
+        if (value == null || !NUMERIC_LITERAL.matcher(value.trim()).matches()) {
+            throw new QueryRejectedException("value_mode delta requires a numeric value");
+        }
+        return value.trim();
+    }
+
+    private String gapPredicate(ValueMode valueMode) {
+        if (valueMode.isWindowed()) {
+            return "time_gap IS NOT NULL AND time_gap <= interval '" + valueMode.interval() + "'";
+        }
+        return "time_gap IS NOT NULL";
+    }
+
+    private String timeSql(Object timeFilter) {
+        String timePredicate = timeFilterPredicate(timeFilter);
+        return timePredicate == null ? "" : " AND " + timePredicate;
+    }
+
+    private String unionClauses(String ontologyId, List<String> clauses) {
+        if (clauses == null || clauses.isEmpty()) {
+            throw new QueryRejectedException(
+                    "No evaluable clause could be built for ontology " + ontologyId
+                            + "; required AND condition cannot be evaluated on this node");
+        }
+        return "(" + String.join(" UNION ", clauses) + ")";
+    }
+
+    private Map<String, List<SchemaNodeEntity>> columnsFor(String ontologyId, String dataTypeId) {
+        if (ontologyId == null || ontologyId.isBlank()) {
+            throw new QueryRejectedException("Query item is missing an ontologyId and cannot be evaluated");
+        }
+        List<SchemaNodeEntity> schemaNodes = getSchemaNodesForQueryItem(ontologyId, dataTypeId);
+        if (schemaNodes.isEmpty()) {
+            Log.warnf("Found no schema nodes for ontology %s", ontologyId);
+            throw new QueryRejectedException("Required condition cannot be found on this node");
+        }
+        Log.infof("Found %d schema nodes for ontology %s", schemaNodes.size(), ontologyId);
+        Map<String, List<SchemaNodeEntity>> nodesByColumn = new LinkedHashMap<>();
+        for (SchemaNodeEntity schemaNode : schemaNodes) {
+            DataTypeEntity dataType = schemaNode.getDataType();
+            String columnName = getColumnName(dataType.getType());
+            if (columnName == null) {
+                Log.errorf("Unsupported data type for schema: %s", schemaNode.getName());
+                continue;
+            }
+            String groupKey = dataType.getType().name() + "|" + columnName;
+            nodesByColumn.computeIfAbsent(groupKey, key -> new ArrayList<>()).add(schemaNode);
+        }
+        if (nodesByColumn.isEmpty()) {
+            throw new QueryRejectedException(
+                    "No evaluable clause could be built for ontology " + ontologyId
+                            + "; required AND condition cannot be evaluated on this node");
+        }
+        return nodesByColumn;
+    }
+
+    private record ValueMode(Kind kind, String interval) {
+        private enum Kind {
+            ABSOLUTE, DELTA, DELTA_WINDOW
+        }
+
+        private static ValueMode absolute() {
+            return new ValueMode(Kind.ABSOLUTE, null);
+        }
+
+        private static ValueMode delta() {
+            return new ValueMode(Kind.DELTA, null);
+        }
+
+        private static ValueMode window(String interval) {
+            return new ValueMode(Kind.DELTA_WINDOW, interval);
+        }
+
+        private boolean isAbsolute() {
+            return kind == Kind.ABSOLUTE;
+        }
+
+        private boolean isWindowed() {
+            return kind == Kind.DELTA_WINDOW;
         }
     }
 

@@ -312,6 +312,134 @@ public class QueryBuilderTest {
                 () -> queryBuilderBO.buildCountDistinctSql(queryTree(invalidDate)));
     }
 
+    @Test
+    @Order(16)
+    void testAbsoluteValueModeMatchesRawAge() {
+        Lang2QueryNodeDTO age = leaf("2002", "1002", "<", 28);
+        age.setValueMode("absolute");
+
+        QueryResultWrapperDTO response = queryBO.runQuery(queryTree(age), List.of(1L, 5L));
+        Assertions.assertEquals(List.of(1L), matchedPatientIds(response));
+    }
+
+    @Test
+    @Order(17)
+    void testDeltaMatchesConsecutiveAgeIncrease() {
+        Lang2QueryNodeDTO age = leaf("2002", "1002", ">", 0);
+        age.setValueMode("delta");
+
+        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(age));
+        Assertions.assertTrue(sql.contains("COALESCE(value_int,"));
+        Assertions.assertTrue(sql.contains("LAG(numeric_value)"));
+        Assertions.assertFalse(sql.contains("interval "));
+        assertSqlExecutes(sql);
+
+        QueryResultWrapperDTO response = queryBO.runQuery(queryTree(age), List.of(1L, 5L));
+        Assertions.assertEquals(List.of(1L, 2L), matchedPatientIds(response));
+
+        Lang2QueryNodeDTO tooLarge = leaf("2002", "1002", ">", 2);
+        tooLarge.setValueMode("delta");
+        QueryResultWrapperDTO none = queryBO.runQuery(queryTree(tooLarge), List.of(1L, 5L));
+        Assertions.assertEquals(List.of(), matchedPatientIds(none));
+    }
+
+    @Test
+    @Order(18)
+    void testDeltaWindowUsesVisitGap() {
+        Lang2QueryNodeDTO withinWeek = leaf("2002", "1002", ">", 0);
+        withinWeek.setValueMode("delta 7 days");
+        String weekSql = queryBuilderBO.buildCountDistinctSql(queryTree(withinWeek));
+        Assertions.assertTrue(weekSql.contains(
+                "later.visit_timestamp <= earlier.visit_timestamp + interval '7 days'"));
+        Assertions.assertFalse(weekSql.contains("LAG("));
+        assertSqlExecutes(weekSql);
+        QueryResultWrapperDTO week = queryBO.runQuery(queryTree(withinWeek), List.of(1L, 5L));
+        Assertions.assertEquals(List.of(), matchedPatientIds(week));
+
+        Lang2QueryNodeDTO withinFortyDays = leaf("2002", "1002", ">", 0);
+        withinFortyDays.setValueMode("delta 40 days");
+        String fortySql = queryBuilderBO.buildCountDistinctSql(queryTree(withinFortyDays));
+        Assertions.assertTrue(fortySql.contains(
+                "later.visit_timestamp <= earlier.visit_timestamp + interval '40 days'"));
+        assertSqlExecutes(fortySql);
+        QueryResultWrapperDTO forty = queryBO.runQuery(queryTree(withinFortyDays), List.of(1L, 5L));
+        Assertions.assertEquals(List.of(1L, 2L), matchedPatientIds(forty));
+    }
+
+    @Test
+    @Order(19)
+    void testChangeOperatorsUseConsecutiveValues() {
+        Lang2QueryNodeDTO changed = leaf("2001", "1001", "has_changed", null);
+        changed.setValueMode("delta");
+        QueryResultWrapperDTO changedResponse = queryBO.runQuery(queryTree(changed), List.of(1L, 5L));
+        Assertions.assertEquals(List.of(1L), matchedPatientIds(changedResponse));
+
+        Lang2QueryNodeDTO fromDiabetes = leaf("2001", "1001", "changed_from", "Diabetes Type 2");
+        fromDiabetes.setValueMode("delta");
+        QueryResultWrapperDTO fromResponse = queryBO.runQuery(queryTree(fromDiabetes), List.of(1L, 5L));
+        Assertions.assertEquals(List.of(1L), matchedPatientIds(fromResponse));
+
+        Lang2QueryNodeDTO toHypertension = leaf("2001", "1001", "changed_to", "Hypertension");
+        toHypertension.setValueMode("delta");
+        QueryResultWrapperDTO toResponse = queryBO.runQuery(queryTree(toHypertension), List.of(1L, 5L));
+        Assertions.assertEquals(List.of(1L), matchedPatientIds(toResponse));
+    }
+
+    @Test
+    @Order(20)
+    void testValueModeRejectsGroupsWindowsAndNonNumericDelta() {
+        Lang2QueryNodeDTO group = and(leaf("2002", "1002", ">", 0));
+        group.setValueMode("delta");
+        Assertions.assertThrows(QueryRejectedException.class,
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(group)));
+
+        Lang2QueryNodeDTO badInterval = leaf("2002", "1002", ">", 0);
+        badInterval.setValueMode("delta yesterday");
+        Assertions.assertThrows(QueryRejectedException.class,
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(badInterval)));
+
+        Lang2QueryNodeDTO absoluteChange = leaf("2001", "1001", "has_changed", null);
+        Assertions.assertThrows(QueryRejectedException.class,
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(absoluteChange)));
+
+        Lang2QueryNodeDTO stringDelta = leaf("2001", "1001", ">", 0);
+        stringDelta.setValueMode("delta");
+        String stringSql = queryBuilderBO.buildCountDistinctSql(queryTree(stringDelta));
+        Assertions.assertTrue(stringSql.contains("btrim(value_string)::numeric"));
+        assertSqlExecutes(stringSql);
+    }
+
+    @Test
+    @Order(21)
+    void testDeltaParsesStringValuesWhenDatatypeIsNumeric() {
+        Lang2QueryNodeDTO asFloat = leaf("2001", "1001", ">", 0);
+        asFloat.setValueMode("delta 3 minutes");
+        asFloat.setDatatype("Float");
+        String floatSql = queryBuilderBO.buildCountDistinctSql(queryTree(asFloat));
+        Assertions.assertTrue(floatSql.contains("btrim(value_string)::numeric"));
+        Assertions.assertTrue(floatSql.contains("btrim(value_string) ~ '^-?[0-9]+([.][0-9]+)?$'"));
+        Assertions.assertTrue(floatSql.contains("interval '3 minutes'"));
+        assertSqlExecutes(floatSql);
+        Assertions.assertEquals(List.of(), matchedPatientIds(queryBO.runQuery(queryTree(asFloat), List.of(1L, 5L))));
+
+        Lang2QueryNodeDTO asInteger = leaf("2001", "1001", ">", 0);
+        asInteger.setValueMode("delta");
+        asInteger.setDatatype("Integer");
+        String integerSql = queryBuilderBO.buildCountDistinctSql(queryTree(asInteger));
+        Assertions.assertTrue(integerSql.contains("btrim(value_string) ~ '^-?[0-9]+$'"));
+        Assertions.assertFalse(integerSql.contains("([.][0-9]+)?"));
+        assertSqlExecutes(integerSql);
+
+        Lang2QueryNodeDTO numericColumn = leaf("2002", "1002", ">", 0);
+        numericColumn.setValueMode("delta");
+        numericColumn.setDatatype("Float");
+        String numericSql = queryBuilderBO.buildCountDistinctSql(queryTree(numericColumn));
+        Assertions.assertTrue(numericSql.contains("COALESCE(value_int,"));
+        Assertions.assertTrue(numericSql.contains("btrim(value_string)::numeric"));
+        QueryResultWrapperDTO response = queryBO.runQuery(queryTree(numericColumn), List.of(1L, 5L));
+        Assertions.assertEquals(List.of(1L, 2L), matchedPatientIds(response));
+    }
+
     private QueryDTO queryTree(Lang2QueryNodeDTO root) {
         QueryDTO queryDTO = new QueryDTO();
         queryDTO.setQuery(root);
