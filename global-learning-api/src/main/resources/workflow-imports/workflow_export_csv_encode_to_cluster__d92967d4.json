@@ -76,7 +76,7 @@
       "y" : 0
     }
   } ],
-  "keycloakId" : "test",
+  "keycloakId" : "admin",
   "name" : "CSV encode to cluster ",
   "description" : "Input dataset will be one hot encoded and used for cluster",
   "publishStatus" : "PUBLISHED"
