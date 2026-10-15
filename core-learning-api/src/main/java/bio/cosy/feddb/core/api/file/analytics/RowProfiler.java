@@ -531,6 +531,9 @@ public final class RowProfiler {
         private static final int MAX_EXACT_VALUES =
                 Integer.getInteger("feddb.analytics.max-exact-values", 50_000);
 
+        /** Distinct texts kept of the ones counted as missing; their spellings vary only in case and spaces. */
+        private static final int MAX_MISSING_VALUES = 20;
+
         /** Frequent-items map size; must be a power of two. */
         private static final int TOP_ITEMS_MAP_SIZE = 4096;
 
@@ -541,6 +544,8 @@ public final class RowProfiler {
 
         long missing = 0;
         long nonMissing = 0;
+        /** The texts counted as missing, like 'NULL' or ' none ', so a mapping can see and replace them. */
+        final Map<String, Integer> missingFreq = new HashMap<>();
 
         long numericCount = 0;
         long booleanCount = 0;
@@ -632,7 +637,7 @@ public final class RowProfiler {
 
         void accept(String raw) {
             if (isMissing(raw)) {
-                missing++;
+                countMissing(raw);
                 return;
             }
             nonMissing++;
@@ -663,7 +668,7 @@ public final class RowProfiler {
 
             // Treat empty string as missing to match CSV behavior
             if (node.isTextual() && isMissing(node.asText())) {
-                missing++;
+                countMissing(node.asText());
                 return;
             }
 
@@ -708,6 +713,13 @@ public final class RowProfiler {
                 return;
             }
             accept(value == null ? null : String.valueOf(value));
+        }
+
+        private void countMissing(String raw) {
+            missing++;
+            if (raw != null && !raw.isBlank() && (missingFreq.size() < MAX_MISSING_VALUES || missingFreq.containsKey(raw))) {
+                missingFreq.merge(raw, 1, Integer::sum);
+            }
         }
 
         private boolean looksInteger() {
@@ -794,7 +806,12 @@ public final class RowProfiler {
                     uniqueValues(),
                     mean, std, min, p25, median, p75, max,
                     top,
-                    valueCounts
+                    valueCounts,
+                    missingFreq.isEmpty() ? null : missingFreq.entrySet().stream()
+                            .sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder()))
+                            .map(entry -> (Map.Entry<String, Integer>) new AbstractMap.SimpleImmutableEntry<>(
+                                    entry.getKey(), entry.getValue()))
+                            .toList()
             );
         }
     }

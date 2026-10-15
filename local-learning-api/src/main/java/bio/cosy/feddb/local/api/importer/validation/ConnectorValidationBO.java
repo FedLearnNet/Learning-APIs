@@ -117,13 +117,12 @@ public class ConnectorValidationBO extends BaseValidationBO {
     }
 
     public String rejection(Object value, Long schemaId, DataTypeNodeDTO dataType) {
-        ConnectorValidationResultDTO result = validate(value, schemaId, dataType);
-        if (!result.isValid()) {
-            return result.getMessage();
+        if (isMissingPlaceholder(value, dataType == null ? null : dataType.getOptions())) {
+            return "a missing-value marker, replace it with the value the schema uses for missing entries, if it has one, "
+                    + "else with null (Replace Value or Normalize Missing function)";
         }
-        return isMissingPlaceholder(value, dataType == null ? null : dataType.getOptions())
-                ? "a missing-value placeholder, replace it with null (Replace Value function)"
-                : null;
+        ConnectorValidationResultDTO result = validate(value, schemaId, dataType);
+        return result.isValid() ? null : result.getMessage();
     }
 
     public Map<Object, String> rejections(Collection<?> values, Long schemaId, DataTypeNodeDTO dataType) {

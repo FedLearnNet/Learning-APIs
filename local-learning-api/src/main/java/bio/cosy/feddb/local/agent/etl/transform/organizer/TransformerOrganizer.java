@@ -21,6 +21,7 @@ import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
 import bio.cosy.feddb.local.api.schema.datatype.DataTypeDTO;
 import bio.cosy.feddb.local.api.schema.datatype.DataTypeEntityMapper;
+import bio.cosy.feddb.local.helper.text.TextSimilarity;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
@@ -145,12 +146,12 @@ public class TransformerOrganizer {
         if (columns.size() == 1) {
             ConnectorSelectedTransformer direct = ConnectorSelectedTransformer.mapping(columns.getFirst(), List.of());
             ConnectorValidationResultDTO validation = validateTool.validate(direct);
-            if (validation.isValid() && checksValues(nodeDTO)) {
+            if (validation.isValid() && checksValues(nodeDTO, columns.getFirst(), schemaNode)) {
                 return direct;
             }
             hints += validation.isValid()
-                    ? "\nMapping column '" + columns.getFirst() + "' directly passes the validation, but the data type "
-                    + "accepts any text, so check its values yourself."
+                    ? "\nMapping column '" + columns.getFirst() + "' directly passes the validation, but it only checks "
+                    + "the type, so check yourself that the values mean the same, e.g. in unit, scale and missing-value marker."
                     : "\nMapping column '" + columns.getFirst() + "' directly is rejected: " + validation.getMessage();
             String related = columnTool.relatedColumns(columns.getFirst());
             if (!related.isEmpty()) {
@@ -172,11 +173,13 @@ public class TransformerOrganizer {
         return selected;
     }
 
-    /** Whether the validation can tell wrong values apart; free text accepts e.g. missing-value markers like '-1' as well. */
-    private static boolean checksValues(DataTypeNodeDTO dataType) {
-        return dataType == null || dataType.getType() != DataTypes.STRING
-                || dataType.getOptions() != null && !dataType.getOptions().isEmpty()
-                || dataType.getValidations() != null && !dataType.getValidations().isEmpty();
+    /**
+     * Whether a valid direct mapping needs no agent: categories pin the values, a number or date only when the column
+     * has the name of the node, else it can have another unit; free text accepts any missing-value marker.
+     */
+    private static boolean checksValues(DataTypeNodeDTO dataType, String column, LocalSchemaNodeDTO schemaNode) {
+        return dataType == null || dataType.getOptions() != null && !dataType.getOptions().isEmpty()
+                || dataType.getType() != DataTypes.STRING && TextSimilarity.nameSimilarity(column, schemaNode.getName()) == 1;
     }
 
     private ConnectorSelectedTransformer runWorkflow(TableSample selectedData, LocalSchemaNodeDTO schemaNode,

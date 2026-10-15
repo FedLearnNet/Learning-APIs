@@ -97,7 +97,7 @@ public class AgentDataPrivacy {
         }
         return new ColumnProfile(real.name(), real.type(), real.count(), real.missing(), real.uniqueValues(), real.mean(),
                 real.std(), real.min(), real.p25(), real.median(), real.p75(), real.max(),
-                randomCounts(real, real.topCategories()), randomCounts(real, real.valueCounts()));
+                randomCounts(real, real.topCategories()), randomCounts(real, real.valueCounts()), real.missingValues());
     }
 
     private List<Map.Entry<String, Integer>> randomCounts(ColumnProfile profile, List<Map.Entry<String, Integer>> counts) {

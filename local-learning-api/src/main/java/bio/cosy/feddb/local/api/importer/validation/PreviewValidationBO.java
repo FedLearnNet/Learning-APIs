@@ -301,6 +301,7 @@ public class PreviewValidationBO {
         if (profile.missing() > 0) {
             values.add("");
         }
+        Optional.ofNullable(profile.missingValues()).ifPresent(markers -> addCategoricalValues(values, markers));
         return new ArrayList<>(values);
     }
 

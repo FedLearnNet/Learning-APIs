@@ -98,7 +98,9 @@ public class TransformerHelper {
                 .filter(value -> value != null && !value.isBlank())
                 .limit(MAX_FILE_VALUES)
                 .collect(Collectors.toCollection(ArrayList::new));
-        if (profile.missing() > 0) {
+        List<Map.Entry<String, Integer>> markers = missingValues(profile);
+        markers.forEach(marker -> values.add(marker.getKey()));
+        if (profile.missing() > markers.stream().mapToLong(Map.Entry::getValue).sum()) {
             values.add(null);
         }
         return values;
@@ -132,6 +134,10 @@ public class TransformerHelper {
     public static String describeFileValues(ColumnProfile profile, int maxValues) {
         StringBuilder text = new StringBuilder("(").append(profile.count()).append(" rows, ")
                 .append(profile.missing()).append(" empty");
+        List<Map.Entry<String, Integer>> markers = missingValues(profile);
+        if (!markers.isEmpty()) {
+            text.append(" or a missing-value marker ").append(counted(markers, markers.size()));
+        }
         if (profile.min() != null && profile.max() != null) {
             text.append(", ").append(profile.min()).append(" to ").append(profile.max());
         }
@@ -140,14 +146,22 @@ public class TransformerHelper {
         if (counts.isEmpty()) {
             return text.toString();
         }
-        text.append(": ").append(counts.stream()
-                .limit(maxValues)
-                .map(entry -> "'" + entry.getKey() + "' x" + entry.getValue())
-                .collect(Collectors.joining(", ")));
+        text.append(": ").append(counted(counts, maxValues));
         if (counts.size() > maxValues) {
             text.append(", ... ").append(profile.uniqueValues()).append(" distinct values");
         }
         return text.toString();
+    }
+
+    private static String counted(List<Map.Entry<String, Integer>> counts, int maxValues) {
+        return counts.stream()
+                .limit(maxValues)
+                .map(entry -> "'" + entry.getKey() + "' x" + entry.getValue())
+                .collect(Collectors.joining(", "));
+    }
+
+    public static List<Map.Entry<String, Integer>> missingValues(ColumnProfile profile) {
+        return profile.missingValues() == null ? List.of() : profile.missingValues();
     }
 
     public static List<Map.Entry<String, Integer>> valueCounts(ColumnProfile profile) {

@@ -7,6 +7,7 @@ import bio.cosy.feddb.local.agent.etl.transform.helper.AgentDataPrivacy;
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerHelper;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
+import bio.cosy.feddb.local.api.importer.connector.ConnectorHelper;
 import bio.cosy.feddb.local.api.importer.functions.managed.AbstractManagedFunction;
 import bio.cosy.feddb.local.api.importer.run.preview.ConnectorPreviewRunnerBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @RequestScoped
 public class TransformerValidateTool {
@@ -183,7 +185,8 @@ public class TransformerValidateTool {
     }
 
     private Map<Object, String> rejectedFileValues(List<ConnectorTransformerDTO> transformers, String column) {
-        if (transformers.isEmpty() || valueRows.isEmpty() || transformers.stream().anyMatch(ConnectorTransformerDTO::isStoreTool)) {
+        if (transformers.isEmpty() || valueRows.isEmpty() || transformers.stream().anyMatch(ConnectorTransformerDTO::isStoreTool)
+                || readsSeveralColumns(transformers)) {
             return Map.of();
         }
         List<Map<String, Object>> rows;
@@ -199,6 +202,14 @@ public class TransformerValidateTool {
     }
 
 
+    private boolean readsSeveralColumns(List<ConnectorTransformerDTO> transformers) {
+        return transformers.stream()
+                .flatMap(transformer -> ConnectorHelper.transformerInputs(transformer).stream())
+                .filter(selectedColumns::contains)
+                .distinct()
+                .count() > 1;
+    }
+
     private String conversion(String mappedColumn) {
         boolean categorical = dataType != null && dataType.getOptions() != null && !dataType.getOptions().isEmpty();
         if (!categorical || convertedValueRows == null || selectedColumns.size() != 1) {
@@ -209,14 +220,16 @@ public class TransformerValidateTool {
         if (profile == null) {
             return "";
         }
-        Map<String, Integer> counts = TransformerHelper.valueCounts(profile).stream()
+        Map<String, Integer> counts = Stream.concat(TransformerHelper.valueCounts(profile).stream(),
+                        TransformerHelper.missingValues(profile).stream())
                 .filter(entry -> entry.getKey() != null && entry.getValue() != null)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Integer::sum));
+        long blank = profile.missing() - TransformerHelper.missingValues(profile).stream().mapToLong(Map.Entry::getValue).sum();
         return ", the values of the file become: " + IntStream.range(0, valueRows.size())
                 .limit(MAX_REPORTED_CONVERSIONS)
                 .mapToObj(index -> {
                     Object value = valueRows.get(index).get(source);
-                    long count = value == null ? profile.missing() : counts.getOrDefault(String.valueOf(value), 0);
+                    long count = value == null ? blank : counts.getOrDefault(String.valueOf(value), 0);
                     return shown(value) + " x" + count + " -> " + shown(convertedValueRows.get(index).get(mappedColumn));
                 })
                 .collect(Collectors.joining(", "))

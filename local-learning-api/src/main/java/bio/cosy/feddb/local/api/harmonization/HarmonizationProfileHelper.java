@@ -40,9 +40,17 @@ public class HarmonizationProfileHelper {
                 && NUMBER_TYPES.contains(profile.type()) ? "TEXT" : Objects.requireNonNullElse(profile.type(), "TEXT");
         boolean categorical = (type.equals("TEXT") || type.equals("BOOLEAN"))
                 && !values.isEmpty() && profile.uniqueValues() <= CATEGORY_LIMIT;
+        long empty = profile.missing();
+        if (categorical) {
+            List<Map.Entry<String, Integer>> markers = TransformerHelper.missingValues(profile).stream()
+                    .map(marker -> Map.entry(marker.getKey().strip(), marker.getValue()))
+                    .toList();
+            values = Stream.concat(values.stream(), markers.stream()).toList();
+            empty -= markers.stream().mapToLong(Map.Entry::getValue).sum();
+        }
         DataTypeDTO dataType = new DataTypeDTO();
         dataType.setName(profile.name());
-        dataType.setDescription(describe(profile, values, categorical ? "CATEGORICAL" : type));
+        dataType.setDescription(describe(profile, values, categorical ? "CATEGORICAL" : type, empty));
         dataType.setType(categorical ? DataTypes.CATEGORICAL : switch (type) {
             case "INTEGER" -> DataTypes.INT;
             case "NUMBER" -> DataTypes.FLOAT;
@@ -103,9 +111,9 @@ public class HarmonizationProfileHelper {
     }
 
 
-    private static String describe(ColumnProfile profile, List<Map.Entry<String, Integer>> values, String type) {
-        String missing = profile.count() == 0 || profile.missing() == 0 ? ""
-                : " " + percent(profile.missing(), profile.count()) + " of the values are missing.";
+    private static String describe(ColumnProfile profile, List<Map.Entry<String, Integer>> values, String type, long empty) {
+        String missing = profile.count() == 0 || empty == 0 ? ""
+                : " " + percent(empty, profile.count()) + " of the values are missing.";
         if (NUMBER_TYPES.contains(type) && profile.min() != null && profile.max() != null) {
             // Only what the reference holds, a file harmonized onto it can hold other numbers of the same meaning
             return "Numbers in the reference file range from " + number(profile.min()) + " to " + number(profile.max())
@@ -119,7 +127,7 @@ public class HarmonizationProfileHelper {
         String shares = Stream.concat(values.stream()
                                 .limit(categorical ? values.size() : EXAMPLES)
                                 .map(value -> value.getKey() + " " + percent(value.getValue(), profile.count())),
-                        Stream.of(EMPTY + " " + percent(profile.missing(), profile.count())).filter(empty -> profile.missing() > 0))
+                        Stream.of(EMPTY + " " + percent(empty, profile.count())).filter(share -> empty > 0))
                 .collect(Collectors.joining(", "));
         return (categorical ? "Values of the reference file with their share of all rows: " : "Most frequent values of the "
                 + "reference file with their share of all rows: ") + shares + ".";

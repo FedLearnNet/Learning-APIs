@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.agent.etl.transform.organizer;
 
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
+import bio.cosy.feddb.core.api.file.analytics.RowProfiler;
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerHelper;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.Recheck;
@@ -54,7 +55,7 @@ public class TransformerReview {
             ConnectorSelectedTransformer mapping = selected.get(node.getId());
             Optional<String> column = sourceColumn(mapping, context);
             long values = column.map(name -> TransformerHelper.fileValues(context.fileProfiles().get(name)).stream()
-                    .filter(Objects::nonNull).count()).orElse(0L);
+                    .filter(value -> !RowProfiler.isMissing(value)).count()).orElse(0L);
             if (values < MIN_PARTLY_USED_VALUES || column.get().equals(context.patientIdColumn())
                     || partlyUsed.containsKey(column.get())) {
                 continue;
@@ -103,7 +104,7 @@ public class TransformerReview {
 
     private static boolean hasValues(String column, TableSample original, TransformerRunContext context) {
         ColumnProfile profile = context.fileProfiles().get(column);
-        return profile != null ? TransformerHelper.fileValues(profile).stream().anyMatch(Objects::nonNull)
+        return profile != null ? TransformerHelper.fileValues(profile).stream().anyMatch(value -> !RowProfiler.isMissing(value))
                 : original.getValues().getOrDefault(column, List.of()).stream().anyMatch(value -> !String.valueOf(value).isBlank());
     }
 }

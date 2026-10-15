@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.agent.etl.transform.tools;
 
+import bio.cosy.feddb.core.api.file.analytics.RowProfiler;
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerHelper;
 import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorHelper;
@@ -95,6 +96,7 @@ public class TransformerColumnTool {
     }
 
     private List<String> fileValues(String column) {
-        return TransformerHelper.fileValues(context.fileProfiles().get(column)).stream().filter(Objects::nonNull).toList();
+        return TransformerHelper.fileValues(context.fileProfiles().get(column)).stream()
+                .filter(value -> !RowProfiler.isMissing(value)).toList();
     }
 }

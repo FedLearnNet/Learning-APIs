@@ -317,6 +317,41 @@ class TransformerValidateToolTest {
         assertTrue(result.isValid(), result.getMessage());
     }
 
+    @Test
+    void rejectsAMissingMarkerOfTheFileThePreviewRowsDoNotShow() {
+        init("payer_code", List.of("MC", "MC"), DataTypes.CATEGORICAL, List.of("MC", "?"));
+        withFileProfiles("payer_code", List.of("MC", "MC", "NULL"));
+
+        ConnectorValidationResultDTO result = tool.validate(ConnectorSelectedTransformer.mapping("payer_code", List.of()));
+
+        assertFalse(result.isValid());
+        assertTrue(result.getMessage().contains("'NULL': a missing-value marker"), result.getMessage());
+    }
+
+    @Test
+    void judgesAChainOverSeveralColumnsOnThePreviewRows() {
+        init("age", List.of(), DataTypes.CATEGORICAL, List.of("[70"));
+        previewRows = List.of(Map.of("age_low", "[70", "age_high", "80)"));
+        Map<String, ColumnProfile> profiles = new HashMap<>();
+        List<Map<String, Object>> fileRows = new ArrayList<>(List.of(new LinkedHashMap<>(Map.of("age_low", "[70", "age_high", "80)")),
+                new LinkedHashMap<>(Map.of("age_low", "[60", "age_high", "70)"))));
+        try (TableData data = new TableData(new ArrayList<>(List.of("age_low", "age_high")), fileRows, null)) {
+            new TableDataProfileBO(new FileAnalytics()).profiles(data).forEach(profile -> profiles.put(profile.name(), profile));
+        }
+        context = new TransformerRunContext(context.config(), null, "keycloak-user", profiles, new HashMap<>(), new ArrayList<>(), null);
+        // A value row of '[60' keeps the '80)' of the first row, a combination no row of the file holds
+        tool.init(context, node, dataType, List.of("age_low", "age_high"), TransformerHelper.valueRows(
+                new TableSample(List.of("age_low", "age_high"), previewRows, null), List.of("age_low", "age_high"), profiles, null));
+        Map<String, Object> inputs = new LinkedHashMap<>();
+        inputs.put("first", "age_low");
+        inputs.put("second", "age_high");
+
+        ConnectorValidationResultDTO result = tool.validate(ConnectorSelectedTransformer.mapping("age",
+                List.of(function(ROW_FUNCTION, inputs, Map.of("value", "age")))));
+
+        assertTrue(result.isValid(), result.getMessage());
+    }
+
     private void initMedications() {
         init("metformin_rx", List.of("No", "Up"), DataTypes.STRING, null);
         previewRows = List.of(Map.of("patient", "p1", "metformin_rx", "No", "rosiglitazone_rx", "Up"));

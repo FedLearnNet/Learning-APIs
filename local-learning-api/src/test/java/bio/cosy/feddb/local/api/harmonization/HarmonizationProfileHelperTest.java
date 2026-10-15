@@ -1,9 +1,12 @@
 package bio.cosy.feddb.local.api.harmonization;
 
+import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
+import bio.cosy.feddb.local.api.schema.datatype.DataTypeDTO;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,6 +30,19 @@ class HarmonizationProfileHelperTest {
 
         assertFalse(pattern.contains("\\p") || pattern.contains("\\Q"), pattern);
         assertTrue(Pattern.matches(pattern, "Größe"));
+    }
+
+    @Test
+    void allowsTheMissingValueMarkerOfTheReference() {
+        List<Map.Entry<String, Integer>> values = List.of(Map.entry("Norm", 20), Map.entry(">7", 10));
+        ColumnProfile profile = new ColumnProfile("A1Cresult", "TEXT", 100, 70, 2, null, null, null, null, null, null, null,
+                values, values, List.of(Map.entry("None", 60)));
+
+        DataTypeDTO dataType = HarmonizationProfileHelper.dataType(profile);
+
+        assertEquals(Set.of("Norm", ">7", "None"), Set.copyOf(dataType.getAllowedValues()));
+        assertTrue(dataType.getDescription().contains("None 60%") && dataType.getDescription().contains("(empty) 10%"),
+                dataType.getDescription());
     }
 
     @SafeVarargs
