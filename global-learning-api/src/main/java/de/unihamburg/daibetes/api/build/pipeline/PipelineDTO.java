@@ -2,6 +2,7 @@ package de.unihamburg.daibetes.api.build.pipeline;
 
 import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
 import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
+import bio.cosy.feddb.core.api.pipeline.PipelineRunMode;
 import bio.cosy.feddb.core.base.BaseDTO;
 import de.unihamburg.daibetes.api.build.pipeline.steps.PipelineStepDTO;
 import lombok.Data;
@@ -16,6 +17,8 @@ public class PipelineDTO extends BaseDTO {
     private PipelineStatus pipelineStatus;
 
     private PipelineType pipelineType;
+
+    private PipelineRunMode runMode = PipelineRunMode.ALL;
 
     private List<PipelineStepDTO> pipelineSteps;
 

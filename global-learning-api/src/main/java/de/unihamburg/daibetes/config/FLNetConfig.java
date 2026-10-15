@@ -45,6 +45,9 @@ public interface FLNetConfig {
     @WithName("pipeline.builder.image")
     Optional<String> pipelineBuilderImage();
 
+    @WithName("pipeline.rescan.cron")
+    String pipelineRescanCron();
+
     @WithName("audit.min-acceptance-amount")
     @WithDefault("1")
     Long auditMinAcceptanceAmount();
