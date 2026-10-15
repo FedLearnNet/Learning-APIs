@@ -64,3 +64,6 @@ global-learning-api/results/
 .claude
 
 */orch_secrets.env
+
+local-learning-api/results
+local-learning-api/src/main/resources/sapbert
