@@ -16,6 +16,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - eval-network
 
   orch-api:
     image: ${ORCH_API_IMAGE:-ghcr.io/fedlearnnet/orchestration-api/orch-api:feature-pipeline-sast}
@@ -28,9 +30,12 @@ services:
       QUARKUS_DATASOURCE_PASSWORD: password
       QUARKUS_LOG_CONSOLE_JSON_ENABLED: "false"
       CONTAINER_HOST_OVERRIDE: host.docker.internal
+      CONTAINER_NETWORK_NAMES: eval-network
       CONTAINER_NETWORK_ALWAYS_BRIDGE: "true"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - eval-network
     depends_on:
       local-learning-api-db:
         condition: service_healthy
@@ -48,6 +53,7 @@ services:
       EVAL_RUNS: ${EVAL_RUNS:-3}
       EVAL_RUN_NUMBERS: ${EVAL_RUN_NUMBERS:-}
       EVAL_DATASETS: ${EVAL_DATASETS:-}
+      EVAL_GDC_STUDIES: ${EVAL_GDC_STUDIES:-}
       EVAL_REPLACE: ${EVAL_REPLACE:-false}
       EVAL_TESTS: ${EVAL_TESTS:-us130,gdc}
     volumes:
@@ -57,3 +63,8 @@ services:
     depends_on:
       orch-api:
         condition: service_started
+
+# The network the containers of the orchestrator join; they reach the tests through host.docker.internal
+networks:
+  eval-network:
+    name: eval-network
