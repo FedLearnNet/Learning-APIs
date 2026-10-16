@@ -1,6 +1,7 @@
 package bio.cosy.feddb.core.services.orch.clients;
 
 import bio.cosy.feddb.core.services.orch.dto.InfoDTO;
+import bio.cosy.feddb.core.services.orch.dto.RegistryImagesDTO;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 
@@ -11,6 +12,10 @@ public interface DockerServiceClient {
     @GET
     @Path("info")
     InfoDTO getInfo();
+
+    @GET
+    @Path("registry/images")
+    RegistryImagesDTO getRegistryImages();
 
     @GET
     @Path("image/exists")

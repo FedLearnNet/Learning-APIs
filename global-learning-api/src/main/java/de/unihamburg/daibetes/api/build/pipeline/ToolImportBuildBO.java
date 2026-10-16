@@ -1,6 +1,7 @@
 package de.unihamburg.daibetes.api.build.pipeline;
 
 import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
+import bio.cosy.feddb.core.api.pipeline.PipelineRunMode;
 import bio.cosy.feddb.core.api.pipeline.PipelineStatusUpdateDTO;
 import bio.cosy.feddb.core.api.pipeline.StepName;
 import de.unihamburg.daibetes.api.app.FederatedAppAO;
@@ -88,6 +89,18 @@ public class ToolImportBuildBO {
         buildRequests.fire(request);
     }
 
+    public void enqueueRescan(FederatedAppVersionEntity version) {
+        if (!version.hasImage() || version.isRebuilding() || pipelineAO.existsActiveByAppVersionId(version.getId())) {
+            return;
+        }
+        PipelineRebuildDTO request = new PipelineRebuildDTO();
+        request.setPipelineType(PipelineType.APP);
+        request.setAppVersionId(version.getId());
+        request.setRunMode(PipelineRunMode.SCAN_ONLY);
+        request.setExistsInStore(true);
+        buildRequests.fire(request);
+    }
+
     void queue(@Observes(during = TransactionPhase.AFTER_SUCCESS) PipelineRebuildDTO request) {
         if (!queuedVersions.add(request.getAppVersionId())) {
             return;
@@ -127,16 +140,21 @@ public class ToolImportBuildBO {
     private CurrentPipelineRuns createBuild(PipelineRebuildDTO request) {
         FederatedAppVersionEntity version = QuarkusTransaction.requiringNew()
                 .call(() -> versionAO.findById(request.getAppVersionId()));
-        if (version == null || !shouldBuild(version, request.isExistsInStore())) {
+        if (version == null || !shouldBuild(version, request)) {
             return null;
         }
         return QuarkusTransaction.requiringNew().call(() -> {
             FederatedAppVersionEntity current = versionAO.findById(request.getAppVersionId(), LockModeType.PESSIMISTIC_WRITE);
-            if (current == null || current.isRebuilding() || StringUtils.isBlank(current.getFederatedApp().getSourceUrl())
+            if (current == null || current.isRebuilding()
+                    || (request.getRunMode() != PipelineRunMode.SCAN_ONLY && StringUtils.isBlank(current.getFederatedApp().getSourceUrl()))
                     || pipelineAO.existsActiveByAppVersionId(current.getId())) {
                 return null;
             }
             request.setAutoStart(false);
+            if (request.getRunMode() != PipelineRunMode.SCAN_ONLY) {
+                current.setImageName(null);
+                current.setPublishInfo(null);
+            }
             PipelineDTO pipeline = pipelineBO.create(request);
             current.setRebuilding(true);
             CurrentPipelineRuns run = new CurrentPipelineRuns();
@@ -242,15 +260,18 @@ public class ToolImportBuildBO {
         }
     }
 
-    private boolean shouldBuild(FederatedAppVersionEntity version, boolean existsInStore) {
+    private boolean shouldBuild(FederatedAppVersionEntity version, PipelineRebuildDTO request) {
         if (config.pipelineBuilderImage().filter(StringUtils::isNotBlank).isEmpty()) {
             Log.warnf("Skipping imported tool builds: pipeline builder image is not configured");
             return false;
         }
+        if (request.getRunMode() == PipelineRunMode.SCAN_ONLY) {
+            return version.hasImage();
+        }
 
         return switch (config.toolImports().buildOnImport()) {
             case ALWAYS -> true;
-            case IF_NOT_EXISTS_IN_STORE -> !existsInStore;
+            case IF_NOT_EXISTS_IN_STORE -> !request.isExistsInStore();
             case IF_NOT_EXISTS_IN_REGISTRY -> {
                 try {
                     yield !version.hasImage() || !dockerClient.imageExistsInRegistry(version.getImageName());

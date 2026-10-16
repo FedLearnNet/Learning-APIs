@@ -8,4 +8,5 @@ public class PipelineRunInfoDTO {
     private String imageName;
     private String dockerTag;
     private String commitHash;
+    private String imageReference;
 }

@@ -1,6 +1,7 @@
 package de.unihamburg.daibetes.api.build.pipeline;
 
 import bio.cosy.feddb.core.api.pipeline.BasePipelineEntity;
+import bio.cosy.feddb.core.api.pipeline.PipelineRunMode;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.build.pipeline.steps.PipelineStepEntity;
 import de.unihamburg.daibetes.api.model.sub.ModelSubEntity;
@@ -20,6 +21,10 @@ public class PipelineEntity extends BasePipelineEntity<PipelineStepEntity> {
     @Enumerated(EnumType.STRING)
     @Column(name = "pipeline_type")
     private PipelineType pipelineType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "run_mode", length = 32, nullable = false)
+    private PipelineRunMode runMode = PipelineRunMode.ALL;
 
     @OneToMany(mappedBy = "pipeline", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @OrderBy("createdAt ASC")

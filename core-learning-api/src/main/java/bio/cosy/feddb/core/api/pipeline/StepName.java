@@ -6,6 +6,8 @@ public enum StepName {
     BUILD_IMAGE,
     FETCH_CONFIG,
     FETCH_FILES,
+    SAST,
+    PULL_IMAGE,
     PUSH_IMAGE,
     SCAN_IMAGE,
     MALWARE_CHECK,

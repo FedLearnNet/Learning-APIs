@@ -4,6 +4,7 @@ import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
 import bio.cosy.feddb.core.api.pipeline.BasePipelineBO;
 import bio.cosy.feddb.core.api.pipeline.PipelineRunInfoDTO;
 import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
+import bio.cosy.feddb.core.api.pipeline.PipelineRunMode;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.services.orch.dto.CreateContainerResponseDTO;
@@ -87,6 +88,7 @@ public class PipelineBO extends BasePipelineBO<PipelineDTO, PipelineEntity, Pipe
     public PipelineDTO create(PipelineCreateDTO dto) {
         PipelineDTO pipeline = new PipelineDTO();
         pipeline.setPipelineType(dto.getPipelineType());
+        pipeline.setRunMode(dto.getRunMode());
         pipeline.setPipelineStatus(PipelineStatus.PENDING);
         pipeline.setSecret(RandomStringUtils.secureStrong().nextAlphabetic(32));
         if (dto.getPipelineType().equals(PipelineType.MODEL)) {
@@ -100,18 +102,36 @@ public class PipelineBO extends BasePipelineBO<PipelineDTO, PipelineEntity, Pipe
             }
             pipeline.setAppVersionId(dto.getAppVersionId());
         }
-        PipelineDTO created = setPipelineEntityCreated(pipeline);
-        PipelineDTO steps = stepBO.createSteps(created);
-        if (dto.getAutoStart()) {
-            return start(steps.getId());
+        if (dto.getRunMode() == PipelineRunMode.LOCAL_BUILD && dto.getPipelineType() != PipelineType.MODEL) {
+            throw new BadRequestException("LOCAL_BUILD requires uploaded model files");
         }
-        return steps;
+        if (dto.getRunMode() == PipelineRunMode.SCAN_ONLY) {
+            String imageName;
+            if (dto.getPipelineType() == PipelineType.MODEL) {
+                ModelSubEntity modelSub = ao.getEntityManager().find(ModelSubEntity.class, dto.getModelSubId());
+                imageName = modelSub == null ? null : modelSub.getImageName();
+            } else {
+                if (ao.existsActiveByAppVersionId(dto.getAppVersionId())) {
+                    throw new BadRequestException("An active pipeline already exists for this tool version");
+                }
+                FederatedAppVersionEntity appVersion = ao.getEntityManager().find(FederatedAppVersionEntity.class, dto.getAppVersionId());
+                imageName = appVersion == null ? null : appVersion.getImageName();
+            }
+            if (StringUtils.isBlank(imageName)) {
+                throw new BadRequestException("SCAN_ONLY requires an existing image");
+            }
+        }
+        PipelineDTO created = setPipelineEntityCreated(pipeline);
+        if (dto.getAutoStart()) {
+            return start(created.getId());
+        }
+        return created;
     }
 
     // For the initial creation of the entity before the pipeline is started
     @Transactional
     public PipelineDTO setPipelineEntityCreated(PipelineDTO dto) {
-        return create(dto);
+        return stepBO.createSteps(create(dto));
     }
 
     public PipelineDTO start(Long id, String keycloakId) {
@@ -138,6 +158,7 @@ public class PipelineBO extends BasePipelineBO<PipelineDTO, PipelineEntity, Pipe
         StartPipelineDTO startApp = new StartPipelineDTO();
         startApp.setPipelineId(id);
         startApp.setAppImage(builderImage);
+        startApp.setRunMode(entity.getRunMode());
         startApp.addEnvironment(apiKey, id, entity.getSecret());
         Log.info("Starting container for pipeline " + id);
         CreateContainerResponseDTO resp;
@@ -153,15 +174,16 @@ public class PipelineBO extends BasePipelineBO<PipelineDTO, PipelineEntity, Pipe
         if (containerId == null) {
             throw new IllegalStateException("Failed to start container for pipeline " + id);
         }
-        entity.setContainerId(containerId);
-        updateRebuilding(entity);
-        setPipelineEntityRunning(entity);
-        return mapper.entityToDto(entity);
+        return setPipelineEntityRunning(id, containerId);
     }
 
     @Transactional
-    public void setPipelineEntityRunning(PipelineEntity ent) {
-        ao.persist(ent);
+    public PipelineDTO setPipelineEntityRunning(Long id, String containerId) {
+        PipelineEntity entity = ao.findByIdOptional(id, LockModeType.PESSIMISTIC_WRITE)
+                .orElseThrow(() -> new NotFoundException(String.format("Pipeline with ID %s not found", id)));
+        entity.setContainerId(containerId);
+        updateRebuilding(entity);
+        return mapper.entityToDto(entity);
     }
 
     public List<PipelineDTO> getAll(String keycloakId, Long appVersionId, Long appId, Long modelSubId) {
@@ -229,6 +251,14 @@ public class PipelineBO extends BasePipelineBO<PipelineDTO, PipelineEntity, Pipe
         if (pipeline.getAppVersion() != null && pipeline.getAppVersion().getPublishInfo() != null) {
             dto.setCommitHash(pipeline.getAppVersion().getPublishInfo().getCommitHash());
         }
+        if (pipeline.getRunMode() == PipelineRunMode.SCAN_ONLY) {
+            String imageName = pipeline.getPipelineType() == PipelineType.MODEL
+                    ? pipeline.getModelSub().getImageName() : pipeline.getAppVersion().getImageName();
+            if (StringUtils.isBlank(imageName)) {
+                throw new BadRequestException("SCAN_ONLY requires an existing image");
+            }
+            dto.setImageReference(imageName);
+        }
         return dto;
     }
 
@@ -247,8 +277,18 @@ public class PipelineBO extends BasePipelineBO<PipelineDTO, PipelineEntity, Pipe
     @Transactional
     public void processSummary(Long id, String secret, AppPublishInfoDTO dto) {
         PipelineEntity pipeline = ao.findByIdAndSecret(id, secret, LockModeType.PESSIMISTIC_WRITE);
+        if (pipeline.getRunMode() == PipelineRunMode.SCAN_ONLY) {
+            AppPublishInfoDTO previous = pipeline.getPipelineType() == PipelineType.MODEL
+                    ? pipeline.getModelSub().getPublishInfo() : pipeline.getAppVersion().getPublishInfo();
+            if (previous != null) {
+                dto.setCommitHash(previous.getCommitHash());
+                dto.setFilePaths(previous.getFilePaths());
+                dto.setSastScanResult(previous.getSastScanResult());
+                dto.setMalwareScanResult(previous.getMalwareScanResult());
+            }
+        }
         pipeline.setPublishInfo(dto);
-        if (StringUtils.isNotBlank(dto.getCommitHash())) {
+        if (pipeline.getRunMode() != PipelineRunMode.SCAN_ONLY && StringUtils.isNotBlank(dto.getCommitHash())) {
             pipeline.setDockerTag(dto.getCommitHash());
         }
         updates.onNext(mapper.entityToDto(pipeline));
@@ -280,13 +320,16 @@ public class PipelineBO extends BasePipelineBO<PipelineDTO, PipelineEntity, Pipe
             Log.infof("No image name to set for pipeline %d", pipeline.getId());
             return;
         }
+        if (pipeline.getRunMode() == PipelineRunMode.SCAN_ONLY && info.getVulnerabilityScanResult() == null) {
+            return;
+        }
         if (pipeline.getPipelineType().equals(PipelineType.MODEL)) {
             ModelSubEntity modelSub = pipeline.getModelSub();
             if (modelSub == null) {
                 Log.errorf("Pipeline %d has no model subscription associated", pipeline.getId());
                 throw new NotFoundException("No model associated with this pipeline");
             }
-            if (imageName.equals(modelSub.getImageName())) {
+            if (pipeline.getRunMode() == PipelineRunMode.SCAN_ONLY && !imageName.equals(modelSub.getImageName())) {
                 return;
             }
             modelSub.setImageName(imageName);
@@ -298,7 +341,7 @@ public class PipelineBO extends BasePipelineBO<PipelineDTO, PipelineEntity, Pipe
                 Log.errorf("Pipeline %d has no app version associated", pipeline.getId());
                 throw new NotFoundException("No app version associated with this pipeline");
             }
-            if (imageName.equals(appVersion.getImageName())) {
+            if (pipeline.getRunMode() == PipelineRunMode.SCAN_ONLY && !imageName.equals(appVersion.getImageName())) {
                 return;
             }
             appVersion.setImageName(imageName);

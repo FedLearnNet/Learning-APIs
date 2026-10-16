@@ -2,6 +2,7 @@ package bio.cosy.feddb.local.api.pipeline;
 
 import bio.cosy.feddb.core.api.pipeline.BasePipelineBO;
 import bio.cosy.feddb.core.api.pipeline.PipelineRunInfoDTO;
+import bio.cosy.feddb.core.api.pipeline.PipelineRunMode;
 import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
 import bio.cosy.feddb.core.api.pipeline.PipelineStatusUpdateDTO;
 import bio.cosy.feddb.core.api.pipeline.StepName;
@@ -35,8 +36,9 @@ import java.util.concurrent.TimeUnit;
 @ApplicationScoped
 public class PipelineBO extends BasePipelineBO<PipelineDTO, PipelineEntity, PipelineAO, PipelineMapper> {
 
-    static final List<StepName> STEPS = List.of(StepName.FETCH_CONFIG, StepName.FETCH_FILES, StepName.BUILD_IMAGE,
-            StepName.SCAN_IMAGE, StepName.MALWARE_CHECK, StepName.RUN_PYTEST, StepName.COLLECT_SUMMARY);
+    static final List<StepName> STEPS = List.of(StepName.FETCH_CONFIG, StepName.FETCH_FILES, StepName.SAST,
+            StepName.BUILD_IMAGE, StepName.SCAN_IMAGE, StepName.MALWARE_CHECK, StepName.RUN_PYTEST,
+            StepName.COLLECT_SUMMARY);
     private static final Duration CLEANUP_DELAY = Duration.ofSeconds(10);
 
     @Inject
@@ -60,6 +62,8 @@ public class PipelineBO extends BasePipelineBO<PipelineDTO, PipelineEntity, Pipe
         StartPipelineDTO start = new StartPipelineDTO();
         start.setPipelineId(pipeline.getId());
         start.setAppImage(config.connector().codeTransformerPipelineImage());
+        // runMode for orch-api with run modes, localOnly for older ones
+        start.setRunMode(PipelineRunMode.LOCAL_BUILD);
         start.setLocalOnly(true);
         start.addEnvironment(pipeline.getId(), pipeline.getSecret());
         try {
