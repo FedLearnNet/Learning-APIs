@@ -2,7 +2,7 @@ package de.unihamburg.daibetes.api.umls.importer;
 
 import bio.cosy.feddb.core.api.datamodler.ontology.OntologyEdgeDTO;
 import bio.cosy.feddb.core.api.datamodler.ontology.OntologyNodeDTO;
-import de.unihamburg.daibetes.api.config.UMLSConfig;
+import de.unihamburg.daibetes.config.UMLSConfig;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.infrastructure.Infrastructure;

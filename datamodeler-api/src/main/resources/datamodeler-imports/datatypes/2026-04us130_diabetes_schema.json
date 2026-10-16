@@ -1,0 +1,145 @@
+[
+  {
+    "id": "6fed248f-72ab-5fbe-a74a-e4095dcb90a5",
+    "description": "Datatype Race or Ethnicity custom categories",
+    "name": "Race or Ethnicity custom categories",
+    "type": "CATEGORICAL",
+    "options": [
+      "Caucasian",
+      "AfricanAmerican",
+      "Hispanic",
+      "Asian",
+      "Other"
+    ]
+  },
+  {
+    "id": "344eeb12-1f47-532f-9e0a-79365f9a417e",
+    "description": "Datatype Gender or sex",
+    "name": "Gender or sex",
+    "type": "CATEGORICAL",
+    "options": [
+      "Female",
+      "Male"
+    ]
+  },
+  {
+    "id": "a7ecc6e1-e72d-53cc-83fa-31265b4b682a",
+    "description": "Datatype Age group bracket",
+    "name": "Age group bracket",
+    "type": "CATEGORICAL",
+    "options": [
+      "[0-10)",
+      "[10-20)",
+      "[20-30)",
+      "[30-40)",
+      "[40-50)",
+      "[50-60)",
+      "[60-70)",
+      "[70-80)",
+      "[80-90)",
+      "[90-100)"
+    ]
+  },
+  {
+    "id": "1d2b6437-96f8-5cc7-8ccb-4bd09f6c742b",
+    "description": "Datatype Weight bracket",
+    "name": "Weight bracket",
+    "type": "CATEGORICAL",
+    "options": [
+      "[0-25)",
+      "[25-50)",
+      "[50-75)",
+      "[75-100)",
+      "[100-125)",
+      "[125-150)",
+      "[150-175)",
+      "[175-200)",
+      "[200-225)",
+      "[225-250)",
+      "[250-275)",
+      "[275-300)",
+      ">300"
+    ]
+  },
+  {
+    "id": "cc9c46eb-8c52-5130-b8c4-fa789509c86f",
+    "description": "Datatype generic integer",
+    "name": "generic integer",
+    "type": "INT",
+    "options": []
+  },
+  {
+    "id": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+    "description": "Datatype generic string",
+    "name": "generic string",
+    "type": "STRING",
+    "options": []
+  },
+  {
+    "id": "09d5e754-95b7-5641-917f-4bf15c967bb1",
+    "description": "Datatype Glucose serum level",
+    "name": "Glucose serum level",
+    "type": "CATEGORICAL",
+    "options": [
+      "None",
+      ">200",
+      ">300",
+      "Norm"
+    ]
+  },
+  {
+    "id": "c8f07d56-8b2a-5ba1-9b7c-d4ebc08ca273",
+    "description": "Datatype HbA1c test result",
+    "name": "HbA1c test result",
+    "type": "CATEGORICAL",
+    "options": [
+      "None",
+      ">7",
+      ">8",
+      "Norm"
+    ]
+  },
+  {
+    "id": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+    "description": "Datatype Drug dosage change",
+    "name": "Drug dosage change",
+    "type": "CATEGORICAL",
+    "options": [
+      "No",
+      "Steady",
+      "Up",
+      "Down"
+    ]
+  },
+  {
+    "id": "8461356f-58c0-5516-8cc2-5a84e12aa173",
+    "description": "Datatype Medication change indicator",
+    "name": "Medication change indicator",
+    "type": "CATEGORICAL",
+    "options": [
+      "Ch",
+      "No"
+    ]
+  },
+  {
+    "id": "b1207adb-fbcb-55b4-923f-a09bfc8b1db8",
+    "description": "Datatype Diabetes medication indicator",
+    "name": "Diabetes medication indicator",
+    "type": "CATEGORICAL",
+    "options": [
+      "Yes",
+      "No"
+    ]
+  },
+  {
+    "id": "b58ddb3f-5f6b-5cad-ae1b-842e9ca51859",
+    "description": "Datatype Readmission status",
+    "name": "Readmission status",
+    "type": "CATEGORICAL",
+    "options": [
+      "<30",
+      ">30",
+      "NO"
+    ]
+  }
+]

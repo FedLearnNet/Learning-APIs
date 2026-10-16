@@ -1,0 +1,138 @@
+{
+  "id": "999204cc-7e95-5e41-971b-ae999c1508e5",
+  "name": "2026-02comprehensive_test_schema",
+  "description": "Root node of the schema 2026-02comprehensive_test_schema",
+  "type": "ROOT",
+  "children": [
+    {
+      "id": "3d463485-29d9-505f-b385-a6aefdbfabb7",
+      "name": "TestRootNode",
+      "description": "Grouping of TestRootNode",
+      "type": "GROUP",
+      "children": [
+        {
+          "id": "88589277-4a36-5d0e-adbb-3947841df107",
+          "name": "TestCategorical",
+          "description": "Schema node for Gender (observable entity) with datatype Gender",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "7adb0fd4-1085-5f46-a4c8-c498d78c26f2",
+          "ontologyId": "9fe35b60-0b14-5bc1-87de-d8ada0bff5e6",
+          "children": []
+        },
+        {
+          "id": "88ff8e56-2f86-5a50-a04f-5806df03bf82",
+          "name": "TestBoolean",
+          "description": "Schema node for Clinical finding (finding) with datatype Bool",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "03c3fd0b-6706-54ca-bd42-4664ea0d3fc3",
+          "ontologyId": "4b582a8c-559c-57b9-933e-8a7ee4aaf59f",
+          "children": []
+        },
+        {
+          "id": "d4aa6804-4362-541e-a4df-ebb54e748476",
+          "name": "TestString",
+          "description": "Schema node for Diagnosis (observable entity) with datatype Text",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "2600afbb-6a74-50b7-841e-ce1f6bd9727d",
+          "ontologyId": "a535779f-ffa3-59d5-a8b6-b9fb91d4f430",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "338b9c40-e152-54f8-bf05-df0a9851778c",
+      "name": "TestTimeGroup",
+      "description": "Grouping of TestTimeGroup",
+      "type": "GROUP",
+      "children": [
+        {
+          "id": "b2e9a16b-aa0b-53c2-9d1a-2fc9f35ccb8a",
+          "name": "TestDateTime",
+          "description": "Schema node for Clinical finding (finding) with datatype Datetime",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "7457f415-12b3-5313-80af-9ee456913471",
+          "ontologyId": "4b582a8c-559c-57b9-933e-8a7ee4aaf59f",
+          "children": []
+        },
+        {
+          "id": "e1c0dabd-09d2-5e7c-93c3-c9575c52b6a9",
+          "name": "TestDate",
+          "description": "Schema node for Clinical finding (finding) with datatype Date",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "d8d35fbf-8eaf-5058-8016-8124e70a1c86",
+          "ontologyId": "4b582a8c-559c-57b9-933e-8a7ee4aaf59f",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "b8996182-1034-5c13-a632-bb9e1a850586",
+      "name": "TestNumericGroup",
+      "description": "Grouping of TestNumericGroup",
+      "type": "GROUP",
+      "children": [
+        {
+          "id": "aec45ab9-8e6b-50de-88e4-a3fdd9b75d4d",
+          "name": "TestInt",
+          "description": "Schema node for Measurement (observable entity) with datatype Int",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "bef4e978-b785-547b-bc39-fe1c799270c1",
+          "ontologyId": "39696ac2-6cb2-5492-816b-b3545f00ef07",
+          "children": []
+        },
+        {
+          "id": "b8ccec58-ba41-5af6-9249-95c658a3e415",
+          "name": "TestFloat",
+          "description": "Schema node for Measurement (observable entity) with datatype Float",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "e5f7d0fe-6612-5a0a-8459-0f44749d76f8",
+          "ontologyId": "39696ac2-6cb2-5492-816b-b3545f00ef07",
+          "children": []
+        },
+        {
+          "id": "3e0dea35-7587-5d22-b7db-234fd419ff06",
+          "name": "TestIntTwiceInDifferentGroups",
+          "description": "Schema node for Measurement (observable entity) 1 with datatype Int",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "bef4e978-b785-547b-bc39-fe1c799270c1",
+          "ontologyId": "74f976e8-4c3a-5b65-bfa3-bdaf3c96fbf6",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "e2643c09-21c1-5636-a928-7af0bc5be1f0",
+      "name": "TestAttributeSameAsGroup",
+      "description": "Grouping of TestAttributeSameAsGroup",
+      "type": "GROUP",
+      "children": [
+        {
+          "id": "99acf9a5-839f-56d7-9a54-668864eaebb6",
+          "name": "TestAttributeSameAsGroup",
+          "description": "Schema node for TestAttributeSameAsGroup with datatype TestAttributeSameAsGroup",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "266662b1-d816-5222-82d1-c61ddd4e4229",
+          "ontologyId": "938bfa13-f39a-5df5-a135-090c277d55a7",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "e780e1e1-8dc7-5090-9221-88a3ca273973",
+      "name": "TestNumericGroup2",
+      "description": "Grouping of TestNumericGroup2",
+      "type": "GROUP",
+      "children": [
+        {
+          "id": "fcc19466-0211-5b00-bcec-f4e0176975ce",
+          "name": "TestIntTwiceInDifferentGroups",
+          "description": "Schema node for Measurement (observable entity) 2 with datatype Int",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "bef4e978-b785-547b-bc39-fe1c799270c1",
+          "ontologyId": "cba01fc2-90bf-522f-aeb5-289106dc1ca3",
+          "children": []
+        }
+      ]
+    }
+  ]
+}

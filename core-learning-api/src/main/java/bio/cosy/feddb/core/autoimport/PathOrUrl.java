@@ -1,4 +1,4 @@
-package de.unihamburg.daibetes.helper;
+package bio.cosy.feddb.core.autoimport;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,6 +6,7 @@ import io.quarkus.logging.Log;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.Strings;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,7 +78,7 @@ public class PathOrUrl {
 
     public JsonNode readTree(ObjectMapper mapper, String spec) throws IOException {
         Log.infof("Reading JSON from %s", spec);
-        String cp = spec.startsWith("/") ? spec.substring(1) : spec;
+        String cp = Strings.CS.removeStart(spec, "/");
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         URL res = cl.getResource(cp);
         if (res != null) {

@@ -1,0 +1,782 @@
+[
+  {
+    "ontology": {
+      "names": [
+        "GDC primary diagnosis"
+      ],
+      "description": "Ontology GDC primary diagnosis",
+      "cui": "ad128cff-544c-4352-a98c-276a40f883f5",
+      "id": "84ab4326-1cdd-547e-8dab-6a08a3dd16f3"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC age at diagnosis"
+      ],
+      "description": "Ontology GDC age at diagnosis",
+      "cui": "5312411e-2a54-49f0-8090-a03c57fc00f4",
+      "id": "48c20d9d-d18e-5c62-9143-f9fb71355da1"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC days to birth"
+      ],
+      "description": "Ontology GDC days to birth",
+      "cui": "4a6d54ea-c893-4411-bef2-129654e5cec0",
+      "id": "53f0cfda-48d9-5e26-baa5-f17e97f3e183"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC age at index"
+      ],
+      "description": "Ontology GDC age at index",
+      "cui": "3e12fd89-4a5e-4167-bd50-0bd7814703a2",
+      "id": "54e9d838-feb4-5c75-aac3-eb7b2173d566"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC gender"
+      ],
+      "description": "Ontology GDC gender",
+      "cui": "c6a0056b-b67e-4b66-a7c6-e7c99ebac175",
+      "id": "73457c63-496c-5ab3-b4ef-895fae32e1af"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC race"
+      ],
+      "description": "Ontology GDC race",
+      "cui": "97572617-c2f1-4113-94ff-becf3751093b",
+      "id": "34f390c0-c5b4-54de-94f3-a89b3f5acc5a"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC country of residence at enrollment"
+      ],
+      "description": "Ontology GDC country of residence at enrollment",
+      "cui": "5305cb6d-d1d8-4bb1-b768-5e7f5bc7038e",
+      "id": "1de33ff4-f04a-5b0f-8bd4-885bf57c424a"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC country of birth"
+      ],
+      "description": "Ontology GDC country of birth",
+      "cui": "fa97313c-aca4-4887-9175-509b07136921",
+      "id": "ccd54780-59ac-578f-8c64-00283a91a171"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC site of resection or biopsy"
+      ],
+      "description": "Ontology GDC site of resection or biopsy",
+      "cui": "0cad6b6d-5047-40e7-90ed-ca69c3708ba1",
+      "id": "77f2c08e-fcb0-55ed-8eab-ded76cb6568c"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC tissue or organ of origin"
+      ],
+      "description": "Ontology GDC tissue or organ of origin",
+      "cui": "3cf1457c-30b2-4466-90e1-5b6eaff4a494",
+      "id": "01fd99d9-bfe0-5ab1-9f8b-4f03165d8390"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC tumor focality"
+      ],
+      "description": "Ontology GDC tumor focality",
+      "cui": "37fed8b5-aab9-4d8f-b4af-97d325e0ec96",
+      "id": "c02592cb-7cc6-5b3b-9e34-08f6a306d297"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC tumor largest dimension diameter"
+      ],
+      "description": "Ontology GDC tumor largest dimension diameter",
+      "cui": "1d6af645-b331-4233-979f-796c0f0e7fd5",
+      "id": "2bee1d92-4f05-50ed-b3e7-7e6b12c1d9dd"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC greatest tumor dimension"
+      ],
+      "description": "Ontology GDC greatest tumor dimension",
+      "cui": "fed75b1a-b9c6-4b3d-8351-bee3b6b6ed3e",
+      "id": "af9998f0-3b46-5f8a-8b9b-017395ca270c"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC tumor width measurement"
+      ],
+      "description": "Ontology GDC tumor width measurement",
+      "cui": "81b91b38-e34b-4bb6-a1c2-55266d9d6867",
+      "id": "031349c3-898b-51ff-81eb-d110baceec54"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC tumor length measurement"
+      ],
+      "description": "Ontology GDC tumor length measurement",
+      "cui": "d6de1ba2-e46d-45d2-b78a-c78a34aeb58c",
+      "id": "d03556b6-0f07-53bf-99cf-efbff81fb3bd"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC necrosis present"
+      ],
+      "description": "Ontology GDC necrosis present",
+      "cui": "a0765f04-ce09-4976-8c69-315af7ebbe27",
+      "id": "019ecd71-af11-564f-9e1e-e485f7267415"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC lymphatic invasion present"
+      ],
+      "description": "Ontology GDC lymphatic invasion present",
+      "cui": "f86216a6-0669-4055-833a-d83b062e5f6a",
+      "id": "4707b580-ebee-58b1-8d7a-d13b83823fc7"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC vascular invasion present"
+      ],
+      "description": "Ontology GDC vascular invasion present",
+      "cui": "fda99f12-2f89-4a1e-b4be-98a07d3f835f",
+      "id": "bb39e1be-f03a-54cb-96c6-9f08adfb8c2f"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC perineural invasion present"
+      ],
+      "description": "Ontology GDC perineural invasion present",
+      "cui": "89ff8b84-b246-4ea1-9489-ea86dd218150",
+      "id": "3cdeeff8-3f38-5d3a-ba2f-df053631207b"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC lymph nodes tested"
+      ],
+      "description": "Ontology GDC lymph nodes tested",
+      "cui": "b28af58b-6f07-4960-9db3-4afda5d06406",
+      "id": "a559a1d0-ead0-50c6-9c34-f1b21cc1490f"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC lymph nodes positive"
+      ],
+      "description": "Ontology GDC lymph nodes positive",
+      "cui": "ca0ea6a5-620a-443b-9d3e-e6856ad98b04",
+      "id": "176bf955-7538-5b62-b2d8-f4972bb65849"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC ajcc pathologic n"
+      ],
+      "description": "Ontology GDC ajcc pathologic n",
+      "cui": "88e6bc66-098e-4536-b40c-559fb77d5a31",
+      "id": "1c195e15-6486-5e81-afe8-7156984d0f95"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC uicc pathologic n"
+      ],
+      "description": "Ontology GDC uicc pathologic n",
+      "cui": "53ef5f78-4932-4fe8-952a-ce1567bd3a7c",
+      "id": "2ec4d623-fe66-5a86-a302-2aa1ea06bbb1"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC ajcc pathologic t"
+      ],
+      "description": "Ontology GDC ajcc pathologic t",
+      "cui": "0492c1db-1f2f-43fa-ba02-e546f465122d",
+      "id": "5c8a1eff-1cbb-53a2-9545-5ea8f22b4b70"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC uicc pathologic t"
+      ],
+      "description": "Ontology GDC uicc pathologic t",
+      "cui": "862c0bce-13d0-4c24-870f-17234b2c6108",
+      "id": "58cc9a59-e71e-561a-be6c-943ed4cea9e5"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC ajcc pathologic m"
+      ],
+      "description": "Ontology GDC ajcc pathologic m",
+      "cui": "f5d1d2df-a618-4240-93a4-26db92268f55",
+      "id": "ef4a321d-8947-5c28-8069-bdd838203ccd"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC uicc pathologic m"
+      ],
+      "description": "Ontology GDC uicc pathologic m",
+      "cui": "66c44524-1c7a-48fd-8b6d-bd196e5bd69f",
+      "id": "301f0a2f-eca5-5cbd-9948-468944564f8b"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC ajcc clinical m"
+      ],
+      "description": "Ontology GDC ajcc clinical m",
+      "cui": "45de4a87-c801-43b6-87b8-d265ccb8278c",
+      "id": "048e77ec-f7c5-5155-8798-0e5bc5d75d8c"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC uicc clinical m"
+      ],
+      "description": "Ontology GDC uicc clinical m",
+      "cui": "6d03687f-9bb2-42a3-a5d4-bfdbca6f1e35",
+      "id": "f30b4dfd-376b-5f53-82de-c8c0356f9cc1"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC residual tumor"
+      ],
+      "description": "Ontology GDC residual tumor",
+      "cui": "74c8e807-6120-4715-aa8b-b4613da30e87",
+      "id": "0806e3e7-4778-5fd9-870a-d99a3c56230b"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC residual disease"
+      ],
+      "description": "Ontology GDC residual disease",
+      "cui": "9f8f0723-1fef-4c4f-bc64-800e7e15f342",
+      "id": "74253825-5610-5011-b5b3-d48b2a6a5bfb"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC ajcc pathologic stage"
+      ],
+      "description": "Ontology GDC ajcc pathologic stage",
+      "cui": "bc65d791-eeac-4ef9-b8a9-d7f00ee88eb8",
+      "id": "647577e4-720b-5a02-b803-9c25ed89936c"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC uicc pathologic stage"
+      ],
+      "description": "Ontology GDC uicc pathologic stage",
+      "cui": "9f00bd73-93dd-4a8e-ab93-a5598b7eba7e",
+      "id": "156143e1-67c8-56c9-8f5f-157eb3df8c30"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC additional pathology findings"
+      ],
+      "description": "Ontology GDC additional pathology findings",
+      "cui": "76f93c44-9d7e-4975-af9d-647d02f53595",
+      "id": "6d7e867a-de53-5fb9-9093-6d4fcfe3361a"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC bmi"
+      ],
+      "description": "Ontology GDC bmi",
+      "cui": "9a70d231-f64b-4a0c-b69d-7fe6e9695e9f",
+      "id": "f90b9523-9c72-556c-bdad-25ae78990891"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC alcohol intensity"
+      ],
+      "description": "Ontology GDC alcohol intensity",
+      "cui": "87ed72da-658e-4e5c-8fcc-26cbfb658908",
+      "id": "59be49da-fc97-5995-8f3c-ebefe5fbea9e"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC tobacco smoking status"
+      ],
+      "description": "Ontology GDC tobacco smoking status",
+      "cui": "eb9174fb-4be4-429a-81bf-c918b9d3c845",
+      "id": "b4cdbce7-6232-571e-9e40-6c7b32894822"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC percent stromal cells"
+      ],
+      "description": "Ontology GDC percent stromal cells",
+      "cui": "510dba4d-1d99-4067-9439-41f59f77c5a4",
+      "id": "361e9b24-ab1d-5ca9-8e12-7beec582776b"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC percent inflam infiltration"
+      ],
+      "description": "Ontology GDC percent inflam infiltration",
+      "cui": "851c76b9-b4fb-411b-ac6b-4017976bac5e",
+      "id": "afd24f0a-bc22-55c0-aeac-d64cf4762f00"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC days to follow up"
+      ],
+      "description": "Ontology GDC days to follow up",
+      "cui": "423b7c33-11ff-4acb-bc41-0ce443097ffa",
+      "id": "3e719c31-89cb-5fb0-93be-2a2e28d50555"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC vital status"
+      ],
+      "description": "Ontology GDC vital status",
+      "cui": "c29ba057-7972-4e23-b821-58b536176465",
+      "id": "f9e9cb5b-0f79-5f74-9a54-3a78c054f67d"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC lost to followup"
+      ],
+      "description": "Ontology GDC lost to followup",
+      "cui": "0d03aeba-cc28-4a36-8f65-8ca178f1bd19",
+      "id": "12da0962-93ee-547a-95f3-4f995e8522d0"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC cause of death"
+      ],
+      "description": "Ontology GDC cause of death",
+      "cui": "88660437-dd7f-4659-865e-006beebea320",
+      "id": "514a19f6-b615-5cec-ab84-4f9e27fb4eb8"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC tissue type"
+      ],
+      "description": "Ontology GDC tissue type",
+      "cui": "ab9fa44e-3d36-4923-a921-de75ed4ed296",
+      "id": "df90c35a-4c78-5cbe-b3f9-8fcda8638948"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC ethnicity"
+      ],
+      "description": "Ontology GDC ethnicity",
+      "cui": "eafd9988-b4eb-4365-b08d-2a89adefbd81",
+      "id": "391d1d9a-c548-570d-982f-ff6bf0936e1e"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC primary site"
+      ],
+      "description": "Ontology GDC primary site",
+      "cui": "f00bb75e-e2a9-4f56-a7fc-78352e3e7a80",
+      "id": "cbc273a2-9f5b-5c3d-8cd4-020eac70f766"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC tumor grade"
+      ],
+      "description": "Ontology GDC tumor grade",
+      "cui": "209bf741-4f92-40ad-95ef-21a20e6520ce",
+      "id": "8c96fbcc-29e1-532e-a4e6-a1f0db8c04f9"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC treatment or therapy"
+      ],
+      "description": "Ontology GDC treatment or therapy",
+      "cui": "53299f30-d06f-4522-ba00-e317bd12eb9a",
+      "id": "e2ed43be-1334-5c25-993f-7196d1e879da"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC tumor purity"
+      ],
+      "description": "Ontology GDC tumor purity",
+      "cui": "d99bdc6e-6ecf-4cfd-9a7d-14119a2af01c",
+      "id": "df6f4647-0f06-5bca-85b7-c968c5cd7175"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC figo stage"
+      ],
+      "description": "Ontology GDC figo stage",
+      "cui": "ff177f72-fbef-4c7c-b368-2d8b8c3665d0",
+      "id": "5c6a81b3-15db-5db8-8300-a9e63b4a3c1c"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC ajcc clinical stage"
+      ],
+      "description": "Ontology GDC ajcc clinical stage",
+      "cui": "8427f2a4-4961-4415-8c31-ce3c51ad8df6",
+      "id": "813d6074-33bf-5d2d-abb8-43b77a3b583a"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC uicc clinical stage"
+      ],
+      "description": "Ontology GDC uicc clinical stage",
+      "cui": "b24c7537-747d-43f4-a5ed-042be42a1abd",
+      "id": "94bb8bc8-2658-573b-b4fc-c3240dbd81d1"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC height"
+      ],
+      "description": "Ontology GDC height",
+      "cui": "b0665119-6c6a-44de-ac5c-f2f6a0a93708",
+      "id": "30d5262a-f304-54cf-b75a-3533247b2f8c"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC weight"
+      ],
+      "description": "Ontology GDC weight",
+      "cui": "0bae08ae-53a4-4ecd-b15c-2a3018987428",
+      "id": "81d9deec-b5c4-55cc-994c-59281849f620"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC cigarettes per day"
+      ],
+      "description": "Ontology GDC cigarettes per day",
+      "cui": "fe237f8a-d2e0-40b1-a9d9-2855e8559ace",
+      "id": "97778071-595c-5185-a984-081d3eb49344"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC pack years smoked"
+      ],
+      "description": "Ontology GDC pack years smoked",
+      "cui": "72925198-64f8-404d-976a-ea7069733ddc",
+      "id": "17eeacb7-93c0-5334-80bf-cddca8692eb5"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC environmental tobacco smoke exposure"
+      ],
+      "description": "Ontology GDC environmental tobacco smoke exposure",
+      "cui": "de9956eb-49ab-470a-af68-f7cf56e92d83",
+      "id": "bf0f48de-544d-5fde-82a8-4725b0bc2322"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC tobacco smoking onset year"
+      ],
+      "description": "Ontology GDC tobacco smoking onset year",
+      "cui": "32937c19-a82e-46e5-b79b-f9d20e0d25c8",
+      "id": "22011e71-ed00-5c03-94e7-e4957af23b93"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC tobacco smoking quit year"
+      ],
+      "description": "Ontology GDC tobacco smoking quit year",
+      "cui": "417733af-76b7-4f10-b33d-8d65e3729f2a",
+      "id": "9e104428-e368-543a-af60-424f71285bbb"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC secondhand smoke as child"
+      ],
+      "description": "Ontology GDC secondhand smoke as child",
+      "cui": "3d6debc2-23ee-4de4-8e02-4db38a13eea7",
+      "id": "e9c47bf1-22d0-5c73-b79e-900026f83117"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC alcohol days per week"
+      ],
+      "description": "Ontology GDC alcohol days per week",
+      "cui": "64ee2cb3-d2ab-4e50-a5fa-f0dcf2204cde",
+      "id": "c88e91f5-22aa-58c8-b611-c46cc593e6a7"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC time between clamping and freezing"
+      ],
+      "description": "Ontology GDC time between clamping and freezing",
+      "cui": "0e84656b-1c7a-4944-a85f-d41d2fb37bb7",
+      "id": "ece051cc-0f50-5f28-a0cb-98e86b243e3d"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC time between excision and freezing"
+      ],
+      "description": "Ontology GDC time between excision and freezing",
+      "cui": "c411b7c1-6b9c-443e-bb88-04474534faeb",
+      "id": "6c2a6d40-ea05-5faf-91f0-721e0e34e52c"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC biospecimen anatomic site"
+      ],
+      "description": "Ontology GDC biospecimen anatomic site",
+      "cui": "825a3351-ce59-4f04-8c6c-703c5c168241",
+      "id": "fc64ff92-9346-5e4e-a376-be9276ae89aa"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC biospecimen laterality"
+      ],
+      "description": "Ontology GDC biospecimen laterality",
+      "cui": "10483be0-50ac-4f80-b5ea-8cd69d0a456f",
+      "id": "ec4a16dc-c3fc-580d-9f73-e1152a6a8ff4"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC laterality"
+      ],
+      "description": "Ontology GDC laterality",
+      "cui": "6253b34e-032f-45c9-aaaf-7a6d5e4bc1ef",
+      "id": "b3130268-4259-51f9-b8d6-af0434e58d61"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC disease type"
+      ],
+      "description": "Ontology GDC disease type",
+      "cui": "a2e33ff7-772a-4161-b5c8-c9febc7090a6",
+      "id": "ea2d3adb-6848-5b3e-b253-1113bbfb3cc6"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC method of diagnosis"
+      ],
+      "description": "Ontology GDC method of diagnosis",
+      "cui": "5f3d0edb-f96c-46d8-9e24-f2936c6e3e42",
+      "id": "5c776df0-c32c-5b47-9128-7f00dc9077ff"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC residual tumor measurement"
+      ],
+      "description": "Ontology GDC residual tumor measurement",
+      "cui": "c3ab10ac-f67a-4d4b-a585-0d32065ffded",
+      "id": "f27aa335-a075-5f24-82e5-7019ad841b11"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC prior malignancy"
+      ],
+      "description": "Ontology GDC prior malignancy",
+      "cui": "7ff145c8-eaf1-4951-b922-8b9523f85e3a",
+      "id": "9457a4ab-1aff-593c-a69d-59f6cd5582f0"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC synchronous malignancy"
+      ],
+      "description": "Ontology GDC synchronous malignancy",
+      "cui": "b6e9574a-c992-4556-b47a-73cd64448434",
+      "id": "64093e3a-bd45-5fd3-ab26-4a56f6b30812"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC last known disease status"
+      ],
+      "description": "Ontology GDC last known disease status",
+      "cui": "47a02850-dcdd-4eb8-a39b-038a400d296b",
+      "id": "4eaa57db-307b-5ff0-9561-d7dab4e75a17"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC msi status"
+      ],
+      "description": "Ontology GDC msi status",
+      "cui": "97c472db-46e0-4577-bc21-1d2ec16a82fd",
+      "id": "912b3643-543d-50a0-93e9-b89b44debf25"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC supratentorial localization"
+      ],
+      "description": "Ontology GDC supratentorial localization",
+      "cui": "4a19328c-5686-40f6-b69f-c712c1555f16",
+      "id": "fd262b2e-3f53-50ca-bea3-54b815efb0ec"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC days to last follow up"
+      ],
+      "description": "Ontology GDC days to last follow up",
+      "cui": "9971e11d-1a4b-430e-ac0a-56e057b14a8c",
+      "id": "124a7250-4994-54bf-ab8a-dbfa853750fa"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC days to death"
+      ],
+      "description": "Ontology GDC days to death",
+      "cui": "b0006d0c-589c-456e-91a9-5b4b93bbbc1e",
+      "id": "d283613e-dbaf-5524-99e1-85c80f4d4a52"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC progression or recurrence"
+      ],
+      "description": "Ontology GDC progression or recurrence",
+      "cui": "797bf756-6168-45a3-b450-36e4ad8232ba",
+      "id": "52909d0b-3a27-5d9d-a7bd-fc1a1e72c61d"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "GDC days to recurrence"
+      ],
+      "description": "Ontology GDC days to recurrence",
+      "cui": "9fb9055a-0ba4-42fc-9342-959862dc471a",
+      "id": "899cef62-5720-5a82-9bfb-2bef0980caf6"
+    }
+  }
+]

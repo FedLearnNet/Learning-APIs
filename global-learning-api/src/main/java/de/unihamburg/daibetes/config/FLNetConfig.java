@@ -1,5 +1,6 @@
 package de.unihamburg.daibetes.config;
 
+import bio.cosy.feddb.core.autoimport.FLNetConfigPaths;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 import io.smallrye.config.WithName;
@@ -102,16 +103,6 @@ public interface FLNetConfig {
         int limit();
     }
 
-    interface FLNetConfigPaths {
-
-        @WithDefault("false")
-        boolean enabled();
-
-        Optional<List<Path>> paths();
-
-        @WithName("whitelist")
-        Optional<List<String>> whiteList();
-    }
 
     interface ToolImportConfig extends FLNetConfigPaths {
 
