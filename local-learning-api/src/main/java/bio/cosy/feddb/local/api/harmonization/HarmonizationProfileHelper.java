@@ -130,7 +130,7 @@ public class HarmonizationProfileHelper {
                         Stream.of(EMPTY + " " + percent(empty, profile.count())).filter(share -> empty > 0))
                 .collect(Collectors.joining(", "));
         return (categorical ? "Values of the reference file with their share of all rows: " : "Most frequent values of the "
-                + "reference file with their share of all rows: ") + shares + ".";
+                + "reference file with their share of all rows (examples, other values of the same kind are allowed): ") + shares + ".";
     }
 
     private static String percent(long part, long total) {

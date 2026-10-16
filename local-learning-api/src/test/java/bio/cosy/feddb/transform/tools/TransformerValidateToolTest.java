@@ -35,6 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.lang.reflect.Field;
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -352,6 +353,21 @@ class TransformerValidateToolTest {
         assertTrue(result.isValid(), result.getMessage());
     }
 
+    @Test
+    void namesTheValuesAValidChainMergesOrEmpties() {
+        init("diag_3", List.of("250.01", "250.02"), DataTypes.STRING, null);
+        withFileProfiles("diag_3", List.of("250.01", "250.02", "401", "Not measured"));
+        ConnectorTransformerDTO cut = replaceIn("diag_3", "250.02", "250.01");
+
+        ConnectorValidationResultDTO result = tool.validate(ConnectorSelectedTransformer.mapping("diag_3",
+                List.of(cut, replaceIn("diag_3", "Not measured", "null"))));
+
+        assertTrue(result.isValid() && result.getMessage().contains("'250.01', '250.02' -> '250.01'"), result.getMessage());
+        String losses = tool.losses(ConnectorSelectedTransformer.mapping("diag_3", List.of(cut, replaceIn("diag_3", "Not measured", "null"))));
+        assertTrue(losses.startsWith("1 of the 4 values") && losses.contains("'Not measured'") && losses.contains("become one"), losses);
+        assertEquals("", tool.losses(ConnectorSelectedTransformer.mapping("diag_3", List.of())));
+    }
+
     private void initMedications() {
         init("metformin_rx", List.of("No", "Up"), DataTypes.STRING, null);
         previewRows = List.of(Map.of("patient", "p1", "metformin_rx", "No", "rosiglitazone_rx", "Up"));
@@ -415,10 +431,14 @@ class TransformerValidateToolTest {
     }
 
     private ConnectorTransformerDTO replace(String search, String replacement) {
+        return replaceIn("payer_code", search, replacement);
+    }
+
+    private ConnectorTransformerDTO replaceIn(String column, String search, String replacement) {
         ConnectorTransformerDTO transformer = new ConnectorTransformerDTO();
         transformer.setModuleName(replaceValue.module());
         transformer.setMethodName(replaceValue.methodName());
-        transformer.setColumn("payer_code");
+        transformer.setColumn(column);
         transformer.setInputMapping(new LinkedHashMap<>(Map.of("search", "[VALUE]" + search, "replace", "[VALUE]" + replacement)));
         transformer.setHyperparams(new LinkedHashMap<>());
         return transformer;

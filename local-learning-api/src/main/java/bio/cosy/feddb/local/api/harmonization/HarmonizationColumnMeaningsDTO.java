@@ -12,4 +12,5 @@ import java.util.List;
 public class HarmonizationColumnMeaningsDTO {
 
     private List<HarmonizationColumnMeaningDTO> columns;
+    private List<List<String>> sameKind;
 }

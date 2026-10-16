@@ -27,6 +27,8 @@ import jakarta.inject.Inject;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -161,7 +163,8 @@ public class TransformerValidateTool {
         if (rejected.isEmpty()) {
             // Categorical values are listed with what they become, for the others the emptied ones are counted
             String conversion = conversion(column);
-            return new ConnectorValidationResultDTO("Valid" + (conversion.isEmpty() ? emptied(column) : conversion), schemaId, true);
+            return new ConnectorValidationResultDTO("Valid" + (conversion.isEmpty() ? emptied(column) : conversion) + merged(column),
+                    schemaId, true);
         }
         String errors = rejected.entrySet().stream()
                 .limit(MAX_REPORTED_ERRORS)
@@ -250,6 +253,36 @@ public class TransformerValidateTool {
                 .toList();
         return emptied.isEmpty() ? "" : ". " + emptied.size() + " of the " + withContent.size() + " values of the file "
                 + "with content become empty, e.g. " + emptied.stream().limit(MAX_REPORTED_ERRORS).collect(Collectors.joining(", ")) + ".";
+    }
+
+    private String merged(String column) {
+        if (convertedValueRows == null || selectedColumns.size() != 1) {
+            return "";
+        }
+        String source = selectedColumns.getFirst();
+        Map<String, Set<String>> inputs = new LinkedHashMap<>();
+        for (int index = 0; index < valueRows.size(); index++) {
+            Object value = valueRows.get(index).get(source);
+            Object result = convertedValueRows.get(index).get(column);
+            if (hasValue(value) && hasValue(result)) {
+                inputs.computeIfAbsent(String.valueOf(result), key -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER))
+                        .add(String.valueOf(value).strip());
+            }
+        }
+        List<String> merges = inputs.entrySet().stream()
+                .filter(entry -> entry.getValue().size() > 1)
+                .limit(MAX_REPORTED_ERRORS)
+                .map(entry -> entry.getValue().stream().limit(5).map(TransformerValidateTool::shown).collect(Collectors.joining(", "))
+                        + (entry.getValue().size() > 5 ? ", ..." : "") + " -> " + shown(entry.getKey()))
+                .toList();
+        return merges.isEmpty() ? "" : ". Different values of the file become one: " + String.join("; ", merges) + ".";
+    }
+
+    public String losses(ConnectorSelectedTransformer selected) {
+        if (selected == null || !check(selected).isValid()) {
+            return "";
+        }
+        return (emptied(selected.getMappedColumn()) + merged(selected.getMappedColumn())).replaceFirst("^\\. ", "");
     }
 
     private static String shown(Object value) {

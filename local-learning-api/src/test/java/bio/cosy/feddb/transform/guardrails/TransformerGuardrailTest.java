@@ -1,5 +1,7 @@
 package bio.cosy.feddb.transform.guardrails;
 
+import bio.cosy.feddb.local.agent.etl.transform.bot.LossReview;
+import bio.cosy.feddb.local.agent.etl.transform.bot.LossReviewBot;
 import bio.cosy.feddb.local.agent.etl.transform.bot.NotFoundReview;
 import bio.cosy.feddb.local.agent.etl.transform.bot.NotFoundReviewBot;
 import bio.cosy.feddb.local.agent.etl.transform.guardrails.AnswerHints;
@@ -9,6 +11,7 @@ import bio.cosy.feddb.local.agent.etl.transform.guardrails.TransformerWriterGuar
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.SavedCodeTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
+import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerValidateTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerWriterTool;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
@@ -61,6 +64,12 @@ class TransformerGuardrailTest {
     @Mock
     NotFoundReviewBot reviewBot;
 
+    @Mock
+    TransformerValidateTool validateTool;
+
+    @Mock
+    LossReviewBot lossReviewBot;
+
     @Spy
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -78,6 +87,33 @@ class TransformerGuardrailTest {
         lenient().when(listTool.isBuiltInFunction(any())).thenAnswer(invocation ->
                 MAPPER.equals(invocation.<ConnectorTransformerDTO>getArgument(0).getMethodName()));
         lenient().when(listTool.builtInFunctionNames()).thenReturn(List.of("Replace Value", MAPPER));
+        lenient().when(validateTool.losses(any())).thenReturn("");
+    }
+
+    @Test
+    void feedsBackALossTheReviewRejectsOnce() {
+        when(validateTool.losses(any())).thenReturn("1 of the 4 values of the file with content become empty, e.g. 'Not measured'.");
+        LossReview review = new LossReview();
+        review.setReason("'Not measured' states a fact, it becomes 'None'.");
+        when(lossReviewBot.review(eq(schemaNode), eq(FILE_VALUES), any())).thenReturn(review);
+
+        OutputGuardrailResult first = selectGuardrail.validate(request(found(transformer(MAPPER))));
+        OutputGuardrailResult second = selectGuardrail.validate(request(found(transformer(MAPPER))));
+
+        assertFalse(first.isSuccess());
+        String feedback = assertInstanceOf(AnswerRejectedException.class, first.getFirstFailureException()).getMessage();
+        assertTrue(feedback.contains("it becomes 'None'") && feedback.contains("askUser"), feedback);
+        assertTrue(second.isSuccess(), "the review is given once per schema node");
+    }
+
+    @Test
+    void keepsALossTheReviewAccepts() {
+        when(validateTool.losses(any())).thenReturn("Different values of the file become one: 'Ja', 'Yes' -> 'Yes'.");
+        LossReview review = new LossReview();
+        review.setKeep(true);
+        when(lossReviewBot.review(any(), any(), any())).thenReturn(review);
+
+        assertTrue(selectGuardrail.validate(request(found(transformer(MAPPER)))).isSuccess());
     }
 
     @Test
