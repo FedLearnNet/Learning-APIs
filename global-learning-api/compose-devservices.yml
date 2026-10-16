@@ -137,7 +137,6 @@ volumes:
   global-learning-api-db-volume:
   global-orch-data:
     name: "global-orch-data"
-  datamodeler-db:
   registry-data:
 
 networks:
