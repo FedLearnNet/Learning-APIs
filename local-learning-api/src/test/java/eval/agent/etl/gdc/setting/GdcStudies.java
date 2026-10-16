@@ -11,29 +11,26 @@ import java.util.List;
 public final class GdcStudies {
 
     public static final String ROOT = "/eval/gdc";
+    private static final String GDC_SCHEMA_ID = "6e918fea-0367-42a4-9666-6acbec996559";
 
     public static final List<GdcStudy> STUDIES = List.of(
-            new GdcStudy("GDC Cao", "Cao.csv", null),
-            new GdcStudy("GDC Clark", "Clark.csv", null),
-            new GdcStudy("GDC Dou", "Dou.csv", null),
-            new GdcStudy("GDC Gillette", "Gillette.csv", null),
-            new GdcStudy("GDC Huang", "Huang.csv", null),
-            new GdcStudy("GDC Krug", "Krug.csv", null),
-            new GdcStudy("GDC McDermott", "McDermott.csv", null),
-            new GdcStudy("GDC Satpathy", "Satpathy.csv", null),
-            new GdcStudy("GDC Vasaikar", "Vasaikar.csv", null),
-            new GdcStudy("GDC Wang", "Wang.csv", null));
+            new GdcStudy("GDC Cao", "Cao.csv", "case_id"),
+            new GdcStudy("GDC Clark", "Clark.csv", "Case_ID"),
+            new GdcStudy("GDC Dou", "Dou.csv", "Proteomics_Participant_ID"),
+            new GdcStudy("GDC Gillette", "Gillette.csv", "Participant"),
+            new GdcStudy("GDC Huang", "Huang.csv", "case_id"),
+            new GdcStudy("GDC Krug", "Krug.csv", "Sample.ID"),
+            new GdcStudy("GDC McDermott", "McDermott.csv", "CPTAC Case ID"),
+            new GdcStudy("GDC Satpathy", "Satpathy.csv", "Participant"),
+            new GdcStudy("GDC Vasaikar", "Vasaikar.csv", "SampleID"),
+            new GdcStudy("GDC Wang", "Wang.csv", "case_id"));
 
     private GdcStudies() {
     }
 
-    /** The id of the GDC schema in the global data modeler, which differs per installation. */
+    /** The GDC schema of the dev data modeler; another installation passes its id with -Deval.gdc.schema-id. */
     public static String schemaId() {
-        String id = System.getProperty("eval.gdc.schema-id", "");
-        if (id.isBlank()) {
-            throw new IllegalStateException("Set -Deval.gdc.schema-id to the id of the uploaded GDC schema");
-        }
-        return id;
+        return System.getProperty("eval.gdc.schema-id", GDC_SCHEMA_ID);
     }
 
     public static List<GdcStudy> selected() {

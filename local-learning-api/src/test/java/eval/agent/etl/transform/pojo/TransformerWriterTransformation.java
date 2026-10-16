@@ -10,4 +10,6 @@ import lombok.NoArgsConstructor;
 public class TransformerWriterTransformation {
     private String configuration;
     private String code;
+    // What the static analysis (SAST) of the build pipeline found in the code, null for functions without code
+    private String sast;
 }

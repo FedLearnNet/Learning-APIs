@@ -10,6 +10,7 @@ import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import java.util.Iterator;
 import java.util.List;
 
 @ApplicationScoped
@@ -40,12 +41,13 @@ public class SapbertSimilartity {
             return null;
         }
         try {
-            List<Embedding> nodeEmbeddings = sapBERT.embedAll(nodeTexts);
-            List<Embedding> columnEmbeddings = sapBERT.embedAll(columns);
+            List<Embedding> nodeEmbeddings = embedAll(nodeTexts);
+            List<Embedding> columnEmbeddings = embedAll(columns);
             double[][] scores = new double[nodeEmbeddings.size()][columnEmbeddings.size()];
             for (int n = 0; n < nodeEmbeddings.size(); n++) {
                 for (int c = 0; c < columnEmbeddings.size(); c++) {
-                    scores[n][c] = CosineSimilarity.between(nodeEmbeddings.get(n), columnEmbeddings.get(c));
+                    scores[n][c] = nodeEmbeddings.get(n) == null || columnEmbeddings.get(c) == null ? 0
+                            : CosineSimilarity.between(nodeEmbeddings.get(n), columnEmbeddings.get(c));
                 }
             }
             return scores;
@@ -53,6 +55,13 @@ public class SapbertSimilartity {
             Log.warn("SapBERT column matching failed, continuing without embeddings", e);
             return null;
         }
+    }
+
+    // A blank text, e.g. of an unnamed column, has no meaning to compare and gets no embedding
+    private List<Embedding> embedAll(List<String> texts) {
+        Iterator<Embedding> embeddings = sapBERT.embedAll(texts.stream().filter(text -> text != null && !text.isBlank()).toList())
+                .iterator();
+        return texts.stream().map(text -> text == null || text.isBlank() ? null : embeddings.next()).toList();
     }
 
 }

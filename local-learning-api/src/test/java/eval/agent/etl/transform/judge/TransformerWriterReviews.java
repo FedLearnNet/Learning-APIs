@@ -2,6 +2,8 @@ package eval.agent.etl.transform.judge;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
+import bio.cosy.feddb.core.api.pipeline.SastScanResultDTO;
+import bio.cosy.feddb.core.api.pipeline.SastSummaryDTO;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
@@ -36,6 +38,8 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class TransformerWriterReviews {
+
+    private static final int SAST_FINDINGS = 5;
 
     private static final int MAPPED_COLUMN_VALUES = 25;
     private static final int OTHER_COLUMN_VALUES = 5;
@@ -177,7 +181,25 @@ public class TransformerWriterReviews {
         appendIfPresent(configuration, "input", transformer.getInputMapping());
         appendIfPresent(configuration, "output", transformer.getReturnMapping());
         appendIfPresent(configuration, "parameters", transformer.getHyperparams());
-        return new TransformerWriterTransformation(configuration.toString(), code == null ? null : code.getBody());
+        return new TransformerWriterTransformation(configuration.toString(), code == null ? null : code.getBody(),
+                code == null ? null : sast(code));
+    }
+
+    // The static analysis of the build of the code: the counts per severity and the first findings
+    private static String sast(CodeTransformerDTO code) {
+        SastScanResultDTO scan = code.getPipeline() == null || code.getPipeline().getPublishInfo() == null ? null
+                : code.getPipeline().getPublishInfo().getSastScanResult();
+        if (scan == null || scan.getSummary() == null) {
+            return "no SAST result";
+        }
+        SastSummaryDTO summary = scan.getSummary();
+        String counts = "%s: %d errors, %d warnings, %d info%s".formatted(scan.getTool(), summary.getError(), summary.getWarning(),
+                summary.getInfo(), scan.isComplete() ? "" : " (incomplete scan)");
+        return scan.getFindings().isEmpty() ? counts : counts + "; " + scan.getFindings().stream()
+                .limit(SAST_FINDINGS)
+                .map(finding -> finding.getSeverity() + " " + finding.getRuleId() + " at line " + finding.getStartLine() + ": "
+                        + finding.getMessage())
+                .collect(Collectors.joining("; "));
     }
 
     public static String profile(ColumnProfile column, int maxValues) {

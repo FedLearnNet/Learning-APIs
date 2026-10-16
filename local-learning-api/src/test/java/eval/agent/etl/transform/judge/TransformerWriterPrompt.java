@@ -50,7 +50,8 @@ public final class TransformerWriterPrompt {
             TransformerWriterTransformation transformation = transformations.get(index);
             text.append(index + 1).append(". ").append(transformation.getConfiguration()).append('\n');
             if (transformation.getCode() != null) {
-                text.append("```python\n").append(transformation.getCode()).append("\n```\n");
+                text.append("```python\n").append(transformation.getCode()).append("\n```\n")
+                        .append("Static analysis (SAST) of the code: ").append(transformation.getSast()).append('\n');
             }
         }
     }

@@ -86,10 +86,11 @@ public final class TransformerWriterReport {
         line("");
         line("## Summary");
         line("");
-        line("- %d schema nodes: %d mapped (%d with custom code), %d not found, %d with rejected values".formatted(
+        line("- %d schema nodes: %d mapped (%d with custom code, %d of them with SAST errors or warnings), %d not found, %d with rejected values".formatted(
                 reviews.size(),
                 count(reviews, TransformerWriterReview::isFound),
                 count(reviews, review -> kind(review).equals("custom code")),
+                count(reviews, review -> review.getTransformations().stream().anyMatch(TransformerWriterReport::sastFinding)),
                 count(reviews, review -> !review.isFound()),
                 count(reviews, review -> review.getRejectedValues() > 0)));
         List<Double> shifts = reviews.stream().map(TransformerWriterReview::getTruthShift).filter(Objects::nonNull).toList();
@@ -141,7 +142,12 @@ public final class TransformerWriterReport {
             line("```python");
             line(transformation.getCode());
             line("```");
+            line("- SAST: " + transformation.getSast());
         }
+    }
+
+    private static boolean sastFinding(TransformerWriterTransformation transformation) {
+        return transformation.getSast() != null && !transformation.getSast().matches(".*: 0 errors, 0 warnings.*|no SAST result");
     }
 
     private static String kind(TransformerWriterReview review) {
