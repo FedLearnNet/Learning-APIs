@@ -3,7 +3,7 @@
 Runs the evaluations of the ETL agent on a server in one container with its own Docker daemon, like
 [FL-Net-CLI/dind](https://github.com/FedLearnNet/FL-Net-CLI/tree/main/dind): the database, the orchestrator and the
 tests run inside, and so do the code runner and build pipeline containers the orchestrator starts. They reach the
-tests as `host.docker.internal`, whatever the Docker of the server allows. The container only connects out: the
+tests at the gateway of their network, whatever the Docker of the server allows. The container only connects out: the
 LLM, the schemas and store tools of the global dev server and ghcr; it publishes no port.
 
 ```bash

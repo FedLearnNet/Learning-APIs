@@ -1,6 +1,6 @@
 # Inside the DinD container: the database and the orchestrator of the tests, and the tests themselves. The tests run
 # in the network of the DinD container like on a developer machine, so localhost:5432 and localhost:8091 work as in
-# compose-devservices.yml, and the containers the orchestrator starts reach them as host.docker.internal.
+# compose-devservices.yml, and the containers the orchestrator starts reach them at the gateway of eval-network.
 services:
   local-learning-api-db:
     image: postgres:18
@@ -29,7 +29,8 @@ services:
       QUARKUS_DATASOURCE_USERNAME: user
       QUARKUS_DATASOURCE_PASSWORD: password
       QUARKUS_LOG_CONSOLE_JSON_ENABLED: "false"
-      CONTAINER_HOST_OVERRIDE: host.docker.internal
+      # The gateway of eval-network is the DinD container itself, where the tests listen
+      CONTAINER_HOST_OVERRIDE: 172.30.250.1
       CONTAINER_NETWORK_NAMES: eval-network
       CONTAINER_NETWORK_ALWAYS_BRIDGE: "true"
     volumes:
@@ -64,7 +65,12 @@ services:
       orch-api:
         condition: service_started
 
-# The network the containers of the orchestrator join; they reach the tests through host.docker.internal
+# The network the containers of the orchestrator join; they reach the tests at its gateway, as a Linux Docker resolves
+# host.docker.internal only for containers started with host access
 networks:
   eval-network:
     name: eval-network
+    ipam:
+      config:
+        - subnet: 172.30.250.0/24
+          gateway: 172.30.250.1
