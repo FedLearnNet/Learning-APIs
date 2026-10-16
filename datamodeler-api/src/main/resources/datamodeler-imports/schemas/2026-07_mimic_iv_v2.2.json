@@ -1,0 +1,514 @@
+{
+  "id": "e46b6956-6b46-55cd-b632-93f44c27a235",
+  "name": "2026-07_mimic_iv_v2",
+  "description": "Root node of the schema 2026-07_mimic_iv_v2",
+  "type": "ROOT",
+  "children": [
+    {
+      "id": "79b65f9c-e3ea-5d4a-bf2e-4924734202c0",
+      "name": "Demographics",
+      "description": "Grouping of Demographics",
+      "type": "GROUP",
+      "children": [
+        {
+          "id": "f08810a9-ad2d-54e5-816f-e20ada710264",
+          "name": "Race",
+          "description": "Race of the patient",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "6fed248f-72ab-5fbe-a74a-e4095dcb90a5",
+          "ontologyId": "db42a70e-f74c-58f2-9ceb-6d42b45bb19c",
+          "children": []
+        },
+        {
+          "id": "e7fe4db7-a60f-5441-b155-4869b43ada13",
+          "name": "Gender",
+          "description": "Gender of the patient",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "344eeb12-1f47-532f-9e0a-79365f9a417e",
+          "ontologyId": "a1cbbfb8-a214-55c7-beb5-2c64fb1e1db9",
+          "children": []
+        },
+        {
+          "id": "bed85074-bb28-5d13-92f9-cc09a0c03779",
+          "name": "Age",
+          "description": "Age group in 10-year intervals",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "a7ecc6e1-e72d-53cc-83fa-31265b4b682a",
+          "ontologyId": "d9f5f4a3-2a1e-5a4a-a46b-148722b9a6b4",
+          "children": []
+        },
+        {
+          "id": "657a3620-eb81-5926-a929-78b2060ec1f3",
+          "name": "Weight",
+          "description": "Weight in pounds",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "1d2b6437-96f8-5cc7-8ccb-4bd09f6c742b",
+          "ontologyId": "78566244-4e11-5e6c-b94a-81796d7ca62c",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "9b0d1b98-021d-5e15-984d-629cbd7158bf",
+      "name": "Encounter",
+      "description": "Grouping of Encounter",
+      "type": "GROUP",
+      "children": [
+        {
+          "id": "31ecb387-0c54-5b02-94ca-e8ae734fb5cb",
+          "name": "Encounter ID",
+          "description": "Unique identifier of an encounter",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "cc9c46eb-8c52-5130-b8c4-fa789509c86f",
+          "ontologyId": "54e7a243-faf6-5caf-ab70-dcab7e0dcd70",
+          "children": []
+        },
+        {
+          "id": "96c3c5ab-76ca-59cb-bbde-d6ded7862296",
+          "name": "Patient Number",
+          "description": "Unique identifier of a patient",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "cc9c46eb-8c52-5130-b8c4-fa789509c86f",
+          "ontologyId": "ea7d704f-6970-5efc-a217-edba014064e1",
+          "children": []
+        },
+        {
+          "id": "1d2001d7-307a-54b2-a18e-107a3274a2fd",
+          "name": "Admission Type",
+          "description": "Integer identifier for the type of admission",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "cc9c46eb-8c52-5130-b8c4-fa789509c86f",
+          "ontologyId": "28f63d83-7417-5c7d-b136-1e30a04a3235",
+          "children": []
+        },
+        {
+          "id": "0418984d-c0a5-5c75-82bc-862f10c1b012",
+          "name": "Discharge Disposition",
+          "description": "Integer identifier for the discharge disposition",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "cc9c46eb-8c52-5130-b8c4-fa789509c86f",
+          "ontologyId": "4403ac30-2999-522f-ab59-56b882d3aaf4",
+          "children": []
+        },
+        {
+          "id": "45b7a8d6-93a2-5773-b5df-a9a5c9da002b",
+          "name": "Admission Source",
+          "description": "Integer identifier for the admission source",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "cc9c46eb-8c52-5130-b8c4-fa789509c86f",
+          "ontologyId": "a5591e45-4732-5b76-8d9e-2bb10bbda1a7",
+          "children": []
+        },
+        {
+          "id": "c397620f-d88b-58e6-8960-73c8753f8cfb",
+          "name": "Time in Hospital",
+          "description": "Number of days between admission and discharge",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "cc9c46eb-8c52-5130-b8c4-fa789509c86f",
+          "ontologyId": "b34ccdb9-e160-59bb-9073-cc403778c4e4",
+          "children": []
+        },
+        {
+          "id": "8a94c409-2c43-5751-a4f8-9cb80bdb526f",
+          "name": "Payer Code",
+          "description": "Code for the payer",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+          "ontologyId": "b11ccbb8-aa08-5ad9-9089-40213321c32a",
+          "children": []
+        },
+        {
+          "id": "d91b0335-8c97-5948-88eb-b0589452fa6a",
+          "name": "Medical Specialty",
+          "description": "Specialty of the admitting physician",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+          "ontologyId": "0b507e70-fa48-5061-9708-fbfd8e5286c1",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "7e96b0a6-5fc8-58f4-952f-e685b588c5b3",
+      "name": "Clinical Counts",
+      "description": "Grouping of Clinical Counts",
+      "type": "GROUP",
+      "children": [
+        {
+          "id": "e69b1bb2-5559-5bfd-b91d-85373f7e558a",
+          "name": "Num Lab Procedures",
+          "description": "Number of lab procedures during the encounter",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "cc9c46eb-8c52-5130-b8c4-fa789509c86f",
+          "ontologyId": "694ccff3-c2e7-5008-9e93-3d83e30a11c1",
+          "children": []
+        },
+        {
+          "id": "a620068f-c153-5f25-bf3b-b8f362e5d4a2",
+          "name": "Num Procedures",
+          "description": "Number of non-lab procedures during the encounter",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "cc9c46eb-8c52-5130-b8c4-fa789509c86f",
+          "ontologyId": "ae17cce5-8d1d-5e63-bcb0-b1960b5355a2",
+          "children": []
+        },
+        {
+          "id": "791f0e26-9685-57a1-8e19-bb3fb3a11814",
+          "name": "Num Medications",
+          "description": "Number of distinct generic medications administered",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "cc9c46eb-8c52-5130-b8c4-fa789509c86f",
+          "ontologyId": "f18a256d-0c87-5a95-a5bb-d363537167c6",
+          "children": []
+        },
+        {
+          "id": "a2d8dc6a-f370-5054-bb0a-356c916221bb",
+          "name": "Number Diagnoses",
+          "description": "Number of diagnoses entered for the encounter",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "cc9c46eb-8c52-5130-b8c4-fa789509c86f",
+          "ontologyId": "d8d1f718-437c-5b20-a952-f4f4c5622fde",
+          "children": []
+        },
+        {
+          "id": "b092e466-c4f2-55d9-a2eb-488e605f4648",
+          "name": "Number Outpatient",
+          "description": "Number of outpatient visits in the year before the encounter",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "cc9c46eb-8c52-5130-b8c4-fa789509c86f",
+          "ontologyId": "12a7430a-d0bd-57a2-a769-3ffc7e723361",
+          "children": []
+        },
+        {
+          "id": "fb1d3aba-8d05-5ab6-962e-505015cfd3af",
+          "name": "Number Emergency",
+          "description": "Number of emergency visits in the year before the encounter",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "cc9c46eb-8c52-5130-b8c4-fa789509c86f",
+          "ontologyId": "0254ccd7-1fb1-5f74-b55c-a1af1198768e",
+          "children": []
+        },
+        {
+          "id": "f1578170-d6f0-5731-9af5-8a1ea4f0bbb5",
+          "name": "Number Inpatient",
+          "description": "Number of inpatient visits in the year before the encounter",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "cc9c46eb-8c52-5130-b8c4-fa789509c86f",
+          "ontologyId": "5875fd47-db2d-504c-a7f8-dec4219045c2",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "2c724c41-2045-5f7b-bef8-233eee05912d",
+      "name": "Diagnoses",
+      "description": "Grouping of Diagnoses",
+      "type": "GROUP",
+      "children": [
+        {
+          "id": "588f9ddf-3b20-550f-830b-3d982d70d233",
+          "name": "Diag 1",
+          "description": "Primary diagnosis ICD code",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+          "ontologyId": "1ab53525-785e-56f9-8521-43e4b1ea0428",
+          "children": []
+        },
+        {
+          "id": "917a8370-f9d5-51e2-aa33-64d85725a33a",
+          "name": "Diag 2",
+          "description": "Secondary diagnosis ICD code",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+          "ontologyId": "e5a74c4c-e56f-52c6-beff-fd22999fa56f",
+          "children": []
+        },
+        {
+          "id": "dd36531a-ee20-5558-915c-68fa73dc29a6",
+          "name": "Diag 3",
+          "description": "Additional secondary diagnosis ICD code",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+          "ontologyId": "5367f500-fb9e-5c4d-bfeb-890c9a21aed9",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "fc0b2215-a591-5b51-b03b-6421da503e5c",
+      "name": "Lab Results",
+      "description": "Grouping of Lab Results",
+      "type": "GROUP",
+      "children": [
+        {
+          "id": "12b201a6-fdbf-5bb2-bd57-888cac3793c7",
+          "name": "Max Glu Serum",
+          "description": "Result of glucose serum test",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "09d5e754-95b7-5641-917f-4bf15c967bb1",
+          "ontologyId": "e9786ae4-dcd6-54ac-aed6-5f4767b3ea0b",
+          "children": []
+        },
+        {
+          "id": "fb246d86-6243-5dbe-b137-2387bc77b2e3",
+          "name": "A1C Result",
+          "description": "Result of HbA1c test",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "c8f07d56-8b2a-5ba1-9b7c-d4ebc08ca273",
+          "ontologyId": "f2e83ba5-88e3-5117-8dc4-e0ecfac5955b",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "6605df0e-823e-50b2-a4c7-659bb4dba83f",
+      "name": "Medication",
+      "description": "Grouping of Medication",
+      "type": "GROUP",
+      "children": [
+        {
+          "id": "56fdf6c0-b494-535f-8026-96116cb1f6b5",
+          "name": "Metformin",
+          "description": "Dosage change of metformin",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "c7fc8f51-c5e7-5259-a4e1-16942d787315",
+          "children": []
+        },
+        {
+          "id": "9dbf7d45-9fff-511f-a4d0-de921de3f571",
+          "name": "Repaglinide",
+          "description": "Dosage change of repaglinide",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "d5a2fd20-6464-54a6-bb14-31e3a7d8bc79",
+          "children": []
+        },
+        {
+          "id": "2191fae6-dec3-5bf8-b974-7c7ae8b61ee9",
+          "name": "Nateglinide",
+          "description": "Dosage change of nateglinide",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "130986d1-ce5e-517e-845b-3f0a045ed401",
+          "children": []
+        },
+        {
+          "id": "43703897-738f-5638-b515-68b9d4701503",
+          "name": "Chlorpropamide",
+          "description": "Dosage change of chlorpropamide",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "086dbd6b-d32c-5660-879f-70d23cd38298",
+          "children": []
+        },
+        {
+          "id": "b85a732a-3dc4-5cc4-8744-d79b198431ce",
+          "name": "Glimepiride",
+          "description": "Dosage change of glimepiride",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "7ca7b8bb-5caa-507e-9fea-e557d6a7ff9e",
+          "children": []
+        },
+        {
+          "id": "5df2bcd8-fffe-5c77-bf58-a01deaae8502",
+          "name": "Acetohexamide",
+          "description": "Dosage change of acetohexamide",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "f745f959-865a-55ae-8ab5-5700dbadddac",
+          "children": []
+        },
+        {
+          "id": "95b8ea86-ce2c-57d8-ba5b-7cc497739b44",
+          "name": "Glipizide",
+          "description": "Dosage change of glipizide",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "24736aba-0b80-55c8-a89d-2be9f4047f4b",
+          "children": []
+        },
+        {
+          "id": "074e9bf3-99a1-5a43-b53e-97f8a329cb16",
+          "name": "Glyburide",
+          "description": "Dosage change of glyburide",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "c62746a9-a35e-501b-8026-7a6c4d8e4a05",
+          "children": []
+        },
+        {
+          "id": "c82d0dbd-975b-5d04-a2a3-98b7f510ec3f",
+          "name": "Tolbutamide",
+          "description": "Dosage change of tolbutamide",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "42df4b61-e845-5b63-99ad-bd00a5b59147",
+          "children": []
+        },
+        {
+          "id": "46ccb747-3714-5cd9-b7ec-fe07df32b1aa",
+          "name": "Pioglitazone",
+          "description": "Dosage change of pioglitazone",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "cf801640-4c2b-5816-b00b-293acd146381",
+          "children": []
+        },
+        {
+          "id": "3855ce2b-f16d-53ea-907f-ceec9a45a4a7",
+          "name": "Rosiglitazone",
+          "description": "Dosage change of rosiglitazone",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "31b64e76-a398-5b76-aff6-cdc1eb4ed244",
+          "children": []
+        },
+        {
+          "id": "4e7a3293-5ca6-5679-a504-2b9f1599a29d",
+          "name": "Acarbose",
+          "description": "Dosage change of acarbose",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "93593961-e5c5-507b-8858-62972985d070",
+          "children": []
+        },
+        {
+          "id": "1136197b-37c5-5203-a322-4aad90cf63a5",
+          "name": "Miglitol",
+          "description": "Dosage change of miglitol",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "9167c8f7-445b-5b21-9c21-9a04a2909407",
+          "children": []
+        },
+        {
+          "id": "c0669b78-bc03-5362-9a47-dce79bc27539",
+          "name": "Troglitazone",
+          "description": "Dosage change of troglitazone",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "9b1e1cdd-ac21-597f-8701-aafbde9c81b9",
+          "children": []
+        },
+        {
+          "id": "924750b7-5a59-5e89-b0c2-93c517d63155",
+          "name": "Tolazamide",
+          "description": "Dosage change of tolazamide",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "9f7be856-929f-5f36-a6a7-e729545cbe05",
+          "children": []
+        },
+        {
+          "id": "ba5edf13-45af-5c16-8afe-2863cefb7dff",
+          "name": "Examide",
+          "description": "Dosage change of examide",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "c4b4b8e9-6fa8-5f59-902e-c2be8db18d71",
+          "children": []
+        },
+        {
+          "id": "c9e08ffc-5dde-5e4f-8b28-ee5526081c1d",
+          "name": "Citoglipton",
+          "description": "Dosage change of citoglipton",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "8dca7017-7c5d-5a75-8d27-d8bfc1ce34bf",
+          "children": []
+        },
+        {
+          "id": "d291212e-97b2-55ef-ab14-0308c6a1dee4",
+          "name": "Insulin",
+          "description": "Dosage change of insulin",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "3a5edebc-22d1-526f-a170-1cb583cd7d3c",
+          "children": []
+        },
+        {
+          "id": "61acac49-0e21-567f-984b-9d3a119b2c4c",
+          "name": "Glyburide-Metformin",
+          "description": "Dosage change of glyburide-metformin combination",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "f3d5e744-78df-528c-8dc1-97842698ceab",
+          "children": []
+        },
+        {
+          "id": "bdf688d4-f2b9-5781-927c-28c48a11e4e9",
+          "name": "Glipizide-Metformin",
+          "description": "Dosage change of glipizide-metformin combination",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "986f9886-346f-5d32-9376-60f5d1501c36",
+          "children": []
+        },
+        {
+          "id": "1983f3cb-b220-5e78-a01d-00143ba6f98e",
+          "name": "Glimepiride-Pioglitazone",
+          "description": "Dosage change of glimepiride-pioglitazone combination",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "68b95d6e-2563-505a-ba8b-9ab6fde0d891",
+          "children": []
+        },
+        {
+          "id": "a2def61f-6450-55c1-a61c-efe4ccbd1160",
+          "name": "Metformin-Rosiglitazone",
+          "description": "Dosage change of metformin-rosiglitazone combination",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "c5098c89-5f91-5f16-8527-b648a82ce163",
+          "children": []
+        },
+        {
+          "id": "eeb12c65-7ccf-5619-a646-3b869892d6f3",
+          "name": "Metformin-Pioglitazone",
+          "description": "Dosage change of metformin-pioglitazone combination",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "3926a07d-0d17-58b9-830c-d7daac9a08fb",
+          "ontologyId": "ad1a8e67-87a5-576a-a1bd-b319e334a87e",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "716152ef-4de8-5b8b-b541-3314a8bf2e15",
+      "name": "Outcome",
+      "description": "Grouping of Outcome",
+      "type": "GROUP",
+      "children": [
+        {
+          "id": "f000d3d8-d7a4-501c-8cb4-8d7b919cc686",
+          "name": "Change",
+          "description": "Whether there was a change in diabetes medications",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "8461356f-58c0-5516-8cc2-5a84e12aa173",
+          "ontologyId": "422890da-ee99-5ffd-a549-d5472694acc4",
+          "children": []
+        },
+        {
+          "id": "e142024d-0e9d-544b-88fd-ffd33fe5392d",
+          "name": "Diabetes Med",
+          "description": "Whether any diabetes medication was prescribed",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "b1207adb-fbcb-55b4-923f-a09bfc8b1db8",
+          "ontologyId": "9bb3bc68-b463-5e9a-8787-bcf3587ae355",
+          "children": []
+        },
+        {
+          "id": "2e9b0a4a-c129-5988-9e01-5704a2502563",
+          "name": "Readmitted",
+          "description": "Whether the patient was readmitted",
+          "type": "LIST_ATTRIBUTE",
+          "dataTypeId": "b58ddb3f-5f6b-5cad-ae1b-842e9ca51859",
+          "ontologyId": "a72151fd-859b-5b6a-a752-039c0a541e29",
+          "children": []
+        }
+      ]
+    }
+  ]
+}

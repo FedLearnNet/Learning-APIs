@@ -1,4 +1,4 @@
-package de.unihamburg.daibetes.api.config;
+package de.unihamburg.daibetes.config;
 
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;

@@ -77,16 +77,31 @@ public class SchemaBO {
     }
 
     private SchemaNodeDTO prePareCreate(SchemaNodeDTO dto) {
-        dto.setCreatedAt(LocalDate.now());
-        dto.setUpdatedAt(LocalDate.now());
-        dto.setVersion(0);
+        prepareNew(dto);
         dto.setId(null);
         return dto;
     }
 
+    private SchemaNodeDTO prepareNew(SchemaNodeDTO dto) {
+        dto.setCreatedAt(LocalDate.now());
+        dto.setUpdatedAt(LocalDate.now());
+        dto.setVersion(0);
+        return dto;
+    }
+
     public Uni<SchemaNodeDTO> create(SchemaNodeDTO dto) {
-        SchemaNodeDTO prepared = prePareCreate(dto);
-        return schemaDAO.create(prepared)
+        return persist(prePareCreate(dto));
+    }
+
+    public Uni<SchemaNodeDTO> createWithId(SchemaNodeDTO dto) {
+        if (dto.getId() == null) {
+            return Uni.createFrom().failure(new BadRequestException("Schema node ID must be set"));
+        }
+        return persist(prepareNew(dto));
+    }
+
+    private Uni<SchemaNodeDTO> persist(SchemaNodeDTO dto) {
+        return schemaDAO.create(dto)
                 .flatMap(created ->
                 {
                     if (dto.getOntologyId() != null && dto.getDataTypeId() != null) {

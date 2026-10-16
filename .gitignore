@@ -67,3 +67,5 @@ global-learning-api/results/
 
 local-learning-api/results
 local-learning-api/src/main/resources/sapbert
+local-learning-api/download-gdc-sm.sh
+local-learning-api/src/test/resources/eval/gdc

@@ -3,7 +3,7 @@ package de.unihamburg.daibetes.api.feature;
 import de.unihamburg.daibetes.embedding.SapBERTEmbeddingModel;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import de.unihamburg.daibetes.api.config.UMLSConfig;
+import de.unihamburg.daibetes.config.UMLSConfig;
 
 
 @ApplicationScoped

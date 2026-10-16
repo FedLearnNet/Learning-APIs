@@ -1,15 +1,27 @@
 services:
-  neo4j:
-    image: neo4j:latest
-    container_name: neo4j
+  datamodeler-db:
+    image: neo4j:2026.09.0
     environment:
-      - NEO4J_AUTH=neo4j/password
+      NEO4J_AUTH: neo4j/password
     volumes:
-      - neo4j_data_logs_dummy:/data
-      - neo4j_data_logs_dummy:/logs
+      - datamodeler-db-data:/data
+      - datamodeler-db-logs:/logs
     ports:
       - "7474:7474" # HTTP
       - "7687:7687" # Bolt
+    healthcheck:
+      test: [ "CMD-SHELL", "cypher-shell -u neo4j -p password 'RETURN 1' || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    labels:
+      io.quarkus.devservices.compose.wait_for.ports.timeout: "60s"
+    networks:
+      - datamodeler-network
 
 volumes:
-  neo4j_data_logs_dummy:
+  datamodeler-db-data:
+  datamodeler-db-logs:
+
+networks:
+  datamodeler-network:
