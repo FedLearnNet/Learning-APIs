@@ -23,6 +23,9 @@ until docker info >/dev/null 2>&1; do
 done
 
 cd /opt/eval-dind
+# Containers and networks of a run that was killed stay in the Docker storage volume
+docker compose down --volumes --remove-orphans >/dev/null 2>&1 || true
+docker network rm eval-network >/dev/null 2>&1 || true
 status=0
 docker compose up --abort-on-container-exit --exit-code-from eval || status=$?
 docker compose down --volumes --remove-orphans >/dev/null 2>&1 || true
