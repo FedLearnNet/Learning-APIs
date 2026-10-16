@@ -1,0 +1,59 @@
+# Inside the DinD container: the database and the orchestrator of the tests, and the tests themselves. The tests run
+# in the network of the DinD container like on a developer machine, so localhost:5432 and localhost:8091 work as in
+# compose-devservices.yml, and the containers the orchestrator starts reach them as host.docker.internal.
+services:
+  local-learning-api-db:
+    image: postgres:18
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: local-learning-management
+      POSTGRES_USER: user
+    command: [ "postgres", "-c", "max_connections=200" ]
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d local-learning-management" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  orch-api:
+    image: ${ORCH_API_IMAGE:-ghcr.io/fedlearnnet/orchestration-api/orch-api:feature-pipeline-sast}
+    user: "0:0"
+    ports:
+      - "8091:8080"
+    environment:
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://local-learning-api-db:5432/local-learning-management
+      QUARKUS_DATASOURCE_USERNAME: user
+      QUARKUS_DATASOURCE_PASSWORD: password
+      QUARKUS_LOG_CONSOLE_JSON_ENABLED: "false"
+      CONTAINER_HOST_OVERRIDE: host.docker.internal
+      CONTAINER_NETWORK_ALWAYS_BRIDGE: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      local-learning-api-db:
+        condition: service_healthy
+
+  eval:
+    image: eclipse-temurin:25-jdk
+    network_mode: host
+    working_dir: /workspace
+    environment:
+      # The store tools and the schemas of the global dev server
+      QUARKUS_REST_CLIENT_GLOBAL_API_URL: ${GLOBAL_API_URL:-https://dev.federated-learning.net/global-learning-api}
+      QUARKUS_REST_CLIENT_GLOBAL_SCHEMA_API_URL: ${GLOBAL_SCHEMA_API_URL:-https://dev.federated-learning.net/data-modeler}
+      EVAL_MODELS: ${EVAL_MODELS:-}
+      EVAL_MODES: ${EVAL_MODES:-real,synthetic}
+      EVAL_RUNS: ${EVAL_RUNS:-3}
+      EVAL_RUN_NUMBERS: ${EVAL_RUN_NUMBERS:-}
+      EVAL_DATASETS: ${EVAL_DATASETS:-}
+      EVAL_REPLACE: ${EVAL_REPLACE:-false}
+      EVAL_TESTS: ${EVAL_TESTS:-us130,gdc}
+    volumes:
+      - /workspace:/workspace
+      - /cache/m2:/root/.m2
+    command: [ "bash", "local-learning-api/eval-dind/run-evals.sh" ]
+    depends_on:
+      orch-api:
+        condition: service_started
