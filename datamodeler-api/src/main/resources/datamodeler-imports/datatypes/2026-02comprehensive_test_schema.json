@@ -1,0 +1,77 @@
+[
+  {
+    "id": "7adb0fd4-1085-5f46-a4c8-c498d78c26f2",
+    "description": "Datatype Gender",
+    "name": "Gender",
+    "type": "CATEGORICAL",
+    "options": [
+      "Male",
+      "Female",
+      "Other"
+    ]
+  },
+  {
+    "id": "03c3fd0b-6706-54ca-bd42-4664ea0d3fc3",
+    "description": "Datatype Bool",
+    "name": "Bool",
+    "type": "BOOLEAN",
+    "options": [
+      "True",
+      "False"
+    ]
+  },
+  {
+    "id": "2600afbb-6a74-50b7-841e-ce1f6bd9727d",
+    "description": "Datatype Text",
+    "name": "Text",
+    "type": "STRING",
+    "options": []
+  },
+  {
+    "id": "7457f415-12b3-5313-80af-9ee456913471",
+    "description": "Datatype Datetime",
+    "name": "Datetime",
+    "type": "DATE_TIME",
+    "options": []
+  },
+  {
+    "id": "d8d35fbf-8eaf-5058-8016-8124e70a1c86",
+    "description": "Datatype Date",
+    "name": "Date",
+    "type": "DATE",
+    "options": []
+  },
+  {
+    "id": "bef4e978-b785-547b-bc39-fe1c799270c1",
+    "description": "Datatype Int",
+    "name": "Int",
+    "type": "INT",
+    "options": []
+  },
+  {
+    "id": "e5f7d0fe-6612-5a0a-8459-0f44749d76f8",
+    "description": "Datatype Float",
+    "name": "Float",
+    "type": "FLOAT",
+    "validations": [
+      {
+        "name": "MIN",
+        "validator": "5.0",
+        "message": "Value must be greater or equal to 5.0"
+      },
+      {
+        "name": "MAX",
+        "validator": "25.0",
+        "message": "Value must be smaller or equal to 25.0"
+      }
+    ],
+    "options": []
+  },
+  {
+    "id": "266662b1-d816-5222-82d1-c61ddd4e4229",
+    "description": "Datatype TestAttributeSameAsGroup",
+    "name": "TestAttributeSameAsGroup",
+    "type": "STRING",
+    "options": []
+  }
+]

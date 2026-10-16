@@ -109,7 +109,7 @@
     "inputConnection" : false
   } ],
   "inputs" : [ ],
-  "keycloakId" : "test",
+  "keycloakId" : "admin",
   "name" : "Shared input with analysis branch",
   "description" : "Shared input with analysis branch",
   "publishStatus" : "PUBLISHED"

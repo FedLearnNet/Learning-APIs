@@ -4,20 +4,20 @@
   "slug" : "us130-hospital-readmission-federated-nn",
   "type" : "ANALYSIS",
   "supportsFederatedLearning" : true,
-  "sourceUrl" : "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/us-130-fl-nn",
+  "sourceUrl" : "https://github.com/FedLearnNet/FL-Tool-US-130-NN",
   "count" : 0,
   "average" : 0.0,
   "addedToWorkflowCount" : 0,
   "authors" : [ {
-    "keycloakId" : "test"
+    "keycloakId" : "admin"
   } ],
   "versions" : [ {
     "federatedAppId" : 27,
     "appVersion" : "0.0.0",
     "publishHash" : "91401b9192b3703a059e1d5fa71aeff47f1616a4947b078867647fd7513e2062",
     "publishInfo" : {
-      "commitHash" : "ec86a7d62aa9c18c8ec72dff8817584f15b3020b",
-      "filePaths" : [ "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/us-130-fl-nn/-/blob/ec86a7d62aa9c18c8ec72dff8817584f15b3020b/data/test_us130_wide_c85ce744.csv", "https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/us-130-fl-nn/-/blob/ec86a7d62aa9c18c8ec72dff8817584f15b3020b/data/test_us130_wide.csv" ],
+      "commitHash" : "a2bc1713a3991f0d1de17ee414e12d542132408c",
+      "filePaths" : [ "https://raw.githubusercontent.com/FedLearnNet/FL-Tool-US-130-NN/refs/heads/main/data/test_us130_wide_c85ce744.csv", "https://raw.githubusercontent.com/FedLearnNet/FL-Tool-US-130-NN/refs/heads/main/data/test_us130_wide.csv" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
         "target" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us130-hospital-readmission-federated-nn:MkSRaOLR",
@@ -140,14 +140,14 @@
         "infectedCount" : 0,
         "findings" : [ ]
       },
-      "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us130-hospital-readmission-federated-nn:MkSRaOLR"
+      "imageName" : "us130-hospital-readmission-federated-nn:a2bc1713a3991f0d1de17ee414e12d542132408c"
     },
     "changelog" : "",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
     "certificationLevel" : 0,
-    "imageName" : "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us130-hospital-readmission-federated-nn:MkSRaOLR",
+    "imageName" : "us130-hospital-readmission-federated-nn:a2bc1713a3991f0d1de17ee414e12d542132408c",
     "shortDescription" : "Predict 30-day hospital readmission for diabetic patients using a federated neural network",
     "longDescription" : "",
     "appConfig" : {

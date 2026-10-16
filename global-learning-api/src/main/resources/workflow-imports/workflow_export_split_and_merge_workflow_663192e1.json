@@ -171,7 +171,7 @@
     "inputConnection" : false
   } ],
   "inputs" : [ ],
-  "keycloakId" : "test",
+  "keycloakId" : "admin",
   "name" : "split-and-merge workflow",
   "description" : "split-and-merge workflow\n",
   "publishStatus" : "PUBLISHED"

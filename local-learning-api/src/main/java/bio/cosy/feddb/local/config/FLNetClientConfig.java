@@ -9,6 +9,7 @@ import io.smallrye.config.WithName;
 import io.smallrye.config.WithParentName;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 
@@ -31,6 +32,35 @@ public interface FLNetClientConfig {
     ConnectorConfig connector();
 
     CohortConfig cohort();
+
+    /**
+     * Settings for the relay server connection of the controller.
+     */
+    RelayConfig relay();
+
+    /**
+     * Settings for the relay server connection of the controller.
+     */
+    interface RelayConfig {
+
+        @WithName("cert-sign")
+        CertSignConfig certSign();
+    }
+
+    /**
+     * Signing of the controller's relay certificate via the global server.
+     */
+    interface CertSignConfig {
+
+        // how long to wait for the signed certificate before the request is sent again
+        @WithDefault("PT5M")
+        Duration timeout();
+
+        // how often the request is sent before the step fails
+        @WithName("max-attempts")
+        @WithDefault("3")
+        int maxAttempts();
+    }
 
     interface CohortConfig {
 

@@ -178,7 +178,7 @@
     "inputConnection" : false
   } ],
   "inputs" : [ ],
-  "keycloakId" : "test",
+  "keycloakId" : "admin",
   "name" : "Sample split-and-merge workflow",
   "description" : "Sample split-and-merge workflow",
   "publishStatus" : "PUBLISHED"

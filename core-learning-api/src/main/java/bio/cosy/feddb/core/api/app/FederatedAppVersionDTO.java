@@ -21,6 +21,7 @@ public class FederatedAppVersionDTO extends BaseDTO {
 
     private String publishHash;
     private AppPublishInfoDTO publishInfo;
+    private boolean rebuilding;
 
     private String changelog;
 

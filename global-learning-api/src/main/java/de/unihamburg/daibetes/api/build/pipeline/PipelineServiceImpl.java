@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 @Authenticated
@@ -26,14 +27,12 @@ public class PipelineServiceImpl implements PipelineService {
 
 
     @Override
-    @Transactional
     public PipelineDTO create(PipelineCreateDTO request) {
         String keycloakId = userIdentity.getKeycloakId();
         return bo.create(request, keycloakId);
     }
 
     @Override
-    @Transactional
     public PipelineDTO start(Long id) {
         String keycloakId = userIdentity.getKeycloakId();
         return bo.start(id, keycloakId);
@@ -83,7 +82,17 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional
-    public Response getFiles(Long id, String secret) {
-        return PipelineCallbackService.zip(id, bo.getFiles(id, secret));
+    public Response getFileMetadata(Long id, String secret) {
+        Optional<byte[]> files = bo.getFilesForPipeline(id, secret);
+        if (files.isEmpty()) {
+            return Response.noContent().build();
+        }
+        byte[] zipBytes = files.get();
+
+        String filename = "pipeline-" + id + "-files.zip";
+        return Response.ok(zipBytes, "application/zip")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .header(HttpHeaders.CONTENT_LENGTH, zipBytes.length)
+                .build();
     }
 }
