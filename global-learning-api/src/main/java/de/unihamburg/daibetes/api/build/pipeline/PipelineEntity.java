@@ -21,18 +21,6 @@ public class PipelineEntity extends BasePipelineEntity<PipelineStepEntity> {
     @Column(name = "pipeline_type")
     private PipelineType pipelineType;
 
-    private String secret;
-
-    @Column(length = 64, name = "docker_tag")
-    private String dockerTag;
-
-    @Column(name = "container_id", nullable = true)
-    private String containerId;
-
-    @Column(name = "publish_info", columnDefinition = "json")
-    @JdbcTypeCode(SqlTypes.JSON)
-    private AppPublishInfoDTO publishInfo;
-
     @OneToMany(mappedBy = "pipeline", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @OrderBy("createdAt ASC")
     private List<PipelineStepEntity> steps = new ArrayList<>();

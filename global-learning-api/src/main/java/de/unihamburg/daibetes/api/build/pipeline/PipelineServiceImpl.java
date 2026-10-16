@@ -1,9 +1,9 @@
 package de.unihamburg.daibetes.api.build.pipeline;
 
-import bio.cosy.feddb.core.api.pipeline.PipelineStatusUpdateDTO;
-import bio.cosy.feddb.core.api.pipeline.PipelineRunInfoDTO;
-import bio.cosy.feddb.core.api.pipeline.PipelineCallbackService;
 import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
+import bio.cosy.feddb.core.api.pipeline.PipelineCallbackService;
+import bio.cosy.feddb.core.api.pipeline.PipelineRunInfoDTO;
+import bio.cosy.feddb.core.api.pipeline.PipelineStatusUpdateDTO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
 import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
@@ -13,7 +13,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
-import java.util.Optional;
 
 @ApplicationScoped
 @Authenticated
@@ -82,17 +81,11 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional
-    public Response getFileMetadata(Long id, String secret) {
-        Optional<byte[]> files = bo.getFilesForPipeline(id, secret);
-        if (files.isEmpty()) {
+    public Response getFiles(Long id, String secret) {
+        byte[] files = bo.getFiles(id, secret);
+        if (files == null) {
             return Response.noContent().build();
         }
-        byte[] zipBytes = files.get();
-
-        String filename = "pipeline-" + id + "-files.zip";
-        return Response.ok(zipBytes, "application/zip")
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .header(HttpHeaders.CONTENT_LENGTH, zipBytes.length)
-                .build();
+        return PipelineCallbackService.zip(id, files);
     }
 }

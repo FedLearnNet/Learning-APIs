@@ -1,6 +1,9 @@
 package de.unihamburg.daibetes.api.build.pipeline;
 
 import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
+import bio.cosy.feddb.core.api.pipeline.PipelineCallbackService;
+import bio.cosy.feddb.core.api.pipeline.PipelineRunInfoDTO;
+import bio.cosy.feddb.core.api.pipeline.PipelineStatusUpdateDTO;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
@@ -10,11 +13,13 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -126,15 +131,13 @@ public interface PipelineService extends PipelineCallbackService {
             content = @Content(schema = @Schema(implementation = PipelineStatusUpdateDTO.class))
     )
     @APIResponses({
-            @APIResponse(responseCode = "200", description = "Pipeline updated",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = PipelineDTO.class))),
+            @APIResponse(responseCode = "204", description = "Pipeline updated"),
             @APIResponse(responseCode = "400", description = "Invalid update"),
             @APIResponse(responseCode = "401", description = "Unauthorized"),
             @APIResponse(responseCode = "403", description = "Forbidden (invalid secret)"),
             @APIResponse(responseCode = "404", description = "Pipeline not found")
     })
-    PipelineDTO processUpdate(
+    void processUpdate(
             @Parameter(description = "Pipeline ID", required = true)
             @PathParam("id") Long id,
             @Parameter(description = "Update secret (e.g., from CI/CD callback)")
@@ -157,15 +160,13 @@ public interface PipelineService extends PipelineCallbackService {
             content = @Content(schema = @Schema(implementation = AppPublishInfoDTO.class))
     )
     @APIResponses({
-            @APIResponse(responseCode = "200", description = "Pipeline updated",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = PipelineDTO.class))),
+            @APIResponse(responseCode = "204", description = "Pipeline updated"),
             @APIResponse(responseCode = "400", description = "Invalid update"),
             @APIResponse(responseCode = "401", description = "Unauthorized"),
             @APIResponse(responseCode = "403", description = "Forbidden (invalid secret)"),
             @APIResponse(responseCode = "404", description = "Pipeline not found")
     })
-    PipelineDTO processSummary(
+    void processSummary(
             @Parameter(description = "Pipeline ID", required = true)
             @PathParam("id") Long id,
             @Parameter(description = "Update secret (e.g., from CI/CD callback)")
@@ -212,7 +213,6 @@ public interface PipelineService extends PipelineCallbackService {
             @APIResponse(responseCode = "403", description = "Forbidden (invalid secret)"),
             @APIResponse(responseCode = "404", description = "Pipeline not found")
     })
-
     PipelineRunInfoDTO getPipelineRunInfo(
             @Parameter(description = "Pipeline ID", required = true)
             @PathParam("id") Long id,
@@ -238,7 +238,7 @@ public interface PipelineService extends PipelineCallbackService {
             @APIResponse(responseCode = "404", description = "Pipeline not found")
     })
     @Produces("application/zip")
-    Response getFileMetadata(
+    Response getFiles(
             @Parameter(description = "Pipeline ID", required = true)
             @PathParam("id") Long id,
             @Parameter(description = "Access secret for file listing")

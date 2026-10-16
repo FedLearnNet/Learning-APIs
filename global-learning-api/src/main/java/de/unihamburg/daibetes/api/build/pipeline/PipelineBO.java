@@ -4,7 +4,6 @@ import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
 import bio.cosy.feddb.core.api.pipeline.BasePipelineBO;
 import bio.cosy.feddb.core.api.pipeline.PipelineRunInfoDTO;
 import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
-import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.services.orch.dto.CreateContainerResponseDTO;
@@ -35,7 +34,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -228,62 +226,41 @@ public class PipelineBO extends BasePipelineBO<PipelineDTO, PipelineEntity, Pipe
         FederatedAppEntity appEntity = getFederatedAppEntity(pipeline);
         dto.setGitRepoUrl(appEntity.getSourceUrl());
         dto.setImageName(appEntity.getSlug());
-        if (entity.getAppVersion() != null && entity.getAppVersion().getPublishInfo() != null) {
-            dto.setCommitHash(entity.getAppVersion().getPublishInfo().getCommitHash());
+        if (pipeline.getAppVersion() != null && pipeline.getAppVersion().getPublishInfo() != null) {
+            dto.setCommitHash(pipeline.getAppVersion().getPublishInfo().getCommitHash());
         }
         return dto;
     }
 
     @Override
     protected byte[] files(PipelineEntity pipeline) {
+        if (pipeline.getPipelineType() != PipelineType.MODEL) {
+            return null;
+        }
         if (pipeline.getModelSub() == null) {
             throw new NotFoundException("No model associated with this pipeline");
         }
         return modelSubFileBO.getFilesForPipeline(pipeline.getModelSub());
     }
 
-    public PipelineDTO processSummary(Long id, String secret, AppPublishInfoDTO dto) {
-        Optional<PipelineEntity> entityOptional = ao.findByIdAndSecretOptional(id, secret, LockModeType.PESSIMISTIC_WRITE);
-        if (entityOptional.isEmpty()) {
-            throw new NotFoundException(String.format("Property with the ID %s not found", id));
-        }
-        PipelineEntity entity = entityOptional.get();
-        entity.setPublishInfo(dto);
+    @Override
+    @Transactional
+    public void processSummary(Long id, String secret, AppPublishInfoDTO dto) {
+        PipelineEntity pipeline = ao.findByIdAndSecret(id, secret, LockModeType.PESSIMISTIC_WRITE);
+        pipeline.setPublishInfo(dto);
         if (StringUtils.isNotBlank(dto.getCommitHash())) {
-            entity.setDockerTag(dto.getCommitHash());
+            pipeline.setDockerTag(dto.getCommitHash());
         }
-        ao.persist(entity);
-        PipelineDTO updated = mapper.entityToDto(entity);
-        UPDATES.onNext(updated);
-        return updated;
+        updates.onNext(mapper.entityToDto(pipeline));
     }
 
-
-    private void updateOverallPipelineStatus(PipelineEntity pipeline) {
-        boolean hasFailedStep = pipeline.getSteps().stream()
-                .anyMatch(s -> s.getStepStatus() == PipelineStatus.FAILED);
-
-        if (hasFailedStep) {
-            pipeline.setPipelineStatus(PipelineStatus.FAILED);
-            updateRebuilding(pipeline);
-            toolApiKeyService.revoke(Scope.PIPELINE_RUN, pipeline.getId());
-            return;
-        }
-        boolean allStepsSucceeded = pipeline.getSteps().stream()
-                .filter(f -> !f.getName().equals(StepName.PREFLIGHT))
-                .allMatch(s -> s.getStepStatus() == PipelineStatus.SUCCESS || s.getStepStatus() == PipelineStatus.WARNING);
-
-        boolean succeeded = allStepsSucceeded && pipeline.getSteps().size() >= 8;
-        pipeline.setPipelineStatus(succeeded ? PipelineStatus.SUCCESS : PipelineStatus.RUNNING);
-        pipeline.setUpdatedAt(new Date());
+    @Override
+    protected void finished(PipelineEntity pipeline) {
         updateRebuilding(pipeline);
-        if (succeeded) {
+        if (pipeline.getPipelineStatus() == PipelineStatus.SUCCESS) {
             setImageTag(pipeline);
         }
-        ao.persist(pipeline);
-        if (succeeded) {
-            toolApiKeyService.revoke(Scope.PIPELINE_RUN, pipeline.getId());
-        }
+        toolApiKeyService.revoke(Scope.PIPELINE_RUN, pipeline.getId());
     }
 
     private void updateRebuilding(PipelineEntity pipeline) {
@@ -402,22 +379,4 @@ public class PipelineBO extends BasePipelineBO<PipelineDTO, PipelineEntity, Pipe
         updates.onNext(updated);
         return updated;
     }
-
-    public Optional<byte[]> getFilesForPipeline(Long id, String secret) {
-        Optional<PipelineEntity> entityOptional = ao.findByIdAndSecretOptional(id, secret, LockModeType.PESSIMISTIC_READ);
-        if (entityOptional.isEmpty()) {
-            throw new NotFoundException(String.format("Property with the ID %s not found", id));
-        }
-        PipelineEntity entity = entityOptional.get();
-        if (entity.getPipelineType() != PipelineType.MODEL) {
-            return Optional.empty();
-        }
-        ModelSubEntity subEntity = entity.getModelSub();
-        if (subEntity == null) {
-            throw new NotFoundException("No model associated with this pipeline");
-        }
-        return Optional.of(modelSubFileBO.getFilesForPipeline(subEntity));
-    }
-
-
 }
