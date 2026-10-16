@@ -40,17 +40,24 @@ public final class GdcScoring {
         return rows.isEmpty() ? Set.of() : rows.getFirst().keySet();
     }
 
-    /** The result of every schema node the agent answered for, plus a missed one for every unanswered field. */
-    public static List<GdcFieldResult> score(GdcStudy study, List<TransformerAssistantMessageDTO> nodes) {
+    /**
+     * The result of every schema node the agent answered for, plus a missed one for every unanswered field; the
+     * transformers of the whole connector lead a column made by another node back to the columns of the study.
+     */
+    public static List<GdcFieldResult> score(GdcStudy study, List<TransformerAssistantMessageDTO> nodes,
+                                             List<ConnectorTransformerDTO> connector) {
         Map<String, Set<String>> truth = groundTruth(study);
         Set<String> columns = studyColumns(study);
+        Map<String, Set<String>> madeFrom = new HashMap<>();
+        connector.forEach(transformer -> ConnectorHelper.transformerOutputs(transformer).forEach(output ->
+                madeFrom.computeIfAbsent(output, column -> new HashSet<>()).addAll(ConnectorHelper.transformerInputs(transformer))));
         List<GdcFieldResult> results = new ArrayList<>();
         Set<String> answered = new HashSet<>();
         for (TransformerAssistantMessageDTO node : nodes) {
             String field = field(node.getMappingPath());
             answered.add(field);
             ConnectorSelectedTransformer selected = node.getSelectedTransformer();
-            List<String> mapped = sourceColumns(selected, columns);
+            List<String> mapped = sourceColumns(selected, columns, madeFrom);
             List<String> expected = List.copyOf(truth.getOrDefault(field, Set.of()));
             results.add(new GdcFieldResult(study.getName(), field, expected, mapped, configuration(selected),
                     verdict(expected, mapped, selected != null && selected.isFoundTransformer())));
@@ -74,16 +81,24 @@ public final class GdcScoring {
         return mapped.stream().anyMatch(expected::contains) ? GdcVerdict.CORRECT : GdcVerdict.WRONG_COLUMN;
     }
 
-    // The columns of the study a mapping reads: the mapped column itself and the inputs of its transformers
-    private static List<String> sourceColumns(ConnectorSelectedTransformer selected, Set<String> columns) {
+    // The columns of the study a mapping reads: the mapped column and the inputs of its transformers, followed back
+    // through the columns other transformers made
+    private static List<String> sourceColumns(ConnectorSelectedTransformer selected, Set<String> columns,
+                                              Map<String, Set<String>> madeFrom) {
         if (selected == null || !selected.isFoundTransformer()) {
             return List.of();
         }
-        return Stream.concat(Stream.of(selected.getMappedColumn()), selected.getSelectedTransformers().stream()
+        Deque<String> open = Stream.concat(Stream.of(selected.getMappedColumn()), selected.getSelectedTransformers().stream()
                         .flatMap(transformer -> ConnectorHelper.transformerInputs(transformer).stream()))
-                .filter(columns::contains)
-                .distinct()
-                .toList();
+                .collect(Collectors.toCollection(ArrayDeque::new));
+        Set<String> seen = new LinkedHashSet<>();
+        while (!open.isEmpty()) {
+            String column = open.pop();
+            if (seen.add(column) && !columns.contains(column)) {
+                open.addAll(madeFrom.getOrDefault(column, Set.of()));
+            }
+        }
+        return seen.stream().filter(columns::contains).toList();
     }
 
     private static String configuration(ConnectorSelectedTransformer selected) {

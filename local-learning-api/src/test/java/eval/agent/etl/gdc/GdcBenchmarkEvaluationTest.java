@@ -66,7 +66,7 @@ public class GdcBenchmarkEvaluationTest {
                     study.dataPath(), ",", study.getCaseIdColumn(), null);
             ConnectorDTO connector = uploader.upload(dataset);
             TransformerWriterSuggestion suggestion = assistant.suggest(connector, study.getCaseIdColumn());
-            results.put(study.getName(), GdcScoring.score(study, suggestion.getNodes()));
+            results.put(study.getName(), GdcScoring.score(study, suggestion.getNodes(), suggestion.getConnector().getTransformer()));
             GdcReport.save(directory, EvaluationRun.label(model), results);
         }
         if (GdcStudies.selected().stream().allMatch(study -> results.containsKey(study.getName()))) {

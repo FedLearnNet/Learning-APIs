@@ -25,7 +25,7 @@ services:
     networks:
       - local-learning-network
   orch-api:
-    image: ghcr.io/fedlearnnet/orchestration-api/orch-api:staging
+    image: ghcr.io/fedlearnnet/orchestration-api/orch-api:feature-pipeline-sast
     user: "0:0"
     ports:
       - '8091:8080'
