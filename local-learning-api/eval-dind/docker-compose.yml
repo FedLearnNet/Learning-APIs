@@ -55,6 +55,7 @@ services:
       EVAL_RUN_NUMBERS: ${EVAL_RUN_NUMBERS:-}
       EVAL_DATASETS: ${EVAL_DATASETS:-}
       EVAL_GDC_STUDIES: ${EVAL_GDC_STUDIES:-}
+      EVAL_GDC_SCHEMA: ${EVAL_GDC_SCHEMA:-}
       EVAL_REPLACE: ${EVAL_REPLACE:-false}
       EVAL_TESTS: ${EVAL_TESTS:-us130,gdc}
     volumes:

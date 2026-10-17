@@ -22,6 +22,7 @@ removes itself when it is done.
 | `EVAL_TESTS` | `us130,gdc` | Evaluations to run |
 | `EVAL_MODES`, `EVAL_RUNS`, `EVAL_RUN_NUMBERS`, `EVAL_MODELS`, `EVAL_DATASETS`, `EVAL_REPLACE` | see `run-us130-eval.sh` | Passed on to both evaluations; modes default to `real,synthetic` |
 | `EVAL_GDC_STUDIES` | all ten | GDC studies, e.g. `GDC Krug,GDC Clark` |
+| `EVAL_GDC_SCHEMA` | the 78 fields of the ground truth | `full` for all 736 GDC fields, like the benchmark; give it own run numbers, e.g. `EVAL_RUN_NUMBERS=full-1` |
 | `ORCH_API_IMAGE` | `…/orch-api:feature-pipeline-sast` | Orchestrator with the run modes of the build pipeline |
 | `GLOBAL_API_URL`, `GLOBAL_SCHEMA_API_URL` | global dev server | Store tools and schemas |
 

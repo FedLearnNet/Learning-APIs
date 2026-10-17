@@ -27,6 +27,7 @@ if [[ ",${EVAL_TESTS}," == *",gdc,"* ]]; then
         -Deval.run="${run}" \
         -Deval.replace="${EVAL_REPLACE}" \
         -Deval.datasets="${EVAL_GDC_STUDIES:-}" \
+        -Deval.gdc.schema="${EVAL_GDC_SCHEMA:-}" \
         -Dflnet.connector.agent.synthetic-data.enabled="$([[ "${mode}" == synthetic* ]] && echo true || echo false)" \
         -Dflnet.connector.agent.use-statistic-privacy="$([[ "${mode}" == *privacy ]] && echo true || echo false)" \
         ${EVAL_MODELS:+-Dquarkus.langchain4j.openai.chat-model.model-name="${EVAL_MODELS%%,*}"} \
