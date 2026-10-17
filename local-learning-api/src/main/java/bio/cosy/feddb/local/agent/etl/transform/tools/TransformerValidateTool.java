@@ -129,8 +129,8 @@ public class TransformerValidateTool {
         String mappedBefore = context.mappedColumns().get(column);
         if (mappedBefore != null) {
             return new ConnectorValidationResultDTO("Column '" + column + "' already holds " + mappedBefore
-                    + " and the import maps a column only once. Write the value to a new output column with a ROW"
-                    + " function or custom code and map that column.", schemaId);
+                    + " and the import maps a column only once. Copy it to a new output column first (Merge Columns"
+                    + " with this one column), then convert and map that column.", schemaId);
         }
         Map<Object, String> rejected;
         if (transformers.isEmpty() && context.fileProfiles().containsKey(column)) {

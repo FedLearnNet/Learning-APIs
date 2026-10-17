@@ -24,6 +24,8 @@ import java.util.stream.Stream;
  */
 public final class GdcScoring {
 
+    private static final int EXAMPLE_VALUES = 10;
+
     private GdcScoring() {
     }
 
@@ -31,13 +33,27 @@ public final class GdcScoring {
         Map<String, Set<String>> columns = new LinkedHashMap<>();
         TransformerWriterTruth.readCsv(resource(study.groundTruthPath())).forEach(row -> columns
                 .computeIfAbsent(row.get("GDC_format_variable_names"), field -> new LinkedHashSet<>())
-                .add(row.get("original_paper_variable_names")));
+                .add(row.get("original_paper_variable_names").strip()));
         return columns;
     }
 
     public static Set<String> studyColumns(GdcStudy study) {
         List<Map<String, String>> rows = TransformerWriterTruth.readCsv(resource(study.dataPath()));
-        return rows.isEmpty() ? Set.of() : rows.getFirst().keySet();
+        // Stripped like the importer reads the header, e.g. McDermott's age column ends with a tab
+        return rows.isEmpty() ? Set.of() : rows.getFirst().keySet().stream().map(String::strip).collect(Collectors.toSet());
+    }
+
+    /** The first distinct values of the columns, as the judge sees them. */
+    public static String examples(GdcStudy study, List<String> columns) {
+        List<Map<String, String>> rows = TransformerWriterTruth.readCsv(resource(study.dataPath()));
+        return columns.stream().map(column -> column + " " + rows.stream()
+                        .flatMap(row -> row.entrySet().stream().filter(cell -> cell.getKey().strip().equals(column)))
+                        .map(Map.Entry::getValue)
+                        .filter(value -> value != null && !value.isBlank())
+                        .distinct()
+                        .limit(EXAMPLE_VALUES)
+                        .toList())
+                .collect(Collectors.joining("; "));
     }
 
     /**

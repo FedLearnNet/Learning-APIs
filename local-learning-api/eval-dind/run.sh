@@ -7,6 +7,9 @@ set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"
 WORKSPACE="$(cd "$DIR/../.." && pwd)"
 
+LOG_FILE="$WORKSPACE/local-learning-api/logs/eval-dind_$(date +"%Y-%m-%d_%H-%M-%S").log"
+mkdir -p "$(dirname "$LOG_FILE")"
+
 docker build -t eval-dind "$DIR"
 
 env_args=()
@@ -19,10 +22,14 @@ done
 
 # Privileged for the inner daemon; userns=host, as a Docker with user namespaces rejects privileged containers otherwise.
 # No published port: the evaluation only connects out (LLM, global dev server, ghcr).
+status=0
 docker run --rm --name eval-dind \
   --privileged --userns=host --cgroupns host -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
   -v "$WORKSPACE:/workspace" \
   -v eval-dind-maven:/cache/m2 \
   -v eval-dind-docker:/var/lib/docker \
   ${env_args[@]+"${env_args[@]}"} \
-  eval-dind
+  eval-dind 2>&1 | tee "$LOG_FILE" || status=$?
+
+echo "Results: $WORKSPACE/local-learning-api/results/eval/<model>/<mode>/run-<n>, log: $LOG_FILE"
+exit "$status"

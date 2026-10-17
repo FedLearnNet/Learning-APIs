@@ -59,8 +59,9 @@ public interface TransformerSelectAgent {
               A value that only marks a missing entry, in whatever word, abbreviation, language or code the file uses,
               becomes the missing-value placeholder the description lists as a value of its own, otherwise empty
               (null); it is never kept and never mapped onto a real value.
-              CELL transformers rewrite their column in place, so mappedColumn is that column. A column that already
-              holds another schema node cannot be mapped again; then write the result to a new output column.
+              CELL transformers rewrite their column in place, so mappedColumn is that column. A column can hold
+              several schema nodes: one that already holds another node is copied to a new output column first (Merge
+              Columns with this one column), then converted and mapped there.
               ROW and PATIENT transformers read inputMapping (parameter -> source column) and write returnMapping
               (return key -> output column); write to a new output column and use it as mappedColumn.
             - Check the whole chain with the validation tool before answering. When it lists what the values of the

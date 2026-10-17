@@ -14,7 +14,8 @@ EVAL_TESTS=gdc EVAL_RUNS=1 EVAL_GDC_STUDIES="GDC Krug" local-learning-api/eval-d
 
 The checkout is mounted, so the tests run its code with its `local-learning-api/.env` (LLM key) and write the results
 to `local-learning-api/results/eval/<model>/<mode>/run-<n>`, like `run-us130-eval.sh`. Files the tests create belong
-to root.
+to root. The output of the container goes to `local-learning-api/logs/eval-dind_<time>.log` as well, as the container
+removes itself when it is done.
 
 | Variable | Default | Meaning |
 |---|---|---|

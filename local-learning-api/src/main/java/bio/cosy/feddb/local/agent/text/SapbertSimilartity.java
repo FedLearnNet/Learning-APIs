@@ -10,8 +10,10 @@ import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.IntStream;
 
 @ApplicationScoped
 public class SapbertSimilartity {
@@ -55,6 +57,18 @@ public class SapbertSimilartity {
             Log.warn("SapBERT column matching failed, continuing without embeddings", e);
             return null;
         }
+    }
+
+    /** For every text the candidates closest in meaning, best first; null without embeddings. */
+    public List<List<String>> closest(List<String> texts, List<String> candidates, int limit) {
+        double[][] scores = semanticScores(texts, candidates);
+        return scores == null ? null : IntStream.range(0, texts.size())
+                .mapToObj(text -> IntStream.range(0, candidates.size()).boxed()
+                        .sorted(Comparator.comparingDouble(candidate -> -scores[candidate][text]))
+                        .limit(limit)
+                        .map(candidates::get)
+                        .toList())
+                .toList();
     }
 
     // A blank text, e.g. of an unnamed column, has no meaning to compare and gets no embedding

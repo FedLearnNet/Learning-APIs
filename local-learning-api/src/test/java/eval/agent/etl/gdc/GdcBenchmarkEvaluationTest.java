@@ -4,7 +4,10 @@ import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerContainerBO;
 import bio.cosy.feddb.local.api.importer.transformer.session.AppTransformerSessionBO;
 import com.fasterxml.jackson.core.type.TypeReference;
+import eval.agent.etl.gdc.judge.GdcJudge;
+import eval.agent.etl.gdc.judge.GdcJudgement;
 import eval.agent.etl.gdc.pojo.GdcFieldResult;
+import eval.agent.etl.gdc.pojo.GdcVerdict;
 import eval.agent.etl.gdc.report.GdcReport;
 import eval.agent.etl.gdc.score.GdcScoring;
 import eval.agent.etl.gdc.setting.GdcStudies;
@@ -15,6 +18,7 @@ import eval.agent.etl.transform.pojo.TransformerWriterSuggestion;
 import eval.agent.etl.transform.setting.EvaluationRun;
 import eval.agent.etl.transform.setting.TransformerWriterDataset;
 import eval.agent.etl.transform.setting.TransformerWriterEvaluationProfile;
+import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import jakarta.inject.Inject;
@@ -47,6 +51,9 @@ public class GdcBenchmarkEvaluationTest {
     TransformerWriterAssistant assistant;
 
     @Inject
+    GdcJudge judge;
+
+    @Inject
     CodeTransformerContainerBO codeRunner;
 
     @Inject
@@ -66,11 +73,25 @@ public class GdcBenchmarkEvaluationTest {
                     study.dataPath(), ",", study.getCaseIdColumn(), null);
             ConnectorDTO connector = uploader.upload(dataset);
             TransformerWriterSuggestion suggestion = assistant.suggest(connector, study.getCaseIdColumn());
-            results.put(study.getName(), GdcScoring.score(study, suggestion.getNodes(), suggestion.getConnector().getTransformer()));
+            List<GdcFieldResult> fields = GdcScoring.score(study, suggestion.getNodes(), suggestion.getConnector().getTransformer());
+            fields.stream().filter(field -> field.getVerdict() == GdcVerdict.EXTRA).forEach(field -> judge(study, field));
+            results.put(study.getName(), fields);
             GdcReport.save(directory, EvaluationRun.label(model), results);
         }
         if (GdcStudies.selected().stream().allMatch(study -> results.containsKey(study.getName()))) {
             EvaluationRun.markComplete(directory, "gdc-benchmark");
+        }
+    }
+
+    // The ground truth names only some right mappings, so the judge tells the extras that are right all the same
+    private void judge(GdcStudy study, GdcFieldResult field) {
+        try {
+            GdcJudgement judgement = judge.judge(field.getField(), GdcScoring.examples(study, field.getMapped()),
+                    field.getConfiguration());
+            field.setJudged(judgement.isCorrect());
+            field.setJudgeReason(judgement.getReason());
+        } catch (RuntimeException e) {
+            Log.warnf(e, "Judging %s of %s failed", field.getField(), study.getName());
         }
     }
 

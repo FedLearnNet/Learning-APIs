@@ -32,19 +32,22 @@ public final class GdcReport {
         JSON.writeValue(directory.resolve(RESULTS_FILE).toFile(), results);
         StringBuilder text = new StringBuilder("# GDC schema matching benchmark (").append(label).append(")\n\n")
                 .append("The ten studies of GDC-SM (https://doi.org/10.5281/zenodo.14963587) are mapped by the assistant onto ")
-                .append("the schema of the 78 GDC fields of the ground truth. Top-1 values: the agent maps every field from ")
-                .append("one chain, a field is correct when that chain reads a column the ground truth names for it.\n\n")
-                .append("| Study | Fields | Correct | Wrong column | Missed | Extra | Recall | Precision | F1 |\n")
-                .append("|---|---|---|---|---|---|---|---|---|\n");
+                .append("the GDC schema (the 78 fields of the ground truth, or all 736 like the benchmark). Top-1 values: the agent maps every field from ")
+                .append("one chain, a field is correct when that chain reads a column the ground truth names for it. ")
+                .append("The ground truth lists only some right mappings, so an LLM judge rates the extras; the judged ")
+                .append("precision also counts the extras it finds right.\n\n")
+                .append("| Study | Fields | Correct | Wrong column | Missed | Extra | Extra judged right | Recall | Precision | F1 | Judged precision |\n")
+                .append("|---|---|---|---|---|---|---|---|---|---|---|\n");
         results.forEach((study, fields) -> text.append(row(study, fields)));
         text.append(row("**All**", results.values().stream().flatMap(List::stream).toList()));
-        text.append("\n## Not correct\n\n| Study | Field | Ground truth | Mapped | Verdict | Configuration |\n|---|---|---|---|---|---|\n");
+        text.append("\n## Not correct\n\n| Study | Field | Ground truth | Mapped | Verdict | Configuration | Judge |\n|---|---|---|---|---|---|---|\n");
         results.values().stream().flatMap(List::stream)
                 .filter(field -> field.getVerdict() != GdcVerdict.CORRECT && field.getVerdict() != GdcVerdict.EMPTY)
                 .forEach(field -> text.append("| ").append(field.getStudy()).append(" | ").append(field.getField())
                         .append(" | ").append(String.join(", ", field.getExpected())).append(" | ")
                         .append(String.join(", ", field.getMapped())).append(" | ").append(field.getVerdict()).append(" | ")
-                        .append(field.getConfiguration().replace("|", "/").replace("\n", " ")).append(" |\n"));
+                        .append(cell(field.getConfiguration())).append(" | ").append(field.getJudged() == null ? ""
+                                : (field.getJudged() ? "right: " : "wrong: ") + cell(field.getJudgeReason())).append(" |\n"));
         Files.writeString(directory.resolve(REPORT_FILE), text);
     }
 
@@ -56,8 +59,14 @@ public final class GdcReport {
         double recall = truth == 0 ? 0 : (double) correct / truth;
         double precision = mapped == 0 ? 0 : (double) correct / mapped;
         double f1 = recall + precision == 0 ? 0 : 2 * recall * precision / (recall + precision);
-        return String.format(Locale.ROOT, "| %s | %d | %d | %d | %d | %d | %.2f | %.2f | %.2f |%n", study, truth, correct,
-                counts.getOrDefault(GdcVerdict.WRONG_COLUMN, 0L), counts.getOrDefault(GdcVerdict.MISSED, 0L),
-                counts.getOrDefault(GdcVerdict.EXTRA, 0L), recall, precision, f1);
+        long judged = fields.stream().filter(field -> Boolean.TRUE.equals(field.getJudged())).count();
+        double judgedPrecision = mapped == 0 ? 0 : (double) (correct + judged) / mapped;
+        return String.format(Locale.ROOT, "| %s | %d | %d | %d | %d | %d | %d | %.2f | %.2f | %.2f | %.2f |%n", study, truth,
+                correct, counts.getOrDefault(GdcVerdict.WRONG_COLUMN, 0L), counts.getOrDefault(GdcVerdict.MISSED, 0L),
+                counts.getOrDefault(GdcVerdict.EXTRA, 0L), judged, recall, precision, f1, judgedPrecision);
+    }
+
+    private static String cell(String text) {
+        return text == null ? "" : text.replace("|", "/").replace("\n", " ");
     }
 }

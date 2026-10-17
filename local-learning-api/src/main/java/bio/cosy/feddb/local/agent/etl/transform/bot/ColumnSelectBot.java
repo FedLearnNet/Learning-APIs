@@ -23,6 +23,10 @@ public interface ColumnSelectBot {
     @UserMessage("""
             Your job is to select the columns which are needed to calculate the value of the schema node below.
             Pick every column the value depends on (e.g. both dates for a duration), but no column that only looks similar.
+            The columns have to record the information, or it follows from them by a fixed rule (e.g. a duration from
+            two dates, an age in days from one in years). A value that could only be guessed from a related fact is not
+            held, e.g. one component of a combined grading from the combined value or a percentage from a score; then
+            return an empty list. When a column records the value itself, take it, not the columns it could be computed from.
             A column whose values are coded or written differently (codes, other words or language, units) still holds
             the information, its values are converted later. The share of values that fit unconverted only decides
             whether a conversion is needed, it is no reason to leave a column out. A cell can also hold several values

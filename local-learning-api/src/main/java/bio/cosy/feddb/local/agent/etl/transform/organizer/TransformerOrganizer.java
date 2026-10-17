@@ -1,8 +1,12 @@
 package bio.cosy.feddb.local.agent.etl.transform.organizer;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
+import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
+import bio.cosy.feddb.core.api.file.analytics.RowProfiler;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypes;
 import bio.cosy.feddb.local.agent.etl.transform.agents.TransformerWorkflowAgent;
+import bio.cosy.feddb.local.agent.etl.transform.bot.ColumnReview;
+import bio.cosy.feddb.local.agent.etl.transform.bot.ColumnReviewBot;
 import bio.cosy.feddb.local.agent.etl.transform.bot.ColumnSelectBot;
 import bio.cosy.feddb.local.agent.etl.transform.bot.VisitColumnBot;
 import bio.cosy.feddb.local.agent.etl.transform.guardrails.AnswerHints;
@@ -21,7 +25,9 @@ import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
 import bio.cosy.feddb.local.api.schema.datatype.DataTypeDTO;
 import bio.cosy.feddb.local.api.schema.datatype.DataTypeEntityMapper;
+import bio.cosy.feddb.local.agent.text.SapbertSimilartity;
 import bio.cosy.feddb.local.helper.text.TextSimilarity;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
@@ -29,8 +35,13 @@ import jakarta.inject.Inject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @ApplicationScoped
@@ -38,9 +49,20 @@ public class TransformerOrganizer {
 
     public static final String SELECTION_FAILED = "Transformer selection failed: ";
     private static final int COLUMN_SELECT_ATTEMPTS = 2;
+    private static final int MAX_LISTED_ALLOWED_VALUES = 100;
+    private static final int CLOSEST_ALLOWED_VALUES = 5;
 
     @Inject
     ColumnSelectBot columnSelectBot;
+
+    @Inject
+    ColumnReviewBot columnReviewBot;
+
+    @Inject
+    SapbertSimilartity sapbert;
+
+    @Inject
+    ObjectMapper objectMapper;
 
     @Inject
     TransformerWorkflowAgent transformerWorkflow;
@@ -87,7 +109,8 @@ public class TransformerOrganizer {
             context.step("matcher: '%s' fits by name", columns.getFirst());
         } else {
             try {
-                columns = selectColumns(context, previewData, schemaNode, instructions, candidates);
+                columns = reviewColumns(context, previewData, schemaNode, instructions, candidates,
+                        selectColumns(context, previewData, schemaNode, instructions, candidates));
             } catch (RuntimeException e) {
                 return ConnectorSelectedTransformer.notFound(SELECTION_FAILED + "the column selection failed: " + e.getMessage());
             }
@@ -160,11 +183,25 @@ public class TransformerOrganizer {
             }
         }
 
+        // A long list of allowed values hides the fitting ones, the agent sees those closest to the values of the file
+        LocalSchemaNodeDTO shown = schemaNode;
+        Map<String, List<String>> closest = closestAllowedValues(schemaNode, columns, context.fileProfiles());
+        if (!closest.isEmpty()) {
+            shown = objectMapper.convertValue(schemaNode, LocalSchemaNodeDTO.class);
+            shown.getDataType().setAllowedValues(closest.values().stream().flatMap(List::stream)
+                    .collect(Collectors.toCollection(LinkedHashSet::new)));
+            hints += "\nThe data type has " + schemaNode.getDataType().getAllowedValues().size() + " allowed values, "
+                    + "only the ones closest in meaning to the values of the file are listed; every allowed value is "
+                    + "accepted. Closest per value: " + closest.entrySet().stream()
+                    .map(entry -> "'" + entry.getKey() + "': " + String.join(" | ", entry.getValue()))
+                    .collect(Collectors.joining("; "));
+        }
+
         List<String> keep = new ArrayList<>(columns);
         if (patientIdColumn != null && !keep.contains(patientIdColumn)) {
             keep.add(patientIdColumn);
         }
-        ConnectorSelectedTransformer selected = runWorkflow(previewData.filterColumns(keep), schemaNode, columns,
+        ConnectorSelectedTransformer selected = runWorkflow(previewData.filterColumns(keep), shown, columns,
                 hints.strip(), TransformerHelper.describeFileValues(columns, context.fileProfiles()));
         if (!selected.isFoundTransformer()) {
             // A custom transformer written for this node but not taken is not worth keeping
@@ -206,13 +243,56 @@ public class TransformerOrganizer {
         return selected;
     }
 
+    // A second opinion, as the selection tends to fill a node with a related fact; the selection decides again
+    private List<String> reviewColumns(TransformerRunContext context, TableSample previewData, LocalSchemaNodeDTO schemaNode,
+                                       String instructions, List<ColumnCandidate> candidates, List<String> columns) {
+        if (columns.isEmpty()) {
+            return columns;
+        }
+        ColumnReview review;
+        try {
+            review = columnReviewBot.review(schemaNode, TransformerHelper.describeFileValues(columns, context.fileProfiles()),
+                    TransformerHelper.columnExamples(previewData));
+        } catch (RuntimeException e) {
+            Log.warnf(e, "Reviewing the columns %s of schema node %s failed, keeping them", columns, schemaNode.getName());
+            return columns;
+        }
+        if (review == null || review.isHeld() || review.getReason() == null || review.getReason().isBlank()) {
+            return columns;
+        }
+        context.step("reviewColumns: %s not held, %s", columns, review.getReason());
+        return selectColumns(context, previewData, schemaNode, instructions + "\nA review of your selection " + columns
+                + " disagrees: " + review.getReason() + " Select again, or return an empty list if no column records it.",
+                candidates);
+    }
+
+    // Every value of the file with the allowed values closest in meaning; empty for a short list or without embeddings
+    private Map<String, List<String>> closestAllowedValues(LocalSchemaNodeDTO schemaNode, List<String> columns,
+                                                           Map<String, ColumnProfile> profiles) {
+        Set<Object> allowed = schemaNode.getDataType() == null ? null : schemaNode.getDataType().getAllowedValues();
+        if (allowed == null || allowed.size() <= MAX_LISTED_ALLOWED_VALUES) {
+            return Map.of();
+        }
+        List<String> values = columns.stream()
+                .flatMap(column -> TransformerHelper.fileValues(profiles.get(column)).stream())
+                .filter(value -> !RowProfiler.isMissing(value))
+                .distinct()
+                .toList();
+        List<List<String>> closest = sapbert.closest(values, allowed.stream().map(String::valueOf).toList(), CLOSEST_ALLOWED_VALUES);
+        Map<String, List<String>> byValue = new LinkedHashMap<>();
+        if (closest != null) {
+            IntStream.range(0, values.size()).forEach(index -> byValue.put(values.get(index), closest.get(index)));
+        }
+        return byValue;
+    }
+
     private List<String> selectColumns(TransformerRunContext context, TableSample previewData, LocalSchemaNodeDTO schemaNode,
                                        String hints, List<ColumnCandidate> candidates) {
-        // A column that holds another node already is no candidate unless this node needs it as well
+        // A column can hold several nodes, e.g. an age the age at diagnosis and at index
         List<ColumnCandidate> annotated = candidates.stream()
                 .map(candidate -> context.mappedColumns().containsKey(candidate.getColumn())
                         ? candidate.withNote("already holds " + context.mappedColumns().get(candidate.getColumn())
-                        + ", pick it only if this node is computed from it as well")
+                        + ", it can hold this node as well if it records it")
                         : candidate)
                 .toList();
         RuntimeException failure = null;
