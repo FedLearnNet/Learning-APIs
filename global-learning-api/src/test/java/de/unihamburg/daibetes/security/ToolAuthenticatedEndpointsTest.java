@@ -1,5 +1,6 @@
 package de.unihamburg.daibetes.security;
 
+import bio.cosy.feddb.core.security.Roles;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
@@ -17,12 +18,7 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.MediaType;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.Index;
-import org.jboss.jandex.Indexer;
-import org.jboss.jandex.MethodInfo;
+import org.jboss.jandex.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -51,7 +47,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @QuarkusTest
 class ToolAuthenticatedEndpointsTest {
 
-    /** Endpoints known when this test was written; guards against a scan that silently finds nothing. */
+    /**
+     * Endpoints known when this test was written; guards against a scan that silently finds nothing.
+     */
     private static final int MIN_EXPECTED_ENDPOINTS = 7;
 
     private static List<ToolEndpoint> endpoints;
@@ -94,7 +92,7 @@ class ToolAuthenticatedEndpointsTest {
     }
 
     @Test
-    @TestSecurity(user = "admin", roles = {"admin"})
+    @TestSecurity(user = "admin", roles = {Roles.ADMIN})
     void keycloakAdminCannotCallToolEndpoints() throws Exception {
         List<String> failures = new ArrayList<>();
         for (ToolEndpoint e : endpoints) {
@@ -222,7 +220,9 @@ class ToolAuthenticatedEndpointsTest {
     private record ToolEndpoint(String name, AnnotatedElement element, Class<?> declaringClass,
                                 String httpMethod, String pathTemplate, boolean websocket, Scope[] scopes) {
 
-        /** Fills the path template with values the policy rules accept. */
+        /**
+         * Fills the path template with values the policy rules accept.
+         */
         String concretePath() {
             return pathTemplate
                     .replace("{type}", "app")
