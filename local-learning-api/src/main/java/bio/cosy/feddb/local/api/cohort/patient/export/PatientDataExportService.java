@@ -1,12 +1,9 @@
 package bio.cosy.feddb.local.api.cohort.patient.export;
 
 import bio.cosy.feddb.core.api.project.PatientDataExportConfigDTO;
-import bio.cosy.feddb.core.api.project.PatientDataPivotJoinField;
-import bio.cosy.feddb.core.api.project.PatientDataPivotDuplicatePolicy;
 import bio.cosy.feddb.local.api.cohort.patient.PatientService;
 import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunProgressDTO;
 import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunSummaryDTO;
-import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -25,8 +22,6 @@ import java.util.List;
 @Path(PatientDataExportService.PATH)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "PatientExport", description = "Service for managing Patients")
 public interface PatientDataExportService {
     String PATH = PatientService.PATH + "/export";

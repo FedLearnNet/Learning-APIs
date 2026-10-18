@@ -1,6 +1,5 @@
 package de.unihamburg.daibetes.api.query.statistics;
 
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -14,7 +13,6 @@ import java.util.UUID;
 @Path("/query/data-statistics")
 @Produces("application/json")
 @Consumes("application/json")
-@Authenticated
 @Tag(name = "DataStatisticsResponse", description = "Service for managing DataStatisticsResponse")
 interface DataStatisticsResponseService {
 

@@ -1,12 +1,10 @@
 package bio.cosy.feddb.local.api.importer.run.execution;
 
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisRunModesEnum;
 import bio.cosy.feddb.core.api.run.AppRunUploadData;
-import bio.cosy.feddb.core.security.ToolAuthenticated;
-import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
-import jakarta.annotation.security.RolesAllowed;
 import bio.cosy.feddb.core.security.Scope;
-import io.quarkus.security.Authenticated;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
+import bio.cosy.feddb.core.security.ToolAuthenticated;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -19,7 +17,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Path("/connectors/run/execution")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
 @Tag(name = "ModelRun", description = "Service for upload files to Model")
 public interface ConnectorRunExecutionService {
 

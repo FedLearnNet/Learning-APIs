@@ -5,9 +5,7 @@ import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 import io.smallrye.config.WithName;
 
-import java.nio.file.Path;
 import java.time.Duration;
-import java.util.List;
 import java.util.Optional;
 
 //Intended for all custom properties with a "flnet" prefix
@@ -34,8 +32,6 @@ public interface FLNetConfig {
     boolean createVectorExtensionOnStartup();
 
     Ingestor ingestor();
-
-    GitLabConfig gitlab();
 
     @WithName("federated-learning")
     FederatedLearningConfig federatedLearning();
@@ -125,15 +121,6 @@ public interface FLNetConfig {
         @WithDefault("false")
         boolean ignoreStartUpCheck();
 
-    }
-
-    interface GitLabConfig {
-        @WithName("issue.token")
-        String issueToken();
-
-        @WithName("issue.project-id")
-        @WithDefault("9")
-        int issueProjectId();
     }
 
     interface FederatedLearningConfig {

@@ -8,7 +8,7 @@ import bio.cosy.feddb.core.base.ValidationGroups;
 import de.unihamburg.daibetes.api.app.version.FederatedAppPublishDTO;
 import de.unihamburg.daibetes.api.testembed.pydantic.PydanticUpdateDTO;
 import de.unihamburg.daibetes.dto.URLDTO;
-import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.PermitAll;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.groups.ConvertGroup;
@@ -26,7 +26,6 @@ import java.util.List;
 @Path("/apps")
 @Produces("application/json")
 @Consumes("application/json")
-//@RolesAllowed("admin")
 @Tag(name = "App", description = "Service for managing app operations")
 public interface FederatedAppService {
 
@@ -36,6 +35,7 @@ public interface FederatedAppService {
             @APIResponse(responseCode = "200", description = "List of all apps")
     })
     @Transactional
+    @PermitAll // public tool catalogue, see StoreService
     List<FederatedAppDTO> list();
 
     @GET
@@ -45,7 +45,6 @@ public interface FederatedAppService {
             @APIResponse(responseCode = "200", description = "List of all apps")
     })
     @Transactional
-    @Authenticated
     List<FederatedAppDetailDTO> listMyApps();
 
     @GET
@@ -55,7 +54,6 @@ public interface FederatedAppService {
             @APIResponse(responseCode = "200", description = "List of all apps")
     })
     @Transactional
-    @Authenticated
     FederatedAppDetailDTO getMyApps(@PathParam("id") Long id);
 
     @GET
@@ -64,7 +62,8 @@ public interface FederatedAppService {
     @APIResponse(responseCode = "200", description = "FederatedAppDetailDTO found")
     @APIResponse(responseCode = "404", description = "FederatedAppDetailDTO not found")
     @Transactional
-    public FederatedAppDetailDTO retrieve(@PathParam("id") String id);
+    @PermitAll // public tool catalogue, see StoreService
+    FederatedAppDetailDTO retrieve(@PathParam("id") String id);
 
     @GET
     @Path("/{id}/pydantic/{appVersionId}")
@@ -72,7 +71,8 @@ public interface FederatedAppService {
     @APIResponse(responseCode = "200", description = "PydanticUpdateDTO")
     @APIResponse(responseCode = "404", description = "FederatedAppDetailDTO not found")
     @Transactional
-    public PydanticUpdateDTO retrievePydantic(@PathParam("id") Long id, @PathParam("appVersionId") Long appVersionId);
+    @PermitAll // public tool catalogue, see StoreService
+    PydanticUpdateDTO retrievePydantic(@PathParam("id") Long id, @PathParam("appVersionId") Long appVersionId);
 
     @POST
     @Operation(summary = "Creates a new app")
@@ -92,7 +92,6 @@ public interface FederatedAppService {
             @APIResponse(responseCode = "404", description = "Site not found")
     })
     @Transactional
-    @Authenticated
     FederatedAppDetailDTO update(@PathParam("id") String id, @Valid @ConvertGroup(to = ValidationGroups.Put.class) @RequestBody FederatedAppDetailDTO siteDTO);
 
     @POST
@@ -104,7 +103,6 @@ public interface FederatedAppService {
             @APIResponse(responseCode = "404", description = "App not found")
     })
     @Transactional
-    @Authenticated
     FederatedAppDetailDTO publish(@PathParam("id") Long id, @Valid @RequestBody FederatedAppPublishDTO publishDTO);
 
     @POST
@@ -116,14 +114,12 @@ public interface FederatedAppService {
             @APIResponse(responseCode = "404", description = "App not found")
     })
     @Transactional
-    @Authenticated
     URLDTO saveAppAsJson(@PathParam("id") Long id);
 
     @POST
     @Path("/{id}/export/build-info")
     @Operation(summary = "Replace build information in the exported tool JSON")
     @Transactional
-    @Authenticated
     URLDTO replaceBuildInfoInJson(@PathParam("id") Long id);
 
 
@@ -135,7 +131,6 @@ public interface FederatedAppService {
             @APIResponse(responseCode = "404", description = "App not found")
     })
     @Transactional
-    @Authenticated
     Response delete(@PathParam("id") String id);
 
 
@@ -158,6 +153,7 @@ public interface FederatedAppService {
             @APIResponse(responseCode = "200", description = "All tags")
     })
     @Transactional
+    @PermitAll // public tool catalogue, see StoreService
     List<FederatedAppTagDTO> getTags();
 
     @GET
@@ -166,5 +162,6 @@ public interface FederatedAppService {
     @APIResponses({
             @APIResponse(responseCode = "200", description = "All predefined app configs")
     })
+    @PermitAll // public tool catalogue, see StoreService
     List<ToolConfigDTO> getPredefinedConfig();
 }

@@ -1,6 +1,5 @@
 package bio.cosy.feddb.local.api.cohort.permission;
 
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -18,8 +17,6 @@ import java.util.List;
 @Path("/permissions")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "Permission", description = "Service for managing Permission operations")
 public interface PermissionService {
 

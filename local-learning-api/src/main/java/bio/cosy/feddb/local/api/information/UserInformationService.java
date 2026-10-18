@@ -1,6 +1,5 @@
 package bio.cosy.feddb.local.api.information;
 
-import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -13,7 +12,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Path("information")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
 @Tag(name = "UserInformationService", description = "Service for getting Base information for the user")
 public interface UserInformationService {
     @GET

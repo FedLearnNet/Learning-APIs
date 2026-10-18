@@ -3,7 +3,6 @@ package bio.cosy.feddb.local.api.cohort;
 import bio.cosy.feddb.local.api.cohort.member.CohortAvailableUserDTO;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberCreateDTO;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberDTO;
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -20,8 +19,6 @@ import java.util.List;
 @Path(CohortService.PATH)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "Cohort", description = "Service for managing Cohorts")
 public interface CohortService {
     public static final String PATH = "/cohort";

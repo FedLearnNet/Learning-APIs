@@ -7,6 +7,7 @@ import bio.cosy.feddb.core.api.store.graph.ToolGraphDTO;
 import bio.cosy.feddb.core.api.store.graph.ToolGraphPathDTO;
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.base.PagedResponse;
+import jakarta.annotation.security.PermitAll;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -19,7 +20,7 @@ import java.util.List;
 @Path("/store")
 @Produces("application/json")
 @Consumes("application/json")
-//@RolesAllowed("admin")
+@PermitAll
 @Tag(name = "Store", description = "Service for managing store operations")
 public interface StoreService {
 
