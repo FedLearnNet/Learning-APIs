@@ -1,11 +1,10 @@
 package bio.cosy.feddb.core.api.datamodler.datatype;
 
-import bio.cosy.feddb.core.security.Roles;
-import jakarta.annotation.security.RolesAllowed;
-import bio.cosy.feddb.core.api.datamodler.ontology.OntologyNodeDTO;
 import bio.cosy.feddb.core.api.datamodler.validation.ValidationResultDTO;
 import bio.cosy.feddb.core.base.PagedResponse;
+import bio.cosy.feddb.core.security.Roles;
 import io.smallrye.mutiny.Uni;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;

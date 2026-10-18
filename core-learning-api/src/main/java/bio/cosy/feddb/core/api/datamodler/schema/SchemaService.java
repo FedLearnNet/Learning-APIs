@@ -1,8 +1,9 @@
 package bio.cosy.feddb.core.api.datamodler.schema;
 
-import bio.cosy.feddb.core.security.Roles;
 import bio.cosy.feddb.core.base.PagedResponse;
+import bio.cosy.feddb.core.security.Roles;
 import io.smallrye.mutiny.Uni;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -21,8 +22,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.jboss.resteasy.reactive.RestResponse.StatusCode.CREATED;
-
-// import jakarta.annotation.security.RolesAllowed;
 
 @Path("/schemas")
 @Produces(MediaType.APPLICATION_JSON)
@@ -124,7 +123,7 @@ public interface SchemaService {
     Uni<SchemaNodeDTO> createHead(
             @Parameter(
                     description = "Payload for creating a schema head node")
-            @Valid  SchemaNodeDTO dto
+            @Valid SchemaNodeDTO dto
     );
 
     @GET
@@ -241,7 +240,7 @@ public interface SchemaService {
             @Parameter(description = "Schema ID", required = true)
             @PathParam("id") UUID id,
             @Parameter(description = "Updated schema payload", required = true)
-            @Valid  SchemaNodeDTO dto
+            @Valid SchemaNodeDTO dto
     );
 
 
