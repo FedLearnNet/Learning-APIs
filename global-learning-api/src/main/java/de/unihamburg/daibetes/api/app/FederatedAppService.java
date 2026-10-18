@@ -8,7 +8,6 @@ import bio.cosy.feddb.core.base.ValidationGroups;
 import de.unihamburg.daibetes.api.app.version.FederatedAppPublishDTO;
 import de.unihamburg.daibetes.api.testembed.pydantic.PydanticUpdateDTO;
 import de.unihamburg.daibetes.dto.URLDTO;
-import jakarta.annotation.security.PermitAll;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.groups.ConvertGroup;
@@ -35,7 +34,6 @@ public interface FederatedAppService {
             @APIResponse(responseCode = "200", description = "List of all apps")
     })
     @Transactional
-    @PermitAll // public tool catalogue, see StoreService
     List<FederatedAppDTO> list();
 
     @GET
@@ -62,7 +60,6 @@ public interface FederatedAppService {
     @APIResponse(responseCode = "200", description = "FederatedAppDetailDTO found")
     @APIResponse(responseCode = "404", description = "FederatedAppDetailDTO not found")
     @Transactional
-    @PermitAll // public tool catalogue, see StoreService
     FederatedAppDetailDTO retrieve(@PathParam("id") String id);
 
     @GET
@@ -71,7 +68,6 @@ public interface FederatedAppService {
     @APIResponse(responseCode = "200", description = "PydanticUpdateDTO")
     @APIResponse(responseCode = "404", description = "FederatedAppDetailDTO not found")
     @Transactional
-    @PermitAll // public tool catalogue, see StoreService
     PydanticUpdateDTO retrievePydantic(@PathParam("id") Long id, @PathParam("appVersionId") Long appVersionId);
 
     @POST
@@ -153,7 +149,6 @@ public interface FederatedAppService {
             @APIResponse(responseCode = "200", description = "All tags")
     })
     @Transactional
-    @PermitAll // public tool catalogue, see StoreService
     List<FederatedAppTagDTO> getTags();
 
     @GET
@@ -162,6 +157,5 @@ public interface FederatedAppService {
     @APIResponses({
             @APIResponse(responseCode = "200", description = "All predefined app configs")
     })
-    @PermitAll // public tool catalogue, see StoreService
     List<ToolConfigDTO> getPredefinedConfig();
 }

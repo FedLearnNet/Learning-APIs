@@ -2,8 +2,6 @@ package de.unihamburg.daibetes.api.model.sub.result;
 
 import bio.cosy.feddb.core.api.model.result.ModelExperimentResultBaseService;
 import bio.cosy.feddb.core.api.model.result.ModelExperimentResultDTO;
-import de.unihamburg.daibetes.api.feddbclient.FLNetClientAuthenticated;
-import jakarta.annotation.security.PermitAll;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -27,8 +25,6 @@ public interface ModelExperimentResultService extends ModelExperimentResultBaseS
             @APIResponse(responseCode = "401", description = "Authentication required when FLNet client auth is enabled"),
             @APIResponse(responseCode = "500", description = "Upload failed")
     })
-    @PermitAll //TODO
-    @FLNetClientAuthenticated
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     Response upload(@BeanParam ModelExperimentResultDTO req);
 }

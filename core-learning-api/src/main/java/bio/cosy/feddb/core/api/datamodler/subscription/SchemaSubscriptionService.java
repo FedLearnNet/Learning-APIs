@@ -44,7 +44,6 @@ public interface SchemaSubscriptionService {
                     description = "Unexpected error"
             )
     })
-        // @RolesAllowed({"schema-subscribe"})
     Uni<SchemaStructureDTO> subscribe(
             @Parameter(description = "Schema ID", required = true)
             @PathParam("id") UUID id
@@ -67,7 +66,6 @@ public interface SchemaSubscriptionService {
                     description = "Schema not found"
             )
     })
-        // @RolesAllowed({"schema-subscribe"})
     Uni<Response> unsubscribe(
             @Parameter(description = "Schema ID", required = true)
             @PathParam("id") UUID id

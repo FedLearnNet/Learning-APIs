@@ -10,6 +10,8 @@ public final class Roles {
 
     public static final String GLOBAL_DATA_SCIENTIST = "Data-Scientist";
 
+    public static final String GLOBAL_DATA_MODELER = "Data-Modeler";
+
     public static final String LOCAL_DATA_ADMIN = "Data-Admin";
 
     public static final String LOCAL_DATA_ACCESS_MANAGER = "Data-Access-Manager";

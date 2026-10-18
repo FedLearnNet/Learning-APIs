@@ -1,5 +1,7 @@
 package bio.cosy.feddb.core.api.datamodler.ontology;
 
+import bio.cosy.feddb.core.security.Roles;
+import jakarta.annotation.security.RolesAllowed;
 import bio.cosy.feddb.core.base.PagedResponse;
 import io.smallrye.mutiny.Uni;
 import jakarta.ws.rs.*;
@@ -34,7 +36,6 @@ public interface OntologyService {
                     description = "List of ontologies"
             )
     })
-        // @RolesAllowed({"ontology-read", "ontology-write"})
     Uni<PagedResponse<OntologyNodeDTO>> list(
             @Parameter(
                     name = "search",
@@ -63,7 +64,6 @@ public interface OntologyService {
             )
     })
     @Path("embedding/search")
-        // @RolesAllowed({"ontology-read", "ontology-write"})
     Uni<List<OntologySearchResponseDTO>> searchEmbedding(
             @Parameter(
                     name = "search",
@@ -101,6 +101,7 @@ public interface OntologyService {
 
 
     @POST
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Operation(summary = "Create a new ontology", description = "Creates a new ontology. In the edges only give either the target or source ontology ID. The given ontology will then be linked accordingly.")
     @APIResponses({
             @APIResponse(
@@ -114,7 +115,6 @@ public interface OntologyService {
             ),
     })
     @ResponseStatus(CREATED)
-        // @RolesAllowed({"ontology-create"})
     Uni<OntologyDTO> create(
             @Parameter(
                     description = "Payload for creating an ontology",
@@ -233,6 +233,7 @@ public interface OntologyService {
 
 
     @PUT
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Path("/{id}")
     @Operation(summary = "Update an ontology", description = "Updates an existing ontology (full update).")
     @APIResponses({
@@ -257,6 +258,7 @@ public interface OntologyService {
 
 
     @DELETE
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Path("/{id}")
     @Operation(summary = "Delete an ontology", description = "Deletes an ontology.")
     @APIResponses({

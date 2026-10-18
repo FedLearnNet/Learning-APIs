@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 class GlobalAPIAuthRequestFilterTest {
 
     @Test
-    void leavesGlobalRequestUnauthenticatedWhenAuthIsDisabled() {
+    void leavesGlobalRequestUnauthenticatedWithoutAuthorizationHeader() {
         GlobalAuthManager authManager = mock(GlobalAuthManager.class);
         when(authManager.authorizationHeader()).thenReturn(Optional.empty());
         MultivaluedMap<String, Object> headers = filter(authManager);

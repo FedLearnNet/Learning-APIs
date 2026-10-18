@@ -301,10 +301,6 @@ public interface FLNetClientConfig {
 
     interface AuthConfig {
 
-        @WithName("enable")
-        @WithDefault("true")
-        boolean enabled();
-
         Optional<String> username();
 
         Optional<String> password();

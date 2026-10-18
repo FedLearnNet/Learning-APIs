@@ -35,9 +35,6 @@ public interface FLNetConfig {
     @WithName("federated-learning")
     FederatedLearningConfig federatedLearning();
 
-    @WithName("feddb-client")
-    FedDBClientConfig feddbClient();
-
     @WithName("pipeline.builder.image")
     Optional<String> pipelineBuilderImage();
 
@@ -133,17 +130,6 @@ public interface FLNetConfig {
         int participantsMinDataCount();
     }
 
-    interface FedDBClientConfig {
-
-        AuthConfig auth();
-    }
-
-    interface AuthConfig {
-
-        @WithName("enable")
-        @WithDefault("true")
-        boolean enabled();
-    }
 
     ObserverConfig observer();
 

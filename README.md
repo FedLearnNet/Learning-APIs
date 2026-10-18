@@ -42,6 +42,7 @@ use the `.env.example` templates):
 - Tools authenticate with a per-run API key (`X-API-Key`) that only works for their own run.
 - The frontends log in through `/bff/login`: the backend handles Keycloak and keeps the tokens in a session cookie.
 - Swagger UI is only available in dev mode.
+- Config per service: `security.properties` (OIDC/security), `openapi.properties` (OpenAPI/Swagger), `flnet.properties` (flnet.*), the rest in `application.properties`.
 
 ## Datasets
 

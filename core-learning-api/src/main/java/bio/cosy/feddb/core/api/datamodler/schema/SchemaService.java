@@ -1,5 +1,6 @@
 package bio.cosy.feddb.core.api.datamodler.schema;
 
+import bio.cosy.feddb.core.security.Roles;
 import bio.cosy.feddb.core.base.PagedResponse;
 import io.smallrye.mutiny.Uni;
 import jakarta.validation.Valid;
@@ -41,7 +42,6 @@ public interface SchemaService {
                     content = @Content(schema = @Schema(implementation = SchemaNodeDTO.class, type = SchemaType.ARRAY))
             )
     })
-        // @RolesAllowed({"schema-read", "schema-write"})
     Uni<PagedResponse<SchemaNodeDTO>> list(
             @Parameter(
                     name = "page",
@@ -77,6 +77,7 @@ public interface SchemaService {
     );
 
     @POST
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Operation(
             summary = "Create a new schema node",
             description = "Creates a new schema node."
@@ -93,7 +94,6 @@ public interface SchemaService {
             )
     })
     @ResponseStatus(CREATED)
-        // @RolesAllowed({"schema-create"})
     Uni<SchemaNodeDTO> create(
             @Parameter(
                     description = "Payload for creating a schema node",
@@ -103,6 +103,7 @@ public interface SchemaService {
     );
 
     @POST
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Path("/head")
     @Operation(
             summary = "Create a new schema head node",
@@ -215,6 +216,7 @@ public interface SchemaService {
     );
 
     @PUT
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Path("/{id}")
     @Operation(
             summary = "Update a schema node",
@@ -244,6 +246,7 @@ public interface SchemaService {
 
 
     @DELETE
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Path("/{id}")
     @Operation(
             summary = "Delete a schema node",
