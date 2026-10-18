@@ -35,6 +35,13 @@ Each module reads its secrets from environment variables or a module-local `.env
 use the `.env.example` templates):
 - For more detail information which secrets are relevant and how to use them vist the documentation.
 
+## Security
+
+- Every REST endpoint needs a logged-in user by default, so you don't have to add `@Authenticated`.
+  Use `@PermitAll` for public endpoints and `@RolesAllowed` for stricter ones. WebSockets still need `@Authenticated`.
+- Tools authenticate with a per-run API key (`X-API-Key`) that only works for their own run.
+- The frontends log in through `/bff/login`: the backend handles Keycloak and keeps the tokens in a session cookie.
+- Swagger UI is only available in dev mode.
 
 ## Datasets
 

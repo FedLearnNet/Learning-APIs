@@ -9,8 +9,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 //Intended for all custom properties with a "flnet" prefix
-
-//@StaticInitSafe
+//BFF is here: bio.cosy.feddb.core.security.bff.BffConfig
 @ConfigMapping(prefix = "flnet")
 public interface FLNetConfig {
 
