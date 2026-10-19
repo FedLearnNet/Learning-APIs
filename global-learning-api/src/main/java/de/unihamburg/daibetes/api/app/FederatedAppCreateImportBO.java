@@ -194,6 +194,18 @@ public class FederatedAppCreateImportBO {
         return versionOverridden;
     }
 
+    /**
+     * Retains publish metadata only for an image verified in the official registry, resolving it from
+     * the tool slug and commit hash when available, or otherwise using the supplied image name.
+     * Returns {@code null} when the import policy is {@code ALWAYS}, when importing a new version under
+     * {@code IF_NOT_EXISTS_IN_STORE}, or when the image cannot be verified (including registry errors).
+     *
+     * @param imageName fallback image reference when no commit hash is available
+     * @param publishInfo imported or stored metadata, possibly {@code null}
+     * @param slug tool slug used to resolve the official image for a commit
+     * @param existingVersion stored version, or {@code null} for a newly imported version
+     * @return metadata for the verified image, or {@code null} to discard the build information
+     */
     private AppPublishInfoDTO preparePublishInfo(String imageName, AppPublishInfoDTO publishInfo, String slug,
                                                 FederatedAppVersionEntity existingVersion) {
         ToolImportBuildingOnStart mode = config.toolImports().buildOnImport();

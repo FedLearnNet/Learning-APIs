@@ -293,10 +293,16 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
             AppPublishInfoDTO previous = entity.getPipelineType() == PipelineType.MODEL
                     ? entity.getModelSub().getPublishInfo() : entity.getAppVersion().getPublishInfo();
             if (previous != null) {
+                // SCAN_ONLY rescans the existing image for vulnerabilities without rebuilding or running
+                // SAST/malware checks.
                 dto.setCommitHash(previous.getCommitHash());
                 dto.setFilePaths(previous.getFilePaths());
-                dto.setSastScanResult(previous.getSastScanResult());
-                dto.setMalwareScanResult(previous.getMalwareScanResult());
+                if (dto.getSastScanResult() == null) {
+                    dto.setSastScanResult(previous.getSastScanResult());
+                }
+                if (dto.getMalwareScanResult() == null) {
+                    dto.setMalwareScanResult(previous.getMalwareScanResult());
+                }
             }
         }
         entity.setPublishInfo(dto);
