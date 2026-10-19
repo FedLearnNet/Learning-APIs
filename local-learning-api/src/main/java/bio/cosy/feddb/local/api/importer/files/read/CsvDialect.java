@@ -25,6 +25,7 @@ public final class CsvDialect {
                 .commentStrategy(CommentStrategy.NONE)
                 .skipEmptyLines(true)
                 .extraFieldStrategy(FieldMismatchStrategy.IGNORE)
+                .missingFieldStrategy(FieldMismatchStrategy.IGNORE)
                 .ofCsvRecord(reader);
     }
 
