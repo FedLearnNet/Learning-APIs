@@ -3,6 +3,8 @@ package bio.cosy.feddb.local.api.cohort;
 import bio.cosy.feddb.local.api.cohort.member.CohortAvailableUserDTO;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberCreateDTO;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberDTO;
+import bio.cosy.feddb.local.api.cohort.member.CohortPermissionChecker;
+import io.quarkus.security.PermissionsAllowed;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -58,31 +60,34 @@ public interface CohortService {
     );
 
     @GET
-    @Path("/{id}")
+    @Path("/{cohortId}")
     @Operation(summary = "Get a cohort by ID", description = "Returns a cohort record by its internal ID")
     @APIResponse(responseCode = "200", description = "Cohort found")
     @APIResponse(responseCode = "404", description = "Cohort not found")
     @Transactional
-    CohortDetailDTO get(@PathParam("id") Long id);
+    @PermissionsAllowed(CohortPermissionChecker.READ)
+    CohortDetailDTO get(@PathParam("cohortId") Long cohortId);
 
     @PUT
-    @Path("/{id}")
+    @Path("/{cohortId}")
     @Operation(summary = "Update a cohort", description = "Updates an existing cohort record by its internal ID")
     @APIResponse(responseCode = "200", description = "Cohort updated")
     @APIResponse(responseCode = "400", description = "Invalid data")
     @APIResponse(responseCode = "409", description = "Cohort name already exists")
     @APIResponse(responseCode = "404", description = "Cohort not found")
     @Transactional
-    CohortDetailDTO update(@PathParam("id") Long id, @Valid UpdateCohortDTO updateDTO);
+    @PermissionsAllowed(CohortPermissionChecker.EDIT)
+    CohortDetailDTO update(@PathParam("cohortId") Long cohortId, @Valid UpdateCohortDTO updateDTO);
 
     @POST
-    @Path("/{id}/members")
+    @Path("/{cohortId}/members")
     @Operation(summary = "Add a cohort member", description = "Adds a new member to an existing cohort")
     @APIResponse(responseCode = "201", description = "Cohort member created")
     @APIResponse(responseCode = "400", description = "Invalid data")
     @APIResponse(responseCode = "404", description = "Cohort not found")
+    @PermissionsAllowed(CohortPermissionChecker.EDIT)
     @Transactional
-    CohortMemberDTO addMember(@PathParam("id") Long id, @Valid CohortMemberCreateDTO createDTO);
+    CohortMemberDTO addMember(@PathParam("cohortId") Long cohortId, @Valid CohortMemberCreateDTO createDTO);
 
 
     @POST
@@ -100,6 +105,7 @@ public interface CohortService {
     @APIResponse(responseCode = "400", description = "Invalid data")
     @APIResponse(responseCode = "404", description = "Cohort member not found")
     @Transactional
+    @PermissionsAllowed(CohortPermissionChecker.EDIT)
     CohortMemberDTO updateMember(@PathParam("cohortId") Long cohortId, @PathParam("id") Long id, @Valid CohortMemberDTO updateDTO);
 
     @DELETE
@@ -108,12 +114,14 @@ public interface CohortService {
     @APIResponse(responseCode = "200", description = "Cohort member deleted")
     @APIResponse(responseCode = "404", description = "Cohort member not found")
     @Transactional
+    @PermissionsAllowed(CohortPermissionChecker.EDIT)
     Response deleteMember(@PathParam("cohortId") Long cohortId, @PathParam("id") Long id);
 
     @DELETE
-    @Path("/{id}")
+    @Path("/{cohortId}")
     @Operation(summary = "Delete a cohort", description = "Starts background deletion and returns immediately.")
     @APIResponse(responseCode = "202", description = "Cohort deletion started in background")
     @APIResponse(responseCode = "409", description = "Deletion already in progress or imports are running")
-    Response delete(@PathParam("id") Long id);
+    @PermissionsAllowed(CohortPermissionChecker.DELETE)
+    Response delete(@PathParam("cohortId") Long cohortId);
 }

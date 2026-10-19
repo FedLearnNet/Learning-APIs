@@ -5,6 +5,7 @@ import bio.cosy.feddb.local.api.importer.files.table.ColumnNames;
 import de.siegmar.fastcsv.reader.CommentStrategy;
 import de.siegmar.fastcsv.reader.CsvReader;
 import de.siegmar.fastcsv.reader.CsvRecord;
+import de.siegmar.fastcsv.reader.FieldMismatchStrategy;
 
 import java.io.Reader;
 import java.util.ArrayList;
@@ -23,9 +24,7 @@ public final class CsvDialect {
                 .quoteCharacter('"')
                 .commentStrategy(CommentStrategy.NONE)
                 .skipEmptyLines(true)
-                .allowExtraFields(true)
-                .allowMissingFields(true)
-                .allowExtraCharsAfterClosingQuote(true)
+                .extraFieldStrategy(FieldMismatchStrategy.IGNORE)
                 .ofCsvRecord(reader);
     }
 
