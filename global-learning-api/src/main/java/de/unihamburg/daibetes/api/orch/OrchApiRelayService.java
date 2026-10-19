@@ -28,6 +28,11 @@ public interface OrchApiRelayService {
     @Operation(summary = "List all Queries", description = "Returns a list of all Queries records")
     InfoDTO dockerInfo();
 
+    @GET
+    @Path("docker/registry/images")
+    @Operation(summary = "List repositories and tags in the configured Docker registry")
+    RegistryImagesDTO registryImages();
+
     // ---- Running Containers ----
     @GET
     @Path("container/running")
