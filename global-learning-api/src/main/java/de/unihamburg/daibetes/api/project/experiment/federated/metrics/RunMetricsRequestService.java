@@ -1,6 +1,5 @@
 package de.unihamburg.daibetes.api.project.experiment.federated.metrics;
 
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -12,7 +11,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Path("/project/{projectId}/experiment/federated/{experimentId}/metrics-request")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
 @Tag(name = "RunMetricsRequest", description = "Service for requesting local run metrics from clinic participants")
 public interface RunMetricsRequestService {
 

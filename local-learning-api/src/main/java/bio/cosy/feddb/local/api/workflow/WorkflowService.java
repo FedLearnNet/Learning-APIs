@@ -3,7 +3,6 @@ package bio.cosy.feddb.local.api.workflow;
 import bio.cosy.feddb.core.api.workflow.WorkflowCreateDTO;
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.base.ValidationGroups;
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.groups.ConvertGroup;
@@ -21,8 +20,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Path("/workflow")
 @Produces("application/json")
 @Consumes("application/json")
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "Workflow", description = "Service for managing WorkflowS operations")
 interface WorkflowService {
 

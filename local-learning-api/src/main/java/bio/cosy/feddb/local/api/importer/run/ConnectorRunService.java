@@ -2,7 +2,6 @@ package bio.cosy.feddb.local.api.importer.run;
 
 
 import bio.cosy.feddb.local.api.importer.run.message.ConnectorRunMessagesDTO;
-import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -20,7 +19,6 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Run", description = "Service for managing runs")
-@Authenticated
 public interface ConnectorRunService {
 
     @GET

@@ -1,17 +1,15 @@
 package de.unihamburg.daibetes.config;
 
+import bio.cosy.feddb.core.autoimport.FLNetConfigPaths;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 import io.smallrye.config.WithName;
 
-import java.nio.file.Path;
 import java.time.Duration;
-import java.util.List;
 import java.util.Optional;
 
 //Intended for all custom properties with a "flnet" prefix
-
-//@StaticInitSafe
+//BFF is here: bio.cosy.feddb.core.security.bff.BffConfig
 @ConfigMapping(prefix = "flnet")
 public interface FLNetConfig {
 
@@ -34,13 +32,8 @@ public interface FLNetConfig {
 
     Ingestor ingestor();
 
-    GitLabConfig gitlab();
-
     @WithName("federated-learning")
     FederatedLearningConfig federatedLearning();
-
-    @WithName("feddb-client")
-    FedDBClientConfig feddbClient();
 
     @WithName("pipeline.builder.image")
     Optional<String> pipelineBuilderImage();
@@ -105,16 +98,6 @@ public interface FLNetConfig {
         int limit();
     }
 
-    interface FLNetConfigPaths {
-
-        @WithDefault("false")
-        boolean enabled();
-
-        Optional<List<Path>> paths();
-
-        @WithName("whitelist")
-        Optional<List<String>> whiteList();
-    }
 
     interface ToolImportConfig extends FLNetConfigPaths {
 
@@ -139,15 +122,6 @@ public interface FLNetConfig {
 
     }
 
-    interface GitLabConfig {
-        @WithName("issue.token")
-        String issueToken();
-
-        @WithName("issue.project-id")
-        @WithDefault("9")
-        int issueProjectId();
-    }
-
     interface FederatedLearningConfig {
 
         @WithDefault("3")
@@ -159,17 +133,6 @@ public interface FLNetConfig {
         int participantsMinDataCount();
     }
 
-    interface FedDBClientConfig {
-
-        AuthConfig auth();
-    }
-
-    interface AuthConfig {
-
-        @WithName("enable")
-        @WithDefault("true")
-        boolean enabled();
-    }
 
     ObserverConfig observer();
 

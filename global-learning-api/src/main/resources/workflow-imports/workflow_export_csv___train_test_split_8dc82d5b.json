@@ -38,7 +38,7 @@
       "y" : 0
     }
   } ],
-  "keycloakId" : "test",
+  "keycloakId" : "admin",
   "name" : "CSV - Train Test Split",
   "description" : "CSV to Train Test Split",
   "publishStatus" : "PUBLISHED"

@@ -48,6 +48,11 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-security</artifactId>
         </dependency>
+        <!-- For the backend for frontend (BFF) -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.jwt</groupId>
+            <artifactId>microprofile-jwt-auth-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-validator</artifactId>
@@ -72,6 +77,15 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-statistics-descriptive</artifactId>
             <version>1.3</version>
+        </dependency>
+        <!-- Versions managed by the Quarkus BOM -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
         </dependency>
         <!-- Bounded-memory sketches for column profiling (quantiles, distinct counts, top-k). -->
         <dependency>

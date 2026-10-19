@@ -1,5 +1,6 @@
 package de.unihamburg.daibetes.api.observer;
 
+import bio.cosy.feddb.core.security.Roles;
 import io.smallrye.mutiny.Multi;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.DELETE;
@@ -17,8 +18,7 @@ import java.util.List;
 
 @Path("/admin/observer/client")
 @Produces(MediaType.APPLICATION_JSON)
-//@Authenticated
-@RolesAllowed({"Admin"})
+@RolesAllowed(Roles.ADMIN)
 @Tag(name = "Client-Observer", description = "WebSocket client observer for admin diagnostics")
 public interface FLNetClientObserverService {
 

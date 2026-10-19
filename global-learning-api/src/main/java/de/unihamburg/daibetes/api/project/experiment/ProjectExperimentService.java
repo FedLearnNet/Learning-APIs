@@ -8,7 +8,6 @@ import de.unihamburg.daibetes.api.project.experiment.federated.step.ProjectFeder
 import de.unihamburg.daibetes.api.project.experiment.local.CreateProjectLocalExperimentDTO;
 import de.unihamburg.daibetes.api.project.experiment.local.ProjectLocalExperimentDTO;
 import de.unihamburg.daibetes.api.project.experiment.local.step.ProjectLocalExperimentStepDetailDTO;
-import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -29,8 +28,6 @@ import java.util.List;
 @Path("/project/{id}/experiment")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "Project", description = "Service for managing project operations")
 public interface ProjectExperimentService {
 

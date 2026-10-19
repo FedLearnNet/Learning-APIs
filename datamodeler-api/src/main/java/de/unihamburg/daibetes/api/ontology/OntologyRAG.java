@@ -1,22 +1,25 @@
 package de.unihamburg.daibetes.api.ontology;
 
+import bio.cosy.feddb.core.api.datamodler.ontology.OntologyNodeDTO;
 import de.unihamburg.daibetes.embedding.OntologyToDocumentParser;
 import de.unihamburg.daibetes.embedding.SapBERTEmbeddingModel;
 import dev.langchain4j.community.store.embedding.neo4j.Neo4jEmbeddingStore;
-import dev.langchain4j.data.document.Document;
 import dev.langchain4j.rag.content.Content;
 import dev.langchain4j.rag.content.ContentMetadata;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.rag.query.Query;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import io.quarkus.logging.Log;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static dev.langchain4j.data.document.splitter.DocumentSplitters.recursive;
 
@@ -62,13 +65,24 @@ public class OntologyRAG {
     }
 
     public Uni<Void> ingestAllNodes() {
+        return ingestNodes(ontologyDAO.findAll());
+    }
+
+    public Uni<Void> ingestMissingNodes(Collection<UUID> ids) {
+        if (ids.isEmpty()) {
+            return Uni.createFrom().voidItem();
+        }
+        return ingestNodes(ontologyDAO.findWithoutEmbedding(ids));
+    }
+
+    private Uni<Void> ingestNodes(Multi<OntologyNodeDTO> nodes) {
         EmbeddingStoreIngestor ingestor = EmbeddingStoreIngestor.builder()
                 .embeddingStore(store)
                 .embeddingModel(embeddingModel)
                 .documentSplitter(recursive(500, 0))
                 .build();
 
-        return ontologyDAO.findAll()
+        return nodes
                 .onItem()
                 .transform(OntologyToDocumentParser::toDocument)
                 .emitOn(Infrastructure.getDefaultWorkerPool())

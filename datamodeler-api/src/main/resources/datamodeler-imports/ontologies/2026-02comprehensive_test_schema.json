@@ -1,0 +1,72 @@
+[
+  {
+    "ontology": {
+      "names": [
+        "Gender (observable entity)"
+      ],
+      "description": "Ontology Gender (observable entity)",
+      "cui": "2c8261e6-bd7d-4bca-bdbf-7387fd735b49",
+      "id": "9fe35b60-0b14-5bc1-87de-d8ada0bff5e6"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Clinical finding (finding)"
+      ],
+      "description": "Ontology Clinical finding (finding)",
+      "cui": "c5772be3-3183-4fdb-b551-d6467d26a22a",
+      "id": "4b582a8c-559c-57b9-933e-8a7ee4aaf59f"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Diagnosis (observable entity)"
+      ],
+      "description": "Ontology Diagnosis (observable entity)",
+      "cui": "b06b8ceb-21a3-4e21-a5ea-fbc8af49b3ed",
+      "id": "a535779f-ffa3-59d5-a8b6-b9fb91d4f430"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Measurement (observable entity)"
+      ],
+      "description": "Ontology Measurement (observable entity)",
+      "cui": "1f21ac4f-abbf-46a7-80c3-2b2e4f9bbe38",
+      "id": "39696ac2-6cb2-5492-816b-b3545f00ef07"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "TestAttributeSameAsGroup"
+      ],
+      "description": "Ontology TestAttributeSameAsGroup",
+      "cui": "97fa221e-19d0-43a5-9a50-9c43d785c74c",
+      "id": "938bfa13-f39a-5df5-a135-090c277d55a7"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Measurement (observable entity) 1"
+      ],
+      "description": "Ontology Measurement (observable entity) 1",
+      "cui": "4a05b656-ad9d-4511-9a81-44bd38ebb44d",
+      "id": "74f976e8-4c3a-5b65-bfa3-bdaf3c96fbf6"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Measurement (observable entity) 2"
+      ],
+      "description": "Ontology Measurement (observable entity) 2",
+      "cui": "b35c9921-91ba-4405-bd73-53735be9f2a9",
+      "id": "cba01fc2-90bf-522f-aeb5-289106dc1ca3"
+    }
+  }
+]

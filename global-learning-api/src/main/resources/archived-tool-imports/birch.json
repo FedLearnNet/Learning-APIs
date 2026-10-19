@@ -10,7 +10,7 @@
   "average" : 0.0,
   "addedToWorkflowCount" : 0,
   "authors" : [ {
-    "keycloakId" : "test"
+    "keycloakId" : "admin"
   } ],
   "versions" : [ {
     "federatedAppId" : 4,

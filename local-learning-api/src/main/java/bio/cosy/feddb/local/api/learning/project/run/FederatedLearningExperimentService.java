@@ -6,7 +6,6 @@ import bio.cosy.feddb.core.security.ToolAuthenticated;
 import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
 import jakarta.annotation.security.RolesAllowed;
 import bio.cosy.feddb.core.security.Scope;
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -20,8 +19,6 @@ import org.jboss.resteasy.reactive.ResponseStatus;
 @Path("/learning/run")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "FederatedLearningExperiment", description = "Service for upload files for local learning")
 public interface FederatedLearningExperimentService {
 

@@ -15,6 +15,7 @@ import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.NotFoundException;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.neo4j.driver.Value;
 import org.neo4j.driver.Values;
 
@@ -22,6 +23,9 @@ import java.util.*;
 
 @ApplicationScoped
 public class OntologyDAO extends BaseDAO<OntologyNodeDTO, OntologyEdgeDTO, OntologyMapper> {
+
+    @ConfigProperty(name = "quarkus.langchain4j.neo4j.label", defaultValue = "Document")
+    String embeddingDocumentLabel;
 
 
     public Uni<Void> createNodeBatch(List<OntologyNodeDTO> nodes) {
@@ -275,6 +279,23 @@ public class OntologyDAO extends BaseDAO<OntologyNodeDTO, OntologyEdgeDTO, Ontol
     }
 
 
+    public Multi<OntologyNodeDTO> findWithoutEmbedding(Collection<UUID> ids) {
+        String cypher = CypherTemplate.of("""
+                        MATCH (n:${NODE_LABEL})
+                        WHERE n.${ID_PROP} IN $ids
+                          AND NOT EXISTS { MATCH (d:${DOCUMENT_LABEL} {nodeId: n.${ID_PROP}}) }
+                        RETURN n
+                        """)
+                .bind("NODE_LABEL", getNodeLabel())
+                .bind("ID_PROP", idPropertyName)
+                .bind("DOCUMENT_LABEL", embeddingDocumentLabel)
+                .build();
+
+        List<String> idValues = ids.stream().map(UUID::toString).toList();
+        return read(cypher, Values.parameters("ids", idValues))
+                .map(mapper::fromNodeRecord);
+    }
+
     public Uni<OntologyNodeDTO> searchById(String search) {
         String normalizedSearch = search == null ? "" : search.trim();
 
@@ -393,10 +414,10 @@ public class OntologyDAO extends BaseDAO<OntologyNodeDTO, OntologyEdgeDTO, Ontol
         List<String> dtIds = dataTypeIds == null
                 ? List.of()
                 : dataTypeIds.stream()
-                  .filter(Objects::nonNull)
-                  .map(UUID::toString)
-                  .distinct()
-                  .toList();
+                .filter(Objects::nonNull)
+                .map(UUID::toString)
+                .distinct()
+                .toList();
 
         if (dtIds.isEmpty()) {
             return Uni.createFrom().voidItem();

@@ -34,6 +34,7 @@ public class FederatedAppServiceTest {
     }
 
     @Test
+    @TestSecurity(user = "test")
     public void testListApps() {
         given()
                 .when().get()

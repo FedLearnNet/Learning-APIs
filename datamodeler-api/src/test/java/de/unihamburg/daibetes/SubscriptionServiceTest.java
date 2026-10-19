@@ -1,5 +1,7 @@
 package de.unihamburg.daibetes;
 
+import bio.cosy.feddb.core.security.Roles;
+import io.quarkus.test.security.TestSecurity;
 import bio.cosy.feddb.core.api.datamodler.schema.SchemaNodeDTO;
 import bio.cosy.feddb.core.api.datamodler.schema.SchemaNodeType;
 import io.quarkus.test.junit.QuarkusTest;
@@ -24,6 +26,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
+@TestSecurity(user = "test-modeler", roles = {Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SubscriptionServiceTest {
 
