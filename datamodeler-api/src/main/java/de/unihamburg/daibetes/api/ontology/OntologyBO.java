@@ -3,11 +3,14 @@ package de.unihamburg.daibetes.api.ontology;
 
 import bio.cosy.feddb.core.api.datamodler.ontology.*;
 import bio.cosy.feddb.core.base.PagedResponse;
+import de.unihamburg.daibetes.api.feature.FeatureAvailableBO;
+import de.unihamburg.daibetes.api.feature.FeatureAvailableMessages;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -23,6 +26,9 @@ public class OntologyBO {
 
     @Inject
     OntologyRAG ontologyRAG;
+
+    @Inject
+    FeatureAvailableBO featureAvailableBO;
 
     public Uni<Boolean> isUMLSCodeInDB(String code) {
         return ontologyDAO.existsByCodeId(code);
@@ -51,6 +57,9 @@ public class OntologyBO {
     }
 
     public Uni<List<OntologySearchResponseDTO>> searchEmbedding(String search, int maxResults) {
+        if (!featureAvailableBO.isEmbeddingEnabled()) {
+            return Uni.createFrom().failure(new BadRequestException(FeatureAvailableMessages.EMBEDDING_DISABLED));
+        }
         Log.info("Starting embedding search for: " + search);
         if (StringUtils.isBlank(search)) {
             return Uni.createFrom().item(new ArrayList<>());
