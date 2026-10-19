@@ -20,6 +20,7 @@ import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerColumnTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerUserTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerValidateTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerWriterTool;
+import bio.cosy.feddb.local.api.importer.connector.ConnectorHelper;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
@@ -33,8 +34,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -102,7 +107,9 @@ public class TransformerOrganizer {
         userTool.init(context.user(), previewData.getColumns());
         columnTool.init(context, previewData.getColumns());
 
-        boolean clear = !candidates.isEmpty() && candidates.getFirst().isClear();
+        // A name match is only taken unreviewed for a column no other node is filled from
+        boolean clear = !candidates.isEmpty() && candidates.getFirst().isClear()
+                && filledNodes(context, List.of(candidates.getFirst().getColumn())).isEmpty();
         List<String> columns;
         if (clear) {
             columns = List.of(candidates.getFirst().getColumn());
@@ -249,10 +256,11 @@ public class TransformerOrganizer {
         if (columns.isEmpty()) {
             return columns;
         }
+        String filledNodes = filledNodes(context, columns);
         ColumnReview review;
         try {
             review = columnReviewBot.review(schemaNode, TransformerHelper.describeFileValues(columns, context.fileProfiles()),
-                    TransformerHelper.columnExamples(previewData));
+                    TransformerHelper.columnExamples(previewData), filledNodes);
         } catch (RuntimeException e) {
             Log.warnf(e, "Reviewing the columns %s of schema node %s failed, keeping them", columns, schemaNode.getName());
             return columns;
@@ -261,9 +269,44 @@ public class TransformerOrganizer {
             return columns;
         }
         context.step("reviewColumns: %s not held, %s", columns, review.getReason());
-        return selectColumns(context, previewData, schemaNode, instructions + "\nA review of your selection " + columns
-                + " disagrees: " + review.getReason() + " Select again, or return an empty list if no column records it.",
+        List<String> selected = selectColumns(context, previewData, schemaNode, instructions + "\nA review of your selection "
+                + columns + " disagrees: " + review.getReason() + " Select again, or return an empty list if no column records it.",
                 candidates);
+        // Columns that already fill another node and were rejected for this one are not taken again
+        if (!filledNodes.isEmpty() && Set.copyOf(selected).equals(Set.copyOf(columns))) {
+            context.step("reviewColumns: %s selected again, but already fill %s", columns, filledNodes);
+            return List.of();
+        }
+        return selected;
+    }
+
+    // The schema nodes earlier nodes of the run filled from these columns, also through columns transformers copied or
+    // converted them into
+    static String filledNodes(TransformerRunContext context, List<String> columns) {
+        if (context.config() == null || context.mappedColumns().isEmpty()) {
+            return "";
+        }
+        Map<String, Set<String>> madeFrom = new HashMap<>();
+        context.config().getTransformer().forEach(transformer -> ConnectorHelper.transformerOutputs(transformer)
+                .forEach(output -> madeFrom.computeIfAbsent(output, column -> new HashSet<>())
+                        .addAll(ConnectorHelper.transformerInputs(transformer))));
+        return context.mappedColumns().entrySet().stream()
+                .filter(mapped -> sourceColumns(mapped.getKey(), madeFrom).stream().anyMatch(columns::contains))
+                .map(Map.Entry::getValue)
+                .distinct()
+                .collect(Collectors.joining(", "));
+    }
+
+    private static Set<String> sourceColumns(String column, Map<String, Set<String>> madeFrom) {
+        Deque<String> open = new ArrayDeque<>(List.of(column));
+        Set<String> seen = new LinkedHashSet<>();
+        while (!open.isEmpty()) {
+            String next = open.pop();
+            if (seen.add(next)) {
+                open.addAll(madeFrom.getOrDefault(next, Set.of()));
+            }
+        }
+        return seen;
     }
 
     // Every value of the file with the allowed values closest in meaning; empty for a short list or without embeddings

@@ -20,6 +20,12 @@ public interface ColumnReviewBot {
               from the combined value, a percentage from a score, a count or size from a free text, or the columns
               record another fact of the same topic.
             - When another column of the file records the value itself, the columns it would be computed from are not held.
+            {#if filledNodes}
+            - The columns already fill these schema nodes: {filledNodes}. A column records one fact, so it fills this
+              node as well only when the node asks for the same fact under another name, or the column holds several
+              values that are split later. A node about another subject, time point or quantity, or a detail the
+              column does not record, is not held.
+            {/if}
             Answer held true, or held false and the reason, naming the column that records the information if one does.
 
             Schema node: {schemaNode.name}
@@ -34,5 +40,5 @@ public interface ColumnReviewBot {
             - {column}
             {/for}
             """)
-    ColumnReview review(LocalSchemaNodeDTO schemaNode, String fileValues, List<String> columns);
+    ColumnReview review(LocalSchemaNodeDTO schemaNode, String fileValues, List<String> columns, String filledNodes);
 }

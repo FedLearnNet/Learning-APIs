@@ -68,10 +68,14 @@ public class HarmonizationFileReviews {
 
     private TransformerWriterReview reviewForJudge(int index, HarmonizationTargetDTO target, ColumnProfile referenceColumn,
                                                    int unmatchedKeys) {
+        // The reference holds other patients: its values show the coding of the column, not what the source has to become
         return reviews.createReview(connectorMapper.toSchemaNode(target, index), target.getName(), String.format(
-                "The source is harmonized onto the reference file, %d of its keys are not in it. The column in the "
-                        + "reference file: %s", unmatchedKeys,
-                referenceColumn == null ? "-" : TransformerWriterReviews.profile(referenceColumn, REFERENCE_VALUES)));
+                "The rows of the source are appended to the reference file, a file of other patients of another clinic, "
+                        + "so %d of the source keys are not in it, as expected, and identifiers and counts differ from "
+                        + "the reference. Its column only shows the coding the source values have to follow; do not "
+                        + "compare its counts with the source or the harmonized values. The column in the reference "
+                        + "file: %s. The data entries below are the harmonized values of the source rows only.",
+                unmatchedKeys, referenceColumn == null ? "-" : TransformerWriterReviews.profile(referenceColumn, REFERENCE_VALUES)));
     }
 
     private void addSuggestion(TransformerWriterReview review, TransformerAssistantMessageDTO suggestion,
