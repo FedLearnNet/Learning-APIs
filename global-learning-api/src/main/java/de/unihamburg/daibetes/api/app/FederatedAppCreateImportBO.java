@@ -122,12 +122,17 @@ public class FederatedAppCreateImportBO {
     }
 
     private void importAuthors(FederatedAppDetailDTO external, FederatedAppEntity entity) {
-        if (external.getAuthors() == null) {
-            return;
-        }
         Set<String> authorIds = entity.getAuthors() == null ? new HashSet<>() : entity.getAuthors().stream()
                 .map(FederatedAppAuthorEntity::getKeycloakId)
                 .collect(Collectors.toSet());
+        String defaultOwner = config.toolImports().owner();
+        if (authorIds.add(defaultOwner)) {
+            authorBO.create(entity, defaultOwner);
+        }
+        if (external.getAuthors() == null) {
+            Log.warnf("No authors found for external app %s, only owner %s will be added", external.getName(), defaultOwner);
+            return;
+        }
         for (FederatedAppAuthorDTO author : external.getAuthors()) {
             if (author == null || StringUtils.isBlank(author.getKeycloakId()) || !authorIds.add(author.getKeycloakId())) {
                 continue;

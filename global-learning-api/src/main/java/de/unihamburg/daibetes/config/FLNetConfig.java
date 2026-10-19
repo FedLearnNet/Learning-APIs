@@ -101,6 +101,9 @@ public interface FLNetConfig {
 
     interface ToolImportConfig extends FLNetConfigPaths {
 
+        @WithDefault("admin")
+        String owner();
+
         @WithDefault("false")
         boolean createUnpublishedVersion();
 
