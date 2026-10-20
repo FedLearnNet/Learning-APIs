@@ -1,6 +1,7 @@
-# Inside the DinD container: the database and the orchestrator of the tests, and the tests themselves. The tests run
-# in the network of the DinD container like on a developer machine, so localhost:5432 and localhost:8091 work as in
-# compose-devservices.yml, and the containers the orchestrator starts reach them at the gateway of eval-network.
+# Inside the DinD container: the database, the orchestrator and the datamodeler of the tests, and the tests themselves.
+# The tests run in the network of the DinD container like on a developer machine, so localhost:5432, localhost:8091
+# and localhost:8086 work as in compose-devservices.yml, and the containers the orchestrator starts reach them at the
+# gateway of eval-network.
 services:
   local-learning-api-db:
     image: postgres:18
@@ -41,14 +42,46 @@ services:
       local-learning-api-db:
         condition: service_healthy
 
+  datamodeler-db:
+    image: neo4j:2026.09.0
+    environment:
+      NEO4J_AUTH: neo4j/password
+    ports:
+      - "7687:7687"
+    healthcheck:
+      test: [ "CMD-SHELL", "cypher-shell -u neo4j -p password 'RETURN 1'" ]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+    networks:
+      - eval-network
+
+  # The schemas of the checkout with the ids of datamodeler-imports, so the tests need no global datamodeler
+  datamodeler:
+    image: eclipse-temurin:25-jdk
+    network_mode: host
+    working_dir: /workspace
+    volumes:
+      - /workspace:/workspace
+      - /cache/m2:/root/.m2
+    command: [ "bash", "local-learning-api/eval-dind/run-datamodeler.sh" ]
+    healthcheck:
+      test: [ "CMD", "bash", "local-learning-api/eval-dind/datamodeler-ready.sh" ]
+      interval: 15s
+      timeout: 10s
+      retries: 240
+    depends_on:
+      datamodeler-db:
+        condition: service_healthy
+
   eval:
     image: eclipse-temurin:25-jdk
     network_mode: host
     working_dir: /workspace
     environment:
-      # The store tools and the schemas of the global dev server
+      # The store tools of the global dev server, the schemas of the datamodeler service
       QUARKUS_REST_CLIENT_GLOBAL_API_URL: ${GLOBAL_API_URL:-https://dev.federated-learning.net/global-learning-api}
-      QUARKUS_REST_CLIENT_GLOBAL_SCHEMA_API_URL: ${GLOBAL_SCHEMA_API_URL:-https://dev.federated-learning.net/data-modeler}
+      QUARKUS_REST_CLIENT_GLOBAL_SCHEMA_API_URL: ${GLOBAL_SCHEMA_API_URL:-http://localhost:8086}
       EVAL_MODELS: ${EVAL_MODELS:-}
       EVAL_MODES: ${EVAL_MODES:-real,synthetic}
       EVAL_RUNS: ${EVAL_RUNS:-3}
@@ -56,6 +89,7 @@ services:
       EVAL_DATASETS: ${EVAL_DATASETS:-}
       EVAL_GDC_STUDIES: ${EVAL_GDC_STUDIES:-}
       EVAL_GDC_SCHEMA: ${EVAL_GDC_SCHEMA:-}
+      EVAL_SYNTHEA_TABLES: ${EVAL_SYNTHEA_TABLES:-}
       EVAL_REPLACE: ${EVAL_REPLACE:-false}
       EVAL_TESTS: ${EVAL_TESTS:-us130,gdc}
     volumes:
@@ -65,6 +99,8 @@ services:
     depends_on:
       orch-api:
         condition: service_started
+      datamodeler:
+        condition: service_healthy
 
 # The network the containers of the orchestrator join; they reach the tests at its gateway, as a Linux Docker resolves
 # host.docker.internal only for containers started with host access

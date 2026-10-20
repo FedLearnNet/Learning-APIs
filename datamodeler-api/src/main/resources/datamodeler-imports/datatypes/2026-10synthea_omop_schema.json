@@ -1,0 +1,37 @@
+[
+  {
+    "id": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+    "description": "Datatype generic string",
+    "name": "generic string",
+    "type": "STRING",
+    "options": []
+  },
+  {
+    "id": "cc9c46eb-8c52-5130-b8c4-fa789509c86f",
+    "description": "Datatype generic integer",
+    "name": "generic integer",
+    "type": "INT",
+    "options": []
+  },
+  {
+    "id": "cfbb86c5-db06-5f72-be2a-2c61a63fd5ac",
+    "description": "Datatype generic datetime",
+    "name": "generic datetime",
+    "type": "DATE_TIME",
+    "options": []
+  },
+  {
+    "id": "da3a40eb-a5cf-597a-8746-a2f37e6af34d",
+    "description": "Datatype generic date",
+    "name": "generic date",
+    "type": "DATE",
+    "options": []
+  },
+  {
+    "id": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+    "description": "Datatype generic float",
+    "name": "generic float",
+    "type": "FLOAT",
+    "options": []
+  }
+]

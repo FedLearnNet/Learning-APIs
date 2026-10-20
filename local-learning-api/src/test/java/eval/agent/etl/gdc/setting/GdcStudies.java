@@ -15,6 +15,10 @@ public final class GdcStudies {
     private static final String GDC_SCHEMA_ID = "5e9db229-c847-50b6-925f-78c9681faed9";
     private static final String FULL_GDC_SCHEMA_ID = "9b722d97-3195-5a23-ab68-4bdf33028c41";
 
+    public static final MatchingBenchmark BENCHMARK = new MatchingBenchmark("GDC schema matching benchmark", "gdc-benchmark",
+            "The ten studies of GDC-SM (https://doi.org/10.5281/zenodo.14963587) are mapped by the assistant onto the GDC "
+                    + "schema (the 78 fields of the ground truth, or all 736 like the benchmark).", "GDC", false);
+
     public static final List<GdcStudy> STUDIES = List.of(
             new GdcStudy("GDC Cao", "Cao.csv", "case_id"),
             new GdcStudy("GDC Clark", "Clark.csv", "Case_ID"),
@@ -37,11 +41,16 @@ public final class GdcStudies {
     }
 
     public static List<GdcStudy> selected() {
+        return selected(STUDIES);
+    }
+
+    /** The studies -Deval.datasets names, all without it. */
+    public static List<GdcStudy> selected(List<GdcStudy> studies) {
         String names = System.getProperty("eval.datasets", "");
         if (names.isBlank()) {
-            return STUDIES;
+            return studies;
         }
         List<String> selected = Arrays.stream(names.split(",")).map(String::strip).toList();
-        return STUDIES.stream().filter(study -> selected.contains(study.getName())).toList();
+        return studies.stream().filter(study -> selected.contains(study.getName())).toList();
     }
 }

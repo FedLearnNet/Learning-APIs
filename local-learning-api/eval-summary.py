@@ -2,12 +2,12 @@
 """Mean ± SD of the ETL agent evaluations over their runs, for the paper.
 
 Reads the result files of run-us130-eval.sh and eval-dind (transformer-writer.json, harmonization-file.json,
-gdc-benchmark.json) below a results folder, default results/eval, and groups the runs of one model and mode by the
+gdc-benchmark.json, synthea-omop-benchmark.json) below a results folder, default results/eval, and groups the runs of one model and mode by the
 name of the run without its number: run-1..3 are one setting, run-fix-1..3 and run-full-1 others.
 
     python3 local-learning-api/eval-summary.py [results/eval/<server run>] [--markdown summary.md]
 
-GDC: recall, precision and F1 per GDC field like gdc-benchmark-report.md, and like Magneto and MetaHarmonizer per source
+GDC and Synthea-OMOP: recall, precision and F1 per schema field like gdc-benchmark-report.md, and like Magneto and MetaHarmonizer per source
 column of the ground truth: Top-1 and Recall@GT, the fields the agent filled from a column counting as tied
 (see GdcReport.columnScores). All values of a run are pooled over its datasets, GDC Top-1 and Recall@GT are the mean
 of the studies like Table 1 of MetaHarmonizer.
@@ -95,6 +95,7 @@ EVALUATIONS = {
     "transformer-writer.json": ("US-130 transformer writer", transformer_writer),
     "harmonization-file.json": ("US-130 file harmonization", harmonization_file),
     "gdc-benchmark.json": ("GDC-SM benchmark", gdc_benchmark),
+    "synthea-omop-benchmark.json": ("Synthea-OMOP benchmark", gdc_benchmark),
 }
 
 

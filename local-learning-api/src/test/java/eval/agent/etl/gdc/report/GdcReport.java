@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import eval.agent.etl.gdc.pojo.GdcFieldResult;
 import eval.agent.etl.gdc.pojo.GdcVerdict;
+import eval.agent.etl.gdc.setting.MatchingBenchmark;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,25 +19,23 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Schema matching of the GDC benchmark: recall is the share of the fields of the ground truth mapped from one of its
+ * Schema matching of a benchmark like GDC-SM: recall is the share of the fields of the ground truth mapped from one of its
  * columns, precision the share of the mapped fields that are correct; unlike the ranking matchers of the benchmark
  * (e.g. Magneto, Recall@k), the agent answers with one mapping per field, so these are top-1 values.
  */
 public final class GdcReport {
 
-    public static final String RESULTS_FILE = "gdc-benchmark.json";
-    private static final String REPORT_FILE = "gdc-benchmark-report.md";
     private static final ObjectMapper JSON = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
     private GdcReport() {
     }
 
-    public static void save(Path directory, String label, Map<String, List<GdcFieldResult>> results) throws IOException {
+    public static void save(Path directory, String label, MatchingBenchmark benchmark,
+                            Map<String, List<GdcFieldResult>> results) throws IOException {
         Files.createDirectories(directory);
-        JSON.writeValue(directory.resolve(RESULTS_FILE).toFile(), results);
-        StringBuilder text = new StringBuilder("# GDC schema matching benchmark (").append(label).append(")\n\n")
-                .append("The ten studies of GDC-SM (https://doi.org/10.5281/zenodo.14963587) are mapped by the assistant onto ")
-                .append("the GDC schema (the 78 fields of the ground truth, or all 736 like the benchmark). Top-1 values: the agent maps every field from ")
+        JSON.writeValue(directory.resolve(benchmark.resultsFile()).toFile(), results);
+        StringBuilder text = new StringBuilder("# ").append(benchmark.getTitle()).append(" (").append(label).append(")\n\n")
+                .append(benchmark.getDescription()).append(" Top-1 values: the agent maps every field from ")
                 .append("one chain, a field is correct when that chain reads a column the ground truth names for it. ")
                 .append("The ground truth lists only some right mappings, so an LLM judge rates the extras; the judged ")
                 .append("precision also counts the extras it finds right.\n\n")
@@ -45,7 +44,7 @@ public final class GdcReport {
         results.forEach((study, fields) -> text.append(row(study, fields)));
         text.append(row("**All**", results.values().stream().flatMap(List::stream).toList()));
         text.append("\n## Per source column\n\nLike Magneto and MetaHarmonizer: every column the ground truth names is a query, ")
-                .append("its targets the GDC fields the ground truth names for it. The agent ranks nothing, so the fields it ")
+                .append("its targets the schema fields the ground truth names for it. The agent ranks nothing, so the fields it ")
                 .append("filled from a column count as tied: Top-1 is the chance that a random one of them is right, ")
                 .append("Recall@GT the share of the targets among |GT| random ones (right / max(filled, |GT|)). ")
                 .append("All is the mean of the studies, like Table 1 of MetaHarmonizer.\n\n")
@@ -69,7 +68,7 @@ public final class GdcReport {
                         .append(String.join(", ", field.getMapped())).append(" | ").append(field.getVerdict()).append(" | ")
                         .append(cell(field.getConfiguration())).append(" | ").append(field.getJudged() == null ? ""
                                 : (field.getJudged() ? "right: " : "wrong: ") + cell(field.getJudgeReason())).append(" |\n"));
-        Files.writeString(directory.resolve(REPORT_FILE), text);
+        Files.writeString(directory.resolve(benchmark.reportFile()), text);
     }
 
     private static String row(String study, List<GdcFieldResult> fields) {

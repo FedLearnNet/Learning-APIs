@@ -8,6 +8,7 @@ import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import eval.agent.etl.gdc.pojo.GdcFieldResult;
 import eval.agent.etl.gdc.pojo.GdcVerdict;
 import eval.agent.etl.gdc.setting.GdcStudy;
+import eval.agent.etl.gdc.setting.MatchingBenchmark;
 import eval.agent.etl.transform.setting.TransformerWriterTruth;
 
 import java.io.File;
@@ -60,8 +61,8 @@ public final class GdcScoring {
      * The result of every schema node the agent answered for, plus a missed one for every unanswered field; the
      * transformers of the whole connector lead a column made by another node back to the columns of the study.
      */
-    public static List<GdcFieldResult> score(GdcStudy study, List<TransformerAssistantMessageDTO> nodes,
-                                             List<ConnectorTransformerDTO> connector) {
+    public static List<GdcFieldResult> score(MatchingBenchmark benchmark, GdcStudy study,
+                                             List<TransformerAssistantMessageDTO> nodes, List<ConnectorTransformerDTO> connector) {
         Map<String, Set<String>> truth = groundTruth(study);
         Set<String> columns = studyColumns(study);
         Map<String, Set<String>> madeFrom = new HashMap<>();
@@ -70,7 +71,7 @@ public final class GdcScoring {
         List<GdcFieldResult> results = new ArrayList<>();
         Set<String> answered = new HashSet<>();
         for (TransformerAssistantMessageDTO node : nodes) {
-            String field = field(node.getMappingPath());
+            String field = field(node.getMappingPath(), benchmark.isQualified());
             answered.add(field);
             ConnectorSelectedTransformer selected = node.getSelectedTransformer();
             List<String> mapped = sourceColumns(selected, columns, madeFrom);
@@ -127,9 +128,14 @@ public final class GdcScoring {
                 .collect(Collectors.joining(", ")));
     }
 
-    // The schema node of a mapping path, e.g. 'age_at_diagnosis' of 'GDC.age_at_diagnosis'
-    private static String field(String mappingPath) {
-        return mappingPath == null ? "" : mappingPath.substring(mappingPath.lastIndexOf('.') + 1);
+    // The schema node of a mapping path, e.g. 'age_at_diagnosis' of 'GDC.age_at_diagnosis', qualified with its group,
+    // e.g. 'person.person_id'
+    static String field(String mappingPath, boolean qualified) {
+        if (mappingPath == null) {
+            return "";
+        }
+        int node = mappingPath.lastIndexOf('.');
+        return mappingPath.substring((qualified ? mappingPath.lastIndexOf('.', node - 1) : node) + 1);
     }
 
     private static File resource(String path) {
