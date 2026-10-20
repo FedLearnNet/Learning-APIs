@@ -5,6 +5,7 @@ import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -18,11 +19,15 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.net.URI;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @ApplicationScoped
 public class DataModelerForwardServiceImpl implements DataModelerForwardService {
 
     private static final List<String> RESPONSE_HEADERS = List.of(HttpHeaders.CONTENT_TYPE, HttpHeaders.CONTENT_DISPOSITION);
+    // Absolute path of plain segments; no dot segments, no encoded dot, slash or backslash
+    private static final Pattern FORWARDED_PATH =
+            Pattern.compile("(?!.*%(?i:2e|2f|5c))(/(?!\\.{1,2}(?:/|$))[A-Za-z0-9\\-._~!$&'()*+,;=:@%]*)*");
 
     @ConfigProperty(name = "quarkus.rest-client.data-modeler-service.url")
     String dataModelerUrl;
@@ -82,6 +87,9 @@ public class DataModelerForwardServiceImpl implements DataModelerForwardService 
         URI requestUri = uriInfo.getRequestUri();
         String rawPath = requestUri.getRawPath();
         String forwardedPath = rawPath.substring(rawPath.indexOf(PATH) + PATH.length());
+        if (!FORWARDED_PATH.matcher(forwardedPath).matches()) {
+            throw new BadRequestException("Invalid data modeler path");
+        }
         String query = requestUri.getRawQuery() != null ? "?" + requestUri.getRawQuery() : "";
         return URI.create(dataModelerUrl.replaceAll("/+$", "") + forwardedPath + query);
     }
