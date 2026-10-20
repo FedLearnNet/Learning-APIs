@@ -4,7 +4,6 @@ import bio.cosy.feddb.core.api.workflow.WorkflowCreateDTO;
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.base.ValidationGroups;
 import de.unihamburg.daibetes.dto.URLDTO;
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.groups.ConvertGroup;
@@ -23,8 +22,6 @@ import java.util.List;
 @Path("/workflow")
 @Produces("application/json")
 @Consumes("application/json")
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "Workflow", description = "Service for managing WorkflowS operations")
 public interface WorkflowService {
 
@@ -94,6 +91,5 @@ public interface WorkflowService {
             @APIResponse(responseCode = "404", description = "Workflow not found")
     })
     @Transactional
-    @Authenticated
     URLDTO saveWorkflowAsJson(@PathParam("id") Long id);
 }

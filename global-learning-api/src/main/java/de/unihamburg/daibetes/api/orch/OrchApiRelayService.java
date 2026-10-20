@@ -1,5 +1,6 @@
 package de.unihamburg.daibetes.api.orch;
 
+import bio.cosy.feddb.core.security.Roles;
 import bio.cosy.feddb.core.services.orch.dto.*;
 import io.smallrye.mutiny.Multi;
 import jakarta.annotation.security.RolesAllowed;
@@ -14,7 +15,7 @@ import org.jboss.resteasy.reactive.RestStreamElementType;
 import java.util.List;
 
 @Path("/admin/orch/relay")
-@RolesAllowed({"Admin"})
+@RolesAllowed(Roles.ADMIN)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Relay", description = "⚠️ Relay facade to internal Docker orchestration API. For documentation, refer to the original API. Only GET endpoints are available here. " +
@@ -26,6 +27,11 @@ public interface OrchApiRelayService {
     @Path("docker/info")
     @Operation(summary = "List all Queries", description = "Returns a list of all Queries records")
     InfoDTO dockerInfo();
+
+    @GET
+    @Path("docker/registry/images")
+    @Operation(summary = "List repositories and tags in the configured Docker registry")
+    RegistryImagesDTO registryImages();
 
     // ---- Running Containers ----
     @GET

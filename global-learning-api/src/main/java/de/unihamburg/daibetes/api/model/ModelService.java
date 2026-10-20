@@ -2,12 +2,11 @@ package de.unihamburg.daibetes.api.model;
 
 import bio.cosy.feddb.core.api.model.ModelDTO;
 import bio.cosy.feddb.core.api.model.ModelDetailDTO;
+import bio.cosy.feddb.core.api.model.ModelSubDTO;
+import bio.cosy.feddb.core.api.model.ModelVersionDTO;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisCreatePredictionDTO;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisPredictionDTO;
 import bio.cosy.feddb.core.base.ValidationGroups;
-import bio.cosy.feddb.core.api.model.ModelSubDTO;
-import bio.cosy.feddb.core.api.model.ModelVersionDTO;
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.groups.ConvertGroup;
@@ -28,9 +27,7 @@ import java.util.List;
 @Path("/model")
 @Produces("application/json")
 @Consumes("application/json")
-//@RolesAllowed("admin")
 @Tag(name = "Model", description = "Service for managing app operations")
-@Authenticated
 public interface ModelService {
 
     @GET
@@ -176,7 +173,7 @@ public interface ModelService {
     @APIResponse(responseCode = "400", description = "Invalid data")
     @Transactional
     Response createPredictions(@PathParam("id") Long id,
-                                      @PathParam("subId") Long subId,
-                                      @RequestBody @Valid DataAnalysisCreatePredictionDTO createDTO);
+                               @PathParam("subId") Long subId,
+                               @RequestBody @Valid DataAnalysisCreatePredictionDTO createDTO);
 
 }

@@ -4,7 +4,6 @@ import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
-import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
@@ -27,7 +26,6 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Pipeline", description = "Service for managing user Pipelines")
-@Authenticated
 public interface PipelineService {
 
     @POST
@@ -55,8 +53,8 @@ public interface PipelineService {
             description = "Start a pipeline for the authenticated user from the provided specification.",
             operationId = "startPipeline"
     )
-    PipelineDTO start( @Parameter(description = "Pipeline ID", required = true)
-                       @PathParam("id") Long id);
+    PipelineDTO start(@Parameter(description = "Pipeline ID", required = true)
+                      @PathParam("id") Long id);
 
     @GET
     @Operation(
@@ -214,7 +212,6 @@ public interface PipelineService {
             @APIResponse(responseCode = "403", description = "Forbidden (invalid secret)"),
             @APIResponse(responseCode = "404", description = "Pipeline not found")
     })
-
     PipelineRunInfoDTO getPipelineRunInfo(
             @Parameter(description = "Pipeline ID", required = true)
             @PathParam("id") Long id,

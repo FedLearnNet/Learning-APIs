@@ -34,18 +34,11 @@ public class GlobalAuthManager {
     private Tokens currentTokens;
     private boolean shuttingDown;
 
-    public boolean isEnabled() {
-        return config.global().auth().enabled();
-    }
-
     public synchronized boolean isConfigured() {
         return resolveAuthRequest().isPresent();
     }
 
     public Optional<String> authorizationHeader() {
-        if (!isEnabled()) {
-            return Optional.empty();
-        }
         return Optional.of(authorization()
                 .orElseThrow(() -> new IllegalStateException("Global user auth is not configured"))
                 .header());
@@ -54,10 +47,6 @@ public class GlobalAuthManager {
     synchronized Optional<Authorization> authorization() {
         if (shuttingDown) {
             throw new IllegalStateException("Global authentication is shutting down");
-        }
-        if (!isEnabled()) {
-            Log.debug("Global authentication is disabled");
-            return Optional.empty();
         }
         Optional<AuthRequest> request = resolveAuthRequest();
         if (request.isEmpty()) {

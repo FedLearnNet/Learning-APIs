@@ -2,7 +2,6 @@ package bio.cosy.feddb.local.api.learning.request.metrics;
 
 import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestStatus;
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -14,7 +13,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Path("/metrics/requests")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
 @Tag(name = "RunMetricsRequest", description = "Service for managing local run-metrics requests from the global coordinator")
 public interface RequestRunMetricsService {
 

@@ -33,6 +33,11 @@ public class OrchApiRelayServiceImpl implements OrchApiRelayService {
     }
 
     @Override
+    public RegistryImagesDTO registryImages() {
+        return dockerClient.getRegistryImages();
+    }
+
+    @Override
     public List<ContainerDTO> listRunning() {
         return containerClient.list();
     }

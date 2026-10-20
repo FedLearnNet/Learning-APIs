@@ -1,23 +1,19 @@
 package bio.cosy.feddb.core.rest.auth;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.QuarkusTestProfile;
-import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.security.TestSecurity;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @QuarkusTest
-@TestProfile(ModelExperimentResultAuthenticationEnabledTest.AuthEnabledProfile.class)
-class ModelExperimentResultAuthenticationEnabledTest {
+class ModelExperimentResultAuthenticationTest {
 
     @Test
-    void anonymousUploadIsRejectedWhenClientAuthIsEnabled() {
+    void anonymousUploadIsRejected() {
         givenUpload().when()
                 .post("/model/result/experiment/upload")
                 .then()
@@ -41,15 +37,5 @@ class ModelExperimentResultAuthenticationEnabledTest {
                 .multiPart("globalFLExperimentUniqueId", "missing-experiment")
                 .multiPart("appVersionId", "999")
                 .multiPart("clinicId", "clinic");
-    }
-
-    public static class AuthEnabledProfile implements QuarkusTestProfile {
-        @Override
-        public Map<String, String> getConfigOverrides() {
-            return Map.of(
-                    "quarkus.oidc.enabled", "false",
-                    "flnet.feddb-client.auth.enable", "true"
-            );
-        }
     }
 }

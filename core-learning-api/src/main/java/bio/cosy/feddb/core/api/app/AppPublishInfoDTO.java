@@ -2,6 +2,7 @@ package bio.cosy.feddb.core.api.app;
 
 import bio.cosy.feddb.core.api.pipeline.MalwareScanResultDTO;
 import bio.cosy.feddb.core.api.pipeline.SecurityScanResultDTO;
+import bio.cosy.feddb.core.api.pipeline.SastScanResultDTO;
 import lombok.Data;
 
 import java.util.List;
@@ -11,6 +12,7 @@ public class AppPublishInfoDTO {
     private String commitHash;
     private List<String> filePaths;
     private SecurityScanResultDTO vulnerabilityScanResult;
+    private SastScanResultDTO sastScanResult;
     private MalwareScanResultDTO malwareScanResult;
     private String imageName;
 }

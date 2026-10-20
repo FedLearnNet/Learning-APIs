@@ -1,7 +1,7 @@
 #!/bin/sh
 # Small helper script to build the docker images for all services to use in testing bundle.
 # Comment out any block you don't need.
-set -euo pipefail
+set -eu
 cd "$(dirname "$0")/.."
 
 # The testing bundle always pulls new images on startup but ignores this tag,

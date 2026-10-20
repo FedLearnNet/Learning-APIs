@@ -2,7 +2,6 @@ package bio.cosy.feddb.local.api.learning.request;
 
 import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.local.api.cohort.permission.PermissionDTO;
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -17,8 +16,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Path("/learning/requests")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "FederatedLearningRequest", description = "Service for managing FederatedLearningRequests")
 public interface FederatedLearningRequestService {
 
@@ -26,7 +23,7 @@ public interface FederatedLearningRequestService {
     @Operation(summary = "List all FederatedLearningRequests",
             description = "Returns a paginated, filterable list of FederatedLearningRequests")
     @APIResponse(responseCode = "200", description = "List of FederatedLearningRequest")
-    public PagedResponse<FederatedLearningRequestDTO> list(
+    PagedResponse<FederatedLearningRequestDTO> list(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("page_size") @DefaultValue("20") int size,
             @QueryParam("status") FederatedLearningRequestStatus status);

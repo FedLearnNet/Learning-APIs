@@ -14,7 +14,6 @@ import bio.cosy.feddb.local.api.learning.project.run.step.RelayCertRequest;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import bio.cosy.feddb.local.services.controller.LocalControllerLearningService;
 import io.quarkus.logging.Log;
-import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
@@ -118,8 +117,7 @@ public class RelayCertBO {
     /**
      * Sends the CSR again if the certificate did not arrive in time, and fails the step if it never does.
      */
-    @Scheduled(every = "30s", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
-    void retryPending() {
+    public void retryPending() {
         retryPending(new Date());
     }
 

@@ -2,6 +2,7 @@ package de.unihamburg.daibetes.api.build.pipeline;
 
 import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
 import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
+import bio.cosy.feddb.core.api.pipeline.PipelineRunMode;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
@@ -11,6 +12,7 @@ import de.unihamburg.daibetes.api.app.FederatedAppEntity;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.build.pipeline.steps.PipelineStepBO;
+import de.unihamburg.daibetes.api.build.pipeline.steps.PipelineStepEntity;
 import de.unihamburg.daibetes.api.build.pipeline.steps.StepName;
 import de.unihamburg.daibetes.api.model.access.ModelAccessBO;
 import de.unihamburg.daibetes.api.model.sub.ModelSubEntity;
@@ -91,6 +93,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
     public PipelineDTO create(PipelineCreateDTO dto) {
         PipelineDTO pipeline = new PipelineDTO();
         pipeline.setPipelineType(dto.getPipelineType());
+        pipeline.setRunMode(dto.getRunMode());
         pipeline.setPipelineStatus(PipelineStatus.PENDING);
         pipeline.setSecret(RandomStringUtils.secureStrong().nextAlphabetic(32));
         if (dto.getPipelineType().equals(PipelineType.MODEL)) {
@@ -104,18 +107,36 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
             }
             pipeline.setAppVersionId(dto.getAppVersionId());
         }
-        PipelineDTO created = setPipelineEntityCreated(pipeline);
-        PipelineDTO steps = stepBO.createSteps(created);
-        if (dto.getAutoStart()) {
-            return start(steps.getId());
+        if (dto.getRunMode() == PipelineRunMode.LOCAL_BUILD && dto.getPipelineType() != PipelineType.MODEL) {
+            throw new BadRequestException("LOCAL_BUILD requires uploaded model files");
         }
-        return steps;
+        if (dto.getRunMode() == PipelineRunMode.SCAN_ONLY) {
+            String imageName;
+            if (dto.getPipelineType() == PipelineType.MODEL) {
+                ModelSubEntity modelSub = ao.getEntityManager().find(ModelSubEntity.class, dto.getModelSubId());
+                imageName = modelSub == null ? null : modelSub.getImageName();
+            } else {
+                if (ao.existsActiveByAppVersionId(dto.getAppVersionId())) {
+                    throw new BadRequestException("An active pipeline already exists for this tool version");
+                }
+                FederatedAppVersionEntity appVersion = ao.getEntityManager().find(FederatedAppVersionEntity.class, dto.getAppVersionId());
+                imageName = appVersion == null ? null : appVersion.getImageName();
+            }
+            if (StringUtils.isBlank(imageName)) {
+                throw new BadRequestException("SCAN_ONLY requires an existing image");
+            }
+        }
+        PipelineDTO created = setPipelineEntityCreated(pipeline);
+        if (dto.getAutoStart()) {
+            return start(created.getId());
+        }
+        return created;
     }
 
     // For the initial creation of the entity before the pipeline is started
     @Transactional
     public PipelineDTO setPipelineEntityCreated(PipelineDTO dto) {
-        return create(dto);
+        return stepBO.createSteps(create(dto));
     }
 
     public PipelineDTO start(Long id, String keycloakId) {
@@ -142,6 +163,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         StartPipelineDTO startApp = new StartPipelineDTO();
         startApp.setPipelineId(id);
         startApp.setAppImage(builderImage);
+        startApp.setRunMode(entity.getRunMode());
         startApp.addEnvironment(apiKey, id, entity.getSecret());
         Log.info("Starting container for pipeline " + id);
         CreateContainerResponseDTO resp;
@@ -157,15 +179,16 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         if (containerId == null) {
             throw new IllegalStateException("Failed to start container for pipeline " + id);
         }
-        entity.setContainerId(containerId);
-        updateRebuilding(entity);
-        setPipelineEntityRunning(entity);
-        return mapper.entityToDto(entity);
+        return setPipelineEntityRunning(id, containerId);
     }
 
     @Transactional
-    public void setPipelineEntityRunning(PipelineEntity ent) {
-        ao.persist(ent);
+    public PipelineDTO setPipelineEntityRunning(Long id, String containerId) {
+        PipelineEntity entity = ao.findByIdOptional(id, LockModeType.PESSIMISTIC_WRITE)
+                .orElseThrow(() -> new NotFoundException(String.format("Pipeline with ID %s not found", id)));
+        entity.setContainerId(containerId);
+        updateRebuilding(entity);
+        return mapper.entityToDto(entity);
     }
 
     public List<PipelineDTO> getAll(String keycloakId, Long appVersionId, Long appId, Long modelSubId) {
@@ -237,6 +260,14 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         if (entity.getAppVersion() != null && entity.getAppVersion().getPublishInfo() != null) {
             dto.setCommitHash(entity.getAppVersion().getPublishInfo().getCommitHash());
         }
+        if (entity.getRunMode() == PipelineRunMode.SCAN_ONLY) {
+            String imageName = entity.getPipelineType() == PipelineType.MODEL
+                    ? entity.getModelSub().getImageName() : entity.getAppVersion().getImageName();
+            if (StringUtils.isBlank(imageName)) {
+                throw new BadRequestException("SCAN_ONLY requires an existing image");
+            }
+            dto.setImageReference(imageName);
+        }
         return dto;
     }
 
@@ -259,14 +290,61 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
             throw new NotFoundException(String.format("Property with the ID %s not found", id));
         }
         PipelineEntity entity = entityOptional.get();
+        if (entity.getRunMode() == PipelineRunMode.SCAN_ONLY) {
+            AppPublishInfoDTO previous = entity.getPipelineType() == PipelineType.MODEL
+                    ? entity.getModelSub().getPublishInfo() : entity.getAppVersion().getPublishInfo();
+            if (previous != null) {
+                // SCAN_ONLY rescans the existing image for vulnerabilities without rebuilding or running
+                // SAST/malware checks.
+                dto.setCommitHash(previous.getCommitHash());
+                dto.setFilePaths(previous.getFilePaths());
+                if (dto.getSastScanResult() == null) {
+                    dto.setSastScanResult(previous.getSastScanResult());
+                }
+                if (dto.getMalwareScanResult() == null) {
+                    dto.setMalwareScanResult(previous.getMalwareScanResult());
+                }
+            }
+        }
+        setScanTimes(entity, dto);
         entity.setPublishInfo(dto);
-        if (StringUtils.isNotBlank(dto.getCommitHash())) {
+        if (entity.getRunMode() != PipelineRunMode.SCAN_ONLY && StringUtils.isNotBlank(dto.getCommitHash())) {
             entity.setDockerTag(dto.getCommitHash());
         }
         ao.persist(entity);
         PipelineDTO updated = mapper.entityToDto(entity);
         UPDATES.onNext(updated);
         return updated;
+    }
+
+    // Only set it if the step got rerun
+    private void setScanTimes(PipelineEntity entity, AppPublishInfoDTO dto) {
+        PipelineStepEntity scanStep = findStep(entity, StepName.SCAN_IMAGE);
+        if (scanStep != null && dto.getVulnerabilityScanResult() != null) {
+            dto.getVulnerabilityScanResult().setStartedAt(scanStep.getStartedAt());
+            dto.getVulnerabilityScanResult().setFinishedAt(finishedAt(scanStep));
+        }
+        PipelineStepEntity sastStep = findStep(entity, StepName.SAST);
+        if (sastStep != null && dto.getSastScanResult() != null) {
+            dto.getSastScanResult().setStartedAt(sastStep.getStartedAt());
+            dto.getSastScanResult().setFinishedAt(finishedAt(sastStep));
+        }
+        PipelineStepEntity malwareStep = findStep(entity, StepName.MALWARE_CHECK);
+        if (malwareStep != null && dto.getMalwareScanResult() != null) {
+            dto.getMalwareScanResult().setStartedAt(malwareStep.getStartedAt());
+            dto.getMalwareScanResult().setFinishedAt(finishedAt(malwareStep));
+        }
+    }
+
+    private PipelineStepEntity findStep(PipelineEntity entity, StepName name) {
+        return entity.getSteps().stream()
+                .filter(step -> step.getName() == name)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private Date finishedAt(PipelineStepEntity step) {
+        return step.getFinishedAt() != null ? step.getFinishedAt() : new Date();
     }
 
 
@@ -284,7 +362,8 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
                 .filter(f -> !f.getName().equals(StepName.PREFLIGHT))
                 .allMatch(s -> s.getStepStatus() == PipelineStatus.SUCCESS || s.getStepStatus() == PipelineStatus.WARNING);
 
-        boolean succeeded = allStepsSucceeded && pipeline.getSteps().size() >= 8;
+        boolean succeeded = allStepsSucceeded && pipeline.getSteps().stream()
+                .anyMatch(step -> step.getName() == StepName.COLLECT_SUMMARY);
         pipeline.setPipelineStatus(succeeded ? PipelineStatus.SUCCESS : PipelineStatus.RUNNING);
         pipeline.setUpdatedAt(new Date());
         updateRebuilding(pipeline);
@@ -314,13 +393,16 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
             Log.infof("No image name to set for pipeline %d", pipeline.getId());
             return;
         }
+        if (pipeline.getRunMode() == PipelineRunMode.SCAN_ONLY && info.getVulnerabilityScanResult() == null) {
+            return;
+        }
         if (pipeline.getPipelineType().equals(PipelineType.MODEL)) {
             ModelSubEntity modelSub = pipeline.getModelSub();
             if (modelSub == null) {
                 Log.errorf("Pipeline %d has no model subscription associated", pipeline.getId());
                 throw new NotFoundException("No model associated with this pipeline");
             }
-            if (imageName.equals(modelSub.getImageName())) {
+            if (pipeline.getRunMode() == PipelineRunMode.SCAN_ONLY && !imageName.equals(modelSub.getImageName())) {
                 return;
             }
             modelSub.setImageName(imageName);
@@ -332,7 +414,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
                 Log.errorf("Pipeline %d has no app version associated", pipeline.getId());
                 throw new NotFoundException("No app version associated with this pipeline");
             }
-            if (imageName.equals(appVersion.getImageName())) {
+            if (pipeline.getRunMode() == PipelineRunMode.SCAN_ONLY && !imageName.equals(appVersion.getImageName())) {
                 return;
             }
             appVersion.setImageName(imageName);
