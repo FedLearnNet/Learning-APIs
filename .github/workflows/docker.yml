@@ -82,7 +82,7 @@ jobs:
         run: |
           for module in $MODULES; do
             image="$REGISTRY/$module"
-            tag_args=(-t "$image:${TAGS%% *}-${GITHUB_SHA::7}")
+            tag_args=()
             for tag in $TAGS; do tag_args+=(-t "$image:$tag"); done
             docker buildx build \
               --platform linux/amd64,linux/arm64 \
