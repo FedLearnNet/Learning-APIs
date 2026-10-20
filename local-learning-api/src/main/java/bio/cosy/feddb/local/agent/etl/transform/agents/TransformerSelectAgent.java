@@ -34,7 +34,8 @@ public interface TransformerSelectAgent {
                  not enough, e.g. first merge or convert, then map values. A single wrong value (e.g. the
                  missing-value placeholder '?') is fixed with the Replace Value function (search = the value,
                  replace = null or the allowed value), several with the Generic Value Mapper. A cell holding several
-                 values joined by a separator is split first (e.g. Split Column), then its parts are mapped.
+                 values joined by a separator is split first (e.g. Split Column), each part into its own new
+                 column, then the part of this node is mapped.
                  Mapping codes, symbols, abbreviations or words of another language onto the allowed values is
                  always the Generic Value Mapper or Replace Value, never custom code.
               2. ETL tools from the store (getAllStoreDetailed): moduleName 'tools', methodName the tool name,

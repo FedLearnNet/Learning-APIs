@@ -20,8 +20,9 @@ public interface ColumnReviewBot {
               Codes, symbols or abbreviations other than the allowed values are converted later, so judge whether the
               column is about the node, not whether its values are allowed already; when the description lists the
               share of each value, codes with about the same shares are its values, whatever the column is named.
-              A cell holding several values joined by a separator holds each of them, they are split later; a column
-              with one code in all rows holds the absent value. When no column records the node more exactly, a
+              A cell holding several values joined by a separator holds each of them, they are split later and keep
+              their order (e.g. the first code for the first of numbered nodes); a column with one code in all rows
+              holds the absent value. When no column records the node more exactly, a
               neighbouring fact recorded directly holds it as well (e.g. the country of origin for the country of
               residence).
             - Not held: the value could only be guessed from a related fact, e.g. a component the values do not write
