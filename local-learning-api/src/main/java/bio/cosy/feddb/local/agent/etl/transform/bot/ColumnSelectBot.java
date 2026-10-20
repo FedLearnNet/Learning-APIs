@@ -25,12 +25,14 @@ public interface ColumnSelectBot {
             Pick every column the value depends on (e.g. both dates for a duration), but no column that only looks similar.
             The columns have to record the information, or it follows from them by a fixed rule (e.g. a duration from
             two dates, an age in days from one in years). A value that could only be guessed from a related fact is not
-            held, e.g. one component of a combined grading from the combined value or a percentage from a score; then
-            return an empty list. When a column records the value itself, take it, not the columns it could be computed from.
+            held, e.g. a component the values do not write out (a T category from an overall stage) or a percentage
+            from a score; then return an empty list. When a column records the value itself, take it, not the columns
+            it could be computed from.
             A column whose values are coded or written differently (codes, other words or language, units) still holds
             the information, its values are converted later. The share of values that fit unconverted only decides
             whether a conversion is needed, it is no reason to leave a column out. A cell can also hold several values
-            joined by a separator (e.g. a list of codes); such a column still holds the information, it is split later.
+            joined by a separator (e.g. a list of codes, or '1-6-7' with one code per schema node); such a column still
+            holds the information, it is split later.
             When the description lists the share of each value, prefer the column whose values have about the same shares.
             Return the exact column names, or an empty list if no column holds the information. Before you answer with
             an empty list, look at the values of the columns that could still hold it with describeColumns.

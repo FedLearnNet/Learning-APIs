@@ -11,9 +11,9 @@ import java.util.List;
 public final class GdcStudies {
 
     public static final String ROOT = "/eval/gdc";
-    // The 78 fields of the ground truth, and all 736 GDC fields, the target of the benchmark
-    private static final String GDC_SCHEMA_ID = "6e918fea-0367-42a4-9666-6acbec996559";
-    private static final String FULL_GDC_SCHEMA_ID = "aa264e8f-6a5d-4254-a25e-b5dc587349ca";
+    // Root ids of datamodeler-imports: the 78 fields of the ground truth, and all 736 GDC fields, the target of the benchmark
+    private static final String GDC_SCHEMA_ID = "5e9db229-c847-50b6-925f-78c9681faed9";
+    private static final String FULL_GDC_SCHEMA_ID = "9b722d97-3195-5a23-ab68-4bdf33028c41";
 
     public static final List<GdcStudy> STUDIES = List.of(
             new GdcStudy("GDC Cao", "Cao.csv", "case_id"),
