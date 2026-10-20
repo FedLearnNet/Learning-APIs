@@ -12,6 +12,7 @@ import de.unihamburg.daibetes.api.app.FederatedAppEntity;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.build.pipeline.steps.PipelineStepBO;
+import de.unihamburg.daibetes.api.build.pipeline.steps.PipelineStepEntity;
 import de.unihamburg.daibetes.api.build.pipeline.steps.StepName;
 import de.unihamburg.daibetes.api.model.access.ModelAccessBO;
 import de.unihamburg.daibetes.api.model.sub.ModelSubEntity;
@@ -305,6 +306,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
                 }
             }
         }
+        setScanTimes(entity, dto);
         entity.setPublishInfo(dto);
         if (entity.getRunMode() != PipelineRunMode.SCAN_ONLY && StringUtils.isNotBlank(dto.getCommitHash())) {
             entity.setDockerTag(dto.getCommitHash());
@@ -313,6 +315,36 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         PipelineDTO updated = mapper.entityToDto(entity);
         UPDATES.onNext(updated);
         return updated;
+    }
+
+    // Only set it if the step got rerun
+    private void setScanTimes(PipelineEntity entity, AppPublishInfoDTO dto) {
+        PipelineStepEntity scanStep = findStep(entity, StepName.SCAN_IMAGE);
+        if (scanStep != null && dto.getVulnerabilityScanResult() != null) {
+            dto.getVulnerabilityScanResult().setStartedAt(scanStep.getStartedAt());
+            dto.getVulnerabilityScanResult().setFinishedAt(finishedAt(scanStep));
+        }
+        PipelineStepEntity sastStep = findStep(entity, StepName.SAST);
+        if (sastStep != null && dto.getSastScanResult() != null) {
+            dto.getSastScanResult().setStartedAt(sastStep.getStartedAt());
+            dto.getSastScanResult().setFinishedAt(finishedAt(sastStep));
+        }
+        PipelineStepEntity malwareStep = findStep(entity, StepName.MALWARE_CHECK);
+        if (malwareStep != null && dto.getMalwareScanResult() != null) {
+            dto.getMalwareScanResult().setStartedAt(malwareStep.getStartedAt());
+            dto.getMalwareScanResult().setFinishedAt(finishedAt(malwareStep));
+        }
+    }
+
+    private PipelineStepEntity findStep(PipelineEntity entity, StepName name) {
+        return entity.getSteps().stream()
+                .filter(step -> step.getName() == name)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private Date finishedAt(PipelineStepEntity step) {
+        return step.getFinishedAt() != null ? step.getFinishedAt() : new Date();
     }
 
 
