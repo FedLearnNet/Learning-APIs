@@ -13,6 +13,7 @@ import bio.cosy.feddb.local.api.importer.run.ConnectorRunBO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.runtime.TransactionConfiguration;
+import io.quarkus.oidc.client.OidcClientException;
 import io.quarkus.scheduler.Scheduled;
 import io.quarkus.scheduler.Scheduler;
 import io.smallrye.mutiny.Uni;
@@ -27,6 +28,7 @@ import jakarta.ws.rs.WebApplicationException;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -189,11 +191,13 @@ public class AutoSubscriberBO {
 
     /**
      * The global platform answers 404 until the schema exists, and is unreachable or answers 5xx
-     * while it is still starting. Anything else is a real failure and is not retried.
+     * while it is still starting; its Keycloak may not accept the global login yet either
+     * (OidcClientException). Anything else is a real failure and is not retried.
      */
     private static boolean isSchemaNotYetAvailable(Throwable throwable) {
         for (Throwable t = throwable; t != null; t = t.getCause()) {
-            if (t instanceof NotFoundException || t instanceof ProcessingException) {
+            if (t instanceof NotFoundException || t instanceof ProcessingException
+                    || t instanceof OidcClientException || t instanceof ConnectException) {
                 return true;
             }
             if (t instanceof WebApplicationException wae && wae.getResponse() != null
