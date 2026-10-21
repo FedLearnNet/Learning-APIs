@@ -70,7 +70,7 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
                     if (current != null && current.isFinished()) {
                         return first;
                     }
-                    return Multi.createBy().concatenating().streams(first, filterCurrentStream(id));
+                    return Multi.createBy().concatenating().streams(first, filterCurrentStream(id, keycloakId));
                 });
     }
 
@@ -104,7 +104,7 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
 
     @Override
     public Multi<DataAnalysisPredictionDTO> getDataAnalysisWorkflowRun(Long dataAnalysisId, Long workflowId) {
-        return filterCurrentStream(dataAnalysisId, workflowId);
+        return filterCurrentStream(dataAnalysisId, workflowId, userIdentity.getKeycloakId());
     }
 
     @Override
@@ -151,8 +151,8 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
                 .build();
     }
 
-    private Multi<DataAnalysisPredictionDTO> filterCurrentStream(Long id) {
-        return processInfo
+    private Multi<DataAnalysisPredictionDTO> filterCurrentStream(Long id, String keycloakId) {
+        return filterCurrentStream(keycloakId)
                 .filter(p -> p.getId() != null && p.getId().equals(id));
     }
 
@@ -161,8 +161,8 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
                 .filter(p -> p.getKeycloakId() != null && p.getKeycloakId().equals(keycloakId));
     }
 
-    private Multi<DataAnalysisPredictionDTO> filterCurrentStream(Long dataAnalysisId, Long workflowId) {
-        return processInfo.filter(p ->
+    private Multi<DataAnalysisPredictionDTO> filterCurrentStream(Long dataAnalysisId, Long workflowId, String keycloakId) {
+        return filterCurrentStream(keycloakId).filter(p ->
                 p.getWorkflowId() != null
                         && p.getWorkflowId().equals(workflowId)
                         && p.getDataAnalysisId() != null

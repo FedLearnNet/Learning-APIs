@@ -1,10 +1,10 @@
 package de.unihamburg.daibetes.api.umls.importer;
 
-import de.unihamburg.daibetes.api.config.UMLSConfig;
 import de.unihamburg.daibetes.api.ontology.OntologyDAO;
 import de.unihamburg.daibetes.api.ontology.OntologyRAG;
 import de.unihamburg.daibetes.api.umls.search.UMLSIdSourceDTO;
 import de.unihamburg.daibetes.api.umls.search.UMLSSearchBO;
+import de.unihamburg.daibetes.config.UMLSConfig;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
@@ -35,7 +35,7 @@ public class UmlsImportBO {
 
     @Inject
     ManagedExecutor executor;
-    
+
     @Inject
     OntologyRAG ontologyRAG;
 

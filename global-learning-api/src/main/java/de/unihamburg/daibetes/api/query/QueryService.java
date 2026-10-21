@@ -3,7 +3,6 @@ package de.unihamburg.daibetes.api.query;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.query.QueryDetailDTO;
 import bio.cosy.feddb.core.base.ValidationGroups;
-import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -25,8 +24,6 @@ import java.util.List;
 @Path("/query")
 @Produces("application/json")
 @Consumes("application/json")
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "Query", description = "Service for managing Query operations")
 public interface QueryService {
 

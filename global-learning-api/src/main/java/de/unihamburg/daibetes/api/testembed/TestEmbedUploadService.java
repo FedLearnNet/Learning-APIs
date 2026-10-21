@@ -1,11 +1,10 @@
 package de.unihamburg.daibetes.api.testembed;
 
 import bio.cosy.feddb.core.api.model.ModelDTO;
+import bio.cosy.feddb.core.api.model.ModelSubDataDTO;
 import bio.cosy.feddb.core.api.run.AppMessageWrapperDTO;
 import bio.cosy.feddb.core.api.run.AppRunTypeEnum;
 import bio.cosy.feddb.core.api.run.AppRunUploadData;
-import bio.cosy.feddb.core.api.model.ModelSubDataDTO;
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -19,8 +18,6 @@ import org.jboss.resteasy.reactive.ResponseStatus;
 @Path("/testembed/{appId}/upload")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "TestEmbedUpload", description = "Service for upload files to Testembed")
 public interface TestEmbedUploadService {
 

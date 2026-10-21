@@ -4,9 +4,7 @@ import bio.cosy.feddb.core.api.file.FileRenameDTO;
 import bio.cosy.feddb.core.api.model.workflow.DataAnalysisDetailDTO;
 import bio.cosy.feddb.core.api.model.workflow.DataAnalysisFileDTO;
 import bio.cosy.feddb.core.api.model.workflow.ModelWorkflowDTO;
-import bio.cosy.feddb.core.api.run.AppRunTypeEnum;
 import de.unihamburg.daibetes.api.analysis.worklfow.DataAnalysisWorkflowRunDTO;
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -19,7 +17,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.ResponseStatus;
 import org.jboss.resteasy.reactive.RestForm;
-import org.jboss.resteasy.reactive.RestStreamElementType;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
 import java.util.List;
@@ -28,9 +25,7 @@ import java.util.List;
 @Path("/model/workflow")
 @Produces("application/json")
 @Consumes("application/json")
-//@RolesAllowed("admin")
 @Tag(name = "Model", description = "Service for managing app operations")
-@Authenticated
 public interface DataAnalysisService {
 
     @GET
@@ -102,7 +97,7 @@ public interface DataAnalysisService {
             @APIResponse(responseCode = "500", description = "linked failed")
     })
     @ResponseStatus(201)
-    DataAnalysisFileDTO linkFile(@PathParam("id") Long id,@PathParam("fileId") Long fileId);
+    DataAnalysisFileDTO linkFile(@PathParam("id") Long id, @PathParam("fileId") Long fileId);
 
 
     @DELETE

@@ -1,10 +1,11 @@
 package de.unihamburg.daibetes.api.build.pipeline;
 
 import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
-import bio.cosy.feddb.core.api.file.FileDTO;
-import io.quarkus.security.Authenticated;
+import bio.cosy.feddb.core.security.Scope;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
+import bio.cosy.feddb.core.security.ToolAuthenticated;
 import io.smallrye.mutiny.Multi;
-import jakarta.transaction.Transactional;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -25,11 +26,9 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Pipeline", description = "Service for managing user Pipelines")
-@Authenticated
 public interface PipelineService {
 
     @POST
-    @Transactional
     @Operation(
             summary = "Create a new pipeline",
             description = "Creates a pipeline for the authenticated user from the provided specification.",
@@ -49,14 +48,13 @@ public interface PipelineService {
 
     @POST
     @Path("start/{id}")
-    @Transactional
     @Operation(
             summary = "Start a new pipeline",
             description = "Start a pipeline for the authenticated user from the provided specification.",
             operationId = "startPipeline"
     )
-    PipelineDTO start( @Parameter(description = "Pipeline ID", required = true)
-                       @PathParam("id") Long id);
+    PipelineDTO start(@Parameter(description = "Pipeline ID", required = true)
+                      @PathParam("id") Long id);
 
     @GET
     @Operation(
@@ -115,6 +113,8 @@ public interface PipelineService {
 
     @PUT
     @Path("/{id}/update")
+    @ToolAuthenticated(Scope.PIPELINE_RUN)
+    @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
     @Operation(
             summary = "Process pipeline status update",
             description = "Updates the pipeline status and metadata. A shared secret may be required for CI/CD callbacks.",
@@ -144,6 +144,8 @@ public interface PipelineService {
 
     @PUT
     @Path("/{id}/summary")
+    @ToolAuthenticated(Scope.PIPELINE_RUN)
+    @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
     @Operation(
             summary = "Process pipeline summary update",
             description = "Updates the pipeline publishInfo. A shared secret may be required for CI/CD callbacks.",
@@ -195,6 +197,8 @@ public interface PipelineService {
 
     @GET
     @Path("/{id}/info")
+    @ToolAuthenticated(Scope.PIPELINE_RUN)
+    @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
     @Operation(
             summary = "Get pipeline run info",
             description = "Returns detailed runtime information for the pipeline.",
@@ -208,7 +212,6 @@ public interface PipelineService {
             @APIResponse(responseCode = "403", description = "Forbidden (invalid secret)"),
             @APIResponse(responseCode = "404", description = "Pipeline not found")
     })
-
     PipelineRunInfoDTO getPipelineRunInfo(
             @Parameter(description = "Pipeline ID", required = true)
             @PathParam("id") Long id,
@@ -218,15 +221,17 @@ public interface PipelineService {
 
     @GET
     @Path("/{id}/zip")
+    @ToolAuthenticated(Scope.PIPELINE_RUN)
+    @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
     @Operation(
-            summary = "List pipeline file metadata",
-            description = "Returns metadata for files associated with the pipeline (no file content).",
+            summary = "Download pipeline files",
+            description = "Returns a zip with the files to inject into the build. Only model pipelines have files.",
             operationId = "getPipelineFiles"
     )
     @APIResponses({
-            @APIResponse(responseCode = "200", description = "List of file metadata",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(type = SchemaType.ARRAY, implementation = FileDTO.class))),
+            @APIResponse(responseCode = "200", description = "Zip with the files of the pipeline",
+                    content = @Content(mediaType = "application/zip")),
+            @APIResponse(responseCode = "204", description = "The pipeline has no files (app pipeline)"),
             @APIResponse(responseCode = "401", description = "Unauthorized"),
             @APIResponse(responseCode = "403", description = "Forbidden (invalid secret)"),
             @APIResponse(responseCode = "404", description = "Pipeline not found")

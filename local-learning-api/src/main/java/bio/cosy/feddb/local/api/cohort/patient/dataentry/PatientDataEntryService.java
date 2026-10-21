@@ -2,7 +2,6 @@ package bio.cosy.feddb.local.api.cohort.patient.dataentry;
 
 import bio.cosy.feddb.core.base.ValidationGroups;
 import bio.cosy.feddb.local.api.cohort.patient.PatientService;
-import io.quarkus.security.Authenticated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.groups.ConvertGroup;
@@ -23,7 +22,6 @@ import java.util.Set;
 @Path(PatientDataEntryService.PATH)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
 @Tag(name = "PatientDataEntry", description = "Service for managing Patient Data Entries. Only BATCH creation and updates are allowed to correctly handle the connection between data entries.")
 public interface PatientDataEntryService {
     String PATH = PatientService.PATH + "/{internalPatientId}/dataentry";

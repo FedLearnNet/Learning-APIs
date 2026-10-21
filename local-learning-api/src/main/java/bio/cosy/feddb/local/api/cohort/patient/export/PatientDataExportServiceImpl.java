@@ -5,6 +5,7 @@ import bio.cosy.feddb.core.api.project.PatientDataExportConfigDTO;
 import bio.cosy.feddb.core.api.run.RunStatusTypes;
 import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
 import bio.cosy.feddb.core.helper.FileHelper;
+import bio.cosy.feddb.local.api.cohort.member.CohortPermissionChecker;
 import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunBO;
 import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunDTO;
 import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunMapper;
@@ -12,6 +13,7 @@ import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunProgressDTO;
 import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunStatusDTO;
 import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunSummaryDTO;
 import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunType;
+import io.quarkus.security.PermissionsAllowed;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -41,6 +43,7 @@ public class PatientDataExportServiceImpl implements PatientDataExportService {
     PatientToolRunMapper toolRunMapper;
 
     @Override
+    @PermissionsAllowed(CohortPermissionChecker.READ)
     public Response exportPatientData(Long cohortId, boolean downloadFiles, PatientDataExportConfigDTO config) {
         if (config.isAppBased()) {
             List<Path> exported = exportBO.exportPatientDataTool(cohortId, config);
@@ -65,6 +68,7 @@ public class PatientDataExportServiceImpl implements PatientDataExportService {
     }
 
     @Override
+    @PermissionsAllowed(CohortPermissionChecker.READ)
     public Multi<PatientToolRunProgressDTO> streamAppExport(Long cohortId, PatientDataExportConfigDTO config) {
         // Checked up front so a missing app is still a plain 400 rather than a stream event
         exportBO.requireAppExportConfig(config);
@@ -86,6 +90,7 @@ public class PatientDataExportServiceImpl implements PatientDataExportService {
 
     @Override
     @Transactional
+    @PermissionsAllowed(CohortPermissionChecker.READ)
     public List<PatientToolRunSummaryDTO> listAppExports(Long cohortId) {
         return toolRunBO.listRuns(cohortId, PatientToolRunType.EXPORT);
     }
@@ -104,6 +109,7 @@ public class PatientDataExportServiceImpl implements PatientDataExportService {
 
     @Override
     @Transactional
+    @PermissionsAllowed(CohortPermissionChecker.READ)
     public Response downloadAppExport(Long cohortId, Long runId) {
         FileResult outputs = toolRunBO.loadOutputs(cohortId, runId);
         File zip = outputs.file();
@@ -123,6 +129,7 @@ public class PatientDataExportServiceImpl implements PatientDataExportService {
     }
 
     @Override
+    @PermissionsAllowed(CohortPermissionChecker.READ)
     public Response exportPatientData(Long cohortId, Long patientId, boolean downloadFiles, PatientDataExportConfigDTO config) {
         List<Map<String, Object>> exported = exportBO.exportDataForPatient(cohortId, patientId, config);
         if (downloadFiles) {
@@ -138,6 +145,7 @@ public class PatientDataExportServiceImpl implements PatientDataExportService {
     }
 
     @Override
+    @PermissionsAllowed(CohortPermissionChecker.READ)
     public Response exportProjectData(Long cohortId, Long projectId, boolean downloadFiles, PatientDataExportConfigDTO config) {
         List<Map<String, Object>> exported = exportBO.exportDataForProject(cohortId, projectId, config);
         if (downloadFiles) {

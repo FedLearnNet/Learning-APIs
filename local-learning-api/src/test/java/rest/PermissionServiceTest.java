@@ -18,8 +18,10 @@ import rest.helper.RestAssuredConfigUtil;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.instancio.Select.all;
 import static org.instancio.Select.field;
 
@@ -47,7 +49,9 @@ public class PermissionServiceTest {
                 .statusCode(200)
                 .contentType(ContentType.JSON)
                 .body(notNullValue())
-                .body("size()", greaterThanOrEqualTo(8));
+                .body("id", hasItems(1, 2, 3, 4, 5, 6))
+                // Cohort 4 belongs to SYSTEM; its permissions must stay hidden from admin.
+                .body("cohortId", not(hasItem(4)));
     } //
 
     @Test
@@ -142,12 +146,29 @@ public class PermissionServiceTest {
     @Test
     @TestSecurity(user = "admin", roles = "admin")
     public void testDeletePermission() {
-        Long validId = 2L;
+        // HTTP requests commit independently of the test transaction, so keep the shared seed data intact.
+        CreatePermissionDTO newPermission = new CreatePermissionDTO();
+        newPermission.setCohortId(TEST_COHORT_ID);
+        newPermission.setIsAllowedToQuery(false);
+        Long validId = given()
+                .contentType(ContentType.JSON)
+                .body(newPermission)
+                .when().post()
+                .then()
+                .statusCode(201)
+                .extract().jsonPath().getLong("id");
+
         given()
                 .pathParam("id", validId)
                 .when().delete("{id}")
                 .then()
                 .statusCode(200);
+
+        given()
+                .pathParam("id", validId)
+                .when().get("{id}")
+                .then()
+                .statusCode(404);
 
         Long invalidId = 999L;
         given()

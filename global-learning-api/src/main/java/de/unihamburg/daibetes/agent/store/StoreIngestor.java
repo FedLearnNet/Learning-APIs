@@ -97,21 +97,18 @@ public class StoreIngestor {
     }
 
     public void ingest() {
-        if (apiKeyPresent.get()) {
+        if (!apiKeyPresent.get()) {
             Log.errorf("Skipping StoreIngestor.ingest(): store ingestion is disabled");
             return;
         }
         Log.infof("Starting StoreIngestor.ingest()");
         for (StoreDTO dto : storeBO.list(null, true)) {
-            if (apiKeyPresent.get()) {
-                break;
-            }
             upsertOne(dto);
         }
     }
 
     public void ingestAsync(StoreDTO dto) {
-        if (apiKeyPresent.get() || dto == null || (dto.getApp() == null && dto.getModel() == null)) {
+        if (dto == null || (dto.getApp() == null && dto.getModel() == null)) {
             return;
         }
 

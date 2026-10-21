@@ -4,6 +4,8 @@ import bio.cosy.feddb.core.api.run.*;
 import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
 import bio.cosy.feddb.core.api.run.message.RunMessageMetricDTO;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
+import jakarta.annotation.security.RolesAllowed;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.services.orch.WorkflowAppServer;
@@ -17,6 +19,7 @@ import jakarta.ws.rs.NotFoundException;
 
 @WebSocket(path = "/patient/tool/run/{runId}/{type}")
 @ToolAuthenticated(Scope.PATIENT_TOOL_RUN)
+@RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
 public class PatientToolWebsocketService extends WorkflowAppServer {
 
     private static final CloseReason RUN_FINISHED =
@@ -44,10 +47,8 @@ public class PatientToolWebsocketService extends WorkflowAppServer {
     public AppMessageWrapperDTO<StartRunDTO> onOpen(WebSocketConnection connection) {
         Long runId = Long.parseLong(connection.pathParam("runId"));
         Log.info("Learning-Connection opened: " + connection.id() + " for runId " + runId);
-        String type = connection.pathParam("type");
-        AppConnectionTypesEnum connectionType = AppConnectionTypesEnum.fromString(type);
         try {
-            return setAppIsRunning(runId, connectionType);
+            return setAppIsRunning(runId);
         } catch (Exception e) {
             workflowOrchestrator.cleanupWorkflowNode(runId);
             //cleanup if the step is not found
@@ -81,15 +82,12 @@ public class PatientToolWebsocketService extends WorkflowAppServer {
 
 
     @Transactional
-    public AppMessageWrapperDTO<StartRunDTO> setAppIsRunning(Long runId, AppConnectionTypesEnum connectionType) {
-        if (connectionType != AppConnectionTypesEnum.CONTROLLER) {
-            toolRunBO.persistStep(runId, RunStatusTypes.RUNNING);
-            toolRunBO.appendStep(runId, "The app connected and received the patient data");
+    public AppMessageWrapperDTO<StartRunDTO> setAppIsRunning(Long runId) {
+        toolRunBO.persistStep(runId, RunStatusTypes.RUNNING);
+        toolRunBO.appendStep(runId, "The app connected and received the patient data");
 
-            StartRunDTO testDto = toolRunBO.getStartup(runId);
-            return new AppMessageWrapperDTO<>(AppMessageTypeEnum.START_PREDICTION, testDto, AppRunTypeEnum.EXPERIMENT_RUN);
-        }
-        throw new IllegalArgumentException("Only APP connections are supported for patient tool runs.");
+        StartRunDTO testDto = toolRunBO.getStartup(runId);
+        return new AppMessageWrapperDTO<>(AppMessageTypeEnum.START_PREDICTION, testDto, AppRunTypeEnum.EXPERIMENT_RUN);
     }
 
     @Transactional
@@ -117,7 +115,7 @@ public class PatientToolWebsocketService extends WorkflowAppServer {
         try {
             Long runId = Long.parseLong(runIdString);
             Log.debug("Received message Text: " + m.getMessage() + " for container " + runId + " and type " + type + " of message type " + m.getType());
-            if (AppConnectionTypesEnum.APP.isEqual(type) || AppConnectionTypesEnum.CONTROLLER.isEqual(type)) {
+            if (AppConnectionTypesEnum.APP.isEqual(type)) {
                 handleAppMessages(m, runId, m.getRunType());
             }
         } catch (Exception e) {

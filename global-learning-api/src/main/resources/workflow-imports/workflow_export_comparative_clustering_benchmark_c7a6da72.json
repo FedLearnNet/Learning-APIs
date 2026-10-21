@@ -157,7 +157,7 @@
     "inputConnection" : false
   } ],
   "inputs" : [ ],
-  "keycloakId" : "test",
+  "keycloakId" : "admin",
   "name" : "Comparative clustering benchmark",
   "description" : "Comparative clustering benchmark\n\n",
   "publishStatus" : "PUBLISHED"

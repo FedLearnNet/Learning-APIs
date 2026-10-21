@@ -8,6 +8,7 @@ import jakarta.ws.rs.ForbiddenException;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class CohortMemberAuthBO {
@@ -16,8 +17,18 @@ public class CohortMemberAuthBO {
     CohortAO cohortAO;
 
     public Optional<CohortMemberTypes> getMemberType(Long cohortId, String keycloakId) {
+        if (cohortId == null) {
+            return Optional.empty();
+        }
         return cohortAO.findByIdOptional(cohortId)
                 .flatMap(cohort -> getMemberType(cohort, keycloakId));
+    }
+
+    public Set<Long> getMemberCohortIds(String keycloakId) {
+        return cohortAO.listAll().stream()
+                .filter(cohort -> isMember(cohort, keycloakId))
+                .map(CohortEntity::getId)
+                .collect(Collectors.toSet());
     }
 
     public Optional<CohortMemberTypes> getMemberType(CohortEntity cohort, String keycloakId) {
@@ -51,6 +62,12 @@ public class CohortMemberAuthBO {
 
     public void checkForEditPatients(Long cohortId, String keycloakId) {
         checkForEditPatients(getMemberType(cohortId, keycloakId));
+    }
+
+    public boolean canDelete(Long cohortId, String keycloakId) {
+        return getMemberType(cohortId, keycloakId)
+                .map(CohortMemberTypes::canDelete)
+                .orElse(false);
     }
 
     public boolean canEditPatients(Long cohortId, String keycloakId) {

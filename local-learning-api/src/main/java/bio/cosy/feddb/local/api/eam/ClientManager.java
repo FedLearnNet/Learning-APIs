@@ -76,8 +76,7 @@ public class ClientManager {
                 Log.info("Connection already open");
                 return;
             }
-            boolean authEnabled = isAuthEnabled();
-            if (authEnabled && !globalAuthManager.isConfigured()) {
+            if (!globalAuthManager.isConfigured()) {
                 state.markDisconnected();
                 state.markError("Global WebSocket user auth is not configured");
                 Log.warn("Global WebSocket user auth is not configured; waiting for /global/auth/login or flnet.global.auth.username/password");
@@ -90,8 +89,7 @@ public class ClientManager {
             String authorizationHeader = authorization.map(GlobalAuthManager.Authorization::header).orElse(null);
             Log.debugf("Global authorization header configured: %s", authorizationHeader != null);
             connectionPhase = "opening handshake";
-            Log.infof("Opening global WebSocket handshake: authenticationEnabled=%s, authorizationHeaderPresent=%s",
-                    authEnabled, authorizationHeader != null);
+            Log.infof("Opening global WebSocket handshake: authorizationHeaderPresent=%s", authorizationHeader != null);
             WebSocketConnector<WebsocketClient> connector = connectors.get()
                     .baseUri(socketConfig.uri());
             if (authorizationHeader != null) {
@@ -129,7 +127,7 @@ public class ClientManager {
             Log.debugf("Skipping global WebSocket reconnect during shutdown: reason=%s", reason);
             return;
         }
-        if (isAuthEnabled() && !globalAuthManager.isConfigured()) {
+        if (!globalAuthManager.isConfigured()) {
             closeConnection("global authentication is not configured");
             state.markDisconnected();
             state.markError("Global WebSocket user auth is not configured");
@@ -321,10 +319,6 @@ public class ClientManager {
             connection.close().await().atMost(Duration.ofSeconds(5));
         }
         connection = null;
-    }
-
-    private boolean isAuthEnabled() {
-        return globalAuthManager.isEnabled();
     }
 
     private void processQueuedMessages(WebSocketClientConnection connection) {

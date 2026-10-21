@@ -17,6 +17,7 @@ import org.hibernate.envers.query.AuditQuery;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,10 +40,17 @@ public class AuditAO {
     public List<TracabilityLog> queryAuditChanges(List<AuditSearchCriteriaDTO> searchCriteria,
                                                   Integer firstResult, Integer maxResults,
                                                   AuditSortCriteriaDTO sortCriteria) {
+        return queryAuditChanges(searchCriteria, firstResult, maxResults, sortCriteria, null);
+    }
+
+    public List<TracabilityLog> queryAuditChanges(List<AuditSearchCriteriaDTO> searchCriteria,
+                                                  Integer firstResult, Integer maxResults,
+                                                  AuditSortCriteriaDTO sortCriteria, Collection<Long> cohortIds) {
         AuditReader auditReader = AuditReaderFactory.get(entityManager);
 
         AuditQuery query = auditReader.createQuery()
                 .forRevisionsOfEntity(PatientEntity.class, false, true);
+        restrictToCohorts(query, cohortIds);
 
         // Apply all search criteria
         if (searchCriteria != null) {
@@ -67,11 +75,12 @@ public class AuditAO {
         return convertToTracabilityLogDTOs(results);
     }
 
-    public long countAuditChanges(List<AuditSearchCriteriaDTO> searchCriteria) {
+    public long countAuditChanges(List<AuditSearchCriteriaDTO> searchCriteria, Collection<Long> cohortIds) {
         AuditReader auditReader = AuditReaderFactory.get(entityManager);
 
         AuditQuery query = auditReader.createQuery()
                 .forRevisionsOfEntity(PatientEntity.class, false, true);
+        restrictToCohorts(query, cohortIds);
 
         if (searchCriteria != null) {
             for (AuditSearchCriteriaDTO criteria : searchCriteria) {
@@ -86,6 +95,12 @@ public class AuditAO {
         }
 
         return ((Number) result).longValue();
+    }
+
+    private void restrictToCohorts(AuditQuery query, Collection<Long> cohortIds) {
+        if (cohortIds != null) {
+            query.add(AuditEntity.relatedId("cohort").in(cohortIds.toArray()));
+        }
     }
 
     public TracabilityLog getPatientChangesForRev(Long patientId, Integer revId) {

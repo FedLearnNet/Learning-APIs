@@ -8,6 +8,8 @@ import bio.cosy.feddb.core.api.run.*;
 import bio.cosy.feddb.core.api.run.message.ConsoleStdOutDTO;
 import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
+import jakarta.annotation.security.RolesAllowed;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionBO;
@@ -27,6 +29,7 @@ import java.util.List;
 // type = AppConnectionTypesEnum
 @WebSocket(path = "/model/run/{mode}/{runId}/{type}")
 @ToolAuthenticated({Scope.MODEL_PREDICTION_RUN, Scope.MODEL_WORKFLOW_RUN})
+@RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
 public class DataAnalysisRunWebsocketService extends ModelAppServer {
 
     private static final CloseReason RUN_FINISHED =
