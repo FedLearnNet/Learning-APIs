@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.importer.extract;
 
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.api.file.FileParsingSettingsDTO;
 import bio.cosy.feddb.core.api.file.FileParsingType;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorBO;

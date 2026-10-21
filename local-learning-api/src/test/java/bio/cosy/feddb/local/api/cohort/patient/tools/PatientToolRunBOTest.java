@@ -5,8 +5,8 @@ import bio.cosy.feddb.core.api.app.config.ToolConfigDataType;
 import bio.cosy.feddb.core.api.file.FileResult;
 import bio.cosy.feddb.core.api.app.config.ToolConfigsDTO;
 import bio.cosy.feddb.core.api.app.config.ToolInputConfigDTO;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import bio.cosy.feddb.local.api.cohort.CohortAO;
 import bio.cosy.feddb.local.api.cohort.CohortBO;
@@ -131,7 +131,7 @@ class PatientToolRunBOTest {
 
         // the platform's steps are logged, so the progress stream shows them next to the app's messages
         List<String> steps = toolRunBO.snapshot(run.getId(), 0L).getLogs()
-                .stream().map(RunMessageLogDTO::getMessage).toList();
+                .stream().map(ExecutionMessageLogDTO::getMessage).toList();
         assertTrue(steps.stream().anyMatch(step -> step.startsWith("Handing the patient data to the app")), steps.toString());
         assertTrue(steps.stream().anyMatch(step -> step.startsWith("Container started")), steps.toString());
     }
@@ -220,7 +220,7 @@ class PatientToolRunBOTest {
         events.awaitCompletion(Duration.ofSeconds(5));
         List<String> messages = events.getItems().stream()
                 .flatMap(event -> event.getLogs().stream())
-                .map(RunMessageLogDTO::getMessage)
+                .map(ExecutionMessageLogDTO::getMessage)
                 .toList();
         assertTrue(messages.contains("A live step"), messages.toString());
         assertEquals(1, messages.stream().filter("A live step"::equals).count(), "each line is sent once");

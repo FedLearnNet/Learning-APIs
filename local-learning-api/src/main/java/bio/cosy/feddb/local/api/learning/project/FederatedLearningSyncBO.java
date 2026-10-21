@@ -2,7 +2,7 @@ package bio.cosy.feddb.local.api.learning.project;
 
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.project.ProjectStatus;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.api.socket.LearningClientStopRequestDTO;
 import bio.cosy.feddb.core.api.socket.LearningClientSyncRequestDTO;
 import bio.cosy.feddb.core.api.socket.LearningClientSyncResponseDTO;

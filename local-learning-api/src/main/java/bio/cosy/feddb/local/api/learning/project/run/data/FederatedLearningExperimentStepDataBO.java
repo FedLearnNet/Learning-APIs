@@ -4,7 +4,7 @@ package bio.cosy.feddb.local.api.learning.project.run.data;
 import bio.cosy.feddb.core.api.app.FederatedAppType;
 import bio.cosy.feddb.core.api.file.FileDTO;
 import bio.cosy.feddb.core.api.model.ModelSubDataDTO;
-import bio.cosy.feddb.core.api.run.AppRunUploadData;
+import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.local.api.file.FileAO;
 import bio.cosy.feddb.local.api.file.FileBO;

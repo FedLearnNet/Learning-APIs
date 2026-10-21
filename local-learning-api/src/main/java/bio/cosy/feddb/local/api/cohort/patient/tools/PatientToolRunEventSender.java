@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.cohort.patient.tools;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import io.quarkus.logging.Log;
 import io.smallrye.reactive.messaging.annotations.Broadcast;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -28,7 +28,7 @@ public class PatientToolRunEventSender {
     @Inject
     PatientToolRunMapper mapper;
 
-    public void sendLog(Long runId, RunMessageLogDTO log) {
+    public void sendLog(Long runId, ExecutionMessageLogDTO log) {
         if (runId == null || log == null) {
             return;
         }

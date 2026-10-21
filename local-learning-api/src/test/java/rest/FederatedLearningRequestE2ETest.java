@@ -7,7 +7,7 @@ import bio.cosy.feddb.core.api.app.config.ToolConfigsDTO;
 import bio.cosy.feddb.core.api.app.config.ToolInputConfigDTO;
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.project.ProjectStatus;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.api.socket.LearningQueryClientResponseDTO;
 import bio.cosy.feddb.core.api.socket.ProjectFederatedExperimentForLocalDTO;
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;

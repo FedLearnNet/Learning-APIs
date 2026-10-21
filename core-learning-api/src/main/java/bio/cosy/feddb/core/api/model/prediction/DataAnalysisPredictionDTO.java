@@ -1,8 +1,9 @@
 package bio.cosy.feddb.core.api.model.prediction;
 
 import bio.cosy.feddb.core.api.model.workflow.DataAnalysisFileDTO;
-import bio.cosy.feddb.core.api.run.RunMetaDTO;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.orchestrator.DataAnalysisCreatePredictionDTO;
+import bio.cosy.feddb.core.execution.run.dto.RunMetaDTO;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

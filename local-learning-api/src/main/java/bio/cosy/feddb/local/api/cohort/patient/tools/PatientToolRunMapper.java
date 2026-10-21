@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.cohort.patient.tools;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.base.BaseMapper;
 import bio.cosy.feddb.local.helper.QuarkusMappingConfig;
 import org.mapstruct.Mapper;
@@ -40,7 +40,7 @@ public interface PatientToolRunMapper extends BaseMapper<PatientToolRunDTO, Pati
     @Mapping(target = "downloadReady", source = "downloadReady")
     PatientToolRunProgressDTO toProgressDto(Long runId,
                                             PatientToolRunStatusDTO status,
-                                            List<RunMessageLogDTO> logs,
+                                            List<ExecutionMessageLogDTO> logs,
                                             List<PatientToolRunOutputDTO> outputs,
                                             boolean downloadReady);
 

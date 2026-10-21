@@ -1,7 +1,7 @@
 package bio.cosy.feddb.local.api.importer.run.step;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageTypes;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.RunMessageTypes;
 import bio.cosy.feddb.core.base.BaseMapper;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunEntity;
 import bio.cosy.feddb.local.api.importer.run.message.ConnectorRunMessagesEntity;
@@ -53,7 +53,7 @@ public interface ConnectorRunStepMapper extends BaseMapper<ConnectorRunStepDTO, 
     }
 
     @Named("mapRunLogs")
-    default List<RunMessageLogDTO> mapRunLogs(Set<ConnectorRunMessagesEntity> messages) {
+    default List<ExecutionMessageLogDTO> mapRunLogs(Set<ConnectorRunMessagesEntity> messages) {
         if (messages == null || messages.isEmpty()) {
             return List.of();
         }

@@ -1,8 +1,8 @@
 package bio.cosy.feddb.local.api.importer.run.message;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageTypes;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.RunMessageTypes;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunAO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepAO;
@@ -35,9 +35,9 @@ public class ConnectorRunRunMessagesBO extends BaseBo<ConnectorRunMessagesDTO, C
         return mapper.entitiesToDtos(ao.findByRun(projectId));
     }
 
-    public void create(RunMessageLogDTO dto, Long stepId) {
+    public void create(ExecutionMessageLogDTO dto, Long stepId) {
         if (stepId != null) {
-            RunMessageDTO toCreate = logMapper.logDtoToDto(dto);
+            ExecutionMessageDTO toCreate = logMapper.logDtoToDto(dto);
             ConnectorRunMessagesDTO dataAnalysisDto = mapper.runDtoToDto(toCreate);
             ConnectorRunMessagesEntity toPersist = mapper.dtoToEntity(dataAnalysisDto);
             ConnectorRunStepEntity step = stepAO.findById(stepId);

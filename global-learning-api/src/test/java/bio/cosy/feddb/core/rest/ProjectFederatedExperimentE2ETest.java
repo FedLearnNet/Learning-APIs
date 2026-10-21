@@ -3,7 +3,7 @@ package bio.cosy.feddb.core.rest;
 import bio.cosy.feddb.core.api.app.PublishStatus;
 import bio.cosy.feddb.core.api.project.ProjectDTO;
 import bio.cosy.feddb.core.api.project.ProjectStatus;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.rest.helper.RestAssuredConfigUtil;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;

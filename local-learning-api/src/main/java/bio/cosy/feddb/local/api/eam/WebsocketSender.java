@@ -1,7 +1,7 @@
 package bio.cosy.feddb.local.api.eam;
 
 import bio.cosy.feddb.core.api.project.ProjectStatus;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.api.socket.*;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;

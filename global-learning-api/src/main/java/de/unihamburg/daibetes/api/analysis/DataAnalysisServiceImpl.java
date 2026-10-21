@@ -4,7 +4,6 @@ import bio.cosy.feddb.core.api.file.FileRenameDTO;
 import bio.cosy.feddb.core.api.model.workflow.DataAnalysisDetailDTO;
 import bio.cosy.feddb.core.api.model.workflow.DataAnalysisFileDTO;
 import bio.cosy.feddb.core.api.model.workflow.ModelWorkflowDTO;
-import bio.cosy.feddb.core.api.run.AppRunTypeEnum;
 import de.unihamburg.daibetes.api.analysis.file.DataAnalysisFileBO;
 import de.unihamburg.daibetes.api.analysis.report.DataAnalysisReportRendererBO;
 import de.unihamburg.daibetes.api.analysis.worklfow.DataAnalysisWorkflowRunBO;
@@ -16,7 +15,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
-import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 @ApplicationScoped

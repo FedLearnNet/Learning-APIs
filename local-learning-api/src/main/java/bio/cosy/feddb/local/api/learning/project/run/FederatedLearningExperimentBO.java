@@ -2,20 +2,19 @@ package bio.cosy.feddb.local.api.learning.project.run;
 
 import bio.cosy.feddb.core.api.app.config.ToolInputConfigDTO;
 import bio.cosy.feddb.core.api.project.ProjectStatus;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
-import bio.cosy.feddb.core.api.run.FederatedRunConfigDTO;
-import bio.cosy.feddb.core.api.run.FederatedRunParticipantDTO;
-import bio.cosy.feddb.core.api.run.StartRunDTO;
 import bio.cosy.feddb.core.api.socket.FederatedLearningRelayInfoDTO;
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.api.workflow.base.experiment.BaseWorkflowExperimentBO;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
+import bio.cosy.feddb.core.execution.run.dto.FederatedRunConfigDTO;
+import bio.cosy.feddb.core.execution.run.dto.FederatedRunParticipantDTO;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
+import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.services.controller.ControllerStartLearningRequestDTO;
 import bio.cosy.feddb.core.services.controller.ControllerStartLearningResponseDTO;
-import bio.cosy.feddb.core.services.orch.WorkflowOrchestrator;
+import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
 import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
-import bio.cosy.feddb.core.security.ToolApiKeyService;
-import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.local.api.cohort.patient.export.PatientDataExportBO;
 import bio.cosy.feddb.local.api.file.FileEntity;
 import bio.cosy.feddb.local.api.learning.project.run.data.FederatedLearningExperimentStepDataBO;
@@ -24,10 +23,8 @@ import bio.cosy.feddb.local.api.learning.project.run.step.FederatedLearningExper
 import bio.cosy.feddb.local.api.learning.project.run.step.FederatedLearningExperimentStepEntity;
 import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
 import bio.cosy.feddb.local.api.workflow.WorkflowBO;
-import bio.cosy.feddb.local.api.workflow.node.HyperParamConfigToYml;
 import bio.cosy.feddb.local.services.controller.LocalControllerLearningService;
 import bio.cosy.feddb.local.services.orch.WorkflowOrchestratorBO;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -158,28 +155,11 @@ public class FederatedLearningExperimentBO
             String containerId = getWorkflowOrchestrator().executeWorkflow(context.getStartWorkflowDTO(), getWSBaseUrl());
             Log.infof("Started container for experiment ID: %d, container ID: %s", experimentId, containerId);
 
-            if (context.isOldFCVersion()) {
-                stepBO.persistStep(context.getStepId(), RunStatusTypes.INITIALIZED, containerId);
-            } else {
-                stepBO.persistStep(context.getStepId(), RunStatusTypes.PENDING, containerId);
-            }
+            stepBO.persistStep(context.getStepId(), RunStatusTypes.PENDING, containerId);
             emitChange(experimentId);
 
             if (firstStep) {
                 uploadData(context.getNode(), experimentId);
-            }
-
-            if (context.isOldFCVersion()) {
-                try {
-                    if (context.getNodeHyperParams() != null && !context.getNodeHyperParams().isEmpty()) {
-                        Log.info("Uploading hyperparameters to volume for old FC version");
-                        String config = HyperParamConfigToYml.createYaml(context.getNodeHyperParams());
-                        workflowOrchestratorBO.uploadConfigToVolume(experimentId, context.getStepId(), config);
-                    }
-                } catch (JsonProcessingException e) {
-                    Log.error("Failed to convert hyperparameters to YAML, so no config uploaded", e);
-                }
-                return ProjectStatus.READY;
             }
             return ProjectStatus.INIT;
         } catch (Exception e) {
@@ -260,7 +240,6 @@ public class FederatedLearningExperimentBO
                 nextStep.getId(),
                 node,
                 startWorkflowDTO,
-                node.isOldFCVersion(),
                 node.getHyperParams()
         );
     }

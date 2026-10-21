@@ -1,8 +1,8 @@
 package de.unihamburg.daibetes.api.runs;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageMetricDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
 import de.unihamburg.daibetes.api.runs.experiment.CreateExperimentDTO;
 import de.unihamburg.daibetes.api.runs.experiment.ExperimentBO;
@@ -67,17 +67,17 @@ public class RunServiceImpl implements RunService {
     }
 
     @Override
-    public List<RunMessageDTO> listTestMessages(Long appId, Long id) {
+    public List<ExecutionMessageDTO> listTestMessages(Long appId, Long id) {
         return testRunMessageBO.findByRun(appId, id, userIdentity.getKeycloakId());
     }
 
     @Override
-    public List<RunMessageLogDTO> listTestLogMessages(Long appId, Long id) {
+    public List<ExecutionMessageLogDTO> listTestLogMessages(Long appId, Long id) {
         return testRunMessageBO.findLogByRun(appId, id, userIdentity.getKeycloakId());
     }
 
     @Override
-    public List<RunMessageMetricDTO> listTestMetricMessages(Long appId, Long id) {
+    public List<ExecutionMessageMetricDTO> listTestMetricMessages(Long appId, Long id) {
         return testRunMessageBO.findMetricByRun(appId, id, userIdentity.getKeycloakId());
     }
 
@@ -105,21 +105,21 @@ public class RunServiceImpl implements RunService {
     }
 
     @Override
-    public List<RunMessageDTO> listFederatedRunMessages(Long appId, Long runId, Long id) {
+    public List<ExecutionMessageDTO> listFederatedRunMessages(Long appId, Long runId, Long id) {
         String keycloakId = userIdentity.getKeycloakId();
 
         return federatedParticipantMessageBO.findByParticipant(appId, id, keycloakId);
     }
 
     @Override
-    public List<RunMessageLogDTO> listFederatedRunLogMessages(Long appId, Long runId, Long id) {
+    public List<ExecutionMessageLogDTO> listFederatedRunLogMessages(Long appId, Long runId, Long id) {
         String keycloakId = userIdentity.getKeycloakId();
 
         return federatedParticipantMessageBO.findLogByParticipant(appId, id, keycloakId);
     }
 
     @Override
-    public List<RunMessageMetricDTO> listFederatedRunMetricMessages(Long appId, Long runId, Long id) {
+    public List<ExecutionMessageMetricDTO> listFederatedRunMetricMessages(Long appId, Long runId, Long id) {
         String keycloakId = userIdentity.getKeycloakId();
 
         return federatedParticipantMessageBO.findMetricByParticipant(appId, id, keycloakId);
@@ -162,27 +162,27 @@ public class RunServiceImpl implements RunService {
     }
 
     @Override
-    public List<RunMessageDTO> listExperimentRunMessages(Long appId, Long experimentId, Long id) {
+    public List<ExecutionMessageDTO> listExperimentRunMessages(Long appId, Long experimentId, Long id) {
         String keycloakId = userIdentity.getKeycloakId();
 
         return experimentRunMessageBO.findByRun(appId, id, keycloakId);
     }
 
     @Override
-    public List<RunMessageLogDTO> listExperimentRunLogMessages(Long appId, Long experimentId, Long id) {
+    public List<ExecutionMessageLogDTO> listExperimentRunLogMessages(Long appId, Long experimentId, Long id) {
         String keycloakId = userIdentity.getKeycloakId();
 
         return experimentRunMessageBO.findLogByRun(appId, id, keycloakId);
     }
 
     @Override
-    public List<RunMessageMetricDTO> listExperimentRunMetricMessages(Long appId, Long experimentId, Long id) {
+    public List<ExecutionMessageMetricDTO> listExperimentRunMetricMessages(Long appId, Long experimentId, Long id) {
         String keycloakId = userIdentity.getKeycloakId();
         return experimentRunMessageBO.findMetricByRun(appId, id, keycloakId);
     }
 
     @Override
-    public List<RunMessageMetricDTO> listExperimentMetricMessages(Long appId, Long experimentId) {
+    public List<ExecutionMessageMetricDTO> listExperimentMetricMessages(Long appId, Long experimentId) {
         String keycloakId = userIdentity.getKeycloakId();
         return experimentRunMessageBO.findMetricByExperiment(appId, experimentId, keycloakId);
     }

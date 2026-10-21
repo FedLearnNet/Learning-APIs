@@ -2,17 +2,12 @@ package bio.cosy.feddb.local.api.importer.run.execution;
 
 import bio.cosy.feddb.core.api.file.FileParsingSettingsDTO;
 import bio.cosy.feddb.core.api.file.FileParsingType;
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisCreatePredictionDTO;
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisOrchestrator;
-import bio.cosy.feddb.core.api.run.AppRunUploadData;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.orchestrator.DataAnalysisCreatePredictionDTO;
+import bio.cosy.feddb.core.execution.orchestrator.OrchestratorGateway;
+import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
-import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
-import bio.cosy.feddb.core.services.orch.clients.DockerServiceClient;
-import bio.cosy.feddb.core.services.orch.clients.VolumeServiceClient;
-import bio.cosy.feddb.core.services.orch.clients.WorkflowServiceClient;
-import bio.cosy.feddb.core.services.orch.dto.CreateContainerResponseDTO;
 import bio.cosy.feddb.core.services.orch.dto.StartAppDTO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFilesDTO;
 import bio.cosy.feddb.local.api.importer.files.read.TabularFileReaderBO;
@@ -21,9 +16,6 @@ import bio.cosy.feddb.local.api.importer.files.upload.ConnectorFileUploadBO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepBO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepDTO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
-import bio.cosy.feddb.local.services.orch.OrchContainerServiceClient;
-import bio.cosy.feddb.local.services.orch.OrchDockerServiceClient;
-import bio.cosy.feddb.local.services.orch.OrchVolumeServiceClient;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
@@ -32,7 +24,6 @@ import jakarta.transaction.Status;
 import jakarta.transaction.Synchronization;
 import jakarta.transaction.TransactionSynchronizationRegistry;
 import jakarta.transaction.Transactional;
-import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.resteasy.reactive.ClientWebApplicationException;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
@@ -41,20 +32,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 @ApplicationScoped
-public class ConnectorRunExecutionRunBO extends DataAnalysisOrchestrator {
+public class ConnectorRunExecutionRunBO {
     public static final String WS_WORKFLOW_PATH = "/connectors/run/execution";
 
     @Inject
-    @RestClient
-    OrchContainerServiceClient containerClient;
-
-    @Inject
-    @RestClient
-    OrchVolumeServiceClient volumeClient;
-
-    @Inject
-    @RestClient
-    OrchDockerServiceClient dockerClient;
+    OrchestratorGateway orchestrator;
 
     @Inject
     ToolApiKeyService toolApiKeyService;
@@ -73,6 +55,7 @@ public class ConnectorRunExecutionRunBO extends DataAnalysisOrchestrator {
 
     @Inject
     TransactionSynchronizationRegistry txRegistry;
+
     //@Inject
     //DataAnalysisResultSender resultSender;
 
@@ -193,7 +176,7 @@ public class ConnectorRunExecutionRunBO extends DataAnalysisOrchestrator {
                 // A batch result: the container stays up for the next batch of the same step.
                 return;
             }
-            cleanup(containerId);
+            orchestrator.cleanup(containerId, true);
         } catch (Exception e) {
             Log.errorf(e, "Failed to process uploaded connector output for step %d", runId);
             stepBo.updateAndNotify(runId, RunStatusTypes.ERROR,
@@ -201,39 +184,10 @@ public class ConnectorRunExecutionRunBO extends DataAnalysisOrchestrator {
         }
     }
 
-    public void cleanup(String containerId) {
-        if (containerId == null || containerId.isBlank()) {
-            Log.debug("No container to clean up");
-            return;
-        }
-        Log.info("Cleaning up workflow for containerId: " + containerId);
-        getContainerClient().cleanupWorkflow(containerId, true);
-    }
-
-    @Override
-    protected ContainerServiceClient getContainerClient() {
-        return containerClient;
-    }
-
-    @Override
-    protected WorkflowServiceClient getWorkflowClient() {
-        return null;
-    }
-
-    @Override
-    protected VolumeServiceClient getVolumeClient() {
-        return volumeClient;
-    }
-
-    @Override
-    protected DockerServiceClient getDockerClient() {
-        return dockerClient;
-    }
-
-    public String execute(DataAnalysisCreatePredictionDTO model, Long id, String image, String apiKey) throws IllegalArgumentException {
-        Long identifier = model.getModelSubId();
+    public String execute(DataAnalysisCreatePredictionDTO createPrediction, Long id, String image, String apiKey) throws IllegalArgumentException {
+        Long identifier = createPrediction.getModelSubId();
         if (identifier == null) {
-            identifier = model.getAppVersionId();
+            identifier = createPrediction.getAppVersionId();
         }
         StartAppDTO dto = new StartAppDTO();
         dto.setGroupId(id);
@@ -244,15 +198,10 @@ public class ConnectorRunExecutionRunBO extends DataAnalysisOrchestrator {
                 "APP_API_KEY=" + apiKey
         ));
         // changeUrl is set to true to allow the container to access the ModelAppServer
-        // Path is set to "model/run" to allow the container to access the ModelAppServer
+        // Path is set to "createPrediction/run" to allow the container to access the ModelAppServer
         // The serverPort is set to the port of the ModelAppServer
         String path = WS_WORKFLOW_PATH;
-        CreateContainerResponseDTO resp = getContainerClient().startContainer(dto, true, true, path, serverPort);
-        String containerId = resp.getId();
-        if (containerId == null) {
-            throw new IllegalStateException("Failed to start container for model " + image);
-        }
-        return containerId;
+        return orchestrator.startApplication(dto, path);
     }
 
     private TableData loadUploadedOutputData(AppRunUploadData req) {

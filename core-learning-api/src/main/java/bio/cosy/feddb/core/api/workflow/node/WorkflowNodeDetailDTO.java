@@ -25,14 +25,6 @@ public class WorkflowNodeDetailDTO extends WorkflowNodeDTO {
         return appDetail.getAppConfig().getInput();
     }
 
-    @Override
-    public boolean isOldFCVersion() {
-        if (appDetail == null) {
-            return super.isOldFCVersion();
-        }
-        final Boolean isOldFCVersion = appDetail.getOldFCVersion();
-        return isOldFCVersion != null && isOldFCVersion;
-    }
 
     public boolean needsInternetAccess() {
         return resolveAccessFlag(FederatedAppVersionDTO::getNeedsInternetAccess,

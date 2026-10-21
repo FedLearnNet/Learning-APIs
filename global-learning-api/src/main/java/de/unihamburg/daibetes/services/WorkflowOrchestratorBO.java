@@ -1,6 +1,6 @@
 package de.unihamburg.daibetes.services;
 
-import bio.cosy.feddb.core.services.orch.WorkflowOrchestrator;
+import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
 import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
 import bio.cosy.feddb.core.services.orch.clients.DockerServiceClient;
 import bio.cosy.feddb.core.services.orch.clients.VolumeServiceClient;

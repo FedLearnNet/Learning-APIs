@@ -1,9 +1,16 @@
 package bio.cosy.feddb.local.api.importer.run.execution;
 
 import bio.cosy.feddb.core.api.model.ModelAppServer;
-import bio.cosy.feddb.core.api.run.*;
-import bio.cosy.feddb.core.api.run.message.ConsoleStdOutDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ConsoleStdOutDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
+import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
+import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
+import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
+import bio.cosy.feddb.core.execution.run.dto.UpdateRunDTO;
+import bio.cosy.feddb.core.execution.run.types.AppConnectionTypesEnum;
+import bio.cosy.feddb.core.execution.run.types.AppMessageTypeEnum;
+import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
 import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
 import jakarta.annotation.security.RolesAllowed;
@@ -205,7 +212,7 @@ public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
 
     @Override
     @Transactional
-    protected void logMessage(Long runId, RunMessageLogDTO runMessage, AppRunTypeEnum runType) {
+    protected void logMessage(Long runId, ExecutionMessageLogDTO runMessage, AppRunTypeEnum runType) {
         stepMessageBO.create(runMessage, runId);
     }
 

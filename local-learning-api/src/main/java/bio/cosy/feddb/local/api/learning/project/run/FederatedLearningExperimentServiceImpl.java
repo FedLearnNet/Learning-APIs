@@ -1,7 +1,7 @@
 package bio.cosy.feddb.local.api.learning.project.run;
 
 import bio.cosy.feddb.core.api.model.ModelSubDataDTO;
-import bio.cosy.feddb.core.api.run.AppRunUploadData;
+import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
 import bio.cosy.feddb.local.api.auth.UserIdentity;
 import bio.cosy.feddb.local.api.learning.project.run.data.FederatedLearningExperimentStepDataBO;
 import io.smallrye.mutiny.Multi;

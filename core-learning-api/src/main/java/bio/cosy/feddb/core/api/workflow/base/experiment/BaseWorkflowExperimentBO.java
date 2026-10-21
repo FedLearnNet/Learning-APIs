@@ -2,10 +2,6 @@ package bio.cosy.feddb.core.api.workflow.base.experiment;
 
 import bio.cosy.feddb.core.api.app.config.ToolInputConfigDTO;
 import bio.cosy.feddb.core.api.project.ProjectStatus;
-import bio.cosy.feddb.core.api.run.FinishRunDTO;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
-import bio.cosy.feddb.core.api.run.StartRunDTO;
-import bio.cosy.feddb.core.api.run.UpdateRunDTO;
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.api.workflow.base.BaseWorkflowEngine;
 import bio.cosy.feddb.core.api.workflow.base.WorkflowException;
@@ -16,11 +12,15 @@ import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.base.BaseFileEntity;
 import bio.cosy.feddb.core.base.BaseMapper;
-import bio.cosy.feddb.core.services.orch.WorkflowOrchestrator;
+import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
+import bio.cosy.feddb.core.execution.run.dto.UpdateRunDTO;
+import bio.cosy.feddb.core.security.Scope;
+import bio.cosy.feddb.core.security.ToolApiKeyService;
+import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
 import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import bio.cosy.feddb.core.services.orch.dto.WorkflowNodeInputActionDTO;
-import bio.cosy.feddb.core.security.ToolApiKeyService;
-import bio.cosy.feddb.core.security.Scope;
 import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -95,7 +95,6 @@ public abstract class BaseWorkflowExperimentBO<Dto extends BaseWorkflowExperimen
             throw new WorkflowException("Step with id " + stepOptional.get().getId() + " for experimentId " + experimentId + " and nodeId " + node.getNodeId() + " is in status " + stepOptional.get().getStepStatus() + " which is not startable");
         }
         ao.setCurrentWorkflowNode(experimentId, stepOptional.get());
-        boolean isOldFCVersion = node.isOldFCVersion();
 
         StepEntity step = stepOptional.get();
         if (prevStep == null || baseWorkflowEngine.hasInputNode(workflow, node)) {
@@ -112,7 +111,6 @@ public abstract class BaseWorkflowExperimentBO<Dto extends BaseWorkflowExperimen
         }
         customizeStartWorkflowDto(startWorkflowDTO);
         return new BaseWorkflowExperimentInitContext(startWorkflowDTO,
-                isOldFCVersion,
                 step.getId(),
                 node.getHyperParams());
     }
@@ -126,18 +124,10 @@ public abstract class BaseWorkflowExperimentBO<Dto extends BaseWorkflowExperimen
             String containerId = getWorkflowOrchestrator().executeWorkflow(context.getStartDTO(), getWSBaseUrl());
             Log.infof("Started first container for experimentId ID: %d, container ID: %s",
                     experimentId, containerId);
-            if (context.isOldFCVersion()) {
-                // Handle old FeatureCloud version, this app will not connect to the ws, so we set the status to READY directly
-                if (context.hyperparamsAreSet()) {
-                    uploadConfigToVolume(context.getNodeHyperParams(), context.getStartDTO());
-                }
-                stepBo.persistStep(context.getStepId(), RunStatusTypes.INITIALIZED, containerId);
-            } else {
-                stepBo.persistStep(context.getStepId(), RunStatusTypes.PENDING, containerId);
-            }
+            stepBo.persistStep(context.getStepId(), RunStatusTypes.PENDING, containerId);
             emitChangeTransactional(experimentId);
         } catch (Exception e) {
-            Log.errorf(e,"Error starting workflow execution for experiment ID: %d", experimentId);
+            Log.errorf(e, "Error starting workflow execution for experiment ID: %d", experimentId);
             onStepErrorTransactional(experimentId, context.getStepId(), "Error starting workflow execution: " + e.getMessage());
             return false;
         }

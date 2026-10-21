@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.learning.project;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.local.api.cohort.permission.PermissionDTO;
 import bio.cosy.feddb.local.api.learning.project.run.step.FederatedLearningExperimentStepDetailDTO;
@@ -58,8 +58,8 @@ public interface FederatedLearningProjectService {
     @APIResponse(responseCode = "200", description = "Project experiment found")
     @APIResponse(responseCode = "404", description = "Project experiment not found")
     @RestStreamElementType(MediaType.APPLICATION_JSON)
-    Multi<RunMessageLogDTO> listLogMessages(@PathParam("id") Long id,
-                                                 @PathParam("stepId") Long stepId);
+    Multi<ExecutionMessageLogDTO> listLogMessages(@PathParam("id") Long id,
+                                                  @PathParam("stepId") Long stepId);
 
     @GET
     @Path("/{id}/step/{stepId}")

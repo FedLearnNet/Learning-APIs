@@ -7,7 +7,7 @@ import bio.cosy.feddb.core.api.file.FileDTO;
 import bio.cosy.feddb.core.api.model.workflow.DataAnalysisDetailDTO;
 import bio.cosy.feddb.core.api.model.workflow.DataAnalysisFileDTO;
 import bio.cosy.feddb.core.api.model.workflow.chat.ModelWorkflowChatMessageType;
-import bio.cosy.feddb.core.api.run.RunTimingMetric;
+import bio.cosy.feddb.core.execution.run.types.RunTimingMetric;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisResultDTO;
 import de.unihamburg.daibetes.api.app.FederatedAppBO;
 import de.unihamburg.daibetes.api.file.FileBO;

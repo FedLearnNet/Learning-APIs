@@ -1,6 +1,6 @@
 package bio.cosy.feddb.core.api.project;
 
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 
 import java.util.Arrays;
 import java.util.List;

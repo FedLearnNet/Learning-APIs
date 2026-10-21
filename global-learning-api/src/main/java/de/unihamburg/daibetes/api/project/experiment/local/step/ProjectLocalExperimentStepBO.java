@@ -1,6 +1,6 @@
 package de.unihamburg.daibetes.api.project.experiment.local.step;
 
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.api.workflow.base.step.BaseWorkflowStepBO;
 import de.unihamburg.daibetes.api.project.ProjectAO;
 import de.unihamburg.daibetes.api.project.ProjectEntity;

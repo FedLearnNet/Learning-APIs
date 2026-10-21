@@ -1,7 +1,7 @@
 package de.unihamburg.daibetes.api.runs.test.federated;
 
-import bio.cosy.feddb.core.api.run.OutputRunDataDTO;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.dto.OutputRunDataDTO;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.base.BaseBo;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
 import de.unihamburg.daibetes.api.runs.test.federated.participant.FederatedParticipantBO;

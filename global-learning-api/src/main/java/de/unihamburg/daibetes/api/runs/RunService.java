@@ -1,8 +1,8 @@
 package de.unihamburg.daibetes.api.runs;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageMetricDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
 import bio.cosy.feddb.core.base.ValidationGroups;
 import de.unihamburg.daibetes.api.runs.experiment.CreateExperimentDTO;
 import de.unihamburg.daibetes.api.runs.experiment.ExperimentDTO;
@@ -61,8 +61,8 @@ public interface RunService {
     @APIResponse(responseCode = "200", description = "FederatedAppDetailDTO found")
     @APIResponse(responseCode = "404", description = "FederatedAppDetailDTO not found")
     @Transactional
-    List<RunMessageDTO> listTestMessages(@PathParam("appId") Long appId,
-                                         @PathParam("id") Long id);
+    List<ExecutionMessageDTO> listTestMessages(@PathParam("appId") Long appId,
+                                               @PathParam("id") Long id);
 
 
     @GET
@@ -71,8 +71,8 @@ public interface RunService {
     @APIResponse(responseCode = "200", description = "FederatedAppDetailDTO found")
     @APIResponse(responseCode = "404", description = "FederatedAppDetailDTO not found")
     @Transactional
-    List<RunMessageLogDTO> listTestLogMessages(@PathParam("appId") Long appId,
-                                               @PathParam("id") Long id);
+    List<ExecutionMessageLogDTO> listTestLogMessages(@PathParam("appId") Long appId,
+                                                     @PathParam("id") Long id);
 
     @GET
     @Path("/test/{appId}/run/{id}/metric")
@@ -80,9 +80,9 @@ public interface RunService {
     @APIResponse(responseCode = "200", description = "FederatedAppDetailDTO found")
     @APIResponse(responseCode = "404", description = "FederatedAppDetailDTO not found")
     @Transactional
-    List<RunMessageMetricDTO> listTestMetricMessages(@PathParam("appId") Long appId,
+    List<ExecutionMessageMetricDTO> listTestMetricMessages(@PathParam("appId") Long appId,
 
-                                                     @PathParam("id") Long id);
+                                                           @PathParam("id") Long id);
 
     @GET
     @Path("/federated/{appId}")
@@ -121,9 +121,9 @@ public interface RunService {
     @APIResponse(responseCode = "200", description = "FederatedAppDetailDTO found")
     @APIResponse(responseCode = "404", description = "FederatedAppDetailDTO not found")
     @Transactional
-    List<RunMessageDTO> listFederatedRunMessages(@PathParam("appId") Long appId,
-                                                 @PathParam("runId") Long runId,
-                                                 @PathParam("id") Long id);
+    List<ExecutionMessageDTO> listFederatedRunMessages(@PathParam("appId") Long appId,
+                                                       @PathParam("runId") Long runId,
+                                                       @PathParam("id") Long id);
 
 
     @GET
@@ -132,9 +132,9 @@ public interface RunService {
     @APIResponse(responseCode = "200", description = "FederatedAppDetailDTO found")
     @APIResponse(responseCode = "404", description = "FederatedAppDetailDTO not found")
     @Transactional
-    List<RunMessageLogDTO> listFederatedRunLogMessages(@PathParam("appId") Long appId,
-                                                       @PathParam("runId") Long runId,
-                                                       @PathParam("id") Long id);
+    List<ExecutionMessageLogDTO> listFederatedRunLogMessages(@PathParam("appId") Long appId,
+                                                             @PathParam("runId") Long runId,
+                                                             @PathParam("id") Long id);
 
 
     @GET
@@ -143,9 +143,9 @@ public interface RunService {
     @APIResponse(responseCode = "200", description = "FederatedAppDetailDTO found")
     @APIResponse(responseCode = "404", description = "FederatedAppDetailDTO not found")
     @Transactional
-    List<RunMessageMetricDTO> listFederatedRunMetricMessages(@PathParam("appId") Long appId,
-                                                             @PathParam("runId") Long runId,
-                                                             @PathParam("id") Long id);
+    List<ExecutionMessageMetricDTO> listFederatedRunMetricMessages(@PathParam("appId") Long appId,
+                                                                   @PathParam("runId") Long runId,
+                                                                   @PathParam("id") Long id);
 
     @GET
     @Path("/experiment/{appId}")
@@ -209,9 +209,9 @@ public interface RunService {
     @APIResponse(responseCode = "200", description = "FederatedAppDetailDTO found")
     @APIResponse(responseCode = "404", description = "FederatedAppDetailDTO not found")
     @Transactional
-    List<RunMessageDTO> listExperimentRunMessages(@PathParam("appId") Long appId,
-                                                  @PathParam("experimentId") Long experimentId,
-                                                  @PathParam("id") Long id);
+    List<ExecutionMessageDTO> listExperimentRunMessages(@PathParam("appId") Long appId,
+                                                        @PathParam("experimentId") Long experimentId,
+                                                        @PathParam("id") Long id);
 
 
     @GET
@@ -220,9 +220,9 @@ public interface RunService {
     @APIResponse(responseCode = "200", description = "FederatedAppDetailDTO found")
     @APIResponse(responseCode = "404", description = "FederatedAppDetailDTO not found")
     @Transactional
-    List<RunMessageLogDTO> listExperimentRunLogMessages(@PathParam("appId") Long appId,
-                                                        @PathParam("experimentId") Long experimentId,
-                                                        @PathParam("id") Long id);
+    List<ExecutionMessageLogDTO> listExperimentRunLogMessages(@PathParam("appId") Long appId,
+                                                              @PathParam("experimentId") Long experimentId,
+                                                              @PathParam("id") Long id);
 
     @GET
     @Path("/experiment/{appId}/experiment/{experimentId}/run/{id}/metric")
@@ -230,9 +230,9 @@ public interface RunService {
     @APIResponse(responseCode = "200", description = "FederatedAppDetailDTO found")
     @APIResponse(responseCode = "404", description = "FederatedAppDetailDTO not found")
     @Transactional
-    List<RunMessageMetricDTO> listExperimentRunMetricMessages(@PathParam("appId") Long appId,
-                                                              @PathParam("experimentId") Long experimentId,
-                                                              @PathParam("id") Long id);
+    List<ExecutionMessageMetricDTO> listExperimentRunMetricMessages(@PathParam("appId") Long appId,
+                                                                    @PathParam("experimentId") Long experimentId,
+                                                                    @PathParam("id") Long id);
 
     @GET
     @Path("/experiment/{appId}/experiment/{experimentId}/metric")
@@ -240,7 +240,7 @@ public interface RunService {
     @APIResponse(responseCode = "200", description = "FederatedAppDetailDTO found")
     @APIResponse(responseCode = "404", description = "FederatedAppDetailDTO not found")
     @Transactional
-    List<RunMessageMetricDTO> listExperimentMetricMessages(@PathParam("appId") Long appId,
-                                                           @PathParam("experimentId") Long experimentId);
+    List<ExecutionMessageMetricDTO> listExperimentMetricMessages(@PathParam("appId") Long appId,
+                                                                 @PathParam("experimentId") Long experimentId);
 
 }

@@ -15,6 +15,5 @@ public class FederatedLearningExperimentStartContext {
     private Long stepId;
     private WorkflowNodeDetailDTO node;
     private StartWorkflowNodeDTO startWorkflowDTO;
-    private boolean oldFCVersion;
     private LinkedHashMap<String, Object> nodeHyperParams;
 }

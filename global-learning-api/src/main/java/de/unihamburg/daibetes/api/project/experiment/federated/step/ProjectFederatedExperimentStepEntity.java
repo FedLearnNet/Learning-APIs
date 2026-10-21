@@ -3,18 +3,11 @@ package de.unihamburg.daibetes.api.project.experiment.federated.step;
 import bio.cosy.feddb.core.api.workflow.base.step.BaseWorkflowStepEntity;
 import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
 import de.unihamburg.daibetes.api.project.experiment.federated.message.ProjectFederatedExperimentRunMetricsEntity;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
-import bio.cosy.feddb.core.base.BaseEntity;
-import de.unihamburg.daibetes.api.project.experiment.local.ProjectLocalExperimentEntity;
-import de.unihamburg.daibetes.api.project.experiment.local.data.ProjectLocalExperimentStepDataEntity;
-import de.unihamburg.daibetes.api.project.experiment.local.message.ProjectLocalExperimentStepMessageEntity;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.type.SqlTypes;
 
 import java.util.Map;

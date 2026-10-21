@@ -1,6 +1,6 @@
 package de.unihamburg.daibetes.api.runs.test.federated.participant;
 
-import bio.cosy.feddb.core.api.run.FederatedParticipantType;
+import bio.cosy.feddb.core.execution.run.types.FederatedParticipantType;
 import lombok.Data;
 
 import java.util.LinkedHashMap;

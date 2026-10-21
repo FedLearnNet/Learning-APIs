@@ -1,10 +1,10 @@
 package de.unihamburg.daibetes.api.analysis.run;
 
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisCreatePredictionDTO;
+import bio.cosy.feddb.core.execution.orchestrator.DataAnalysisCreatePredictionDTO;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisPredictionDTO;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisRunModesEnum;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisStopPredictionDTO;
-import bio.cosy.feddb.core.api.run.AppRunUploadData;
+import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisBO;
 import de.unihamburg.daibetes.api.analysis.file.DataAnalysisFileBO;
 import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionBO;

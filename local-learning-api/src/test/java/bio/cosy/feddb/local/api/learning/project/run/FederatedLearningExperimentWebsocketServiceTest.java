@@ -1,12 +1,12 @@
 package bio.cosy.feddb.local.api.learning.project.run;
 
-import bio.cosy.feddb.core.api.run.AppRunTypeEnum;
-import bio.cosy.feddb.core.api.run.AppMessageTypeEnum;
-import bio.cosy.feddb.core.api.run.AppMessageWrapperDTO;
-import bio.cosy.feddb.core.api.run.FinishRunDTO;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
-import bio.cosy.feddb.core.api.run.StartRunDTO;
-import bio.cosy.feddb.core.api.run.UpdateRunDTO;
+import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
+import bio.cosy.feddb.core.execution.run.types.AppMessageTypeEnum;
+import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
+import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
+import bio.cosy.feddb.core.execution.run.dto.UpdateRunDTO;
 import bio.cosy.feddb.local.api.learning.project.run.step.FederatedLearningExperimentStepBO;
 import bio.cosy.feddb.local.api.learning.project.run.step.FederatedLearningExperimentStepDTO;
 import bio.cosy.feddb.local.api.learning.project.run.data.FederatedLearningExperimentStepDataBO;

@@ -1,6 +1,6 @@
 package de.unihamburg.daibetes.api.analysis.worklfow.message;
 
-import bio.cosy.feddb.core.api.run.message.BaseRunMessageEntity;
+import bio.cosy.feddb.core.execution.message.BaseExecutionMessageEntity;
 import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionEntity;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisRunModesEnum;
 import de.unihamburg.daibetes.api.analysis.worklfow.step.DataAnalysisWorkflowRunStepEntity;
@@ -12,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Entity
 @Table(name = "data_analysis_workflow_run_step_messages")
-public class DataAnalysisWorkflowRunMessagesEntity extends BaseRunMessageEntity {
+public class DataAnalysisWorkflowRunMessagesEntity extends BaseExecutionMessageEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "run_mode", nullable = false)

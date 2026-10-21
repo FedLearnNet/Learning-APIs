@@ -1,10 +1,10 @@
 package de.unihamburg.daibetes.api.runs.experiment.run;
 
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
-import bio.cosy.feddb.core.api.run.FinishRunDTO;
-import bio.cosy.feddb.core.api.run.OutputRunDataDTO;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
-import bio.cosy.feddb.core.api.run.UpdateRunDTO;
+import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
+import bio.cosy.feddb.core.execution.run.dto.OutputRunDataDTO;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.dto.UpdateRunDTO;
 import bio.cosy.feddb.core.base.BaseBo;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

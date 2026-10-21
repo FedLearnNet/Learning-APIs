@@ -1,7 +1,7 @@
 package bio.cosy.feddb.core.api.workflow.base.step;
 
-import bio.cosy.feddb.core.api.run.RunMetaDTO;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.dto.RunMetaDTO;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.base.BaseDTO;
 import jakarta.persistence.Column;
 import lombok.Data;

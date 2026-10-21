@@ -1,9 +1,9 @@
 package bio.cosy.feddb.local.api.cohort.patient.tools;
 
-import bio.cosy.feddb.core.api.run.AppMessageTypeEnum;
-import bio.cosy.feddb.core.api.run.AppMessageWrapperDTO;
-import bio.cosy.feddb.core.api.run.AppRunTypeEnum;
-import bio.cosy.feddb.core.api.run.StartRunDTO;
+import bio.cosy.feddb.core.execution.run.types.AppMessageTypeEnum;
+import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
+import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
+import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
 import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningExperimentWebsocketService;
 import io.quarkus.logging.Log;
 import io.quarkus.websockets.next.OpenConnections;

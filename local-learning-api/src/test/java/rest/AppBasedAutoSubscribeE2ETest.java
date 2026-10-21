@@ -1,7 +1,7 @@
 package rest;
 
 import bio.cosy.feddb.core.api.datamodler.schema.SchemaStructureDTO;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
 import bio.cosy.feddb.core.services.orch.dto.ContainerDTO;

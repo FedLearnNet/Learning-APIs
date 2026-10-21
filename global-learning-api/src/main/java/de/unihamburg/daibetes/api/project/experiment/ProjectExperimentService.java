@@ -1,6 +1,6 @@
 package de.unihamburg.daibetes.api.project.experiment;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import de.unihamburg.daibetes.api.project.experiment.federated.CreateProjectFederatedExperimentDTO;
 import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentDTO;
 import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentDetailDTO;
@@ -160,9 +160,9 @@ public interface ProjectExperimentService {
     @APIResponse(responseCode = "200", description = "Project experiment found")
     @APIResponse(responseCode = "404", description = "Project experiment not found")
     @RestStreamElementType(MediaType.APPLICATION_JSON)
-    Multi<RunMessageLogDTO> listLocalLogMessages(@PathParam("id") Long id,
-                                                 @PathParam("experimentId") Long experimentId,
-                                                 @PathParam("stepId") Long stepId);
+    Multi<ExecutionMessageLogDTO> listLocalLogMessages(@PathParam("id") Long id,
+                                                       @PathParam("experimentId") Long experimentId,
+                                                       @PathParam("stepId") Long stepId);
 
     @GET
     @Path("local/{experimentId}/step/{stepId}")

@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.learning.project.run;
 
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.api.socket.FederatedLearningRelayInfoDTO;
 import bio.cosy.feddb.core.api.socket.RelayCertSignRequestDTO;
 import bio.cosy.feddb.core.api.socket.RelayCertSignResponseDTO;

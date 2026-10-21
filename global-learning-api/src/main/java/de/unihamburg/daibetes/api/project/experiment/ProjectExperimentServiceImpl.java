@@ -1,6 +1,6 @@
 package de.unihamburg.daibetes.api.project.experiment;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
 import de.unihamburg.daibetes.api.project.experiment.federated.CreateProjectFederatedExperimentDTO;
 import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentBO;
@@ -51,7 +51,7 @@ public class ProjectExperimentServiceImpl implements ProjectExperimentService {
 
     @Inject
     @Channel(EXPERIMENT_LOCAL_STEP_LOG_CHANNEL)
-    Multi<RunMessageLogDTO> localStepLogInfo;
+    Multi<ExecutionMessageLogDTO> localStepLogInfo;
 
     @Override
     public List<ProjectFederatedExperimentDTO> listFederated(Long projectId) {
@@ -181,7 +181,7 @@ public class ProjectExperimentServiceImpl implements ProjectExperimentService {
     }
 
     @Override
-    public Multi<RunMessageLogDTO> listLocalLogMessages(Long id, Long experimentId, Long stepId) {
+    public Multi<ExecutionMessageLogDTO> listLocalLogMessages(Long id, Long experimentId, Long stepId) {
         String keycloakId = userIdentity.getKeycloakId();
         return Uni.createFrom()
                 .item(() -> localExperimentBO.getStepById(id, experimentId, stepId, keycloakId))

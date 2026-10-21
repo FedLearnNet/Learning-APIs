@@ -3,11 +3,11 @@ package bio.cosy.feddb.local.api.cohort.patient.tools;
 import bio.cosy.feddb.core.api.app.FederatedAppDetailDTO;
 import bio.cosy.feddb.core.api.file.FileDTO;
 import bio.cosy.feddb.core.api.file.FileResult;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
-import bio.cosy.feddb.core.api.run.StartRunDTO;
-import bio.cosy.feddb.core.api.run.UpdateRunDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
+import bio.cosy.feddb.core.execution.run.dto.UpdateRunDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.RunMessageTypes;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
@@ -293,7 +293,7 @@ public class PatientToolRunBO
     }
 
     private void appendStep(Long runId, String message, String severity) {
-        RunMessageLogDTO log = new RunMessageLogDTO();
+        ExecutionMessageLogDTO log = new ExecutionMessageLogDTO();
         log.setProcess(SERVER_PROCESS);
         log.setType(RunMessageTypes.LOG);
         log.setSeverity(severity);
@@ -316,7 +316,7 @@ public class PatientToolRunBO
             if (containerId != null) {
                 workflowOrchestrator.cleanup(containerId, true);
             } else {
-                workflowOrchestrator.cleanupWorkflowNode(runId);
+                workflowOrchestrator.cleanupStep(runId);
             }
         } catch (Exception e) {
             Log.warnf("Could not clean up the container of patient tool run %d: %s", runId, e.getMessage());
@@ -383,7 +383,7 @@ public class PatientToolRunBO
         if (run == null) {
             throw new NotFoundException("Patient tool run " + runId + " not found");
         }
-        List<RunMessageLogDTO> logs = logMapper.dtosToLogDtos(logBO.findByRunAfter(runId, afterLogId));
+        List<ExecutionMessageLogDTO> logs = logMapper.dtosToLogDtos(logBO.findByRunAfter(runId, afterLogId));
         Optional<PatientToolRunFileEntity> outputs = run.getRunStatus() == RunStatusTypes.FINISHED
                 ? fileBO.findByRun(runId)
                 : Optional.empty();

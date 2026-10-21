@@ -1,6 +1,6 @@
 package de.unihamburg.daibetes.api.runs.test;
 
-import bio.cosy.feddb.core.api.run.StartRunDTO;
+import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
 import bio.cosy.feddb.core.base.BaseMapper;
 import de.unihamburg.daibetes.api.runs.base.HyperParamMapper;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;

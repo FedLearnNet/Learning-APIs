@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.importer.run.step;
 
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.base.BaseEntity;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunEntity;
 import bio.cosy.feddb.local.api.importer.run.message.ConnectorRunMessagesEntity;

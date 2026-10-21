@@ -1,15 +1,14 @@
 package de.unihamburg.daibetes.api.project.experiment.local.message;
 
-import bio.cosy.feddb.core.api.run.message.BaseRunMessageAO;
-import bio.cosy.feddb.core.api.run.message.RunMessageTypes;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import bio.cosy.feddb.core.execution.message.BaseExecutionMessageAO;
+import bio.cosy.feddb.core.execution.message.RunMessageTypes;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.List;
 
 @ApplicationScoped
-public class ProjectLocalExperimentStepMessageAO extends BaseRunMessageAO<ProjectLocalExperimentStepMessageEntity> {
+public class ProjectLocalExperimentStepMessageAO extends BaseExecutionMessageAO<ProjectLocalExperimentStepMessageEntity> {
 
     public List<ProjectLocalExperimentStepMessageEntity> findByExperiment(Long id) {
         return list("step.experiment.id", id);

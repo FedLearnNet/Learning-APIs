@@ -1,8 +1,8 @@
 package de.unihamburg.daibetes.api.analysis.prediction;
 
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisCreatePredictionDTO;
+import bio.cosy.feddb.core.execution.orchestrator.DataAnalysisCreatePredictionDTO;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisPredictionDTO;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.base.BaseMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.unihamburg.daibetes.api.analysis.file.DataAnalysisFileMapper;

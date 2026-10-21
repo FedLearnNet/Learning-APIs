@@ -1,14 +1,20 @@
 package bio.cosy.feddb.local.api.learning.project.run;
 
-import bio.cosy.feddb.core.api.run.*;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageMetricDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
+import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
+import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
+import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
+import bio.cosy.feddb.core.execution.run.dto.UpdateRunDTO;
+import bio.cosy.feddb.core.execution.run.types.AppConnectionTypesEnum;
+import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
 import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
 import jakarta.annotation.security.RolesAllowed;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
-import bio.cosy.feddb.core.services.orch.WorkflowAppServer;
+import bio.cosy.feddb.core.execution.server.WorkflowAppServer;
 import bio.cosy.feddb.local.api.learning.project.run.data.FederatedLearningExperimentStepDataBO;
 import bio.cosy.feddb.local.api.learning.project.run.message.FederatedLearningExperimentStepMessageBO;
 import bio.cosy.feddb.local.api.learning.project.run.step.FederatedLearningExperimentStepBO;
@@ -59,7 +65,7 @@ public class FederatedLearningExperimentWebsocketService extends WorkflowAppServ
         try {
             setAppIsRunning(runId);
         } catch (NotFoundException e) {
-            workflowOrchestrator.cleanupWorkflowNode(runId);
+            workflowOrchestrator.cleanupStep(runId);
             //cleanup if the step is not found
             Log.error("Step not found for runId " + runId + ". Closing connection.");
             connection.closeAndAwait(RUN_NOT_FOUND);
@@ -81,7 +87,7 @@ public class FederatedLearningExperimentWebsocketService extends WorkflowAppServ
         try {
             setAppHasError(runId, throwable.getMessage());
         } catch (NotFoundException e) {
-            workflowOrchestrator.cleanupWorkflowNode(runId);
+            workflowOrchestrator.cleanupStep(runId);
             //cleanup if the step is not found
             Log.error("Step not found for runId " + runId + ". Closing connection.");
             connection.closeAndAwait(RUN_NOT_FOUND);
@@ -188,13 +194,13 @@ public class FederatedLearningExperimentWebsocketService extends WorkflowAppServ
 
     @Override
     @Transactional
-    protected void logMetric(Long runId, RunMessageMetricDTO runMetric, AppRunTypeEnum runType) {
+    protected void logMetric(Long runId, ExecutionMessageMetricDTO runMetric, AppRunTypeEnum runType) {
         stepMessageBO.create(runMetric, runId);
     }
 
     @Override
     @Transactional
-    protected void logMessage(Long runId, RunMessageLogDTO runMessage, AppRunTypeEnum runType) {
+    protected void logMessage(Long runId, ExecutionMessageLogDTO runMessage, AppRunTypeEnum runType) {
         stepMessageBO.create(runMessage, runId);
     }
 

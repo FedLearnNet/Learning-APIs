@@ -1,7 +1,7 @@
 package de.unihamburg.daibetes.api.analysis.prediction;
 
-import bio.cosy.feddb.core.api.run.RunMetaDTO;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.dto.RunMetaDTO;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.base.BaseAuthEntity;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisEntity;
 import de.unihamburg.daibetes.api.analysis.file.DataAnalysisFileEntity;

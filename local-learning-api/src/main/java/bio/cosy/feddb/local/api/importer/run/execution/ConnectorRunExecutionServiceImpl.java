@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.importer.run.execution;
 
-import bio.cosy.feddb.core.api.run.AppRunUploadData;
+import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
 import bio.cosy.feddb.local.api.auth.UserIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

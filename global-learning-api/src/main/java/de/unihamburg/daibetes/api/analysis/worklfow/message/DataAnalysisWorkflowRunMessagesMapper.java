@@ -1,10 +1,8 @@
 package de.unihamburg.daibetes.api.analysis.worklfow.message;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageDTO;
 import bio.cosy.feddb.core.base.BaseMapper;
 import de.unihamburg.daibetes.api.file.FileMapper;
-import de.unihamburg.daibetes.api.runs.base.message.RunMessageLogMapper;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -27,7 +25,7 @@ public interface DataAnalysisWorkflowRunMessagesMapper extends BaseMapper<DataAn
             @Mapping(target = "predictionId", ignore = true),
             @Mapping(target = "runMode", ignore = true)
     })
-    DataAnalysisWorkflowRunMessagesDTO runDtoToDto(RunMessageDTO sourceCode);
+    DataAnalysisWorkflowRunMessagesDTO runDtoToDto(ExecutionMessageDTO sourceCode);
 
     @Mapping(target = "prediction.id", source = "predictionId")
     @Mapping(target = "step.id", source = "runId")

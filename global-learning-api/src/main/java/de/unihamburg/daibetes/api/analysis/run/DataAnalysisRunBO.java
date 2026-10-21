@@ -2,17 +2,13 @@ package de.unihamburg.daibetes.api.analysis.run;
 
 import bio.cosy.feddb.core.api.app.FederatedAppVersionDTO;
 import bio.cosy.feddb.core.api.model.ModelSubDTO;
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisCreatePredictionDTO;
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisOrchestrator;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisPredictionDTO;
-import bio.cosy.feddb.core.api.run.AppRunUploadData;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
-import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
-import bio.cosy.feddb.core.services.orch.clients.DockerServiceClient;
-import bio.cosy.feddb.core.services.orch.clients.VolumeServiceClient;
-import bio.cosy.feddb.core.services.orch.clients.WorkflowServiceClient;
-import bio.cosy.feddb.core.security.ToolApiKeyService;
+import bio.cosy.feddb.core.execution.orchestrator.DataAnalysisCreatePredictionDTO;
+import bio.cosy.feddb.core.execution.orchestrator.DataAnalysisOrchestrator;
+import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.security.Scope;
+import bio.cosy.feddb.core.security.ToolApiKeyService;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisBO;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisEntity;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisResultSender;
@@ -21,17 +17,15 @@ import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionBO;
 import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionEntity;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionBO;
 import de.unihamburg.daibetes.api.model.sub.ModelSubBO;
-import de.unihamburg.daibetes.services.*;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.resteasy.reactive.ClientWebApplicationException;
 
 @ApplicationScoped
-public class DataAnalysisRunBO extends DataAnalysisOrchestrator {
+public class DataAnalysisRunBO {
 
     // Single source of truth for the overhead flag; runtime is always exposed regardless.
     @Inject
@@ -39,20 +33,7 @@ public class DataAnalysisRunBO extends DataAnalysisOrchestrator {
     boolean overheadEnabled;
 
     @Inject
-    @RestClient
-    OrchContainerServiceClient containerClient;
-
-    @Inject
-    @RestClient
-    OrchVolumeServiceClient volumeClient;
-
-    @Inject
-    @RestClient
-    OrchWorkflowServiceClient workflowClient;
-
-    @Inject
-    @RestClient
-    OrchDockerServiceClient dockerClient;
+    DataAnalysisOrchestrator orchestrator;
 
     @Inject
     ToolApiKeyService toolApiKeyService;
@@ -89,7 +70,7 @@ public class DataAnalysisRunBO extends DataAnalysisOrchestrator {
         String apiKey = toolApiKeyService.issue(Scope.MODEL_PREDICTION_RUN, prediction.getId());
 
         try {
-            String containerId = execute(createModel, prediction.getId(), image, apiKey);
+            String containerId = orchestrator.execute(createModel, prediction.getId(), image, apiKey);
             prediction.setContainerId(containerId);
         } catch (ClientWebApplicationException e) {
             String errorMessage = "Error during model execution: " + e.getMessage();
@@ -171,27 +152,8 @@ public class DataAnalysisRunBO extends DataAnalysisOrchestrator {
 
     public void cleanup(String containerId) {
         Log.info("Cleaning up workflow for containerId: " + containerId);
+        orchestrator.cleanup(containerId);
         getContainerClient().cleanupWorkflow(containerId, true);
-    }
-
-    @Override
-    protected ContainerServiceClient getContainerClient() {
-        return containerClient;
-    }
-
-    @Override
-    protected WorkflowServiceClient getWorkflowClient() {
-        return workflowClient;
-    }
-
-    @Override
-    protected VolumeServiceClient getVolumeClient() {
-        return volumeClient;
-    }
-
-    @Override
-    protected DockerServiceClient getDockerClient() {
-        return dockerClient;
     }
 
 }

@@ -1,9 +1,9 @@
 package de.unihamburg.daibetes.api.analysis.worklfow.step;
 
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisRunModesEnum;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.RunMessageTypes;
 import bio.cosy.feddb.core.base.BaseMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisResultDTO;
@@ -107,7 +107,7 @@ public interface DataAnalysisWorkflowRunStepMapper extends BaseMapper<DataAnalys
     }
 
     @Named("mapRunLogs")
-    default List<RunMessageLogDTO> mapRunLogs(Set<DataAnalysisWorkflowRunMessagesEntity> messages) {
+    default List<ExecutionMessageLogDTO> mapRunLogs(Set<DataAnalysisWorkflowRunMessagesEntity> messages) {
         return messages.stream()
                 .filter(m -> m.getType().equals(RunMessageTypes.LOG))
                 .map(messageMapper::entityToDto)

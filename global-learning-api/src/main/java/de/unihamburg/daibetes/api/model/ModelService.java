@@ -4,7 +4,7 @@ import bio.cosy.feddb.core.api.model.ModelDTO;
 import bio.cosy.feddb.core.api.model.ModelDetailDTO;
 import bio.cosy.feddb.core.api.model.ModelSubDTO;
 import bio.cosy.feddb.core.api.model.ModelVersionDTO;
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisCreatePredictionDTO;
+import bio.cosy.feddb.core.execution.orchestrator.DataAnalysisCreatePredictionDTO;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisPredictionDTO;
 import bio.cosy.feddb.core.base.ValidationGroups;
 import jakarta.transaction.Transactional;

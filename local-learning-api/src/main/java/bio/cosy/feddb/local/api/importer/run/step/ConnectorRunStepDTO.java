@@ -1,7 +1,7 @@
 package bio.cosy.feddb.local.api.importer.run.step;
 
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.base.BaseDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -12,7 +12,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class ConnectorRunStepDTO extends BaseDTO {
-    private List<RunMessageLogDTO> logs;
+    private List<ExecutionMessageLogDTO> logs;
     private String lastLog;
     private String lastError;
     private RunStatusTypes status;

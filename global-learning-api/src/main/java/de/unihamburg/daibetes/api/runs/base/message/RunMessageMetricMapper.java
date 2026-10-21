@@ -1,7 +1,7 @@
 package de.unihamburg.daibetes.api.runs.base.message;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageMetricDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -23,13 +23,13 @@ public interface RunMessageMetricMapper {
     @Mapping(target = "value", source = "message", qualifiedByName = "mapMessageToValue")
     @Mapping(target = "x", expression = "java(extractX(dto))")
     @Mapping(target = "XUnit", source = "message", qualifiedByName = "mapMessageToXUnit")
-    RunMessageMetricDTO dtoToMetricDTO(RunMessageDTO dto);
+    ExecutionMessageMetricDTO dtoToMetricDTO(ExecutionMessageDTO dto);
 
     @Mapping(target = "message", expression = "java(mapFieldsToJson(dto))")
-    RunMessageDTO logDtoToDto(RunMessageMetricDTO dto);
+    ExecutionMessageDTO logDtoToDto(ExecutionMessageMetricDTO dto);
 
 
-    List<RunMessageMetricDTO> dtosToMetricDtos(List<RunMessageDTO> dtos);
+    List<ExecutionMessageMetricDTO> dtosToMetricDtos(List<ExecutionMessageDTO> dtos);
 
 
     @Named("mapMessageToMetric")
@@ -66,7 +66,7 @@ public interface RunMessageMetricMapper {
         }
     }
 
-    default String extractX(RunMessageDTO dto) {
+    default String extractX(ExecutionMessageDTO dto) {
         if (dto.getMessage() == null) {
             return String.valueOf(dto.getCreatedAt().getTime());
         }
@@ -74,7 +74,7 @@ public interface RunMessageMetricMapper {
                 .orElse(String.valueOf(dto.getCreatedAt().getTime()));
     }
 
-    default String mapFieldsToJson(RunMessageMetricDTO dto) {
+    default String mapFieldsToJson(ExecutionMessageMetricDTO dto) {
         try {
             ObjectNode node = objectMapper.createObjectNode();
             node.put("metric", dto.getMetric());

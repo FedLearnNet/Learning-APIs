@@ -1,6 +1,6 @@
 package bio.cosy.feddb.core.api.workflow.base.step;
 
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.base.BaseMapper;
 import io.quarkus.logging.Log;

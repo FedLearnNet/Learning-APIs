@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.learning.project.run.message;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageTypes;
+import bio.cosy.feddb.core.execution.message.RunMessageTypes;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;

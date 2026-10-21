@@ -1,6 +1,6 @@
 package de.unihamburg.daibetes.api.analysis;
 
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisCreatePredictionDTO;
+import bio.cosy.feddb.core.execution.orchestrator.DataAnalysisCreatePredictionDTO;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisPredictionDTO;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisStopPredictionDTO;
 import bio.cosy.feddb.core.api.model.workflow.DataAnalysisDetailDTO;

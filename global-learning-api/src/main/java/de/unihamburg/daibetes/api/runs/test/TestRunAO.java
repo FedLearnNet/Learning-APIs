@@ -1,7 +1,6 @@
 package de.unihamburg.daibetes.api.runs.test;
 
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
-import de.unihamburg.daibetes.api.runs.test.message.TestRunMessageEntity;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;

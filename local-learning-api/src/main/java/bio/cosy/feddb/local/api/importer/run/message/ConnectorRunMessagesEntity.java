@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.importer.run.message;
 
-import bio.cosy.feddb.core.api.run.message.BaseRunMessageEntity;
+import bio.cosy.feddb.core.execution.message.BaseExecutionMessageEntity;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunEntity;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepEntity;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerEntity;
@@ -17,7 +17,7 @@ import lombok.Setter;
                 @Index(name = "idx_connector_run_step_messages_run_transformer_id", columnList = "run_transformer_id"),
                 @Index(name = "idx_connector_run_step_messages_run_id", columnList = "run_id")
         })
-public class ConnectorRunMessagesEntity extends BaseRunMessageEntity {
+public class ConnectorRunMessagesEntity extends BaseExecutionMessageEntity {
 
     @ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "run_step_id")

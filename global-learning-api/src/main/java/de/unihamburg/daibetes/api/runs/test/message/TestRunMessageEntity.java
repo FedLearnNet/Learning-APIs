@@ -1,6 +1,6 @@
 package de.unihamburg.daibetes.api.runs.test.message;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageTypes;
+import bio.cosy.feddb.core.execution.message.RunMessageTypes;
 import de.unihamburg.daibetes.api.runs.test.TestRunEntity;
 import bio.cosy.feddb.core.base.BaseEntity;
 import jakarta.persistence.*;

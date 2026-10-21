@@ -1,7 +1,7 @@
 package de.unihamburg.daibetes.api.runs.base.message;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -23,12 +23,12 @@ public interface RunMessageLogMapper {
     @Mapping(target = "caller", source = "message", qualifiedByName = "mapMessageToCaller")
     @Mapping(target = "group", source = "message", qualifiedByName = "mapMessageToGroup")
     @Mapping(target = "stackTrace", source = "message", qualifiedByName = "mapMessageToStackTrace")
-    RunMessageLogDTO dtoToLogDTO(RunMessageDTO dto);
+    ExecutionMessageLogDTO dtoToLogDTO(ExecutionMessageDTO dto);
 
     @Mapping(target = "message", expression = "java(mapFieldsToJson(dto))")
-    RunMessageDTO logDtoToDto(RunMessageLogDTO dto);
+    ExecutionMessageDTO logDtoToDto(ExecutionMessageLogDTO dto);
 
-    List<RunMessageLogDTO> dtosToLogDtos(List<RunMessageDTO> dtos);
+    List<ExecutionMessageLogDTO> dtosToLogDtos(List<ExecutionMessageDTO> dtos);
 
     @Named("mapMessageToSeverity")
     default String mapMessageToSeverity(String message) {
@@ -65,7 +65,7 @@ public interface RunMessageLogMapper {
         }
     }
 
-    default String mapFieldsToJson(RunMessageLogDTO dto) {
+    default String mapFieldsToJson(ExecutionMessageLogDTO dto) {
         try {
             ObjectNode node = objectMapper.createObjectNode();
             node.put("severity", dto.getSeverity());

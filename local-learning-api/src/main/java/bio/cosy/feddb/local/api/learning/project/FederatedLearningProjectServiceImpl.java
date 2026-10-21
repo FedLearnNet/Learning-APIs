@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.learning.project;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.local.api.auth.UserIdentity;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
@@ -37,7 +37,7 @@ public class FederatedLearningProjectServiceImpl implements FederatedLearningPro
 
     @Inject
     @Channel(TRAINING_STEP_LOG_CHANNEL)
-    Multi<RunMessageLogDTO> localStepLogInfo;
+    Multi<ExecutionMessageLogDTO> localStepLogInfo;
 
     @Override
     public PagedResponse<FederatedLearningProjectDTO> list(int pageIndex, int size) {
@@ -77,7 +77,7 @@ public class FederatedLearningProjectServiceImpl implements FederatedLearningPro
     }
 
     @Override
-    public Multi<RunMessageLogDTO> listLogMessages(Long id, Long stepId) {
+    public Multi<ExecutionMessageLogDTO> listLogMessages(Long id, Long stepId) {
         String keycloakId = userIdentity.getKeycloakId();
         return Uni.createFrom()
                 .item(() -> {

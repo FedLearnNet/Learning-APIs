@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.cohort.patient.tools;
 
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import lombok.Data;
 
 import java.util.Date;

@@ -1,6 +1,6 @@
 package de.unihamburg.daibetes.api.runs.test.federated;
 
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.base.BaseEntity;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.runs.test.federated.message.FederatedRoundMessageEntity;

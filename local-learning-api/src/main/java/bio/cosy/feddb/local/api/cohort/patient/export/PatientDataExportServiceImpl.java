@@ -2,8 +2,8 @@ package bio.cosy.feddb.local.api.cohort.patient.export;
 
 import bio.cosy.feddb.core.api.file.FileResult;
 import bio.cosy.feddb.core.api.project.PatientDataExportConfigDTO;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.helper.FileHelper;
 import bio.cosy.feddb.local.api.cohort.member.CohortPermissionChecker;
 import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunBO;
@@ -96,7 +96,7 @@ public class PatientDataExportServiceImpl implements PatientDataExportService {
     }
 
     private PatientToolRunProgressDTO serverEvent(RunStatusTypes status, String message) {
-        RunMessageLogDTO log = new RunMessageLogDTO();
+        ExecutionMessageLogDTO log = new ExecutionMessageLogDTO();
         log.setProcess(PatientToolRunBO.SERVER_PROCESS);
         log.setMessage(message);
         log.setSeverity(status == RunStatusTypes.ERROR ? "ERROR" : "INFO");

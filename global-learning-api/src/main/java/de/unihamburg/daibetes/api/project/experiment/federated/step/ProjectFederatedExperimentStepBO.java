@@ -1,6 +1,6 @@
 package de.unihamburg.daibetes.api.project.experiment.federated.step;
 
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.api.socket.FederatedLearningRelayInfoDTO;
 import bio.cosy.feddb.core.api.workflow.base.step.BaseWorkflowStepBO;
 import bio.cosy.feddb.core.services.controller.CreateFLLearningRelayServerRequestDTO;

@@ -1,10 +1,10 @@
 package de.unihamburg.daibetes.api.testembed;
 
 import bio.cosy.feddb.core.api.model.ModelDTO;
-import bio.cosy.feddb.core.api.run.AppMessageWrapperDTO;
-import bio.cosy.feddb.core.api.run.AppRunTypeEnum;
-import bio.cosy.feddb.core.api.run.AppRunUploadData;
-import bio.cosy.feddb.core.api.run.OutputRunDataDTO;
+import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
+import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
+import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
+import bio.cosy.feddb.core.execution.run.dto.OutputRunDataDTO;
 import bio.cosy.feddb.core.helper.FileHelper;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
 import bio.cosy.feddb.core.api.model.ModelSubDataDTO;

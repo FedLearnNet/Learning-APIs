@@ -1,10 +1,8 @@
 package bio.cosy.feddb.local.api.learning.project.run.step;
 
 import bio.cosy.feddb.core.api.file.FileDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageMetricDTO;
-import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
-import bio.cosy.feddb.local.api.learning.project.run.data.FederatedLearningExperimentStepDataDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -15,8 +13,8 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class FederatedLearningExperimentStepDetailDTO extends FederatedLearningExperimentStepDTO {
-    private List<RunMessageLogDTO> logs;
-    private List<RunMessageMetricDTO> metrics;
+    private List<ExecutionMessageLogDTO> logs;
+    private List<ExecutionMessageMetricDTO> metrics;
 
     private LinkedHashMap<String, Object> result;
 

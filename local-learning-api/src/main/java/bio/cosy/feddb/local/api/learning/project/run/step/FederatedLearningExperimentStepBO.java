@@ -1,7 +1,7 @@
 package bio.cosy.feddb.local.api.learning.project.run.step;
 
 import bio.cosy.feddb.core.api.project.ProjectStatus;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.api.socket.FederatedLearningRelayInfoDTO;
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.api.workflow.base.BaseWorkflowEngine;
@@ -14,7 +14,6 @@ import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningExperiment
 import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningExperimentEntity;
 import bio.cosy.feddb.local.api.learning.project.run.data.FederatedLearningExperimentStepDataBO;
 import bio.cosy.feddb.local.api.learning.project.run.data.FederatedLearningExperimentStepDataDTO;
-import bio.cosy.feddb.local.api.learning.project.run.data.StepResultContext;
 import bio.cosy.feddb.local.api.learning.project.run.message.FederatedLearningExperimentStepMessageBO;
 import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestBO;
 import bio.cosy.feddb.local.api.workflow.WorkflowBO;

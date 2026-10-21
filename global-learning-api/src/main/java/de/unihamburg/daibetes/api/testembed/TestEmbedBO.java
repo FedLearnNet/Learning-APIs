@@ -4,9 +4,12 @@ import bio.cosy.feddb.core.api.app.FederatedAppDetailDTO;
 import bio.cosy.feddb.core.api.app.FederatedAppVersionDTO;
 import bio.cosy.feddb.core.api.model.ModelDTO;
 import bio.cosy.feddb.core.api.model.ModelSubDataDTO;
-import bio.cosy.feddb.core.api.run.*;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageMetricDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
+import bio.cosy.feddb.core.execution.run.dto.*;
+import bio.cosy.feddb.core.execution.run.types.AppMessageTypeEnum;
+import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.helper.FileHelper;
 import de.unihamburg.daibetes.api.app.FederatedAppBO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionBO;
@@ -274,31 +277,31 @@ public class TestEmbedBO {
     }
 
     @Transactional
-    public AppMessageWrapperDTO<RunMessageLogDTO> logTestMessage(Long runId, RunMessageLogDTO log, AppRunTypeEnum runType) {
+    public AppMessageWrapperDTO<ExecutionMessageLogDTO> logTestMessage(Long runId, ExecutionMessageLogDTO log, AppRunTypeEnum runType) {
         if (runType == AppRunTypeEnum.EXPERIMENT_RUN) {
-            RunMessageLogDTO dto = experimentRunMessageBO.create(log, runId);
+            ExecutionMessageLogDTO dto = experimentRunMessageBO.create(log, runId);
             return new AppMessageWrapperDTO<>(AppMessageTypeEnum.LOG_MESSAGE, dto);
         }
         if (isFederatedTestRun(runType)) {
             String participantId = log.getWorkerId();
-            RunMessageLogDTO dto = federatedParticipantMessageBO.create(log, runId, participantId);
+            ExecutionMessageLogDTO dto = federatedParticipantMessageBO.create(log, runId, participantId);
             return new AppMessageWrapperDTO<>(AppMessageTypeEnum.LOG_MESSAGE, dto, AppRunTypeEnum.FEDERATED_TEST_RUN);
         }
-        RunMessageLogDTO dto = testRunMessageBO.create(log, runId);
+        ExecutionMessageLogDTO dto = testRunMessageBO.create(log, runId);
         return new AppMessageWrapperDTO<>(AppMessageTypeEnum.LOG_MESSAGE, dto);
     }
 
     @Transactional
-    public AppMessageWrapperDTO<RunMessageMetricDTO> logTestMetric(Long runId, RunMessageMetricDTO log, AppRunTypeEnum runType) {
+    public AppMessageWrapperDTO<ExecutionMessageMetricDTO> logTestMetric(Long runId, ExecutionMessageMetricDTO log, AppRunTypeEnum runType) {
         if (runType == AppRunTypeEnum.TEST_RUN) {
-            RunMessageMetricDTO dto = testRunMessageBO.create(log, runId);
+            ExecutionMessageMetricDTO dto = testRunMessageBO.create(log, runId);
             return new AppMessageWrapperDTO<>(AppMessageTypeEnum.LOG_METRIC, dto);
         } else if (runType == AppRunTypeEnum.EXPERIMENT_RUN) {
-            RunMessageMetricDTO dto = experimentRunMessageBO.create(log, runId);
+            ExecutionMessageMetricDTO dto = experimentRunMessageBO.create(log, runId);
             return new AppMessageWrapperDTO<>(AppMessageTypeEnum.LOG_METRIC, dto);
         } else if (isFederatedTestRun(runType)) {
             String participantId = log.getWorkerId();
-            RunMessageMetricDTO dto = federatedParticipantMessageBO.create(log, runId, participantId);
+            ExecutionMessageMetricDTO dto = federatedParticipantMessageBO.create(log, runId, participantId);
             return new AppMessageWrapperDTO<>(AppMessageTypeEnum.LOG_METRIC, dto, AppRunTypeEnum.FEDERATED_TEST_RUN);
         } else {
             throw new IllegalArgumentException("[logTestMetric] Unsupported run type: " + runType);

@@ -1,9 +1,6 @@
 package bio.cosy.feddb.local.api.learning.project.run.message;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageMetricDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageTypes;
+import bio.cosy.feddb.core.execution.message.*;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
 import bio.cosy.feddb.local.api.search.SearchResultDTO;
@@ -23,7 +20,7 @@ import java.util.stream.Collectors;
 import static bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectServiceImpl.TRAINING_STEP_LOG_CHANNEL;
 
 @ApplicationScoped
-public class FederatedLearningExperimentStepMessageBO extends BaseBo<RunMessageDTO, FederatedLearningExperimentStepMessageEntity, FederatedLearningExperimentStepMessageAO, FederatedLearningExperimentStepMessageMapper> {
+public class FederatedLearningExperimentStepMessageBO extends BaseBo<ExecutionMessageDTO, FederatedLearningExperimentStepMessageEntity, FederatedLearningExperimentStepMessageAO, FederatedLearningExperimentStepMessageMapper> {
 
     @Inject
     RunMessageLogMapper logMapper;
@@ -37,18 +34,18 @@ public class FederatedLearningExperimentStepMessageBO extends BaseBo<RunMessageD
     @Inject
     @Channel(TRAINING_STEP_LOG_CHANNEL)
     @OnOverflow(OnOverflow.Strategy.DROP)
-    Emitter<RunMessageLogDTO> infoEmitter;
+    Emitter<ExecutionMessageLogDTO> infoEmitter;
 
-    public List<RunMessageDTO> findByRun(Long projectId, String keycloakId) {
+    public List<ExecutionMessageDTO> findByRun(Long projectId, String keycloakId) {
         return mapper.entitiesToDtos(ao.findByProject(projectId));
     }
 
-    public List<SearchResultDTO<RunMessageDTO>> search(String query, String keycloakId) {
+    public List<SearchResultDTO<ExecutionMessageDTO>> search(String query, String keycloakId) {
         return ao.listAll().stream()
                 .filter(message -> message.getType() == RunMessageTypes.LOG)
                 .filter(message -> isAllowed(message, keycloakId))
                 .map(message -> {
-                    RunMessageDTO dto = mapper.entityToDto(message);
+                    ExecutionMessageDTO dto = mapper.entityToDto(message);
                     String title = dto.getMessage();
                     int score = SearchScoreUtil.score(query, title, dto.getProcess(), dto.getWorkerId());
                     return SearchScoreUtil.toResult(SearchResultType.LOG, dto, title, score);
@@ -57,22 +54,22 @@ public class FederatedLearningExperimentStepMessageBO extends BaseBo<RunMessageD
                 .toList();
     }
 
-    public List<RunMessageLogDTO> findLogByStepId(Long stepId) {
-        List<RunMessageDTO> dtos = mapper.entitiesToDtos(ao.findByStep(stepId, RunMessageTypes.LOG));
+    public List<ExecutionMessageLogDTO> findLogByStepId(Long stepId) {
+        List<ExecutionMessageDTO> dtos = mapper.entitiesToDtos(ao.findByStep(stepId, RunMessageTypes.LOG));
         return logMapper.dtosToLogDtos(dtos);
     }
 
-    public List<RunMessageMetricDTO> findMetricByStepId(Long stepId) {
-        List<RunMessageDTO> dtos = mapper.entitiesToDtos(ao.findByStep(stepId, RunMessageTypes.METRIC));
+    public List<ExecutionMessageMetricDTO> findMetricByStepId(Long stepId) {
+        List<ExecutionMessageDTO> dtos = mapper.entitiesToDtos(ao.findByStep(stepId, RunMessageTypes.METRIC));
         return metricMapper.dtosToMetricDtos(dtos);
     }
 
-    public RunMessageLogDTO create(RunMessageLogDTO dto, Long runId) {
+    public ExecutionMessageLogDTO create(ExecutionMessageLogDTO dto, Long runId) {
         if (runId != null) {
             dto.setRunId(runId);
-            RunMessageDTO toCreate = logMapper.logDtoToDto(dto);
-            RunMessageDTO created = create(toCreate);
-            RunMessageLogDTO createdDto = logMapper.dtoToLogDTO(created);
+            ExecutionMessageDTO toCreate = logMapper.logDtoToDto(dto);
+            ExecutionMessageDTO created = create(toCreate);
+            ExecutionMessageLogDTO createdDto = logMapper.dtoToLogDTO(created);
             sendInfo(createdDto);
             return createdDto;
         }
@@ -80,17 +77,17 @@ public class FederatedLearningExperimentStepMessageBO extends BaseBo<RunMessageD
         return dto;
     }
 
-    public RunMessageMetricDTO create(RunMessageMetricDTO dto, Long runId) {
+    public ExecutionMessageMetricDTO create(ExecutionMessageMetricDTO dto, Long runId) {
         if (runId != null) {
             dto.setRunId(runId);
-            RunMessageDTO toCreate = metricMapper.logDtoToDto(dto);
-            RunMessageDTO created = create(toCreate);
+            ExecutionMessageDTO toCreate = metricMapper.logDtoToDto(dto);
+            ExecutionMessageDTO created = create(toCreate);
             return metricMapper.dtoToMetricDTO(created);
         }
         return dto;
     }
 
-    protected void sendInfo(RunMessageLogDTO dto) {
+    protected void sendInfo(ExecutionMessageLogDTO dto) {
         try {
             infoEmitter.send(dto);
             Log.debug("SSE event sent: " + dto);

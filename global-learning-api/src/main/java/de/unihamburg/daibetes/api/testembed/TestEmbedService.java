@@ -1,9 +1,15 @@
 package de.unihamburg.daibetes.api.testembed;
 
 import bio.cosy.feddb.core.api.app.FederatedAppDetailDTO;
-import bio.cosy.feddb.core.api.run.*;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageMetricDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
+import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
+import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
+import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
+import bio.cosy.feddb.core.execution.run.dto.UpdateRunDTO;
+import bio.cosy.feddb.core.execution.run.types.AppConnectionTypesEnum;
+import bio.cosy.feddb.core.execution.run.types.AppMessageTypeEnum;
+import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
@@ -208,13 +214,13 @@ public class TestEmbedService {
                 handleAppConnected(appId, type);
                 break;
             case LOG_MESSAGE:
-                RunMessageLogDTO runMessage = objectMapper.convertValue(m.getMessage(), RunMessageLogDTO.class);
-                AppMessageWrapperDTO<RunMessageLogDTO> savedLog = testEmbedBO.logTestMessage(runMessage.getRunId(), runMessage, runType);
+                ExecutionMessageLogDTO runMessage = objectMapper.convertValue(m.getMessage(), ExecutionMessageLogDTO.class);
+                AppMessageWrapperDTO<ExecutionMessageLogDTO> savedLog = testEmbedBO.logTestMessage(runMessage.getRunId(), runMessage, runType);
                 getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(savedLog));
                 break;
             case LOG_METRIC:
-                RunMessageMetricDTO runMetric = objectMapper.convertValue(m.getMessage(), RunMessageMetricDTO.class);
-                AppMessageWrapperDTO<RunMessageMetricDTO> savedMetric = testEmbedBO.logTestMetric(runMetric.getRunId(), runMetric, runType);
+                ExecutionMessageMetricDTO runMetric = objectMapper.convertValue(m.getMessage(), ExecutionMessageMetricDTO.class);
+                AppMessageWrapperDTO<ExecutionMessageMetricDTO> savedMetric = testEmbedBO.logTestMetric(runMetric.getRunId(), runMetric, runType);
                 getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(savedMetric));
                 break;
             case UPDATE_FEDERATED_RUN:

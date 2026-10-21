@@ -1,10 +1,9 @@
 package de.unihamburg.daibetes.api.analysis.worklfow.step;
 
 import bio.cosy.feddb.core.api.model.workflow.DataAnalysisFileDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageMetricDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
 import bio.cosy.feddb.core.api.workflow.base.step.BaseWorkflowStepDTO;
-import de.unihamburg.daibetes.api.analysis.worklfow.message.DataAnalysisWorkflowRunMessagesDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -14,8 +13,8 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class DataAnalysisWorkflowRunStepDTO extends BaseWorkflowStepDTO {
-    private List<RunMessageMetricDTO> metrics;
-    private List<RunMessageLogDTO> logs;
+    private List<ExecutionMessageMetricDTO> metrics;
+    private List<ExecutionMessageLogDTO> logs;
 
     private LinkedHashMap<String, Object> result;
     private LinkedHashMap<String, Object> inputs;

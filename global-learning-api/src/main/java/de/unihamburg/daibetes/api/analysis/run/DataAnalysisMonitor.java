@@ -1,7 +1,7 @@
 package de.unihamburg.daibetes.api.analysis.run;
 
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisPredictionDTO;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionBO;
 import de.unihamburg.daibetes.config.FLNetConfig;
 import io.quarkus.logging.Log;

@@ -1,6 +1,6 @@
 package bio.cosy.feddb.core.api.model;
 
-import bio.cosy.feddb.core.base.BaseAppServer;
+import bio.cosy.feddb.core.execution.server.BaseAppServer;
 
 
 /**

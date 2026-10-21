@@ -1,6 +1,6 @@
 package de.unihamburg.daibetes.api.runs.test.federated;
 
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.base.BaseDTO;
 import de.unihamburg.daibetes.api.runs.test.federated.message.FederatedRoundMessageDTO;
 import de.unihamburg.daibetes.api.runs.test.federated.participant.FederatedParticipantDTO;

@@ -1,11 +1,9 @@
 package de.unihamburg.daibetes.api.runs.test;
 
-import de.unihamburg.daibetes.api.app.FederatedAppEntity;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
-import bio.cosy.feddb.core.api.run.RunMetaDTO;
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.dto.RunMetaDTO;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import de.unihamburg.daibetes.api.runs.test.message.TestRunMessageEntity;
-import bio.cosy.feddb.core.base.BaseAuthEntity;
 import bio.cosy.feddb.core.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;

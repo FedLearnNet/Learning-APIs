@@ -1,8 +1,8 @@
 package de.unihamburg.daibetes.api.analysis.worklfow.message;
 
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisRunModesEnum;
-import bio.cosy.feddb.core.api.run.message.RunMessageDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.base.BaseBo;
 import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionAO;
 import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionEntity;
@@ -30,9 +30,9 @@ public class DataAnalysisWorkflowRunMessagesBO extends BaseBo<DataAnalysisWorkfl
         return mapper.entitiesToDtos(ao.findByStep(projectId));
     }
 
-    public void create(RunMessageLogDTO dto, DataAnalysisRunModesEnum runMode, Long runId) {
+    public void create(ExecutionMessageLogDTO dto, DataAnalysisRunModesEnum runMode, Long runId) {
         if (runId != null) {
-            RunMessageDTO toCreate = logMapper.logDtoToDto(dto);
+            ExecutionMessageDTO toCreate = logMapper.logDtoToDto(dto);
             DataAnalysisWorkflowRunMessagesDTO dataAnalysisDto = mapper.runDtoToDto(toCreate);
             DataAnalysisWorkflowRunMessagesEntity toPersist = mapper.dtoToEntity(dataAnalysisDto);
             toPersist.setRunMode(runMode);

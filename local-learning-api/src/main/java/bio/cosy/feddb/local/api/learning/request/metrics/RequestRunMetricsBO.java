@@ -1,7 +1,7 @@
 package bio.cosy.feddb.local.api.learning.request.metrics;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageMetricDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageTypes;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
+import bio.cosy.feddb.core.execution.message.RunMessageTypes;
 import bio.cosy.feddb.core.api.socket.ProjectFederatedRequestRunMetricsDTO;
 import bio.cosy.feddb.core.api.socket.RunMetricDTO;
 import bio.cosy.feddb.core.api.socket.RunMetricsResponseClientDTO;
@@ -192,7 +192,7 @@ public class RequestRunMetricsBO extends BaseBo<RequestRunMetricsDTO, RequestRun
             return;
         }
 
-        List<RunMessageMetricDTO> metricMessages = experiment.getSteps().stream()
+        List<ExecutionMessageMetricDTO> metricMessages = experiment.getSteps().stream()
                 .flatMap(step -> metricMapper.dtosToMetricDtos(
                         stepMessageMapper.entitiesToDtos(
                                 stepMessageAO.findByStep(step.getId(), RunMessageTypes.METRIC)

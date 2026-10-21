@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.importer.run.message;
 
-import bio.cosy.feddb.core.api.run.message.RunMessageDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageDTO;
 import bio.cosy.feddb.core.base.BaseMapper;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepEntity;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerEntity;
@@ -68,6 +68,6 @@ public interface ConnectorRunMessagesMapper extends BaseMapper<ConnectorRunMessa
             @Mapping(target = "transformerId", ignore = true),
             @Mapping(target = "stepId", ignore = true)
     })
-    ConnectorRunMessagesDTO runDtoToDto(RunMessageDTO sourceCode);
+    ConnectorRunMessagesDTO runDtoToDto(ExecutionMessageDTO sourceCode);
 
 }

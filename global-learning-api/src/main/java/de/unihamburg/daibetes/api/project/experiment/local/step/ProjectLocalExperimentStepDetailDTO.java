@@ -1,8 +1,8 @@
 package de.unihamburg.daibetes.api.project.experiment.local.step;
 
 import bio.cosy.feddb.core.api.file.FileDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
-import bio.cosy.feddb.core.api.run.message.RunMessageMetricDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -13,8 +13,8 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class ProjectLocalExperimentStepDetailDTO extends ProjectLocalExperimentStepDTO {
-    private List<RunMessageLogDTO> logMessages;
-    private List<RunMessageMetricDTO> metrics;
+    private List<ExecutionMessageLogDTO> logMessages;
+    private List<ExecutionMessageMetricDTO> metrics;
 
 
     private LinkedHashMap<String, Object> result;

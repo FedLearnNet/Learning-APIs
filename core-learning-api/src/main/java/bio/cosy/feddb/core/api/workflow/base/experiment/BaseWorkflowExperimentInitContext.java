@@ -12,7 +12,6 @@ import java.util.LinkedHashMap;
 @AllArgsConstructor
 public class BaseWorkflowExperimentInitContext {
     private StartWorkflowNodeDTO startDTO;
-    private boolean isOldFCVersion;
     private Long stepId;
     private LinkedHashMap<String, Object> nodeHyperParams;
 

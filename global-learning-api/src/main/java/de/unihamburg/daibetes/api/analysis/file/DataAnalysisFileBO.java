@@ -5,7 +5,7 @@ import bio.cosy.feddb.core.api.file.FileDTO;
 import bio.cosy.feddb.core.api.file.FileRenameDTO;
 import bio.cosy.feddb.core.api.file.analytics.FileProfile;
 import bio.cosy.feddb.core.api.model.workflow.DataAnalysisFileDTO;
-import bio.cosy.feddb.core.api.run.AppRunUploadData;
+import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.base.BaseFileEntity;
 import bio.cosy.feddb.core.helper.FileHelper;
