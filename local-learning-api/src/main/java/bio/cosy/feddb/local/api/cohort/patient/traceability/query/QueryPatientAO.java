@@ -37,15 +37,17 @@ public class QueryPatientAO implements PanacheRepository<QueryPatientEntity> {
     }
 
     public List<QueryPatientEntity> list(
-            Page page, Long internalCohortId, Long internalPatientId, Long queryId) {
+            Page page, Long internalCohortId, Long internalPatientId, Long queryId, Collection<Long> cohortIds) {
         // Build the query dynamically, adding conditions and an AND operator as needed
         // Basically creates
-        // "patient.cohort.Id = :internalCohortId AND patient.Id = :internalPatientId AND query.id = :queryId"
-        // Doesnt add the relevant conditions/ands if not provided
-        StringBuilder queryBuilder = new StringBuilder();
+        // "patient.cohort.id IN :cohortIds AND patient.cohort.Id = :internalCohortId AND patient.Id = :internalPatientId
+        // AND query.id = :queryId". Doesnt add the optional conditions/ands if not provided
+        StringBuilder queryBuilder = new StringBuilder("patient.cohort.id IN :cohortIds");
         Map<String, Object> parameters = new HashMap<>();
+        parameters.put("cohortIds", cohortIds);
 
         if (internalCohortId != null) {
+            queryBuilder.append(" AND ");
             queryBuilder.append("patient.cohort.Id  = :internalCohortId");
             parameters.put("internalCohortId", internalCohortId);
         }

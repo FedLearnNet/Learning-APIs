@@ -1,6 +1,5 @@
 package bio.cosy.feddb.local.api.query;
 
-import  io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -13,8 +12,6 @@ import java.util.List;
 @Path("/query")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "Query", description = "Service for receiving Queries")
 public interface QueryService {
 

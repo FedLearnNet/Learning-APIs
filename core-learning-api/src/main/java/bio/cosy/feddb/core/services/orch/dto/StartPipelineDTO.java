@@ -1,5 +1,6 @@
 package bio.cosy.feddb.core.services.orch.dto;
 
+import bio.cosy.feddb.core.api.pipeline.PipelineRunMode;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -17,11 +18,13 @@ public class StartPipelineDTO {
     @NotBlank(message = "appImage cannot be blank")
     private String appImage;
 
+    @NotNull
+    private PipelineRunMode runMode = PipelineRunMode.ALL;
+
     private List<String> environments = new ArrayList<>();
 
-    public void addEnvironment(String token, Long id, String secret) {
-        environments.add("DOCKER_LOGIN=True");
-        environments.add("OAUTH_TOKEN=" + token);
+    public void addEnvironment(String apiKey, Long id, String secret) {
+        environments.add("PIPELINE_API_KEY=" + apiKey);
         environments.add("PIPELINE_ID=" + id);
         environments.add("PIPELINE_SECRET=" + secret);
     }

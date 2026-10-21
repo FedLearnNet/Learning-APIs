@@ -1,9 +1,10 @@
 package bio.cosy.feddb.core.api.datamodler.datatype;
 
-import bio.cosy.feddb.core.api.datamodler.ontology.OntologyNodeDTO;
 import bio.cosy.feddb.core.api.datamodler.validation.ValidationResultDTO;
 import bio.cosy.feddb.core.base.PagedResponse;
+import bio.cosy.feddb.core.security.Roles;
 import io.smallrye.mutiny.Uni;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -41,7 +42,6 @@ public interface DataTypeService {
                     content = @Content(schema = @Schema(implementation = DataTypeNodeDTO.class, type = SchemaType.ARRAY))
             )
     })
-        // @RolesAllowed({"datatype-read", "datatype-write"})
     Uni<PagedResponse<DataTypeNodeDTO>> list(
             @Parameter(
                     name = "ontologyId",
@@ -168,6 +168,7 @@ public interface DataTypeService {
     Uni<Response> generateDummyData(@Valid DummyDataRequestDTO request);
 
     @POST
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Operation(summary = "Create a new DataType", description = "Creates a new DataType.")
     @APIResponses({
             @APIResponse(
@@ -181,7 +182,6 @@ public interface DataTypeService {
             ),
     })
     @ResponseStatus(CREATED)
-        // @RolesAllowed({"datatype-create"})
     Uni<DataTypeNodeDTO> create(
             @Parameter(
                     description = "Payload for creating a datatype"
@@ -260,6 +260,7 @@ public interface DataTypeService {
     );
 
     @PUT
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Path("/{id}")
     @Operation(summary = "Update a DataType", description = "Updates an existing DataType (full update).")
     @APIResponses({
@@ -286,6 +287,7 @@ public interface DataTypeService {
 
 
     @DELETE
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Path("/{id}")
     @Operation(summary = "Delete a DataType", description = "Deletes a DataType.")
     @APIResponses({

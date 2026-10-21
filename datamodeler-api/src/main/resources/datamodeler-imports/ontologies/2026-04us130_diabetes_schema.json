@@ -1,0 +1,502 @@
+[
+  {
+    "ontology": {
+      "names": [
+        "Race"
+      ],
+      "description": "Ontology Race",
+      "cui": "4f9bf6c0-de4f-4066-a691-e25240d8dae1",
+      "id": "db42a70e-f74c-58f2-9ceb-6d42b45bb19c"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Sex assigned at birth"
+      ],
+      "description": "Ontology Sex assigned at birth",
+      "cui": "13b428de-2e1a-4629-b66c-f45d4255bb59",
+      "id": "a1cbbfb8-a214-55c7-beb5-2c64fb1e1db9"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Age"
+      ],
+      "description": "Ontology Age",
+      "cui": "8715aa8a-d5b3-4cd1-886f-5dee9e6aac00",
+      "id": "d9f5f4a3-2a1e-5a4a-a46b-148722b9a6b4"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Body Weight"
+      ],
+      "description": "Ontology Body Weight",
+      "cui": "08cd2235-64be-4ce2-b42b-510e6366a11f",
+      "id": "78566244-4e11-5e6c-b94a-81796d7ca62c"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Encounter Identifier"
+      ],
+      "description": "Ontology Encounter Identifier",
+      "cui": "de46bd0a-dae1-46d9-8a9e-6bebc382d5ed",
+      "id": "54e7a243-faf6-5caf-ab70-dcab7e0dcd70"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Patient Number"
+      ],
+      "description": "Ontology Patient Number",
+      "cui": "f90d1308-6bcb-45bf-a261-f9ff4ed50d78",
+      "id": "ea7d704f-6970-5efc-a217-edba014064e1"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Admission Type"
+      ],
+      "description": "Ontology Admission Type",
+      "cui": "55105403-ce9e-44e4-89f5-d7caaf7c422a",
+      "id": "28f63d83-7417-5c7d-b136-1e30a04a3235"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Discharge Disposition"
+      ],
+      "description": "Ontology Discharge Disposition",
+      "cui": "c10dd56f-70c8-42bf-bf3c-3207cfd66a3c",
+      "id": "4403ac30-2999-522f-ab59-56b882d3aaf4"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Admission Source"
+      ],
+      "description": "Ontology Admission Source",
+      "cui": "57db730a-4861-4fdc-92bc-6fc92af6bfb3",
+      "id": "a5591e45-4732-5b76-8d9e-2bb10bbda1a7"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Length of Stay"
+      ],
+      "description": "Ontology Length of Stay",
+      "cui": "2056c77a-a932-48bd-a8fe-b12b373ece08",
+      "id": "b34ccdb9-e160-59bb-9073-cc403778c4e4"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Payer Code"
+      ],
+      "description": "Ontology Payer Code",
+      "cui": "5be188a4-7d67-466a-87ed-b0cf60e02a1c",
+      "id": "b11ccbb8-aa08-5ad9-9089-40213321c32a"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Medical Specialty"
+      ],
+      "description": "Ontology Medical Specialty",
+      "cui": "ba88f96e-87e1-478d-bcbb-70d95ebeea04",
+      "id": "0b507e70-fa48-5061-9708-fbfd8e5286c1"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Number of Lab Procedures"
+      ],
+      "description": "Ontology Number of Lab Procedures",
+      "cui": "017ce30d-bcac-4fac-8083-a55030e0412f",
+      "id": "694ccff3-c2e7-5008-9e93-3d83e30a11c1"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Number of Procedures"
+      ],
+      "description": "Ontology Number of Procedures",
+      "cui": "d8a33451-4d1f-4642-a847-9a00ee6e7800",
+      "id": "ae17cce5-8d1d-5e63-bcb0-b1960b5355a2"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Number of Medications"
+      ],
+      "description": "Ontology Number of Medications",
+      "cui": "399e7454-2a8b-47db-98d3-9430f36adb72",
+      "id": "f18a256d-0c87-5a95-a5bb-d363537167c6"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Number of Diagnoses"
+      ],
+      "description": "Ontology Number of Diagnoses",
+      "cui": "3b40c527-f696-4ac3-a6d6-d3e81efdc127",
+      "id": "d8d1f718-437c-5b20-a952-f4f4c5622fde"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Number of Outpatient Visits"
+      ],
+      "description": "Ontology Number of Outpatient Visits",
+      "cui": "0812df59-9086-46bb-bcda-3839a4eb33c3",
+      "id": "12a7430a-d0bd-57a2-a769-3ffc7e723361"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Number of Emergency Visits"
+      ],
+      "description": "Ontology Number of Emergency Visits",
+      "cui": "c2d53a83-6c54-434a-b402-61abdd9a901e",
+      "id": "0254ccd7-1fb1-5f74-b55c-a1af1198768e"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Number of Inpatient Visits"
+      ],
+      "description": "Ontology Number of Inpatient Visits",
+      "cui": "a4a5db05-1f7c-480d-91dd-f789f9ef15be",
+      "id": "5875fd47-db2d-504c-a7f8-dec4219045c2"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Primary Diagnosis"
+      ],
+      "description": "Ontology Primary Diagnosis",
+      "cui": "e0fbb252-7def-4909-b7a0-a6757beaf853",
+      "id": "1ab53525-785e-56f9-8521-43e4b1ea0428"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Secondary Diagnosis"
+      ],
+      "description": "Ontology Secondary Diagnosis",
+      "cui": "7e70c3aa-fefb-42d7-a68b-6adfe013be56",
+      "id": "e5a74c4c-e56f-52c6-beff-fd22999fa56f"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Tertiary Diagnosis"
+      ],
+      "description": "Ontology Tertiary Diagnosis",
+      "cui": "634591de-f521-4f7c-a2e8-ecc1c4fe6428",
+      "id": "5367f500-fb9e-5c4d-bfeb-890c9a21aed9"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Maximum Glucose Serum"
+      ],
+      "description": "Ontology Maximum Glucose Serum",
+      "cui": "b331ee01-6bae-46c9-8d42-f73dca359591",
+      "id": "e9786ae4-dcd6-54ac-aed6-5f4767b3ea0b"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "HbA1c"
+      ],
+      "description": "Ontology HbA1c",
+      "cui": "b79a096c-8d62-4c36-8174-eb464a78694c",
+      "id": "f2e83ba5-88e3-5117-8dc4-e0ecfac5955b"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Metformin"
+      ],
+      "description": "Ontology Metformin",
+      "cui": "cf844174-697c-4cfd-8f64-6480b920c7d4",
+      "id": "c7fc8f51-c5e7-5259-a4e1-16942d787315"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Repaglinide"
+      ],
+      "description": "Ontology Repaglinide",
+      "cui": "66047859-48c4-4a6c-95eb-9a555f28963a",
+      "id": "d5a2fd20-6464-54a6-bb14-31e3a7d8bc79"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Nateglinide"
+      ],
+      "description": "Ontology Nateglinide",
+      "cui": "8418a6e6-bde2-4cc9-babd-40c00c1685f1",
+      "id": "130986d1-ce5e-517e-845b-3f0a045ed401"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Chlorpropamide"
+      ],
+      "description": "Ontology Chlorpropamide",
+      "cui": "c4e9b18b-c823-4260-ab04-ad1eb1b3dc59",
+      "id": "086dbd6b-d32c-5660-879f-70d23cd38298"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Glimepiride"
+      ],
+      "description": "Ontology Glimepiride",
+      "cui": "6206c187-7ba8-4cd1-a862-61611921ca3d",
+      "id": "7ca7b8bb-5caa-507e-9fea-e557d6a7ff9e"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Acetohexamide"
+      ],
+      "description": "Ontology Acetohexamide",
+      "cui": "88f63ace-dad8-4a3e-925d-cf81be75e36c",
+      "id": "f745f959-865a-55ae-8ab5-5700dbadddac"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Glipizide"
+      ],
+      "description": "Ontology Glipizide",
+      "cui": "369995e5-a90b-4659-ab01-4d8becb5b5ab",
+      "id": "24736aba-0b80-55c8-a89d-2be9f4047f4b"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Glyburide"
+      ],
+      "description": "Ontology Glyburide",
+      "cui": "30dbc802-38c5-4817-bb0b-cbc30635a5ab",
+      "id": "c62746a9-a35e-501b-8026-7a6c4d8e4a05"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Tolbutamide"
+      ],
+      "description": "Ontology Tolbutamide",
+      "cui": "4a961e31-2b6f-40f1-b9b7-fc00e4d09a4c",
+      "id": "42df4b61-e845-5b63-99ad-bd00a5b59147"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Pioglitazone"
+      ],
+      "description": "Ontology Pioglitazone",
+      "cui": "9e74ea5e-a91f-412d-94db-6ec02662b515",
+      "id": "cf801640-4c2b-5816-b00b-293acd146381"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Rosiglitazone"
+      ],
+      "description": "Ontology Rosiglitazone",
+      "cui": "eeea5fa6-3a56-443c-9288-97ba05629a2e",
+      "id": "31b64e76-a398-5b76-aff6-cdc1eb4ed244"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Acarbose"
+      ],
+      "description": "Ontology Acarbose",
+      "cui": "be525636-92ad-4087-b3cc-5d4f354d5984",
+      "id": "93593961-e5c5-507b-8858-62972985d070"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Miglitol"
+      ],
+      "description": "Ontology Miglitol",
+      "cui": "da9d108d-a93d-4baa-978c-1f38a477d27c",
+      "id": "9167c8f7-445b-5b21-9c21-9a04a2909407"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Troglitazone"
+      ],
+      "description": "Ontology Troglitazone",
+      "cui": "cc9ad279-cc39-4346-b281-cc665662868b",
+      "id": "9b1e1cdd-ac21-597f-8701-aafbde9c81b9"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Tolazamide"
+      ],
+      "description": "Ontology Tolazamide",
+      "cui": "680883f2-bb77-46b1-be86-b147541aea93",
+      "id": "9f7be856-929f-5f36-a6a7-e729545cbe05"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Examide"
+      ],
+      "description": "Ontology Examide",
+      "cui": "37a5fa1c-b3a0-44c6-acfa-c6a2dcabf960",
+      "id": "c4b4b8e9-6fa8-5f59-902e-c2be8db18d71"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Citoglipton"
+      ],
+      "description": "Ontology Citoglipton",
+      "cui": "e10c69f7-f8b3-4a0f-a696-7caa45188fea",
+      "id": "8dca7017-7c5d-5a75-8d27-d8bfc1ce34bf"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Insulin"
+      ],
+      "description": "Ontology Insulin",
+      "cui": "b8223eb8-3a4d-410d-b566-0798c492ee81",
+      "id": "3a5edebc-22d1-526f-a170-1cb583cd7d3c"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Glyburide-Metformin"
+      ],
+      "description": "Ontology Glyburide-Metformin",
+      "cui": "10d66921-50ae-4bec-890f-ecf1f49544d1",
+      "id": "f3d5e744-78df-528c-8dc1-97842698ceab"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Glipizide-Metformin"
+      ],
+      "description": "Ontology Glipizide-Metformin",
+      "cui": "453d79db-6fec-4ba3-b412-85af7c480752",
+      "id": "986f9886-346f-5d32-9376-60f5d1501c36"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Glimepiride-Pioglitazone"
+      ],
+      "description": "Ontology Glimepiride-Pioglitazone",
+      "cui": "627b0a96-cf46-4538-ada6-33b823eae3c6",
+      "id": "68b95d6e-2563-505a-ba8b-9ab6fde0d891"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Metformin-Rosiglitazone"
+      ],
+      "description": "Ontology Metformin-Rosiglitazone",
+      "cui": "48c8caf5-c820-4e06-8799-85e22e5732b7",
+      "id": "c5098c89-5f91-5f16-8527-b648a82ce163"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Metformin-Pioglitazone"
+      ],
+      "description": "Ontology Metformin-Pioglitazone",
+      "cui": "0e27b7a0-d99a-4e43-a4fd-620053364bc4",
+      "id": "ad1a8e67-87a5-576a-a1bd-b319e334a87e"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Medication Change"
+      ],
+      "description": "Ontology Medication Change",
+      "cui": "238fadb8-53c4-426a-86ef-89117377638c",
+      "id": "422890da-ee99-5ffd-a549-d5472694acc4"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Diabetes Medication Prescribed"
+      ],
+      "description": "Ontology Diabetes Medication Prescribed",
+      "cui": "3eead4ce-a523-4f11-8b71-d3295e99caab",
+      "id": "9bb3bc68-b463-5e9a-8787-bcf3587ae355"
+    }
+  },
+  {
+    "ontology": {
+      "names": [
+        "Hospital Readmission"
+      ],
+      "description": "Ontology Hospital Readmission",
+      "cui": "973aaa79-efd5-4d21-8a6a-148efa07fe8e",
+      "id": "a72151fd-859b-5b6a-a752-039c0a541e29"
+    }
+  }
+]

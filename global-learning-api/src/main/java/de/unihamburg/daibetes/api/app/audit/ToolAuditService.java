@@ -1,6 +1,7 @@
 package de.unihamburg.daibetes.api.app.audit;
 
 import bio.cosy.feddb.core.api.app.ToolAuditDTO;
+import bio.cosy.feddb.core.security.Roles;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -17,7 +18,7 @@ import java.util.List;
 @Path("apps/audit")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@RolesAllowed({"Admin", "Auditor"})
+@RolesAllowed({Roles.ADMIN, Roles.GLOBAL_AUDITOR})
 @Tag(name = "Audit", description = "Service for managing tool Audit")
 public interface ToolAuditService {
     @GET

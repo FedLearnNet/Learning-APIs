@@ -5,6 +5,8 @@ import bio.cosy.feddb.core.api.run.*;
 import bio.cosy.feddb.core.api.run.message.ConsoleStdOutDTO;
 import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
+import jakarta.annotation.security.RolesAllowed;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.local.api.importer.run.message.ConnectorRunRunMessagesBO;
@@ -21,6 +23,7 @@ import java.util.LinkedHashMap;
 // type = AppConnectionTypesEnum
 @WebSocket(path = "/connectors/run/execution/{runId}/{type}")
 @ToolAuthenticated(Scope.CONNECTOR_RUN)
+@RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
 public class ConnectorRunExecutionWebsocketService extends ModelAppServer {
 
     private static final CloseReason RUN_FINISHED =

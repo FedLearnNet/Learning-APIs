@@ -3,8 +3,9 @@ package bio.cosy.feddb.local.api.learning.project.run;
 import bio.cosy.feddb.core.api.model.ModelSubDataDTO;
 import bio.cosy.feddb.core.api.run.AppRunUploadData;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
+import jakarta.annotation.security.RolesAllowed;
 import bio.cosy.feddb.core.security.Scope;
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -18,8 +19,6 @@ import org.jboss.resteasy.reactive.ResponseStatus;
 @Path("/learning/run")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "FederatedLearningExperiment", description = "Service for upload files for local learning")
 public interface FederatedLearningExperimentService {
 
@@ -27,6 +26,7 @@ public interface FederatedLearningExperimentService {
     @POST
     @Path("{runId}/upload/output")
     @ToolAuthenticated(Scope.LEARNING_RUN)
+    @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
     @Operation(summary = "Create output")
     @APIResponses({
             @APIResponse(responseCode = "201", description = "created"),
@@ -42,6 +42,7 @@ public interface FederatedLearningExperimentService {
     @POST
     @Path("{runId}/upload/model")
     @ToolAuthenticated(Scope.LEARNING_RUN)
+    @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
     @Operation(summary = "Upload model")
     @APIResponses({
             @APIResponse(responseCode = "201", description = "created"),

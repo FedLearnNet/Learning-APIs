@@ -8,7 +8,7 @@
     <parent>
         <groupId>bio.cosy.feddb</groupId>
         <artifactId>learning-apis</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>1.0.0.dev</version>
     </parent>
 
     <properties>
@@ -96,6 +96,11 @@
             <artifactId>quarkus-arc</artifactId>
         </dependency>
         <dependency>
+            <!-- bearer tokens of the platform Keycloak -->
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-oidc</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-openapi</artifactId>
         </dependency>
@@ -112,6 +117,11 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-test-security-oidc</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

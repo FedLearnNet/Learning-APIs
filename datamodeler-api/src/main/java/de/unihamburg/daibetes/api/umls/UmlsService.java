@@ -1,5 +1,7 @@
 package de.unihamburg.daibetes.api.umls;
 
+import bio.cosy.feddb.core.security.Roles;
+import jakarta.annotation.security.RolesAllowed;
 import bio.cosy.feddb.core.base.PagedResponse;
 import de.unihamburg.daibetes.api.umls.importer.ImportStatus;
 import de.unihamburg.daibetes.api.umls.search.UMLSCytoscapeGraphElementDTO;
@@ -26,12 +28,12 @@ import static org.jboss.resteasy.reactive.RestResponse.StatusCode.CREATED;
 @Path("/umls")
 @Produces("application/json")
 @Consumes("application/json")
-//@RolesAllowed("admin")
 @Tag(name = "UMLS", description = "Service for umls operations")
 public interface UmlsService {
     // Please note that in the Service, the umls import and embedding generation are separated into two endpoints.
     // However the automaticUmlsImportEmbedder on startup does automatically trigger umls import AND embedding
     @POST
+    @RolesAllowed(Roles.ADMIN) // long running import
     @Operation(summary = "Start UMLS import", description = "Start the UMLS integration process using files configured in application.properties (umls.import.mrconso and umls.import.mrrel). Does not trigger embedding generation, call POST /umls/embedding for that after the import finished.")
     @APIResponses({
             @APIResponse(responseCode = "200", description = "UMLS import started successfully"),
@@ -44,6 +46,7 @@ public interface UmlsService {
     Uni<Response> create(@QueryParam("embedding") @DefaultValue("true") boolean createAlsoEmbedding);
 
     @POST
+    @RolesAllowed(Roles.ADMIN) // long running
     @Operation(summary = "Create all Embeddings", description = "Trigger embedding generation for all relevant nodes. Call this after an import via POST /umls finished, the POST /umls does NOT automatically trigger embedding generation.")
     @APIResponses({
             @APIResponse(responseCode = "200", description = "Ontology nodes embedded successfully"),
@@ -68,7 +71,6 @@ public interface UmlsService {
                     description = "Paginated UMLS search results"
             )
     })
-        // @RolesAllowed({"umls-read", "ontology-write"})
     Uni<PagedResponse<UMLSSearchResultDTO>> search(
             @Parameter(
                     name = "search_string",
@@ -159,7 +161,6 @@ public interface UmlsService {
                     description = "Invalid data or ontology creation error"
             )
     })
-    // @RolesAllowed({"umls-create", "ontology-create"})
     @ResponseStatus(CREATED)
     Uni<String> createAllParentsGraph(
             @Parameter(

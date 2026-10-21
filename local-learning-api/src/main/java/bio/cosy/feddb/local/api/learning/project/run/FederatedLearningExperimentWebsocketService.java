@@ -4,6 +4,8 @@ import bio.cosy.feddb.core.api.run.*;
 import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
 import bio.cosy.feddb.core.api.run.message.RunMessageMetricDTO;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
+import jakarta.annotation.security.RolesAllowed;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.services.orch.WorkflowAppServer;
@@ -20,6 +22,7 @@ import jakarta.ws.rs.NotFoundException;
 
 @WebSocket(path = "/learning/run/{runId}/{type}")
 @ToolAuthenticated(Scope.LEARNING_RUN)
+@RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
 public class FederatedLearningExperimentWebsocketService extends WorkflowAppServer {
 
     private static final CloseReason RUN_FINISHED =
@@ -53,10 +56,8 @@ public class FederatedLearningExperimentWebsocketService extends WorkflowAppServ
     public void onOpen(WebSocketConnection connection) {
         Long runId = Long.parseLong(connection.pathParam("runId"));
         Log.info("Learning-Connection opened: " + connection.id() + " for runId " + runId);
-        String type = connection.pathParam("type");
-        AppConnectionTypesEnum connectionType = AppConnectionTypesEnum.fromString(type);
         try {
-            setAppIsRunning(runId, connectionType);
+            setAppIsRunning(runId);
         } catch (NotFoundException e) {
             workflowOrchestrator.cleanupWorkflowNode(runId);
             //cleanup if the step is not found
@@ -88,13 +89,9 @@ public class FederatedLearningExperimentWebsocketService extends WorkflowAppServ
     }
 
 
-    public void setAppIsRunning(Long runId, AppConnectionTypesEnum connectionType) {
+    public void setAppIsRunning(Long runId) {
         FederatedLearningExperimentStepDTO step = stepBO.getById(runId);
-        if (connectionType == AppConnectionTypesEnum.CONTROLLER) {
-            step.setStepStatus(RunStatusTypes.RUNNING);
-        } else {
-            step.setStepStatus(RunStatusTypes.STARTED);
-        }
+        step.setStepStatus(RunStatusTypes.STARTED);
         stepBO.updateStatus(step);
     }
 
@@ -124,7 +121,7 @@ public class FederatedLearningExperimentWebsocketService extends WorkflowAppServ
         try {
             Long runId = Long.parseLong(runIdString);
             Log.debug("Received message Text: " + m.getMessage() + " for container " + runId + " and type " + type + " of message type " + m.getType());
-            if (AppConnectionTypesEnum.APP.isEqual(type) || AppConnectionTypesEnum.CONTROLLER.isEqual(type)) {
+            if (AppConnectionTypesEnum.APP.isEqual(type)) {
                 handleAppMessages(m, runId, m.getRunType());
             }
         } catch (Exception e) {

@@ -32,6 +32,8 @@ services:
       QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://global-learning-api-db:5432/global-learning-management
       QUARKUS_DATASOURCE_USERNAME: user
       QUARKUS_DATASOURCE_PASSWORD: password
+      QUARKUS_FLYWAY_SCHEMAS: orch
+      QUARKUS_HIBERNATE_ORM_DATABASE_DEFAULT_SCHEMA: orch
       QUARKUS_LOG_CONSOLE_JSON_ENABLED: false
       CONTAINER_HOST_OVERRIDE: host.docker.internal
       CONTAINER_NETWORK_NAMES: global-learning-network
@@ -43,13 +45,24 @@ services:
       QUARKUS_LOG_CATEGORY_"bio.cosy.featurecloud"_LEVEL: DEBUG
       CONTAINER_MEMORY_LIMIT: 34179869184
       CONTAINER_MEMORY_SWAP: 68179869184
-      PIPELINE_DOCKER_LOGIN: true
+      ORCH_DOCKER__PRIVATE__REGISTRY_URL: localhost:5001
+      ORCH_DOCKER__PRIVATE__REGISTRY_API_URL: http://registry:5000
+      ORCH_DOCKER__PRIVATE__REGISTRY_USERNAME: ""
+      ORCH_DOCKER__PRIVATE__REGISTRY_PASSWORD: ""
+      PIPELINE_IMAGE_PREFIX: localhost:5001/flnet/tool-build-pipeline
+      PIPELINE_DOCKER_REGISTRY: localhost:5001
+      PIPELINE_DOCKER_GROUP: flnet/tools
+      PIPELINE_DOCKER_LOGIN: false
+      PIPELINE_DOCKER_PASSWORD: ""
+      PIPELINE_USE_BUILDX: false
       PIPELINE_HOST_REMOVE: false
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - global-orch-data:/mnt/input:rw
     depends_on:
       global-learning-api-db:
+        condition: service_healthy
+      registry:
         condition: service_healthy
     labels:
       # Change to `true` to disable waiting for ports
@@ -109,11 +122,27 @@ services:
     networks:
       - global-learning-network
 
+  registry:
+    image: registry:3
+    ports:
+      - "127.0.0.1:5001:5000"
+    volumes:
+      - registry-data:/var/lib/registry
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://127.0.0.1:5000/v2/" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - global-learning-network
+
 volumes:
   global-learning-api-db-volume:
   global-orch-data:
     name: "global-orch-data"
   datamodeler-db:
+  registry-data:
 
 networks:
   global-learning-network:
+    name: global-learning-network

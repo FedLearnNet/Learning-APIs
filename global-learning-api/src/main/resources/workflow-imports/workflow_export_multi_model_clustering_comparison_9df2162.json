@@ -170,7 +170,7 @@
       "y" : 0
     }
   } ],
-  "keycloakId" : "test",
+  "keycloakId" : "admin",
   "name" : "Multi-model clustering comparison",
   "description" : "Multi-model clustering comparison\n\n",
   "publishStatus" : "PUBLISHED"

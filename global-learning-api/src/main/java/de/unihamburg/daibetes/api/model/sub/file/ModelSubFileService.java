@@ -1,6 +1,5 @@
 package de.unihamburg.daibetes.api.model.sub.file;
 
-import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -13,7 +12,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Produces("application/json")
 @Consumes("application/json")
 @Tag(name = "ModelSubFile", description = "Service for downloading and deleting model sub-version files")
-@Authenticated
 public interface ModelSubFileService {
 
     @GET

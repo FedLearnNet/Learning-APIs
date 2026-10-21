@@ -37,7 +37,12 @@ public interface FederatedLearningExperimentStepMapper extends BaseMapper<Federa
             @Mapping(target = "containerId", ignore = true),
             @Mapping(target = "results", ignore = true),
             @Mapping(target = "workflowNode.id", source = "workflowNodeId"),
-            @Mapping(target = "inputs", ignore = true)
+            @Mapping(target = "inputs", ignore = true),
+            @Mapping(target = "relayCertAttempts", ignore = true),
+            @Mapping(target = "relayCertRequestedAt", ignore = true),
+            @Mapping(target = "relayCertSigned", ignore = true),
+            @Mapping(target = "relayCsr", ignore = true),
+            @Mapping(target = "relayStopped", ignore = true)
     })
     FederatedLearningExperimentStepEntity dtoToEntity(FederatedLearningExperimentStepDTO dto);
 

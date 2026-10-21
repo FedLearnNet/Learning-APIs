@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.Response;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @ApplicationScoped
 public class PermissionServiceImpl implements PermissionService {
@@ -25,12 +26,17 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public List<PermissionDTO> list() {
-        return bo.getAll();
+        Set<Long> cohortIds = cohortMemberAuthBO.getMemberCohortIds(userIdentity.getKeycloakId());
+        return bo.getAll().stream()
+                .filter(permission -> cohortIds.contains(permission.getCohortId()))
+                .toList();
     }
 
     @Override
     public PermissionDTO retrieve(Long id) {
-        return bo.findById(id);
+        PermissionDTO permission = bo.findById(id);
+        cohortMemberAuthBO.checkForMember(permission.getCohortId(), userIdentity.getKeycloakId());
+        return permission;
     }
 
     @Override

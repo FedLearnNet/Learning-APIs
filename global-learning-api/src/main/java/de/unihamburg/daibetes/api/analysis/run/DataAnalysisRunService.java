@@ -5,10 +5,11 @@ import bio.cosy.feddb.core.api.model.prediction.DataAnalysisPredictionDTO;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisRunModesEnum;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisStopPredictionDTO;
 import bio.cosy.feddb.core.api.run.AppRunUploadData;
-import bio.cosy.feddb.core.security.ToolAuthenticated;
 import bio.cosy.feddb.core.security.Scope;
-import io.quarkus.security.Authenticated;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
+import bio.cosy.feddb.core.security.ToolAuthenticated;
 import io.smallrye.mutiny.Multi;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -22,8 +23,6 @@ import org.jboss.resteasy.reactive.RestStreamElementType;
 @Path("/model/run")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "ModelRun", description = "Service for upload files to Model")
 public interface DataAnalysisRunService {
 
@@ -101,6 +100,7 @@ public interface DataAnalysisRunService {
     @POST
     @Path("/{mode}/{runId}/upload/output")
     @ToolAuthenticated({Scope.MODEL_PREDICTION_RUN, Scope.MODEL_WORKFLOW_RUN})
+    @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
     @Operation(summary = "Create output")
     @APIResponses({
             @APIResponse(responseCode = "201", description = "created"),

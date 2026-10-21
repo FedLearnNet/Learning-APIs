@@ -389,7 +389,7 @@
       "createdAt": "2026-02-23T14:58:00Z",
       "updatedAt": "2026-02-23T14:58:00Z",
       "version": 0,
-      "keycloakId": "test",
+      "keycloakId": "admin",
       "federatedAppId": 6
     }
   ],

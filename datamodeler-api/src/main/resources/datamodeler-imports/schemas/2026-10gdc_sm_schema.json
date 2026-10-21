@@ -1,0 +1,718 @@
+{
+  "id": "5e9db229-c847-50b6-925f-78c9681faed9",
+  "name": "2026-10gdc_sm_schema",
+  "description": "Root node of the schema 2026-10gdc_sm_schema",
+  "type": "ROOT",
+  "children": [
+    {
+      "id": "17b01e51-d8ff-5706-9b2a-ba26b31292e9",
+      "name": "GDC",
+      "description": "Grouping of GDC",
+      "type": "GROUP",
+      "children": [
+        {
+          "id": "505330b9-ebb9-564f-a443-2afcee38abc7",
+          "name": "primary_diagnosis",
+          "description": "GDC field primary diagnosis",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "3bbe11e2-0674-58ea-9511-14c71bb6290d",
+          "ontologyId": "84ab4326-1cdd-547e-8dab-6a08a3dd16f3",
+          "children": []
+        },
+        {
+          "id": "bf121ac3-c7dd-5176-9be3-79caa70a31fe",
+          "name": "age_at_diagnosis",
+          "description": "GDC field age at diagnosis",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "48c20d9d-d18e-5c62-9143-f9fb71355da1",
+          "children": []
+        },
+        {
+          "id": "8c7c268d-86ab-5a84-a5df-1a334f067b5e",
+          "name": "days_to_birth",
+          "description": "GDC field days to birth",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "53f0cfda-48d9-5e26-baa5-f17e97f3e183",
+          "children": []
+        },
+        {
+          "id": "3d5a9c5f-b615-5bb5-a9b5-5a402a39655d",
+          "name": "age_at_index",
+          "description": "GDC field age at index",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "54e9d838-feb4-5c75-aac3-eb7b2173d566",
+          "children": []
+        },
+        {
+          "id": "4594fe94-873f-5ce9-a12d-c0a2463e4720",
+          "name": "gender",
+          "description": "GDC field gender",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "144a5ca1-622c-5bb2-bc15-994639da3b69",
+          "ontologyId": "73457c63-496c-5ab3-b4ef-895fae32e1af",
+          "children": []
+        },
+        {
+          "id": "56c6cb82-96a6-5797-852e-dcef55a8fecf",
+          "name": "race",
+          "description": "GDC field race",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "6b77ce77-f6ea-58d0-aba4-70fcce6a865d",
+          "ontologyId": "34f390c0-c5b4-54de-94f3-a89b3f5acc5a",
+          "children": []
+        },
+        {
+          "id": "38d4b0d6-bf58-5213-b682-10c04b478a6b",
+          "name": "country_of_residence_at_enrollment",
+          "description": "GDC field country of residence at enrollment",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "73323f2f-383a-5d97-b617-395d52d04559",
+          "ontologyId": "1de33ff4-f04a-5b0f-8bd4-885bf57c424a",
+          "children": []
+        },
+        {
+          "id": "e4274420-c0dc-5a61-86fd-b738465b59d7",
+          "name": "country_of_birth",
+          "description": "GDC field country of birth",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "a2d79ed0-9f2e-5c37-9268-9a7da17c015f",
+          "ontologyId": "ccd54780-59ac-578f-8c64-00283a91a171",
+          "children": []
+        },
+        {
+          "id": "5a361507-f802-5c45-88b5-4ce21545fce5",
+          "name": "site_of_resection_or_biopsy",
+          "description": "GDC field site of resection or biopsy",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "4d8ccfa0-3d9e-58bb-9964-6aec5699aa56",
+          "ontologyId": "77f2c08e-fcb0-55ed-8eab-ded76cb6568c",
+          "children": []
+        },
+        {
+          "id": "29813568-e940-5495-adce-d89ca64412db",
+          "name": "tissue_or_organ_of_origin",
+          "description": "GDC field tissue or organ of origin",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "5da2c2e6-1e88-559d-ab78-6fc429261e11",
+          "ontologyId": "01fd99d9-bfe0-5ab1-9f8b-4f03165d8390",
+          "children": []
+        },
+        {
+          "id": "c9d8ba16-0067-5af9-934b-dfa2401c938c",
+          "name": "tumor_focality",
+          "description": "GDC field tumor focality",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c212e7c4-f0cd-5b38-8899-d74bfdd1efd9",
+          "ontologyId": "c02592cb-7cc6-5b3b-9e34-08f6a306d297",
+          "children": []
+        },
+        {
+          "id": "9961e79c-8759-59c5-9ae4-a2ce65af7f0b",
+          "name": "tumor_largest_dimension_diameter",
+          "description": "GDC field tumor largest dimension diameter",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "2bee1d92-4f05-50ed-b3e7-7e6b12c1d9dd",
+          "children": []
+        },
+        {
+          "id": "ba7ad4e8-b7fb-59a2-9954-993e704ad3ee",
+          "name": "greatest_tumor_dimension",
+          "description": "GDC field greatest tumor dimension",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "af9998f0-3b46-5f8a-8b9b-017395ca270c",
+          "children": []
+        },
+        {
+          "id": "0c907878-9336-5bfc-96c8-e3e5725fac7a",
+          "name": "tumor_width_measurement",
+          "description": "GDC field tumor width measurement",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "031349c3-898b-51ff-81eb-d110baceec54",
+          "children": []
+        },
+        {
+          "id": "4fa28d73-a30b-5770-ad14-a2d7ff492527",
+          "name": "tumor_length_measurement",
+          "description": "GDC field tumor length measurement",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "d03556b6-0f07-53bf-99cf-efbff81fb3bd",
+          "children": []
+        },
+        {
+          "id": "20082e78-9334-50b6-9bcb-477c49bfd3ea",
+          "name": "necrosis_present",
+          "description": "GDC field necrosis present",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "5afc89e6-52e0-55fc-9212-4a2506051dc2",
+          "ontologyId": "019ecd71-af11-564f-9e1e-e485f7267415",
+          "children": []
+        },
+        {
+          "id": "1a7ff6c1-636e-5490-981f-74b21d2b8521",
+          "name": "lymphatic_invasion_present",
+          "description": "GDC field lymphatic invasion present",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "b880b041-8a32-5bc5-a477-463f63cc982f",
+          "ontologyId": "4707b580-ebee-58b1-8d7a-d13b83823fc7",
+          "children": []
+        },
+        {
+          "id": "69197816-5986-5cdb-935d-6bb4e6b7d1b5",
+          "name": "vascular_invasion_present",
+          "description": "GDC field vascular invasion present",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c4ec4ae5-f983-5080-b70f-41a6bdc981af",
+          "ontologyId": "bb39e1be-f03a-54cb-96c6-9f08adfb8c2f",
+          "children": []
+        },
+        {
+          "id": "dc44929a-c201-5ca9-832d-dab858b96927",
+          "name": "perineural_invasion_present",
+          "description": "GDC field perineural invasion present",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "dbb93748-7126-579b-bbaf-10913d08e741",
+          "ontologyId": "3cdeeff8-3f38-5d3a-ba2f-df053631207b",
+          "children": []
+        },
+        {
+          "id": "29dc2145-6254-5419-bb17-4688afc97388",
+          "name": "lymph_nodes_tested",
+          "description": "GDC field lymph nodes tested",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "a559a1d0-ead0-50c6-9c34-f1b21cc1490f",
+          "children": []
+        },
+        {
+          "id": "5b98a8eb-8e78-59a8-9c7c-698db50b8f2d",
+          "name": "lymph_nodes_positive",
+          "description": "GDC field lymph nodes positive",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "176bf955-7538-5b62-b2d8-f4972bb65849",
+          "children": []
+        },
+        {
+          "id": "0ec88561-b914-57ce-bcef-dd4b1c389ac2",
+          "name": "ajcc_pathologic_n",
+          "description": "GDC field ajcc pathologic n",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "97fe654e-faf6-5c3c-98da-c4a23492d9ed",
+          "ontologyId": "1c195e15-6486-5e81-afe8-7156984d0f95",
+          "children": []
+        },
+        {
+          "id": "d3a20fdf-2361-5ca7-8b56-08ce761038a0",
+          "name": "uicc_pathologic_n",
+          "description": "GDC field uicc pathologic n",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "f2093002-de58-5157-9202-feaa975053c5",
+          "ontologyId": "2ec4d623-fe66-5a86-a302-2aa1ea06bbb1",
+          "children": []
+        },
+        {
+          "id": "25f18bba-ca06-55f2-a62b-ea712366ba4f",
+          "name": "ajcc_pathologic_t",
+          "description": "GDC field ajcc pathologic t",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "906631f7-6870-5baa-9d0e-83d1042fca64",
+          "ontologyId": "5c8a1eff-1cbb-53a2-9545-5ea8f22b4b70",
+          "children": []
+        },
+        {
+          "id": "0875e7cd-72c5-5001-a446-9eb2943ff35f",
+          "name": "uicc_pathologic_t",
+          "description": "GDC field uicc pathologic t",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "df2f500a-dc45-5ef4-a1b2-057fe31b591a",
+          "ontologyId": "58cc9a59-e71e-561a-be6c-943ed4cea9e5",
+          "children": []
+        },
+        {
+          "id": "c77bd031-b807-5ac1-98c1-881f42936448",
+          "name": "ajcc_pathologic_m",
+          "description": "GDC field ajcc pathologic m",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "4799a5a8-4ff6-5b97-af6f-c0a9945fc8d6",
+          "ontologyId": "ef4a321d-8947-5c28-8069-bdd838203ccd",
+          "children": []
+        },
+        {
+          "id": "21b66579-0005-524d-b472-7772cc4a142c",
+          "name": "uicc_pathologic_m",
+          "description": "GDC field uicc pathologic m",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "7e7c1b67-8839-5368-8402-c5107fd82821",
+          "ontologyId": "301f0a2f-eca5-5cbd-9948-468944564f8b",
+          "children": []
+        },
+        {
+          "id": "9b431f11-8178-5916-9cb3-39cb2a2e06a6",
+          "name": "ajcc_clinical_m",
+          "description": "GDC field ajcc clinical m",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "a3837cc5-e381-5466-a033-bbe43be57271",
+          "ontologyId": "048e77ec-f7c5-5155-8798-0e5bc5d75d8c",
+          "children": []
+        },
+        {
+          "id": "a7352503-e0b5-59af-9275-0bb741bee004",
+          "name": "uicc_clinical_m",
+          "description": "GDC field uicc clinical m",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "43d57091-4488-52f9-b331-bda183e4955a",
+          "ontologyId": "f30b4dfd-376b-5f53-82de-c8c0356f9cc1",
+          "children": []
+        },
+        {
+          "id": "2eac8c9f-a753-5922-bead-0eef9ccc8df1",
+          "name": "residual_tumor",
+          "description": "GDC field residual tumor",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "1c052e70-7bfe-5716-a3ae-7b54c9fffde0",
+          "ontologyId": "0806e3e7-4778-5fd9-870a-d99a3c56230b",
+          "children": []
+        },
+        {
+          "id": "d2f2edec-a6ff-57fc-81b9-5ee1fe42ff02",
+          "name": "residual_disease",
+          "description": "GDC field residual disease",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "1d4ddb71-ec89-578f-9b12-b7c13345dd58",
+          "ontologyId": "74253825-5610-5011-b5b3-d48b2a6a5bfb",
+          "children": []
+        },
+        {
+          "id": "7482a72b-e14c-5a60-93bc-0ee10639c6a4",
+          "name": "ajcc_pathologic_stage",
+          "description": "GDC field ajcc pathologic stage",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "b95baa86-2023-5481-b8fa-dabb0bae31f8",
+          "ontologyId": "647577e4-720b-5a02-b803-9c25ed89936c",
+          "children": []
+        },
+        {
+          "id": "5573cd2f-9998-5899-ad23-c3daafe02363",
+          "name": "uicc_pathologic_stage",
+          "description": "GDC field uicc pathologic stage",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "ff2d144b-f15f-5e39-a568-5eff80895983",
+          "ontologyId": "156143e1-67c8-56c9-8f5f-157eb3df8c30",
+          "children": []
+        },
+        {
+          "id": "92229af5-deac-5802-a907-9f3ceebc5643",
+          "name": "additional_pathology_findings",
+          "description": "GDC field additional pathology findings",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "5983ba76-e977-578d-825c-923c79f10c0c",
+          "ontologyId": "6d7e867a-de53-5fb9-9093-6d4fcfe3361a",
+          "children": []
+        },
+        {
+          "id": "653ba9ed-a5c2-58ee-bb8e-866cea7a93f4",
+          "name": "bmi",
+          "description": "GDC field bmi",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "f90b9523-9c72-556c-bdad-25ae78990891",
+          "children": []
+        },
+        {
+          "id": "bc6d48a5-ccfb-5815-810f-0b81be6fe171",
+          "name": "alcohol_intensity",
+          "description": "GDC field alcohol intensity",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "93cb7a99-b6df-5509-be8f-e26d691eb992",
+          "ontologyId": "59be49da-fc97-5995-8f3c-ebefe5fbea9e",
+          "children": []
+        },
+        {
+          "id": "d7e58ae2-de0c-5ab9-a193-09b8edde3bb5",
+          "name": "tobacco_smoking_status",
+          "description": "GDC field tobacco smoking status",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "6c50e882-2c6c-531b-9858-bce223fb62a5",
+          "ontologyId": "b4cdbce7-6232-571e-9e40-6c7b32894822",
+          "children": []
+        },
+        {
+          "id": "0c7d6951-0acf-56fc-8af3-d8af2d07fc7f",
+          "name": "percent_stromal_cells",
+          "description": "GDC field percent stromal cells",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "361e9b24-ab1d-5ca9-8e12-7beec582776b",
+          "children": []
+        },
+        {
+          "id": "19f04435-55b2-572f-9004-53f3e1d311c4",
+          "name": "percent_inflam_infiltration",
+          "description": "GDC field percent inflam infiltration",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "afd24f0a-bc22-55c0-aeac-d64cf4762f00",
+          "children": []
+        },
+        {
+          "id": "ab1e331a-6054-5abe-9e9f-5d5859db78e0",
+          "name": "days_to_follow_up",
+          "description": "GDC field days to follow up",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "3e719c31-89cb-5fb0-93be-2a2e28d50555",
+          "children": []
+        },
+        {
+          "id": "87e29b94-c831-5e91-8fe6-363a019e222b",
+          "name": "vital_status",
+          "description": "GDC field vital status",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "e7920fce-e7c5-5905-8d75-f3cf56cbfe3b",
+          "ontologyId": "f9e9cb5b-0f79-5f74-9a54-3a78c054f67d",
+          "children": []
+        },
+        {
+          "id": "fa9761af-691e-56fd-9bbc-60eedcfbba36",
+          "name": "lost_to_followup",
+          "description": "GDC field lost to followup",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c42cca3c-d085-5510-9ffa-6ac913a0ee8c",
+          "ontologyId": "12da0962-93ee-547a-95f3-4f995e8522d0",
+          "children": []
+        },
+        {
+          "id": "39b7aaa2-e8f7-53b8-9ec4-8a63b2ea0fd1",
+          "name": "cause_of_death",
+          "description": "GDC field cause of death",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "528007ad-4466-5b37-9409-e5a83713ae1d",
+          "ontologyId": "514a19f6-b615-5cec-ab84-4f9e27fb4eb8",
+          "children": []
+        },
+        {
+          "id": "6ed35b2c-bdf5-54e3-82b9-68807e627d55",
+          "name": "tissue_type",
+          "description": "GDC field tissue type",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c1c6d5c9-0d00-52c3-bd51-3d0dbe1e92ad",
+          "ontologyId": "df90c35a-4c78-5cbe-b3f9-8fcda8638948",
+          "children": []
+        },
+        {
+          "id": "1ee533b2-d353-5d84-b7b3-5e5c616ea25c",
+          "name": "ethnicity",
+          "description": "GDC field ethnicity",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "60e03630-ea2f-5bc5-adfa-4186291b0213",
+          "ontologyId": "391d1d9a-c548-570d-982f-ff6bf0936e1e",
+          "children": []
+        },
+        {
+          "id": "d732a874-71c7-5e71-8c35-e28e1de2183e",
+          "name": "primary_site",
+          "description": "GDC field primary site",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "0d97799b-57e2-5cb3-acd5-3f5a2beed3c8",
+          "ontologyId": "cbc273a2-9f5b-5c3d-8cd4-020eac70f766",
+          "children": []
+        },
+        {
+          "id": "05c3f11b-07f8-55bd-89a5-73518fdf587f",
+          "name": "tumor_grade",
+          "description": "GDC field tumor grade",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "e44c7171-4393-5b62-af4b-30cbb135d1c3",
+          "ontologyId": "8c96fbcc-29e1-532e-a4e6-a1f0db8c04f9",
+          "children": []
+        },
+        {
+          "id": "410cd690-2ac5-5d0b-84af-6bdf0fbaa660",
+          "name": "treatment_or_therapy",
+          "description": "GDC field treatment or therapy",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "a7719234-4674-5cd0-a9cd-31c885c8e82d",
+          "ontologyId": "e2ed43be-1334-5c25-993f-7196d1e879da",
+          "children": []
+        },
+        {
+          "id": "0d1396c6-7b41-5700-93f0-0b5aeedf7cbb",
+          "name": "tumor_purity",
+          "description": "GDC field tumor purity",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "df6f4647-0f06-5bca-85b7-c968c5cd7175",
+          "children": []
+        },
+        {
+          "id": "72eb8d19-70c8-55b0-ad9c-d7f1b61af626",
+          "name": "figo_stage",
+          "description": "GDC field figo stage",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "d5516fed-75b9-54ab-abcc-1e87e5358421",
+          "ontologyId": "5c6a81b3-15db-5db8-8300-a9e63b4a3c1c",
+          "children": []
+        },
+        {
+          "id": "6f8ea4ec-bf4e-5190-aa0c-96fa2447a1d2",
+          "name": "ajcc_clinical_stage",
+          "description": "GDC field ajcc clinical stage",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "bb7cb37c-46fd-5649-8193-01efdfe7fe90",
+          "ontologyId": "813d6074-33bf-5d2d-abb8-43b77a3b583a",
+          "children": []
+        },
+        {
+          "id": "fbc4f217-cb97-5232-8d71-e5137c53f0ca",
+          "name": "uicc_clinical_stage",
+          "description": "GDC field uicc clinical stage",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c15ae1a0-6ebe-5b30-b4fd-d05b95a3dac8",
+          "ontologyId": "94bb8bc8-2658-573b-b4fc-c3240dbd81d1",
+          "children": []
+        },
+        {
+          "id": "49385a41-508c-5b73-8fff-fef86f7a9f38",
+          "name": "height",
+          "description": "GDC field height",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "30d5262a-f304-54cf-b75a-3533247b2f8c",
+          "children": []
+        },
+        {
+          "id": "206660af-da39-5d7c-998e-9de7844a03e2",
+          "name": "weight",
+          "description": "GDC field weight",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "81d9deec-b5c4-55cc-994c-59281849f620",
+          "children": []
+        },
+        {
+          "id": "73e0ffc2-ffbd-597b-95d9-7667356c4f85",
+          "name": "cigarettes_per_day",
+          "description": "GDC field cigarettes per day",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "97778071-595c-5185-a984-081d3eb49344",
+          "children": []
+        },
+        {
+          "id": "e444ca5c-4d5c-5142-ab13-e1e00fcfdd61",
+          "name": "pack_years_smoked",
+          "description": "GDC field pack years smoked",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "17eeacb7-93c0-5334-80bf-cddca8692eb5",
+          "children": []
+        },
+        {
+          "id": "551fc801-09c2-52a0-85f6-e0283e9794cc",
+          "name": "environmental_tobacco_smoke_exposure",
+          "description": "GDC field environmental tobacco smoke exposure",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "1b5f8a76-9492-5da8-8653-27a40fdf7de2",
+          "ontologyId": "bf0f48de-544d-5fde-82a8-4725b0bc2322",
+          "children": []
+        },
+        {
+          "id": "0de5cc80-fe7c-53ae-8fca-7fbd22076cd4",
+          "name": "tobacco_smoking_onset_year",
+          "description": "GDC field tobacco smoking onset year",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "22011e71-ed00-5c03-94e7-e4957af23b93",
+          "children": []
+        },
+        {
+          "id": "35a386ee-3f82-5497-9674-192135029623",
+          "name": "tobacco_smoking_quit_year",
+          "description": "GDC field tobacco smoking quit year",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "9e104428-e368-543a-af60-424f71285bbb",
+          "children": []
+        },
+        {
+          "id": "3fe72ca4-177a-57a9-b787-944d6172e251",
+          "name": "secondhand_smoke_as_child",
+          "description": "GDC field secondhand smoke as child",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "e3cdc291-b7f3-5667-b92a-3a1b64ce8a55",
+          "ontologyId": "e9c47bf1-22d0-5c73-b79e-900026f83117",
+          "children": []
+        },
+        {
+          "id": "dd8fb5ca-5403-5e8e-93ed-9b009eb1f1a3",
+          "name": "alcohol_days_per_week",
+          "description": "GDC field alcohol days per week",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "c88e91f5-22aa-58c8-b611-c46cc593e6a7",
+          "children": []
+        },
+        {
+          "id": "b5f998f0-7ea1-5ca8-8692-8e6a92d740da",
+          "name": "time_between_clamping_and_freezing",
+          "description": "GDC field time between clamping and freezing",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "ece051cc-0f50-5f28-a0cb-98e86b243e3d",
+          "children": []
+        },
+        {
+          "id": "fe49fd63-7465-59bd-95d4-600882af8188",
+          "name": "time_between_excision_and_freezing",
+          "description": "GDC field time between excision and freezing",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "6c2a6d40-ea05-5faf-91f0-721e0e34e52c",
+          "children": []
+        },
+        {
+          "id": "d7f0c652-e4b0-540b-b647-8e088ca34a64",
+          "name": "biospecimen_anatomic_site",
+          "description": "GDC field biospecimen anatomic site",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "6594f291-642c-56a8-813b-71e0c31627e4",
+          "ontologyId": "fc64ff92-9346-5e4e-a376-be9276ae89aa",
+          "children": []
+        },
+        {
+          "id": "52ab5ca5-f686-57e3-a574-b8e2f8c76cc4",
+          "name": "biospecimen_laterality",
+          "description": "GDC field biospecimen laterality",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "1b6625a6-eef6-5fcb-96f8-e5032f550d4f",
+          "ontologyId": "ec4a16dc-c3fc-580d-9f73-e1152a6a8ff4",
+          "children": []
+        },
+        {
+          "id": "bb67045e-a28a-5b99-8c14-7d1b75908506",
+          "name": "laterality",
+          "description": "GDC field laterality",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "630dc2a6-58d1-5a49-b17b-29329d7adef2",
+          "ontologyId": "b3130268-4259-51f9-b8d6-af0434e58d61",
+          "children": []
+        },
+        {
+          "id": "d02561b8-ed51-5079-8b98-f9f39b07cdeb",
+          "name": "disease_type",
+          "description": "GDC field disease type",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "4ab25482-488e-5820-8ed0-7563ff0c6844",
+          "ontologyId": "ea2d3adb-6848-5b3e-b253-1113bbfb3cc6",
+          "children": []
+        },
+        {
+          "id": "9246419c-ad25-5de9-9cb3-4f3b11ea2d18",
+          "name": "method_of_diagnosis",
+          "description": "GDC field method of diagnosis",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "6c40bf2f-3a62-574b-be6b-74956b01a115",
+          "ontologyId": "5c776df0-c32c-5b47-9128-7f00dc9077ff",
+          "children": []
+        },
+        {
+          "id": "478e58f6-33fd-57ba-932e-40f6358577b9",
+          "name": "residual_tumor_measurement",
+          "description": "GDC field residual tumor measurement",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "1031861c-4a45-5b80-99ae-5da5e8e77977",
+          "ontologyId": "f27aa335-a075-5f24-82e5-7019ad841b11",
+          "children": []
+        },
+        {
+          "id": "7dd4e6b3-fb2d-57e5-8473-d2b01bfaa920",
+          "name": "prior_malignancy",
+          "description": "GDC field prior malignancy",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "bd5ff8cf-6fae-5ab1-af65-0c8844b47480",
+          "ontologyId": "9457a4ab-1aff-593c-a69d-59f6cd5582f0",
+          "children": []
+        },
+        {
+          "id": "72bb1551-2a7b-50ca-b925-4a4901e92493",
+          "name": "synchronous_malignancy",
+          "description": "GDC field synchronous malignancy",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "27907b90-7909-530f-b384-3394e04b8f90",
+          "ontologyId": "64093e3a-bd45-5fd3-ab26-4a56f6b30812",
+          "children": []
+        },
+        {
+          "id": "2f703999-4955-500a-b27f-058ec3fb96c3",
+          "name": "last_known_disease_status",
+          "description": "GDC field last known disease status",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "54e9c8b2-148a-5073-9c9c-9a31e840d3ff",
+          "ontologyId": "4eaa57db-307b-5ff0-9561-d7dab4e75a17",
+          "children": []
+        },
+        {
+          "id": "2598b8b8-d703-56d7-bb5b-75f20d331d78",
+          "name": "msi_status",
+          "description": "GDC field msi status",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "782d5370-c8ee-5e03-b8db-80ed8a3a3440",
+          "ontologyId": "912b3643-543d-50a0-93e9-b89b44debf25",
+          "children": []
+        },
+        {
+          "id": "1f2d00dc-195c-56a5-b3ce-452f6401d700",
+          "name": "supratentorial_localization",
+          "description": "GDC field supratentorial localization",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "801b42b0-3676-5949-8ea1-528f0d1ce083",
+          "ontologyId": "fd262b2e-3f53-50ca-bea3-54b815efb0ec",
+          "children": []
+        },
+        {
+          "id": "66593a44-7a43-5219-a894-1c07a6a04f46",
+          "name": "days_to_last_follow_up",
+          "description": "GDC field days to last follow up",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "124a7250-4994-54bf-ab8a-dbfa853750fa",
+          "children": []
+        },
+        {
+          "id": "34f98b74-9481-5a72-b27a-236ccdc03850",
+          "name": "days_to_death",
+          "description": "GDC field days to death",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "d283613e-dbaf-5524-99e1-85c80f4d4a52",
+          "children": []
+        },
+        {
+          "id": "35c3c87b-7b12-5b44-8e82-f9ae57b6c725",
+          "name": "progression_or_recurrence",
+          "description": "GDC field progression or recurrence",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "b8b6f8a2-8c15-564a-a09c-31c4ee57254b",
+          "ontologyId": "52909d0b-3a27-5d9d-a7bd-fc1a1e72c61d",
+          "children": []
+        },
+        {
+          "id": "ca101391-e065-588f-80f6-3a7b3b50efb3",
+          "name": "days_to_recurrence",
+          "description": "GDC field days to recurrence",
+          "type": "ATOMIC_ATTRIBUTE",
+          "dataTypeId": "c3c6a102-d39c-53dd-8fde-ae8de0c55f74",
+          "ontologyId": "899cef62-5720-5a82-9bfb-2bef0980caf6",
+          "children": []
+        }
+      ]
+    }
+  ]
+}

@@ -4,18 +4,20 @@ import bio.cosy.feddb.core.api.run.*;
 import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
 import bio.cosy.feddb.core.api.run.message.RunMessageMetricDTO;
 import bio.cosy.feddb.core.security.Scope;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
 import bio.cosy.feddb.core.services.orch.WorkflowAppServer;
 import io.quarkus.logging.Log;
 import io.quarkus.websockets.next.*;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-// type = AppConnectionTypesEnum (APP for the container connecting directly, CONTROLLER if the
-// platform's own Controller sidecar proxies the connection on the container's behalf)
+// type = AppConnectionTypesEnum
 @WebSocket(path = "/project/experiment/federated/aggregator/{stepId}/{type}")
 @ToolAuthenticated(Scope.FEDERATED_AGGREGATOR_RUN)
+@RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
 public class ProjectFederatedExperimentAggregatorWebsocketService extends WorkflowAppServer {
 
     @Inject
@@ -56,7 +58,7 @@ public class ProjectFederatedExperimentAggregatorWebsocketService extends Workfl
         try {
             Long stepId = Long.parseLong(stepIdString);
             Log.debug("Received message Text: " + m.getMessage() + " for platform aggregator " + stepId + " and type " + type);
-            if (AppConnectionTypesEnum.APP.isEqual(type) || AppConnectionTypesEnum.CONTROLLER.isEqual(type)) {
+            if (AppConnectionTypesEnum.APP.isEqual(type)) {
                 handleAppMessages(m, stepId, m.getRunType());
             } else {
                 Log.error("Received message for unknown/not supported type: " + type);

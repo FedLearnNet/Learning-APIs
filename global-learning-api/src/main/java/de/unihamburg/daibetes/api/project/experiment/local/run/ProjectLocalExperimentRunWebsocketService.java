@@ -4,6 +4,8 @@ import bio.cosy.feddb.core.api.run.*;
 import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
 import bio.cosy.feddb.core.api.run.message.RunMessageMetricDTO;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
+import jakarta.annotation.security.RolesAllowed;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.services.orch.WorkflowAppServer;
@@ -17,6 +19,7 @@ import jakarta.transaction.Transactional;
 // type = AppConnectionTypesEnum
 @WebSocket(path = "/project/experiment/local/{stepId}/{type}")
 @ToolAuthenticated(Scope.LOCAL_EXPERIMENT_RUN)
+@RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
 public class ProjectLocalExperimentRunWebsocketService extends WorkflowAppServer {
 
     @Inject

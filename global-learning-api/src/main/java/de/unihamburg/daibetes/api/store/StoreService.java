@@ -19,7 +19,6 @@ import java.util.List;
 @Path("/store")
 @Produces("application/json")
 @Consumes("application/json")
-//@RolesAllowed("admin")
 @Tag(name = "Store", description = "Service for managing store operations")
 public interface StoreService {
 
