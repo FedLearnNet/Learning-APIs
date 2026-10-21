@@ -191,6 +191,11 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         return mapper.entityToDto(entity);
     }
 
+    @Transactional
+    public void setPipelineEntityRunning(PipelineEntity ent) {
+        ao.persist(ent);
+    }
+
     public List<PipelineDTO> getAll(String keycloakId, Long appVersionId, Long appId, Long modelSubId) {
         List<PipelineEntity> entities = ao.listAll();
         entities.removeIf(entity -> {

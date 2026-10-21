@@ -21,7 +21,7 @@ public interface FLNetConfig {
     interface OntologyImportConfig extends FLNetConfigPaths {
 
         // SapBERT embeddings for imported ontologies that have none yet, created after all imports
-        @WithDefault("false")
+        @WithDefault("true")
         boolean createEmbeddings();
     }
 }

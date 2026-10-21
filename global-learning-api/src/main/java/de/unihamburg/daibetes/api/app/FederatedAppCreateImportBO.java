@@ -223,11 +223,12 @@ public class FederatedAppCreateImportBO {
             resolved = publishInfo != null && StringUtils.isNotBlank(publishInfo.getCommitHash())
                     ? dockerClient.resolveToolImage(slug, publishInfo.getCommitHash()) : imageName;
             if (StringUtils.isBlank(resolved) || !dockerClient.imageExistsInRegistry(resolved)) {
-                return null;
+                Log.infof("Image for tool %s not found in the official registry; keeping its existing image reference without build information", slug);
+                return fallbackToExistingImage(imageName, existingVersion);
             }
         } catch (Exception e) {
-            Log.warnf(e, "Could not verify official registry image for tool %s; importing its definition without build information", slug);
-            return null;
+            Log.warnf(e, "Could not verify official registry image for tool %s; keeping its existing image reference without build information", slug);
+            return fallbackToExistingImage(imageName, existingVersion);
         }
         if (existingVersion != null && resolved.equals(existingVersion.getImageName()) && existingVersion.getPublishInfo() != null) {
             publishInfo = existingVersion.getPublishInfo();
@@ -241,6 +242,25 @@ public class FederatedAppCreateImportBO {
             publishInfo.setVulnerabilityScanResult(null);
         }
         return publishInfo;
+    }
+
+    /**
+     * Falls back to the already-stored image (e.g. a local-only build never pushed to the official
+     * registry) when the registry cannot confirm an image, instead of discarding a working
+     * reference. Returns {@code null} only when there is nothing to fall back to.
+     */
+    private AppPublishInfoDTO fallbackToExistingImage(String imageName, FederatedAppVersionEntity existingVersion) {
+        boolean useExisting = existingVersion != null && StringUtils.isNotBlank(existingVersion.getImageName());
+        String fallbackImage = useExisting ? existingVersion.getImageName() : imageName;
+        if (StringUtils.isBlank(fallbackImage)) {
+            return null;
+        }
+        AppPublishInfoDTO fallback = useExisting ? existingVersion.getPublishInfo() : null;
+        if (fallback == null) {
+            fallback = new AppPublishInfoDTO();
+        }
+        fallback.setImageName(fallbackImage);
+        return fallback;
     }
 
     private boolean overrideVersion(FederatedAppVersionDTO version, FederatedAppVersionEntity existingVersion,

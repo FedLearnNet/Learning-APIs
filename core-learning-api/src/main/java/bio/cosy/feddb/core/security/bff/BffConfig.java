@@ -7,4 +7,6 @@ import java.util.Optional;
 @ConfigMapping(prefix = "flnet.bff")
 public interface BffConfig {
     Optional<String> frontendUrl();
+
+    Optional<String> authServerPublicUrl();
 }
