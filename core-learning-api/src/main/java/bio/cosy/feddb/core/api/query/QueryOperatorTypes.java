@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum QueryOperatorTypes {
-    EQUAL("==", "="),
+    EQUAL("=", "="),
     SMALLER("<", "<"),
     SMALLER_EQUAL("<=", "<="),
     BIGGER(">", ">"),
@@ -29,26 +29,28 @@ public enum QueryOperatorTypes {
         this.sqlOperator = sqlOperator;
     }
 
+    /** Lang2Query spelling from the paper, such as {@code =} or {@code exists}. */
+    public String lang2Operator() {
+        return inputOperator;
+    }
+
     public static QueryOperatorTypes fromOperator(String operator) {
-        if (operator == null) {
+        if (operator == null || operator.isBlank()) {
             return null;
         }
 
-        String normalized = normalize(operator);
-        if ("=".equals(normalized)) {
+        String trimmed = operator.trim();
+        // Legacy alias for the paper's "=". Compared exactly so it never collides with "=".
+        if ("==".equals(trimmed)) {
             return EQUAL;
         }
         for (QueryOperatorTypes type : values()) {
-            if (type.inputOperator.equals(normalized) || type.name().equalsIgnoreCase(normalized)) {
+            if (type.inputOperator.equalsIgnoreCase(trimmed) || type.name().equalsIgnoreCase(trimmed)) {
                 return type;
             }
         }
 
         Log.errorf("Unsupported operator: %s", operator);
         return null;
-    }
-
-    private static String normalize(String operator) {
-        return operator == null ? null : operator.trim().toLowerCase();
     }
 }

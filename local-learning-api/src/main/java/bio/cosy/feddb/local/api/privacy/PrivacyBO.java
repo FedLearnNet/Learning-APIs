@@ -60,9 +60,11 @@ public class PrivacyBO {
     }
 
     private int queryMinCount() {
-        if (config == null || config.privacy() == null || config.privacy().query() == null) {
-            return 100;
-        }
-        return Math.max(0, config.privacy().query().minCount());
+//         @TODO REMOVE
+        return 1;
+//         if (config == null || config.privacy() == null || config.privacy().query() == null) {
+//             return 100;
+//         }
+//         return Math.max(0, config.privacy().query().minCount());
     }
 }

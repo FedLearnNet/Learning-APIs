@@ -35,7 +35,7 @@ public class Lang2QueryNodeDTO {
 
     @JsonProperty("temporal_relations")
     @JsonAlias("temporalRelations")
-    private List<Object> temporalRelations;
+    private List<TemporalRelationDTO> temporalRelations;
     @JsonProperty("value_mode")
     @JsonAlias("valueMode")
     private String valueMode;

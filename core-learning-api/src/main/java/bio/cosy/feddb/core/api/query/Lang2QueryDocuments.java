@@ -147,7 +147,7 @@ public final class Lang2QueryDocuments {
         leaf.setOntologyId(item.getOntologyId());
         leaf.setDataTypeId(item.getDataTypeId());
         if (operator != null && operator.getOperator() != null) {
-            leaf.setOperator(operator.getOperator().name());
+            leaf.setOperator(operator.getOperator().lang2Operator());
             leaf.setValue(operator.getValue());
         }
         return leaf;
