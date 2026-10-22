@@ -10,6 +10,7 @@ needs the SapBERT model in `datamodeler-api/src/main/resources/sapbert` or `loca
 
 ```bash
 local-learning-api/eval-dind/run_protocol.sh  # the protocol of the paper: all settings, summary, expert package
+NAME=paper local-learning-api/eval-dind/run_protocol_unattended.sh  # the same in the background, up to 3 attempts
 local-learning-api/eval-dind/run_all.sh      # everything: US-130, GDC-SM (78 and 736 fields), Synthea-OMOP, summary
 NAME=v3 local-learning-api/eval-dind/run_all.sh  # runs run-v3-1..3, run-v3-full-1, summary-v3.md; again to continue
 local-learning-api/download-gdc-sm.sh        # once, for the GDC benchmark
