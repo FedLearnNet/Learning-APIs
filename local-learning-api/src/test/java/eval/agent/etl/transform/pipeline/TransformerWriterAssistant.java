@@ -34,6 +34,9 @@ public class TransformerWriterAssistant {
     @Inject
     FLNetClientConfig config;
 
+    @Inject
+    ModelCallCounter calls;
+
     public TransformerWriterSuggestion suggest(ConnectorDTO connector, String patientIdColumn) {
         return suggest(patientIdColumn, (session, send) ->
                 starter.start(session, connector, config.user().systemUserName(), send));
@@ -44,10 +47,15 @@ public class TransformerWriterAssistant {
         String session = UUID.randomUUID().toString();
         List<TransformerAssistantMessageDTO> nodes = new CopyOnWriteArrayList<>();
         CompletableFuture<Void> done = new CompletableFuture<>();
-        start.accept(session, message -> handle(session, message, patientIdColumn, nodes, done));
+        EffortTracker effort = new EffortTracker(calls);
+        start.accept(session, message -> {
+            effort.accept(message);
+            handle(session, message, patientIdColumn, nodes, done);
+        });
         try {
             done.orTimeout(TIMEOUT_HOURS, TimeUnit.HOURS).join();
-            return new TransformerWriterSuggestion(List.copyOf(nodes), starter.apply(session, foundSchemaIds(nodes)));
+            return new TransformerWriterSuggestion(List.copyOf(nodes), starter.apply(session, foundSchemaIds(nodes)),
+                    effort.efforts());
         } finally {
             starter.close(session);
         }

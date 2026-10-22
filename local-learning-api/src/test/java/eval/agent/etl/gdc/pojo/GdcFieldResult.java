@@ -1,5 +1,6 @@
 package eval.agent.etl.gdc.pojo;
 
+import eval.agent.etl.transform.pojo.TransformerWriterReview;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,9 +21,11 @@ public class GdcFieldResult {
     // Only for an extra: whether the LLM judge finds the mapping right all the same, and why
     private Boolean judged;
     private String judgeReason;
+    // The mapping as the expert reviews it: definition, columns with their values, chain and code
+    private TransformerWriterReview review;
 
     public GdcFieldResult(String study, String field, List<String> expected, List<String> mapped, String configuration,
                           GdcVerdict verdict) {
-        this(study, field, expected, mapped, configuration, verdict, null, null);
+        this(study, field, expected, mapped, configuration, verdict, null, null, null);
     }
 }

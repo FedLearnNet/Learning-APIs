@@ -6,15 +6,17 @@
 # Stop `quarkus dev` first: the test profile shares and wipes the dev database.
 #
 #   EVAL_MODELS    comma separated models, default the one of application.properties
-#   EVAL_MODES     real, synthetic, real-privacy, synthetic-privacy (comma separated), default all
+#   EVAL_MODES     real, synthetic, real-privacy, synthetic-privacy (comma separated), default these four; a setting of
+#                  the protocol ends the mode: real-matcher-only, real-no-review, real-no-writer (see eval-dind/run_protocol.sh)
 #   EVAL_RUNS      runs per model and mode, default 3
 #   EVAL_RUN_NUMBERS  only these runs (comma separated), e.g. 2 to restart run 2
 #   EVAL_DATASETS  comma separated datasets, default the four US-130 sites
 #   EVAL_JUDGE     model of the LLM judge, the same for all models, default gpt-oss:latest
+#   EVAL_TEST_CLASSES  default both tests, e.g. TransformerWriterEvaluationTest for the MIMIC-IV demo
 # Extra arguments go to Maven.
 set -euo pipefail
 
-TEST_CLASSES="TransformerWriterEvaluationTest,HarmonizationFileEvaluationTest"
+TEST_CLASSES="${EVAL_TEST_CLASSES:-TransformerWriterEvaluationTest,HarmonizationFileEvaluationTest}"
 MODULE_DIR="$(cd "$(dirname "$0")" && pwd)"
 MODELS="${EVAL_MODELS:-$(sed -n 's/^quarkus\.langchain4j\.openai\.chat-model\.model-name=//p' "${MODULE_DIR}/src/main/resources/application.properties")}"
 MODES="${EVAL_MODES:-real,synthetic,real-privacy,synthetic-privacy}"
@@ -35,10 +37,11 @@ echo "Log file: ${LOG_FILE}"
 echo "Results: ${MODULE_DIR}/results/eval/<model>/<mode>/run-<n>"
 echo
 
-# Both tests marked the combination complete for the selected datasets
+# The tests marked the combination complete for the selected datasets
 is_complete() {
   local test
-  for test in transformer-writer harmonization-file; do
+  for test in $(echo "${TEST_CLASSES}" | sed -e 's/TransformerWriterEvaluationTest/transformer-writer/' \
+      -e 's/HarmonizationFileEvaluationTest/harmonization-file/' -e 's/,/ /g'); do
     [ -f "$1/${test}.done" ] && [ "$(cat "$1/${test}.done")" == "${DATASETS}" ] || return 1
   done
 }
@@ -53,7 +56,7 @@ for MODEL in "${MODEL_LIST[@]}"; do
     SYNTHETIC=false
     PRIVACY=false
     [[ "${MODE}" == synthetic* ]] && SYNTHETIC=true
-    [[ "${MODE}" == *privacy ]] && PRIVACY=true
+    [[ "${MODE}" == *privacy* ]] && PRIVACY=true
     for RUN in "${RUN_LIST[@]}"; do
       echo "=== ${MODEL} | ${MODE} | run ${RUN} ===" | tee -a "${LOG_FILE}"
       RESULT_DIR="${MODULE_DIR}/results/eval/${MODEL%:latest}/${MODE}/run-${RUN}"
@@ -69,6 +72,7 @@ for MODEL in "${MODEL_LIST[@]}"; do
         -Deval.run="${RUN}" \
         -Deval.replace="${EVAL_REPLACE:-false}" \
         -Deval.judge-model="${JUDGE}" \
+        -Deval.mode="${MODE}" \
         -Dquarkus.langchain4j.openai.chat-model.model-name="${MODEL}" \
         -Dflnet.connector.agent.synthetic-data.enabled="${SYNTHETIC}" \
         -Dflnet.connector.agent.use-statistic-privacy="${PRIVACY}" \

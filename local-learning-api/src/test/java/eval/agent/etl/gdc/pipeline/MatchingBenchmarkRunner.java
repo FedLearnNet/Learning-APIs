@@ -10,8 +10,10 @@ import eval.agent.etl.gdc.report.GdcReport;
 import eval.agent.etl.gdc.score.GdcScoring;
 import eval.agent.etl.gdc.setting.GdcStudy;
 import eval.agent.etl.gdc.setting.MatchingBenchmark;
+import eval.agent.etl.transform.judge.TransformerWriterReviews;
 import eval.agent.etl.transform.pipeline.TransformerWriterAssistant;
 import eval.agent.etl.transform.pipeline.TransformerWriterUploader;
+import eval.agent.etl.transform.pojo.TransformerWriterReview;
 import eval.agent.etl.transform.pojo.TransformerWriterSuggestion;
 import eval.agent.etl.transform.setting.EvaluationRun;
 import eval.agent.etl.transform.setting.TransformerWriterDataset;
@@ -25,6 +27,7 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Maps the studies of a schema matching benchmark onto its schema like a user of the assistant and scores the fields
@@ -45,6 +48,9 @@ public class MatchingBenchmarkRunner {
     @Inject
     GdcJudge judge;
 
+    @Inject
+    TransformerWriterReviews reviews;
+
     public void run(MatchingBenchmark benchmark, String schemaId, List<GdcStudy> studies) throws IOException {
         Path directory = EvaluationRun.directory(model);
         Map<String, List<GdcFieldResult>> results = EvaluationRun.load(directory.resolve(benchmark.resultsFile()),
@@ -58,8 +64,13 @@ public class MatchingBenchmarkRunner {
                     ",", study.getCaseIdColumn(), null);
             ConnectorDTO connector = uploader.upload(dataset);
             TransformerWriterSuggestion suggestion = assistant.suggest(connector, study.getCaseIdColumn());
+            EvaluationRun.saveEffort(directory, benchmark.getFile(), study.getName(), suggestion.getEffort());
             List<GdcFieldResult> fields = GdcScoring.score(benchmark, study, suggestion.getNodes(),
                     suggestion.getConnector().getTransformer());
+            Map<String, TransformerWriterReview> reviewed = reviews.withoutImport(connector, suggestion.getNodes()).stream()
+                    .collect(Collectors.toMap(review -> GdcScoring.field(review.getSchemaNode(), benchmark.isQualified()),
+                            review -> review, (first, second) -> first));
+            fields.forEach(field -> field.setReview(reviewed.get(field.getField())));
             fields.stream().filter(field -> field.getVerdict() == GdcVerdict.EXTRA).forEach(field -> judge(benchmark, study, field));
             results.put(study.getName(), fields);
             GdcReport.save(directory, EvaluationRun.label(model), benchmark, results);

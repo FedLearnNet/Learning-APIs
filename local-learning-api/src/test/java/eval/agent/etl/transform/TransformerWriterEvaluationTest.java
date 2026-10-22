@@ -82,6 +82,7 @@ public class TransformerWriterEvaluationTest {
             }
             ConnectorDTO connector = uploader.upload(dataset);
             TransformerWriterSuggestion suggestion = assistant.suggest(connector, dataset.getPatientIdColumn());
+            EvaluationRun.saveEffort(directory, "transformer-writer", dataset.getName(), suggestion.getEffort());
             ConnectorRunDTO run = importer.importWith(connector.getId(), suggestion.getConnector());
             results.put(dataset.getName(), reviews.of(connector, suggestion.getNodes(), run, truth.values(dataset)).stream()
                     .map(review -> new TransformerWriterResult(dataset.getName(), review, judge(review)))

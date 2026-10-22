@@ -86,6 +86,24 @@ public class TransformerWriterReviews {
         return reviews;
     }
 
+    /** The reviews of a run without an import, e.g. of a benchmark: definition, columns, chain and code of each node. */
+    public List<TransformerWriterReview> withoutImport(ConnectorDTO connector, List<TransformerAssistantMessageDTO> nodes) {
+        Map<Long, LocalSchemaNodeWithPathDTO> schemaNodes = loadSchemaNodes(connector.getCohortId());
+        Map<String, CodeTransformerDTO> code = loadCode();
+        Map<String, ColumnProfile> sourceColumns = loadSourceColumns(connector);
+        List<TransformerWriterReview> reviews = new ArrayList<>();
+        for (TransformerAssistantMessageDTO node : nodes) {
+            TransformerWriterReview review = createReview(schemaNodes.get(node.getSchemaId()), node.getMappingPath(), null);
+            if (TransformerWriterAssistant.isFound(node)) {
+                addMapping(review, node.getSelectedTransformer(), code, sourceColumns);
+            } else {
+                addNotFound(review, node.getSelectedTransformer(), sourceColumns);
+            }
+            reviews.add(review);
+        }
+        return reviews;
+    }
+
     @Transactional
     Map<Long, LocalSchemaNodeWithPathDTO> loadSchemaNodes(Long cohortId) {
         return schemaNodeBO.getSchemaNodesWithPathForCohort(cohortId).stream()

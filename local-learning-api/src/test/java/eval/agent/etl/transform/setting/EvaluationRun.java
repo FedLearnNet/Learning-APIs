@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eval.agent.etl.transform.judge.TransformerWriterVerdict;
+import eval.agent.etl.transform.pojo.TransformerWriterEffort;
 import eval.agent.etl.transform.pojo.TransformerWriterReview;
 import io.quarkus.logging.Log;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -13,6 +14,9 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public final class EvaluationRun {
 
@@ -51,9 +55,33 @@ public final class EvaluationRun {
         Files.writeString(directory.resolve(test + ".done"), System.getProperty("eval.datasets", ""));
     }
 
+    /** The effort per schema node of a dataset, next to the results of the test, e.g. transformer-writer-effort.json. */
+    public static void saveEffort(Path directory, String test, String dataset, List<TransformerWriterEffort> effort)
+            throws IOException {
+        Path file = directory.resolve(test + "-effort.json");
+        Map<String, List<TransformerWriterEffort>> efforts = Files.exists(file)
+                ? JSON.readValue(file.toFile(), new TypeReference<LinkedHashMap<String, List<TransformerWriterEffort>>>() {
+        }) : new LinkedHashMap<>();
+        efforts.put(dataset, effort);
+        Files.createDirectories(directory);
+        JSON.writerWithDefaultPrettyPrinter().writeValue(file.toFile(), efforts);
+    }
+
     private static String mode() {
         String data = flag("flnet.connector.agent.synthetic-data.enabled") ? "synthetic" : "real";
-        return flag("flnet.connector.agent.use-statistic-privacy") ? data + "-privacy" : data;
+        return (flag("flnet.connector.agent.use-statistic-privacy") ? data + "-privacy" : data) + setting();
+    }
+
+    // The configuration of the setting, nothing for the full assistant
+    private static String setting() {
+        if (flag("flnet.connector.agent.matcher-only")) {
+            return "-matcher-only";
+        }
+        if (!ConfigProvider.getConfig().getOptionalValue("flnet.connector.agent.review-agents", Boolean.class).orElse(true)) {
+            return "-no-review";
+        }
+        return ConfigProvider.getConfig().getOptionalValue("flnet.connector.agent.writer", Boolean.class).orElse(true)
+                ? "" : "-no-writer";
     }
 
     private static String run() {

@@ -14,4 +14,5 @@ import java.util.List;
 public class TransformerWriterSuggestion {
     private List<TransformerAssistantMessageDTO> nodes;
     private ConnectorDTO connector;
+    private List<TransformerWriterEffort> effort;
 }

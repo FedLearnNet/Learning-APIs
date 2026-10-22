@@ -6,6 +6,8 @@ import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMe
 import bio.cosy.feddb.local.api.harmonization.HarmonizationAssistantBO;
 import bio.cosy.feddb.local.api.harmonization.HarmonizationDTO;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
+import eval.agent.etl.transform.pipeline.EffortTracker;
+import eval.agent.etl.transform.pipeline.ModelCallCounter;
 import eval.agent.etl.transform.pipeline.TransformerWriterAssistant;
 import eval.agent.etl.transform.pojo.TransformerWriterSuggestion;
 import io.smallrye.mutiny.subscription.Cancellable;
@@ -28,13 +30,18 @@ public class HarmonizationFileAssistant {
     @Inject
     HarmonizationAssistantBO assistantBO;
 
+    @Inject
+    ModelCallCounter calls;
+
     public TransformerWriterSuggestion suggest(HarmonizationDTO harmonization, Map<String, ColumnProfile> fileProfiles,
                                                String keycloakId) {
         Long id = harmonization.getId();
         List<TransformerAssistantMessageDTO> nodes = new CopyOnWriteArrayList<>();
         CompletableFuture<ConnectorDTO> applied = new CompletableFuture<>();
+        EffortTracker effort = new EffortTracker(calls);
         assistantBO.start(harmonization, fileProfiles, keycloakId);
         Cancellable events = assistantBO.events(id).subscribe().with(message -> {
+            effort.accept(message);
             switch (message.getType()) {
                 case CHAT_MESSAGE -> answer(id, message.getChatMessage(), harmonization.getSourceKey());
                 case NODE_RESULT -> TransformerWriterAssistant.addNode(nodes, message);
@@ -47,7 +54,7 @@ public class HarmonizationFileAssistant {
         }, applied::completeExceptionally);
         try {
             ConnectorDTO connector = applied.orTimeout(TIMEOUT_HOURS, TimeUnit.HOURS).join();
-            return new TransformerWriterSuggestion(List.copyOf(nodes), connector);
+            return new TransformerWriterSuggestion(List.copyOf(nodes), connector, effort.efforts());
         } finally {
             events.cancel();
         }

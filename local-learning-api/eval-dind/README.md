@@ -9,6 +9,7 @@ checkout in dev mode, which imports `datamodeler-api/src/main/resources/datamode
 needs the SapBERT model in `datamodeler-api/src/main/resources/sapbert` or `local-learning-api/src/main/resources/sapbert`.
 
 ```bash
+local-learning-api/eval-dind/run_protocol.sh  # the protocol of the paper: all settings, summary, expert package
 local-learning-api/eval-dind/run_all.sh      # everything: US-130, GDC-SM (78 and 736 fields), Synthea-OMOP, summary
 NAME=v3 local-learning-api/eval-dind/run_all.sh  # runs run-v3-1..3, run-v3-full-1, summary-v3.md; again to continue
 local-learning-api/download-gdc-sm.sh        # once, for the GDC benchmark
@@ -25,7 +26,7 @@ removes itself when it is done.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `EVAL_TESTS` | `us130,gdc` | Evaluations to run: `us130`, `gdc`, `synthea` |
+| `EVAL_TESTS` | `us130,gdc` | Evaluations to run: `us130`, `mimic` (MIMIC-IV demo, cohort import), `gdc`, `synthea` |
 | `EVAL_MODES`, `EVAL_RUNS`, `EVAL_RUN_NUMBERS`, `EVAL_MODELS`, `EVAL_DATASETS`, `EVAL_REPLACE` | see `run-us130-eval.sh` | Passed on to both evaluations; modes default to `real,synthetic` |
 | `EVAL_GDC_STUDIES` | all ten | GDC studies, e.g. `GDC Krug,GDC Clark` |
 | `EVAL_SYNTHEA_TABLES` | all twelve | Synthea tables of the Synthea-OMOP benchmark, e.g. `Synthea patients,Synthea encounters` (data: `download-synthea-omop.sh`) |
@@ -36,3 +37,31 @@ removes itself when it is done.
 
 The volumes `eval-dind-maven` and `eval-dind-docker` keep the Maven repository and the pulled images between runs;
 `docker volume rm eval-dind-docker` starts the inner Docker empty.
+
+## Evaluation protocol
+
+`run_protocol.sh` runs every dataset (US-130 Sites 2-5 as cohort import and file harmonization, the MIMIC-IV demo,
+GDC-SM, Synthea-OMOP) in nine settings, `RUNS` times each: the reference setting (full AcETL, `PRIMARY_MODEL`, real
+data), the configurations `real-matcher-only`, `real-no-review` and `real-no-writer`, the data exposure modes
+`synthetic` and `real-privacy`, and the reference setting with every model of `MODELS`. A setting is the mode of
+`run-us130-eval.sh`; its configuration switches `flnet.connector.agent.matcher-only`, `review-agents` and `writer`
+(TransformerWriterEvaluationProfile). Started again with the same `NAME`, it continues where it stopped.
+
+Every run writes `<test>-effort.json` next to its results: per schema node the runtime, the model calls, the
+questions, the validations and where the result comes from (direct, built-in, store tool, saved code, new code).
+`eval-summary.py --runs <name>` adds them to the summary, together with source selection against the reference
+connectors of `src/main/resources/connectors` for US-130 and MIMIC-IV.
+
+`eval-export.py --runs <name>` writes `results/expert-review-<name>`: `for-expert/review.html` (one page per distinct
+mapping, rated in the browser, ratings downloaded as CSV), `ratings.csv`, `column-reference.csv` (MIMIC-IV reference
+columns to confirm) and `README.txt`; `for-expert-later/` holds 10% of the pages with new IDs, for a second rating
+after two weeks; `key.csv` tells which runs and automated results stand behind each ID and stays with you.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `NAME` | `protocol` | Runs `run-<name>-1..n`, `summary-<name>.md`, `expert-review-<name>` |
+| `RUNS` | `3` | Runs per setting |
+| `PRIMARY_MODEL` | `gpt-oss:20b` | Model of the reference, configuration and data exposure settings |
+| `MODELS` | `nemotron-3.5-lightning:30b,qwen3.8:27b,gemma4:e4b` | Further models, reference setting only |
+| `TESTS` | `us130,mimic,gdc,synthea` | Datasets |
+| `STEPS` | `runs,export` | `export` alone writes summary and expert package from existing runs |

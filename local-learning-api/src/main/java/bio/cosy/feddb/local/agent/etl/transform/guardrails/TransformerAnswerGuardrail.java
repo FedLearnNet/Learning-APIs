@@ -2,6 +2,7 @@ package bio.cosy.feddb.local.agent.etl.transform.guardrails;
 
 import bio.cosy.feddb.local.agent.etl.transform.bot.NotFoundReview;
 import bio.cosy.feddb.local.agent.etl.transform.bot.NotFoundReviewBot;
+import bio.cosy.feddb.local.agent.etl.transform.config.TransformerAgentConfig;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
@@ -34,6 +35,9 @@ public abstract class TransformerAnswerGuardrail implements OutputGuardrail {
 
     @Inject
     AnswerHints hints;
+
+    @Inject
+    TransformerAgentConfig agentConfig;
 
     @Override
     public OutputGuardrailResult validate(OutputGuardrailRequest request) {
@@ -77,7 +81,7 @@ public abstract class TransformerAnswerGuardrail implements OutputGuardrail {
     /** The review agent judges why nothing was found; every kind of feedback is given once per schema node. */
     protected OutputGuardrailResult checkNotFound(ConnectorSelectedTransformer answer, Map<String, Object> variables) {
         String reason = answer.getNeededTransformerFunction();
-        if (answer.isFoundTransformer() || reason == null || reason.isBlank()) {
+        if (answer.isFoundTransformer() || reason == null || reason.isBlank() || !agentConfig.reviewAgents()) {
             return success();
         }
         NotFoundReview review;

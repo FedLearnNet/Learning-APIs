@@ -23,6 +23,8 @@ public class TransformerAssistantMessageDTO {
     private VisitMapping visitMapping;
     private List<Long> schemaIds;
     private List<String> columns;
+    // What the agents tried for a node result, e.g. the validations; read by the evaluation
+    private List<String> steps;
 
     public TransformerAssistantMessageDTO(TransformerAssistantMessageType type) {
         this.type = type;

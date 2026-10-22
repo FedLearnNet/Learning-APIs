@@ -115,7 +115,7 @@ public class HarmonizationFileEvaluationTest {
             targets.forEach(target -> Log.infof("[Harmonization-Eval:schema] %s (%s%s): %s", target.getName(),
                     target.getDataType().getType(), target.isStaticColumn() ? ", static" : "", target.getDataType().getDescription()));
             for (TransformerWriterDataset dataset : open) {
-                results.add(evaluate(dataset, referenceId, targets, reference, keycloakId));
+                results.add(evaluate(directory, dataset, referenceId, targets, reference, keycloakId));
                 HarmonizationFileReport.save(directory, EvaluationRun.label(model), REFERENCE_PATH, results);
             }
         }
@@ -149,8 +149,9 @@ public class HarmonizationFileEvaluationTest {
         appSessions.closeAll();
     }
 
-    private HarmonizationFileResult evaluate(TransformerWriterDataset dataset, Long referenceId, List<HarmonizationTargetDTO> targets,
-                                             List<ColumnProfile> reference, String keycloakId) {
+    private HarmonizationFileResult evaluate(Path directory, TransformerWriterDataset dataset, Long referenceId,
+                                             List<HarmonizationTargetDTO> targets, List<ColumnProfile> reference,
+                                             String keycloakId) throws IOException {
         HarmonizationDTO harmonization = new HarmonizationDTO();
         harmonization.setName(dataset.getName());
         harmonization.setReferenceFileId(referenceId);
@@ -163,6 +164,7 @@ public class HarmonizationFileEvaluationTest {
 
         Map<String, ColumnProfile> source = transaction(() -> fileBO.profilesByName(created.getSourceFileId(), keycloakId));
         TransformerWriterSuggestion suggestion = assistant.suggest(created, source, keycloakId);
+        EvaluationRun.saveEffort(directory, "harmonization-file", dataset.getName(), suggestion.getEffort());
         created.setTransformer(suggestion.getConnector().getTransformer());
         created.setMapping(suggestion.getConnector().getSchemaMapping());
         int suggested = created.getTransformer().size();

@@ -12,6 +12,17 @@ public interface TransformerAgentConfig {
     @WithDefault("true")
     boolean review();
 
+    // Settings of the evaluation (eval-dind/run_protocol.sh); the defaults are the full assistant
+    @WithDefault("true")
+    boolean reviewAgents();
+
+    @WithDefault("true")
+    boolean writer();
+
+    // The best ranked column of the matcher, mapped directly, without a language model
+    @WithDefault("false")
+    boolean matcherOnly();
+
     ColumnMatcherConfig columnMatcher();
 
     SyntheticDataConfig syntheticData();

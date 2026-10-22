@@ -9,6 +9,7 @@ import bio.cosy.feddb.local.agent.etl.transform.bot.ColumnReview;
 import bio.cosy.feddb.local.agent.etl.transform.bot.ColumnReviewBot;
 import bio.cosy.feddb.local.agent.etl.transform.bot.ColumnSelectBot;
 import bio.cosy.feddb.local.agent.etl.transform.bot.VisitColumnBot;
+import bio.cosy.feddb.local.agent.etl.transform.config.TransformerAgentConfig;
 import bio.cosy.feddb.local.agent.etl.transform.guardrails.AnswerHints;
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerCombiner;
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerHelper;
@@ -96,6 +97,9 @@ public class TransformerOrganizer {
     @Inject
     AnswerHints hints;
 
+    @Inject
+    TransformerAgentConfig agentConfig;
+
     @ActivateRequestContext
     public ConnectorSelectedTransformer selectTransformer(TransformerRunContext context,
                                                           TableSample previewData,
@@ -106,6 +110,9 @@ public class TransformerOrganizer {
         DataTypeNodeDTO nodeDTO = dataTypeMapper.dtoToNodeDto(dataType);
         userTool.init(context.user(), previewData.getColumns());
         columnTool.init(context, previewData.getColumns());
+        if (agentConfig.matcherOnly()) {
+            return matchOnly(context, previewData, schemaNode, candidates, nodeDTO);
+        }
 
         // A name match is only taken unreviewed for a column no other node is filled from
         boolean clear = !candidates.isEmpty() && candidates.getFirst().isClear()
@@ -147,7 +154,8 @@ public class TransformerOrganizer {
                                     String instructions,
                                     ConnectorSelectedTransformer selected) {
         String patientIdColumn = context.patientIdColumn();
-        if (!TransformerHelper.hasSeveralRowsPerPatient(previewData, patientIdColumn, context.fileProfiles())) {
+        if (agentConfig.matcherOnly()
+                || !TransformerHelper.hasSeveralRowsPerPatient(previewData, patientIdColumn, context.fileProfiles())) {
             return null;
         }
         try {
@@ -158,6 +166,22 @@ public class TransformerOrganizer {
             Log.warnf(e, "Visit selection for schema node %s failed", schemaNode.getName());
             return null;
         }
+    }
+
+    // The baseline of the evaluation: the best ranked column mapped directly, accepted if the validation passes
+    private ConnectorSelectedTransformer matchOnly(TransformerRunContext context, TableSample previewData,
+                                                   LocalSchemaNodeDTO schemaNode, List<ColumnCandidate> candidates,
+                                                   DataTypeNodeDTO nodeDTO) {
+        if (candidates.isEmpty()) {
+            return ConnectorSelectedTransformer.notFound("No source column holds the information of this schema node");
+        }
+        String column = candidates.getFirst().getColumn();
+        validateTool.init(context, schemaNode, nodeDTO, List.of(column),
+                TransformerHelper.valueRows(previewData, List.of(column), context.fileProfiles(), context.patientIdColumn()));
+        ConnectorSelectedTransformer direct = ConnectorSelectedTransformer.mapping(column, List.of());
+        ConnectorValidationResultDTO validation = validateTool.validate(direct);
+        return validation.isValid() ? direct
+                : ConnectorSelectedTransformer.notFound("Mapping column '" + column + "' directly is rejected: " + validation.getMessage());
     }
 
     private ConnectorSelectedTransformer selectForColumns(TransformerRunContext context,
@@ -253,7 +277,7 @@ public class TransformerOrganizer {
     // A second opinion, as the selection tends to fill a node with a related fact; the selection decides again
     private List<String> reviewColumns(TransformerRunContext context, TableSample previewData, LocalSchemaNodeDTO schemaNode,
                                        String instructions, List<ColumnCandidate> candidates, List<String> columns) {
-        if (columns.isEmpty()) {
+        if (columns.isEmpty() || !agentConfig.reviewAgents()) {
             return columns;
         }
         String filledNodes = filledNodes(context, columns);

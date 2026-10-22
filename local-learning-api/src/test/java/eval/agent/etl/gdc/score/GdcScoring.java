@@ -130,7 +130,7 @@ public final class GdcScoring {
 
     // The schema node of a mapping path, e.g. 'age_at_diagnosis' of 'GDC.age_at_diagnosis', qualified with its group,
     // e.g. 'person.person_id'
-    static String field(String mappingPath, boolean qualified) {
+    public static String field(String mappingPath, boolean qualified) {
         if (mappingPath == null) {
             return "";
         }

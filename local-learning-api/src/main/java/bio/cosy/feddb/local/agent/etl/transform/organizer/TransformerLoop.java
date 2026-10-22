@@ -187,6 +187,7 @@ public class TransformerLoop {
         if (selected.isFoundTransformer()) {
             result.setVisitMapping(transformerOrganizer.selectVisit(context, preview, node, instructions.get(), selected));
         }
+        result.setSteps(List.copyOf(context.steps()));
         events.accept(result);
         EtlAgentLog.step("node", "%s -> %s%s | %s", node.getPath(), EtlAgentLog.describe(selected),
                 EtlAgentLog.describe(result.getVisitMapping()), String.join(" ; ", context.steps()));

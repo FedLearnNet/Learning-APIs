@@ -34,7 +34,7 @@ public class TransformerSelectGuardrail extends TransformerAnswerGuardrail {
 
     private OutputGuardrailResult checkLosses(ConnectorSelectedTransformer answer, Map<String, Object> variables) {
         String losses = validateTool.losses(answer);
-        if (losses.isEmpty() || !hints.once(LOSSES)) {
+        if (losses.isEmpty() || !agentConfig.reviewAgents() || !hints.once(LOSSES)) {
             return success();
         }
         LossReview review;

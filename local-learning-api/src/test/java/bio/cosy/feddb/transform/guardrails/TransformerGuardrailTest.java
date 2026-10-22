@@ -3,6 +3,7 @@ package bio.cosy.feddb.transform.guardrails;
 import bio.cosy.feddb.local.agent.etl.transform.bot.LossReview;
 import bio.cosy.feddb.local.agent.etl.transform.bot.LossReviewBot;
 import bio.cosy.feddb.local.agent.etl.transform.bot.NotFoundReview;
+import bio.cosy.feddb.local.agent.etl.transform.config.TransformerAgentConfig;
 import bio.cosy.feddb.local.agent.etl.transform.bot.NotFoundReviewBot;
 import bio.cosy.feddb.local.agent.etl.transform.guardrails.AnswerHints;
 import bio.cosy.feddb.local.agent.etl.transform.guardrails.AnswerRejectedException;
@@ -76,6 +77,9 @@ class TransformerGuardrailTest {
     @Spy
     AnswerHints hints = new AnswerHints();
 
+    @Mock
+    TransformerAgentConfig agentConfig;
+
     @InjectMocks
     TransformerSelectGuardrail selectGuardrail;
 
@@ -88,6 +92,7 @@ class TransformerGuardrailTest {
                 MAPPER.equals(invocation.<ConnectorTransformerDTO>getArgument(0).getMethodName()));
         lenient().when(listTool.builtInFunctionNames()).thenReturn(List.of("Replace Value", MAPPER));
         lenient().when(validateTool.losses(any())).thenReturn("");
+        lenient().when(agentConfig.reviewAgents()).thenReturn(true);
     }
 
     @Test
