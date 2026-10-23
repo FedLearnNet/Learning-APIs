@@ -1,5 +1,6 @@
 package de.unihamburg.daibetes.api.runs.experiment;
 
+import bio.cosy.feddb.core.execution.config.ExecutionDiagramConfigDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -22,7 +23,7 @@ public class CreateExperimentDTO {
     private String inputData;
     private LinkedHashMap<String, String> inputFilePaths;
 
-    private List<ExperimentDiagramConfigDTO> diagramConfigs;
+    private List<ExecutionDiagramConfigDTO> diagramConfigs;
     private LinkedHashMap<String, List<Object>> hyperParams;
 
 }

@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.importer.run.execution;
 
-import bio.cosy.feddb.core.api.model.ModelAppServer;
+import bio.cosy.feddb.core.execution.server.ModelAppServer;
 import bio.cosy.feddb.core.execution.message.ConsoleStdOutDTO;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;

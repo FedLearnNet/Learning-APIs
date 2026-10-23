@@ -2,7 +2,7 @@ package de.unihamburg.daibetes.api.project.experiment.federated;
 
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.workflow.base.experiment.BaseWorkflowExperimentDTO;
-import de.unihamburg.daibetes.api.runs.experiment.ExperimentDiagramConfigDTO;
+import bio.cosy.feddb.core.execution.config.ExecutionDiagramConfigDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -26,7 +26,7 @@ public class ProjectFederatedExperimentDTO extends BaseWorkflowExperimentDTO {
     private Boolean modelCanBePublic;
     private Boolean modelNeedToBePublic;
 
-    private List<ExperimentDiagramConfigDTO> diagramConfigs;
+    private List<ExecutionDiagramConfigDTO> diagramConfigs;
 
     private String relayServerAddress;
 

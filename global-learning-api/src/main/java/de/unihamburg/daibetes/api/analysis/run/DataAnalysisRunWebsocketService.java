@@ -1,6 +1,6 @@
 package de.unihamburg.daibetes.api.analysis.run;
 
-import bio.cosy.feddb.core.api.model.ModelAppServer;
+import bio.cosy.feddb.core.execution.server.ModelAppServer;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisPredictionDTO;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisRunModesEnum;
 import bio.cosy.feddb.core.api.model.workflow.DataAnalysisFileDTO;

@@ -1,5 +1,6 @@
 package de.unihamburg.daibetes.api.runs.experiment;
 
+import bio.cosy.feddb.core.execution.config.ExecutionDiagramConfigDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.base.BaseMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -75,14 +76,14 @@ public interface ExperimentMapper extends BaseMapper<ExperimentDTO, ExperimentEn
     ExperimentEntity detailToEntity(ExperimentDetailDTO dto);
 
 
-    default List<ExperimentDiagramConfigDTO> jsonStringToDiagramConfig(String jsonString) {
+    default List<ExecutionDiagramConfigDTO> jsonStringToDiagramConfig(String jsonString) {
         if (jsonString == null || jsonString.isEmpty()) {
             return new ArrayList<>();
         }
         try {
             return objectMapper.readValue(jsonString,
                     objectMapper.getTypeFactory().constructCollectionType(List.class,
-                            ExperimentDiagramConfigDTO.class));
+                            ExecutionDiagramConfigDTO.class));
         } catch (IOException e) {
             throw new RuntimeException("Error parsing JSON string to LinkedHashMap", e);
         }
@@ -111,7 +112,7 @@ public interface ExperimentMapper extends BaseMapper<ExperimentDTO, ExperimentEn
         return RunStatusTypes.INITIALIZED;
     }
 
-    default String diagramConfigToJsonString(List<ExperimentDiagramConfigDTO> diagramConfigs) {
+    default String diagramConfigToJsonString(List<ExecutionDiagramConfigDTO> diagramConfigs) {
         if (diagramConfigs == null || diagramConfigs.isEmpty()) {
             return "";
         }

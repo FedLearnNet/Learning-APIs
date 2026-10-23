@@ -5,6 +5,7 @@ import bio.cosy.feddb.core.api.socket.ProjectFederatedExperimentForLocalDTO;
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.base.BaseMapper;
 import bio.cosy.feddb.core.api.project.ProjectStatus;
+import bio.cosy.feddb.core.execution.config.ExecutionDiagramConfigDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,7 +13,6 @@ import de.unihamburg.daibetes.api.project.experiment.federated.participants.Proj
 import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantMapper;
 import de.unihamburg.daibetes.api.project.experiment.federated.step.ProjectFederatedExperimentStepEntity;
 import de.unihamburg.daibetes.api.project.experiment.federated.step.ProjectFederatedExperimentStepMapper;
-import de.unihamburg.daibetes.api.runs.experiment.ExperimentDiagramConfigDTO;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
@@ -163,14 +163,14 @@ public interface ProjectFederatedExperimentMapper extends BaseMapper<ProjectFede
         }
     }
 
-    default List<ExperimentDiagramConfigDTO> jsonStringToDiagramConfig(String jsonString) {
+    default List<ExecutionDiagramConfigDTO> jsonStringToDiagramConfig(String jsonString) {
         if (jsonString == null || jsonString.isEmpty()) {
             return new ArrayList<>();
         }
         try {
             return objectMapper.readValue(jsonString,
                     objectMapper.getTypeFactory().constructCollectionType(List.class,
-                            ExperimentDiagramConfigDTO.class));
+                            ExecutionDiagramConfigDTO.class));
         } catch (IOException e) {
             throw new RuntimeException("Error parsing JSON string to LinkedHashMap", e);
         }
@@ -198,7 +198,7 @@ public interface ProjectFederatedExperimentMapper extends BaseMapper<ProjectFede
         }
     }
 
-    default String diagramConfigToJsonString(List<ExperimentDiagramConfigDTO> diagramConfigs) {
+    default String diagramConfigToJsonString(List<ExecutionDiagramConfigDTO> diagramConfigs) {
         if (diagramConfigs == null || diagramConfigs.isEmpty()) {
             return "";
         }

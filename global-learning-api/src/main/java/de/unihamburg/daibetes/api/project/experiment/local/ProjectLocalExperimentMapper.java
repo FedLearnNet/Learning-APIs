@@ -1,11 +1,11 @@
 package de.unihamburg.daibetes.api.project.experiment.local;
 
 import bio.cosy.feddb.core.base.BaseMapper;
+import bio.cosy.feddb.core.execution.config.ExecutionDiagramConfigDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.unihamburg.daibetes.api.project.experiment.local.step.ProjectLocalExperimentStepEntity;
 import de.unihamburg.daibetes.api.project.experiment.local.step.ProjectLocalExperimentStepMapper;
-import de.unihamburg.daibetes.api.runs.experiment.ExperimentDiagramConfigDTO;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -73,20 +73,20 @@ public interface ProjectLocalExperimentMapper extends BaseMapper<ProjectLocalExp
         return stepEntity;
     }
 
-    default List<ExperimentDiagramConfigDTO> jsonStringToDiagramConfig(String jsonString) {
+    default List<ExecutionDiagramConfigDTO> jsonStringToDiagramConfig(String jsonString) {
         if (jsonString == null || jsonString.isEmpty()) {
             return new ArrayList<>();
         }
         try {
             return objectMapper.readValue(jsonString,
                     objectMapper.getTypeFactory().constructCollectionType(List.class,
-                            ExperimentDiagramConfigDTO.class));
+                            ExecutionDiagramConfigDTO.class));
         } catch (IOException e) {
             throw new RuntimeException("Error parsing JSON string to LinkedHashMap", e);
         }
     }
 
-    default String diagramConfigToJsonString(List<ExperimentDiagramConfigDTO> diagramConfigs) {
+    default String diagramConfigToJsonString(List<ExecutionDiagramConfigDTO> diagramConfigs) {
         if (diagramConfigs == null || diagramConfigs.isEmpty()) {
             return "";
         }

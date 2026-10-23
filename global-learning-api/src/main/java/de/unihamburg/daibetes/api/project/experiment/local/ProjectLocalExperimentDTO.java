@@ -2,7 +2,7 @@ package de.unihamburg.daibetes.api.project.experiment.local;
 
 import bio.cosy.feddb.core.api.workflow.base.experiment.BaseWorkflowExperimentDTO;
 import de.unihamburg.daibetes.api.project.experiment.local.step.ProjectLocalExperimentStepDTO;
-import de.unihamburg.daibetes.api.runs.experiment.ExperimentDiagramConfigDTO;
+import bio.cosy.feddb.core.execution.config.ExecutionDiagramConfigDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -18,7 +18,7 @@ public class ProjectLocalExperimentDTO extends BaseWorkflowExperimentDTO {
     private boolean isTestRun;
 
     //needs to be implemented
-    private List<ExperimentDiagramConfigDTO> diagramConfigs;
+    private List<ExecutionDiagramConfigDTO> diagramConfigs;
 
     private List<ProjectLocalExperimentStepDTO> steps;
 

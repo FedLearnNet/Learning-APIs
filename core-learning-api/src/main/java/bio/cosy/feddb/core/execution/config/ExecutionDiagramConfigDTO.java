@@ -1,11 +1,11 @@
-package de.unihamburg.daibetes.api.runs.experiment;
+package bio.cosy.feddb.core.execution.config;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class ExperimentDiagramConfigDTO {
+public class ExecutionDiagramConfigDTO {
 
     @NotBlank
     private String name;

@@ -1,5 +1,6 @@
 package de.unihamburg.daibetes.api.runs.experiment;
 
+import bio.cosy.feddb.core.execution.config.ExecutionDiagramConfigDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.base.BaseDTO;
 import lombok.Data;
@@ -24,5 +25,5 @@ public class ExperimentDTO extends BaseDTO {
     private Long federatedAppVersionId;
     private String federatedAppVersionName;
 
-    private List<ExperimentDiagramConfigDTO> diagramConfigs;
+    private List<ExecutionDiagramConfigDTO> diagramConfigs;
 }
