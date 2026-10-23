@@ -23,4 +23,8 @@ public class ExecutionStartDTO {
     // Search per workflow node id, chosen in the frontend; a node without one runs once with its own hyper parameters
     @NotNull
     private LinkedHashMap<Long, @Valid @NotNull HyperParamSearchDTO> searches = new LinkedHashMap<>();
+
+    // Input data per workflow node id, e.g. values or references to input files
+    @NotNull
+    private LinkedHashMap<Long, @NotNull LinkedHashMap<String, Object>> inputs = new LinkedHashMap<>();
 }

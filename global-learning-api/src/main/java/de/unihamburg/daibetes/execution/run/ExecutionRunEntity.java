@@ -1,10 +1,9 @@
 package de.unihamburg.daibetes.execution.run;
 
 import bio.cosy.feddb.core.execution.run.BaseExecutionRunEntity;
+import de.unihamburg.daibetes.api.analysis.DataAnalysisEntity;
 import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,4 +16,8 @@ public class ExecutionRunEntity extends BaseExecutionRunEntity<ExecutionRunStepE
     // User who started the run; set right after the run is created.
     @Column(name = "keycloak_id")
     private String keycloakId;
+
+    @ManyToOne
+    @JoinColumn(name = "workflow_id", nullable = true)
+    private DataAnalysisEntity dataAnalysis;
 }

@@ -1,9 +1,5 @@
 package de.unihamburg.daibetes.api.analysis.run;
 
-import bio.cosy.feddb.core.execution.server.ModelAppServer;
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisPredictionDTO;
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisRunModesEnum;
-import bio.cosy.feddb.core.api.model.workflow.DataAnalysisFileDTO;
 import bio.cosy.feddb.core.execution.message.ConsoleStdOutDTO;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
@@ -14,26 +10,21 @@ import bio.cosy.feddb.core.execution.run.types.AppConnectionTypesEnum;
 import bio.cosy.feddb.core.execution.run.types.AppMessageTypeEnum;
 import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
-import bio.cosy.feddb.core.security.ToolAuthenticated;
-import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
-import jakarta.annotation.security.RolesAllowed;
+import bio.cosy.feddb.core.execution.server.ModelAppServer;
 import bio.cosy.feddb.core.security.Scope;
-import bio.cosy.feddb.core.security.ToolApiKeyService;
-import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionBO;
-import de.unihamburg.daibetes.api.analysis.worklfow.DataAnalysisWorkflowRunBO;
-import de.unihamburg.daibetes.api.analysis.worklfow.message.DataAnalysisWorkflowRunMessagesBO;
-import de.unihamburg.daibetes.api.analysis.worklfow.step.DataAnalysisWorkflowRunStepBO;
-import de.unihamburg.daibetes.api.analysis.worklfow.step.DataAnalysisWorkflowRunStepDTO;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
+import bio.cosy.feddb.core.security.ToolAuthenticated;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptAO;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptLifecycle;
 import io.quarkus.logging.Log;
 import io.quarkus.websockets.next.*;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-
-// type = AppConnectionTypesEnum
+// type = AppConnectionTypesEnum; runId is the attempt the app runs, single apps and workflows alike.
 @WebSocket(path = "/model/run/{mode}/{runId}/{type}")
 @ToolAuthenticated({Scope.MODEL_PREDICTION_RUN, Scope.MODEL_WORKFLOW_RUN})
 @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
@@ -42,88 +33,48 @@ public class DataAnalysisRunWebsocketService extends ModelAppServer {
     private static final CloseReason RUN_FINISHED =
             new CloseReason(1000, "Run finished successfully");
 
-    private static final CloseReason RUN_NOT_FOUND =
-            new CloseReason(1001, "Run not found");
-
     @Inject
     WebSocketConnection connection;
 
     @Inject
-    DataAnalysisPredictionBO modelPredictionBO;
+    ExecutionAttemptAO attemptAO;
 
     @Inject
-    DataAnalysisWorkflowRunMessagesBO stepMessageBO;
+    ExecutionAttemptLifecycle lifecycle;
 
     @Inject
-    DataAnalysisWorkflowRunStepBO stepBO;
-
-    @Inject
-    DataAnalysisWorkflowRunBO workflowRunBO;
-
-    @Inject
-    ToolApiKeyService toolApiKeyService;
+    DataAnalysisRunResultBO resultBO;
 
     @OnOpen
     public AppMessageWrapperDTO<StartRunDTO> onOpen(WebSocketConnection connection) {
         Log.info("Connection opened: " + connection.id());
-        Long runId = Long.parseLong(connection.pathParam("runId"));
-        return startTest(runId);
+        return startTest(attemptId(connection));
     }
 
+    // The key is revoked once the attempt ends. An app gone before it finished failed.
     @OnClose
     public void onClose(WebSocketConnection connection) {
         Log.info("Connection closed: " + connection.id() + " Reason: " + connection.closeReason());
-        Long runId = Long.parseLong(connection.pathParam("runId"));
-        toolApiKeyService.revoke(getToolApiKeyScope(), runId);
-        closedRun(runId);
+        closedRun(attemptId(connection));
     }
 
     @OnError
     public void onError(WebSocketConnection connection, Throwable throwable) {
         Log.error("Error in WebsocketClient: " + throwable.getMessage());
-        Long runId = Long.parseLong(connection.pathParam("runId"));
-        toolApiKeyService.revoke(getToolApiKeyScope(), runId);
-        closedRun(runId);
+        closedRun(attemptId(connection));
     }
-
 
     @Transactional
-    public AppMessageWrapperDTO<StartRunDTO> startTest(Long runId) {
-        Log.info("Starting test for runId: " + runId);
-        if (isWorkflowRun()) {
-            DataAnalysisWorkflowRunStepDTO step = stepBO.getById(runId);
-            if (step == null) {
-                throw new NotFoundException("WF Run step with id " + runId + " not found");
-            }
-            if (!RunStatusTypes.canBeStartedStatus(step.getStepStatus())) {
-                return new AppMessageWrapperDTO<>();
-            }
-            StartRunDTO testDto = workflowRunBO.getStartup(runId);
-            return new AppMessageWrapperDTO<>(AppMessageTypeEnum.START_PREDICTION, testDto, AppRunTypeEnum.MODEL_RUN);
-        } else {
-            DataAnalysisPredictionDTO prediction = modelPredictionBO.getById(runId);
-            if (prediction == null) {
-                throw new NotFoundException("Run with id " + runId + " not found");
-            }
-            if (!RunStatusTypes.canBeStartedStatus(prediction.getStatus())) {
-                return new AppMessageWrapperDTO<>();
-            }
-            List<DataAnalysisFileDTO> inputFiles = prediction.getInputFiles();
-            inputFiles.forEach(file -> {
-                String filePath = file.getFile().getDownloadContentUrlSecret();
-                prediction.getInputs().put(file.getInputName(), filePath);
-            });
-
-            StartRunDTO testDto = new StartRunDTO();
-            testDto.setId(runId);
-            testDto.setInputData(prediction.getInputs());
-            testDto.setInputFilePaths(new LinkedHashMap<>());
-            testDto.setStatus(RunStatusTypes.PENDING);
-            testDto.setHyperParams(prediction.getHyperParams());
-            return new AppMessageWrapperDTO<>(AppMessageTypeEnum.START_PREDICTION, testDto, AppRunTypeEnum.MODEL_RUN);
+    public AppMessageWrapperDTO<StartRunDTO> startTest(Long attemptId) {
+        Log.info("Starting attempt: " + attemptId);
+        ExecutionAttemptEntity attempt = attemptAO.findByIdOptional(attemptId)
+                .orElseThrow(() -> new NotFoundException("Attempt with id " + attemptId + " not found"));
+        if (RunStatusTypes.isFinalStatus(attempt.getStatus())) {
+            return new AppMessageWrapperDTO<>();
         }
+        StartRunDTO start = resultBO.withInputFileUrls(lifecycle.startupOf(attemptId));
+        return new AppMessageWrapperDTO<>(AppMessageTypeEnum.START_PREDICTION, start, AppRunTypeEnum.MODEL_RUN);
     }
-
 
     @OnTextMessage
     <T> void consume(AppMessageWrapperDTO<T> m) {
@@ -140,92 +91,53 @@ public class DataAnalysisRunWebsocketService extends ModelAppServer {
         } catch (Exception e) {
             Log.error("Error handling message for app " + runIdString + " and type " + type, e);
         }
-
     }
 
-
     @Override
-    @Transactional
     protected void updateRun(Long runId, UpdateRunDTO updateTest, AppRunTypeEnum runType) {
-        if (isWorkflowRun()) {
-            workflowRunBO.updateAndNotify(runId, updateTest);
-            //cleanup is handled in the stepBO
-        } else {
-            modelPredictionBO.updateAndNotify(runId, updateTest.getStatus(), updateTest.getError());
-
-        }
+        lifecycle.update(runId, updateTest);
     }
 
     @Override
-    @Transactional
     protected void finishRun(Long runId, FinishRunDTO finishTest, AppRunTypeEnum runType) {
-        if (isWorkflowRun()) {
-            workflowRunBO.updateAndNotify(runId, finishTest);
-        } else {
-            // Persist the wrapper-measured timing first so the notified result carries runtime.
-            modelPredictionBO.persistTiming(runId, finishTest);
-            modelPredictionBO.updateAndNotify(runId, RunStatusTypes.FINISHED, null);
-        }
+        lifecycle.finish(runId, finishTest);
         Log.info("Closing websocket connection for finished run " + runId);
         closeRun();
-
     }
 
-    @Transactional
-    public void closedRun(Long runId) {
+    public void closedRun(Long attemptId) {
         try {
-            if (isWorkflowRun()) {
-                workflowRunBO.stopRunByStep(runId);
-            } else {
-                modelPredictionBO.updateAndNotify(runId, RunStatusTypes.ERROR, null);
-            }
-            Log.info("Closing websocket connection for finished run " + runId);
-            closeRun();
+            UpdateRunDTO closed = new UpdateRunDTO();
+            closed.setStatus(RunStatusTypes.ERROR);
+            closed.setError("App closed its connection before it finished");
+            // Ignored for an attempt that ended already.
+            lifecycle.update(attemptId, closed);
         } catch (Exception e) {
-            Log.errorf("Error while closing run %d : %s", runId, e.getMessage());
+            Log.errorf("Error while closing run %d : %s", attemptId, e.getMessage());
         }
     }
 
     @Override
-    @Transactional
     protected void startRun(Long runId, StartRunDTO startRun, AppRunTypeEnum runType) {
-        if (isWorkflowRun()) {
-            workflowRunBO.updateAndNotify(runId, startRun);
-        } else {
-            modelPredictionBO.updateAndNotify(runId, RunStatusTypes.STARTED, null);
-        }
+        lifecycle.markRunning(runId);
     }
 
     @Override
-    @Transactional
     protected void logMessage(Long runId, ExecutionMessageLogDTO runMessage, AppRunTypeEnum runType) {
-        if (!isWorkflowRun()) {
-            modelPredictionBO.updateAndNotify(runId, null, runMessage.getMessage());
-        }
-        stepMessageBO.create(runMessage, getClientMode(), runId);
+        lifecycle.log(runId, runMessage);
     }
 
+    // Console output is kept as a log of its own kind.
     @Override
-    @Transactional
     protected void consoleMessage(Long runId, ConsoleStdOutDTO runMessage, AppRunTypeEnum runType) {
-        if (!isWorkflowRun()) {
-            modelPredictionBO.updateConsoleMsg(runId, runMessage.getMsg());
-        }
-        //stepMessageBO.create(runMessage, getClientMode(), runId);
+        ExecutionMessageLogDTO log = new ExecutionMessageLogDTO();
+        log.setSeverity("CONSOLE");
+        log.setMessage(runMessage.getMsg());
+        lifecycle.log(runId, log);
     }
 
-
-    private boolean isWorkflowRun() {
-        return DataAnalysisRunModesEnum.WORKFLOW.equals(getClientMode());
-    }
-
-    private DataAnalysisRunModesEnum getClientMode() {
-        String modeString = connection.pathParam("mode");
-        return DataAnalysisRunModesEnum.fromString(modeString);
-    }
-
-    private Scope getToolApiKeyScope() {
-        return isWorkflowRun() ? Scope.MODEL_WORKFLOW_RUN : Scope.MODEL_PREDICTION_RUN;
+    private static Long attemptId(WebSocketConnection connection) {
+        return Long.parseLong(connection.pathParam("runId"));
     }
 
     private void closeRun() {

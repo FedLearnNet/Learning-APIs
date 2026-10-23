@@ -1,9 +1,7 @@
 package de.unihamburg.daibetes.api.analysis.run;
 
 import bio.cosy.feddb.core.execution.orchestrator.DataAnalysisCreatePredictionDTO;
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisPredictionDTO;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisRunModesEnum;
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisStopPredictionDTO;
 import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
@@ -27,37 +25,36 @@ import org.jboss.resteasy.reactive.RestStreamElementType;
 public interface DataAnalysisRunService {
 
 
+    // Streams follow one run, each event is the whole run; they end when the client closes them.
+
     @POST
-    @Operation(summary = "Create Data Analysis Run")
+    @Operation(summary = "Starts a run outside a data analysis and streams it")
     @APIResponses({
-            @APIResponse(responseCode = "200", description = "ZIP"),
+            @APIResponse(responseCode = "200", description = "Stream of the run"),
             @APIResponse(responseCode = "400", description = "Invalid data")
     })
-    @Transactional
     @RestStreamElementType(MediaType.APPLICATION_JSON)
-    Multi<DataAnalysisPredictionDTO> createDataAnalysisRun(DataAnalysisCreatePredictionDTO data);
+    Multi<DataAnalysisRunDTO> createDataAnalysisRun(DataAnalysisCreatePredictionDTO data);
 
     @GET
-    @Operation(summary = "Get Data Analysis Run")
-    @APIResponses({
-            @APIResponse(responseCode = "200", description = "ZIP"),
-            @APIResponse(responseCode = "400", description = "Invalid data")
-    })
-    @Transactional
     @Path("{id}")
+    @Operation(summary = "Streams a run")
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "Stream of the run"),
+            @APIResponse(responseCode = "404", description = "Run not found")
+    })
     @RestStreamElementType(MediaType.APPLICATION_JSON)
-    Multi<DataAnalysisPredictionDTO> getDataAnalysisRun(@PathParam("id") Long workflowId);
+    Multi<DataAnalysisRunDTO> getDataAnalysisRun(@PathParam("id") Long runId);
 
     @PUT
     @Path("workflow/{dataAnalysisId}/{id}")
-    @Operation(summary = "Stop Model")
+    @Operation(summary = "Stops a run")
     @APIResponses({
-            @APIResponse(responseCode = "200", description = "ZIP"),
-            @APIResponse(responseCode = "400", description = "Invalid data")
+            @APIResponse(responseCode = "200", description = "The stopped run"),
+            @APIResponse(responseCode = "404", description = "Run not found")
     })
     @Transactional
-    DataAnalysisPredictionDTO stopRun(
-            @PathParam("dataAnalysisId") Long dataAnalysisId, @PathParam("id") Long id, DataAnalysisStopPredictionDTO dto);
+    DataAnalysisRunDTO stopRun(@PathParam("dataAnalysisId") Long dataAnalysisId, @PathParam("id") Long runId);
 
     @DELETE
     @Path("workflow/{dataAnalysisId}/{id}")
@@ -72,30 +69,16 @@ public interface DataAnalysisRunService {
             @PathParam("id") Long id,
             @QueryParam("workflowId") Long workflowId);
 
-
     @POST
     @Path("workflow/{dataAnalysisId}")
-    @Operation(summary = "Create Model")
+    @Operation(summary = "Starts a run of a data analysis and streams it")
     @APIResponses({
-            @APIResponse(responseCode = "200", description = "ZIP"),
+            @APIResponse(responseCode = "200", description = "Stream of the run"),
             @APIResponse(responseCode = "400", description = "Invalid data")
     })
     @RestStreamElementType(MediaType.APPLICATION_JSON)
-    Multi<DataAnalysisPredictionDTO> createDataAnalysisWorkflowRun(
-            @PathParam("dataAnalysisId") Long workflowId, DataAnalysisCreatePredictionDTO data);
-
-
-    @GET
-    @Path("workflow/{dataAnalysisId}/{workflowId}")
-    @Operation(summary = "Create Model")
-    @APIResponses({
-            @APIResponse(responseCode = "200", description = "ZIP"),
-            @APIResponse(responseCode = "400", description = "Invalid data")
-    })
-    @Transactional
-    @RestStreamElementType(MediaType.APPLICATION_JSON)
-    Multi<DataAnalysisPredictionDTO> getDataAnalysisWorkflowRun(
-            @PathParam("dataAnalysisId") Long dataAnalysisId, @PathParam("workflowId") Long workflowId);
+    Multi<DataAnalysisRunDTO> createDataAnalysisWorkflowRun(
+            @PathParam("dataAnalysisId") Long dataAnalysisId, DataAnalysisCreatePredictionDTO data);
 
     @POST
     @Path("/{mode}/{runId}/upload/output")
