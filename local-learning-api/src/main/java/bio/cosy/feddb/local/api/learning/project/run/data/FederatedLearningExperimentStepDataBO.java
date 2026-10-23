@@ -4,8 +4,9 @@ package bio.cosy.feddb.local.api.learning.project.run.data;
 import bio.cosy.feddb.core.api.app.FederatedAppType;
 import bio.cosy.feddb.core.api.file.FileDTO;
 import bio.cosy.feddb.core.api.model.ModelSubDataDTO;
-import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
 import bio.cosy.feddb.core.base.BaseBo;
+import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
+import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
 import bio.cosy.feddb.local.api.file.FileAO;
 import bio.cosy.feddb.local.api.file.FileBO;
 import bio.cosy.feddb.local.api.file.FileEntity;
@@ -15,7 +16,6 @@ import bio.cosy.feddb.local.api.workflow.connection.WorkflowConnectionAO;
 import bio.cosy.feddb.local.api.workflow.connection.WorkflowConnectionBO;
 import bio.cosy.feddb.local.api.workflow.connection.WorkflowConnectionEntity;
 import bio.cosy.feddb.local.services.GlobalAPIModelResultService;
-import bio.cosy.feddb.local.services.orch.WorkflowOrchestratorBO;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -40,7 +40,7 @@ public class FederatedLearningExperimentStepDataBO extends BaseBo<FederatedLearn
     FileAO fileAO;
 
     @Inject
-    WorkflowOrchestratorBO workflowOrchestratorBO;
+    WorkflowOrchestrator workflowOrchestrator;
 
     @Inject
     @RestClient
@@ -178,7 +178,7 @@ public class FederatedLearningExperimentStepDataBO extends BaseBo<FederatedLearn
         }
         Log.infof("Collecting results: experimentId=%d stepId=%d workflowNodeId=%d executionOrder=%d",
                 context.experimentId(), context.stepId(), context.workflowNodeId(), context.executionOrder());
-        List<File> files = workflowOrchestratorBO.getFiles(context.experimentId(), context.executionOrder().longValue());
+        List<File> files = workflowOrchestrator.getFiles(context.experimentId(), context.executionOrder().longValue());
         Log.infof("Downloaded %d output file(s): experimentId=%d stepId=%d executionOrder=%d",
                 files.size(), context.experimentId(), context.stepId(), context.executionOrder());
         if (files.isEmpty()) {

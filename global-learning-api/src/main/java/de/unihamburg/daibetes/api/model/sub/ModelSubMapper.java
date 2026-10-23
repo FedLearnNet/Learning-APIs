@@ -35,7 +35,6 @@ public interface ModelSubMapper extends BaseMapper<ModelSubDTO, ModelSubEntity> 
 
     @Mappings({
             @Mapping(target = "modelVersion.id", source = "modelVersionId"),
-            @Mapping(target = "predictions", ignore = true),
             @Mapping(target = "experimentRun", source = "experimentRunId", qualifiedByName = "mapExperiment"),
             @Mapping(target = "federatedExperiment", source = "federatedExperimentId", qualifiedByName = "mapFedExperiment"),
             @Mapping(target = "files", ignore = true),

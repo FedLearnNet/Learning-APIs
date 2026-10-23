@@ -9,7 +9,8 @@ import bio.cosy.feddb.core.api.model.prediction.DataAnalysisPredictionDTO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
 import de.unihamburg.daibetes.api.model.sub.ModelSubBO;
 import de.unihamburg.daibetes.api.model.version.ModelVersionBO;
-import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionBO;
+import de.unihamburg.daibetes.api.analysis.run.DataAnalysisExecutionBO;
+import de.unihamburg.daibetes.api.analysis.run.DataAnalysisRunResultBO;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
@@ -32,7 +33,10 @@ public class ModelServiceImpl implements ModelService {
     ModelSubBO modelSubBO;
 
     @Inject
-    DataAnalysisPredictionBO modelPredictionBO;
+    DataAnalysisExecutionBO executionBO;
+
+    @Inject
+    DataAnalysisRunResultBO runResultBO;
 
 
     @Override
@@ -94,14 +98,14 @@ public class ModelServiceImpl implements ModelService {
     public List<DataAnalysisPredictionDTO> listAllExperiment() {
         String keycloakId = userIdentity.getKeycloakId();
 
-        return modelPredictionBO.getAll(keycloakId);
+        return runResultBO.listSingle(keycloakId);
     }
 
     @Override
     public List<DataAnalysisPredictionDTO> listPredictions(Long id) {
         String keycloakId = userIdentity.getKeycloakId();
 
-        return modelPredictionBO.getAllForModel(id, keycloakId);
+        return runResultBO.listSingleForModel(keycloakId, id);
     }
 
     @Override
@@ -115,7 +119,8 @@ public class ModelServiceImpl implements ModelService {
             throw new BadRequestException("Execution id has to be set (Model or App id)");
         }
 
-        DataAnalysisPredictionDTO modelPredictionDTO = modelPredictionBO.create(modelId, createDTO, keycloakId);
+        Long runId = executionBO.start(null, createDTO, keycloakId);
+        DataAnalysisPredictionDTO modelPredictionDTO = runResultBO.getById(runId, keycloakId);
         return Response.status(Response.Status.CREATED).entity(modelPredictionDTO).build();
     }
 

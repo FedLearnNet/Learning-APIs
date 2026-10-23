@@ -7,13 +7,14 @@ import bio.cosy.feddb.core.api.app.config.ToolConfigsDTO;
 import bio.cosy.feddb.core.api.app.config.ToolInputConfigDTO;
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.project.ProjectStatus;
-import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.api.socket.LearningQueryClientResponseDTO;
 import bio.cosy.feddb.core.api.socket.ProjectFederatedExperimentForLocalDTO;
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.api.workflow.connection.WorkflowConnectionDTO;
 import bio.cosy.feddb.core.api.workflow.connection.WorkflowConnectionStatics;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
+import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.local.api.cohort.patient.export.PatientDataExportBO;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningAO;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningDTO;
@@ -33,7 +34,6 @@ import bio.cosy.feddb.local.api.query.QueryResultDTO;
 import bio.cosy.feddb.local.api.query.QueryResultWrapperDTO;
 import bio.cosy.feddb.local.services.GlobalAPIStoreService;
 import bio.cosy.feddb.local.services.KeycloakService;
-import bio.cosy.feddb.local.services.orch.WorkflowOrchestratorBO;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
@@ -86,7 +86,7 @@ class FederatedLearningRequestE2ETest {
     WebsocketSender websocketSender;
 
     @InjectMock
-    WorkflowOrchestratorBO workflowOrchestratorBO;
+    WorkflowOrchestrator workflowOrchestrator;
 
     @InjectMock
     FederatedLearningExperimentStepDataBO stepDataBO;
@@ -102,7 +102,7 @@ class FederatedLearningRequestE2ETest {
 
     @BeforeEach
     void setup() {
-        reset(websocketSender, workflowOrchestratorBO, stepDataBO, exportBO, keycloakService, queryBO);
+        reset(websocketSender, workflowOrchestrator, stepDataBO, exportBO, keycloakService, queryBO);
         when(keycloakService.getServiceAccountToken()).thenReturn("service-account-token");
         when(queryBO.findByGlobalIdOptionalTransactional(SEEDED_QUERY_GLOBAL_ID))
                 .thenReturn(Optional.of(createSeededQuery()));
@@ -283,7 +283,7 @@ class FederatedLearningRequestE2ETest {
 
         Path inputFile = Files.createTempFile("federated-learning-input-", ".csv");
         Files.writeString(inputFile, "PATIENT_ID,feature_5001\n1,1\n");
-        when(workflowOrchestratorBO.executeWorkflow(any(), anyString())).thenReturn("container-123");
+        when(workflowOrchestrator.executeWorkflow(any(), anyString())).thenReturn("container-123");
         when(exportBO.exportDataForLearning(any(), anyLong(), anyLong())).thenReturn(inputFile);
 
         ProjectStatus startStatus = experimentBO.startLearning(experiment, true);
@@ -295,11 +295,11 @@ class FederatedLearningRequestE2ETest {
                 .map(entity -> stepBO.getById(experiment.getId(), entity.getId()))
                 .orElseThrow();
         assertEquals(RunStatusTypes.PENDING, step.getStepStatus());
-        verify(workflowOrchestratorBO).executeWorkflow(any(), anyString());
+        verify(workflowOrchestrator).executeWorkflow(any(), anyString());
         verify(exportBO, atLeastOnce()).exportDataForLearning(any(), anyLong(), anyLong());
         long expectedNodeExecutionOrder = started.getSteps().stream().findFirst().orElseThrow()
                 .getWorkflowNode().getExecutionOrder();
-        verify(workflowOrchestratorBO).uploadFilesToVolume(
+        verify(workflowOrchestrator).uploadFilesToVolume(
                 eq(experiment.getId()),
                 eq(expectedNodeExecutionOrder),
                 eq(inputFile),
@@ -315,7 +315,7 @@ class FederatedLearningRequestE2ETest {
         });
 
         verify(stepDataBO).saveResults(any(StepResultContext.class));
-        verify(workflowOrchestratorBO).cleanup(experiment.getId());
+        verify(workflowOrchestrator).cleanup(experiment.getId());
         // The last step finishing must report the run itself as finished, not just the step
         verify(websocketSender).sendRunningUpdate(
                 eq(started.getSteps().stream().findFirst().orElseThrow().getWorkflowNode().getNodeId()),

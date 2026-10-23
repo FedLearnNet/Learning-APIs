@@ -1,12 +1,13 @@
 package bio.cosy.feddb.local.api.learning.project.run.step;
 
 import bio.cosy.feddb.core.api.project.ProjectStatus;
-import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.api.socket.FederatedLearningRelayInfoDTO;
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.api.workflow.base.BaseWorkflowEngine;
 import bio.cosy.feddb.core.api.workflow.base.step.BaseWorkflowStepBO;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
+import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.services.controller.ControllerStopLearningRequestDTO;
 import bio.cosy.feddb.local.api.eam.WebsocketSender;
 import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectEntity;
@@ -21,7 +22,6 @@ import bio.cosy.feddb.local.api.workflow.WorkflowEntity;
 import bio.cosy.feddb.local.api.workflow.node.WorkflowNodeBO;
 import bio.cosy.feddb.local.api.workflow.node.WorkflowNodeEntity;
 import bio.cosy.feddb.local.services.controller.LocalControllerLearningService;
-import bio.cosy.feddb.local.services.orch.WorkflowOrchestratorBO;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -44,7 +44,7 @@ public class FederatedLearningExperimentStepBO
         FederatedLearningExperimentStepMapper> {
 
     @Inject
-    WorkflowOrchestratorBO workflowOrchestratorBO;
+    WorkflowOrchestrator workflowOrchestrator;
 
     @Inject
     WebsocketSender websocketSender;
@@ -214,15 +214,15 @@ public class FederatedLearningExperimentStepBO
             Log.infof("Finishing run for experiment ID: %d, global request ID: %s", experimentId, globalUqExperimentId);
             experimentAO.markExperimentFinish(experimentId);
             federatedLearningRequestBO.finishLearning(globalUqExperimentId);
-            workflowOrchestratorBO.cleanup(experimentId);
+            workflowOrchestrator.cleanup(experimentId);
             return;
         }
         if (ProjectStatus.ERROR.equals(stepStatus)) {
-            workflowOrchestratorBO.cleanup(experimentId);
+            workflowOrchestrator.cleanup(experimentId);
             return;
         }
         if (step.getContainerId() != null) {
-            workflowOrchestratorBO.cleanup(step.getContainerId(), false);
+            workflowOrchestrator.cleanup(step.getContainerId(), false);
         }
     }
 

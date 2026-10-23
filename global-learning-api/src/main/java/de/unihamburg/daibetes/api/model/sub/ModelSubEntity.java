@@ -3,7 +3,6 @@ package de.unihamburg.daibetes.api.model.sub;
 import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
 import bio.cosy.feddb.core.api.model.ModelSubStatus;
 import bio.cosy.feddb.core.base.BaseEntity;
-import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionEntity;
 import de.unihamburg.daibetes.api.build.pipeline.PipelineEntity;
 import de.unihamburg.daibetes.api.model.sub.file.ModelSubFileEntity;
 import de.unihamburg.daibetes.api.model.version.ModelVersionEntity;
@@ -62,9 +61,6 @@ public class ModelSubEntity extends BaseEntity {
     @OneToMany(mappedBy = "modelSub")
     @OrderBy("id ASC")
     private Set<PipelineEntity> pipelines;
-
-    @OneToMany(mappedBy = "subModel")
-    private Set<DataAnalysisPredictionEntity> predictions;
 
     @OneToMany(mappedBy = "modelSub")
     private Set<ModelSubFileEntity> files;

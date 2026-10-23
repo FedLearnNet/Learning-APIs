@@ -7,7 +7,7 @@ import bio.cosy.feddb.core.api.project.ProjectDTO;
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.base.BaseBo;
-import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionAO;
+import de.unihamburg.daibetes.api.analysis.run.DataAnalysisExecutionBO;
 import de.unihamburg.daibetes.api.model.access.ModelAccessBO;
 import de.unihamburg.daibetes.api.model.sub.file.ModelSubFileBO;
 import de.unihamburg.daibetes.api.project.ProjectMapper;
@@ -32,7 +32,7 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
     ModelAccessBO accessBO;
 
     @Inject
-    DataAnalysisPredictionAO modelPredictionAO;
+    DataAnalysisExecutionBO dataAnalysisExecutionBO;
 
     @Inject
     ModelSubFileBO modelSubFileBO;
@@ -194,7 +194,7 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
         if (modelSubDTO.getStatus() != ModelSubStatus.TRAINED) {
             throw new NotFoundException("You can only select a trained model");
         }
-        modelPredictionAO.deleteByRunId(modelSubDTO.getModelVersionId(), modelSubId);
+        dataAnalysisExecutionBO.deleteRunsOfSubModel(modelSubId);
         ao.deleteByRunId(modelSubDTO.getModelVersionId(), modelSubId);
         return modelSubDTO;
     }

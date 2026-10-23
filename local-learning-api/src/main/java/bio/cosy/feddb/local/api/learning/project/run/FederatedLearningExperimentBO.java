@@ -6,14 +6,14 @@ import bio.cosy.feddb.core.api.socket.FederatedLearningRelayInfoDTO;
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.api.workflow.base.experiment.BaseWorkflowExperimentBO;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
+import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
 import bio.cosy.feddb.core.execution.run.dto.FederatedRunConfigDTO;
 import bio.cosy.feddb.core.execution.run.dto.FederatedRunParticipantDTO;
-import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.services.controller.ControllerStartLearningRequestDTO;
 import bio.cosy.feddb.core.services.controller.ControllerStartLearningResponseDTO;
-import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
 import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import bio.cosy.feddb.local.api.cohort.patient.export.PatientDataExportBO;
 import bio.cosy.feddb.local.api.file.FileEntity;
@@ -24,7 +24,6 @@ import bio.cosy.feddb.local.api.learning.project.run.step.FederatedLearningExper
 import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
 import bio.cosy.feddb.local.api.workflow.WorkflowBO;
 import bio.cosy.feddb.local.services.controller.LocalControllerLearningService;
-import bio.cosy.feddb.local.services.orch.WorkflowOrchestratorBO;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -57,7 +56,7 @@ public class FederatedLearningExperimentBO
     FederatedLearningExperimentStepDataBO stepResultBO;
 
     @Inject
-    WorkflowOrchestratorBO workflowOrchestratorBO;
+    WorkflowOrchestrator workflowOrchestrator;
 
     @Inject
     WorkflowBO workflowBO;
@@ -268,7 +267,7 @@ public class FederatedLearningExperimentBO
             for (Map.Entry<String, Path> entry : data.entrySet()) {
                 Integer executionOrder = currentStep.get().getWorkflowNode().getExecutionOrder();
                 Log.info("Uploading file: " + entry.getKey() + " to workflow ID: " + entity.getId() + ", node: " + executionOrder);
-                workflowOrchestratorBO.uploadFilesToVolume(entity.getId(), Long.valueOf(executionOrder), entry.getValue(), entry.getKey());
+                workflowOrchestrator.uploadFilesToVolume(entity.getId(), Long.valueOf(executionOrder), entry.getValue(), entry.getKey());
             }
         } catch (Exception e) {
             Log.errorf(e, "Error during data export for learning experiment ID: %d", experimentId);
@@ -282,7 +281,7 @@ public class FederatedLearningExperimentBO
 
     @Override
     protected WorkflowOrchestrator getWorkflowOrchestrator() {
-        return workflowOrchestratorBO;
+        return workflowOrchestrator;
     }
 
     @Override
