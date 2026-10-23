@@ -8,6 +8,7 @@ import bio.cosy.feddb.core.execution.event.ExecutionEventPublisher;
 import bio.cosy.feddb.core.execution.event.StepChangedEvent;
 import bio.cosy.feddb.core.execution.failure.ExecutionFailure;
 import bio.cosy.feddb.core.execution.failure.FailureCategory;
+import bio.cosy.feddb.core.execution.helper.NodeHyperParams;
 import bio.cosy.feddb.core.execution.hyperparam.config.HyperParamSearchDTO;
 import bio.cosy.feddb.core.execution.hyperparam.planner.HyperParamSearchPlanner;
 import bio.cosy.feddb.core.execution.hyperparam.planner.SearchPlan;
@@ -15,7 +16,6 @@ import bio.cosy.feddb.core.execution.hyperparam.strategy.Candidate;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepAO;
 import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepEntity;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
@@ -24,6 +24,7 @@ import jakarta.validation.ConstraintViolationException;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * Coordinate one single step
@@ -57,7 +58,11 @@ public abstract class BaseStepCoordinator<
     @Inject
     public AttemptMapper attemptMapper;
 
-    protected abstract AttemptEntity newAttempt();
+    private final Supplier<AttemptEntity> newAttempt;
+
+    protected BaseStepCoordinator(Supplier<AttemptEntity> newAttempt) {
+        this.newAttempt = newAttempt;
+    }
 
     @Transactional
     public void onStepChanged(StepChangedEvent event) {
@@ -90,23 +95,13 @@ public abstract class BaseStepCoordinator<
 
     // A step without a search runs its node's hyper parameters, stored as JSON, as a single trial.
     private HyperParamSearchDTO searchOf(Step step) {
-        if (step.getSearch() != null) {
-            return step.getSearch();
-        }
-        String hyperParams = step.getWorkflowNode().getHyperParams();
-        if (hyperParams == null || hyperParams.isBlank()) {
-            return HyperParamSearchDTO.fixed(Map.of());
-        }
-        try {
-            return HyperParamSearchDTO.fixed(objectMapper.readValue(hyperParams,
-                    objectMapper.getTypeFactory().constructMapType(LinkedHashMap.class, String.class, Object.class)));
-        } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Hyper parameters of the step's node are not valid JSON", e);
-        }
+        return step.getSearch() != null
+                ? step.getSearch()
+                : HyperParamSearchDTO.fixed(NodeHyperParams.of(objectMapper, step.getWorkflowNode()));
     }
 
     private void start(Step step, Candidate trial) {
-        AttemptEntity attempt = newAttempt();
+        AttemptEntity attempt = newAttempt.get();
         attempt.setPublicId(UUID.randomUUID());
         attempt.setStep(step);
         attempt.setTrialIndex(trial.getTrialIndex());

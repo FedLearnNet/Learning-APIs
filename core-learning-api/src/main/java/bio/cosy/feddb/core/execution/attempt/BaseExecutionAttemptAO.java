@@ -2,6 +2,7 @@ package bio.cosy.feddb.core.execution.attempt;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Page;
+import jakarta.persistence.LockModeType;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +13,10 @@ public abstract class BaseExecutionAttemptAO<Entity extends BaseExecutionAttempt
 
     public Optional<Entity> findByPublicIdOptional(UUID publicId) {
         return find("publicId", publicId).firstResultOptional();
+    }
+
+    public Optional<Entity> findByIdWrite(Long id) {
+        return findByIdOptional(id, LockModeType.PESSIMISTIC_WRITE);
     }
 
     public Optional<Entity> findLatestByStep(Long stepId) {
