@@ -3,12 +3,13 @@ package bio.cosy.feddb.local.api.cohort.patient.tools;
 import bio.cosy.feddb.core.api.app.FederatedAppDetailDTO;
 import bio.cosy.feddb.core.api.file.FileDTO;
 import bio.cosy.feddb.core.api.file.FileResult;
-import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
-import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
-import bio.cosy.feddb.core.execution.run.dto.UpdateRunDTO;
+import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.execution.message.RunMessageTypes;
-import bio.cosy.feddb.core.base.BaseBo;
+import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
+import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
+import bio.cosy.feddb.core.execution.run.dto.UpdateRunDTO;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
@@ -18,7 +19,6 @@ import bio.cosy.feddb.local.api.cohort.patient.tools.log.PatientToolRunLogBO;
 import bio.cosy.feddb.local.api.learning.project.run.message.RunMessageLogMapper;
 import bio.cosy.feddb.local.services.GlobalAPIStoreService;
 import bio.cosy.feddb.local.services.orch.OrchVolumeServiceClient;
-import bio.cosy.feddb.local.services.orch.WorkflowOrchestratorBO;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.TimeoutException;
@@ -66,7 +66,7 @@ public class PatientToolRunBO
     GlobalAPIStoreService globalAPIStoreService;
 
     @Inject
-    WorkflowOrchestratorBO workflowOrchestrator;
+    WorkflowOrchestrator workflowOrchestrator;
 
     @Inject
     PatientToolRunFileBO fileBO;

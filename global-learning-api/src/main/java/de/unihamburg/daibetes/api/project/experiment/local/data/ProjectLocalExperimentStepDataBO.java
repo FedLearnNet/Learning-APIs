@@ -2,6 +2,7 @@ package de.unihamburg.daibetes.api.project.experiment.local.data;
 
 import bio.cosy.feddb.core.api.file.FileDTO;
 import bio.cosy.feddb.core.base.BaseBo;
+import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
 import de.unihamburg.daibetes.api.file.FileAO;
 import de.unihamburg.daibetes.api.file.FileBO;
 import de.unihamburg.daibetes.api.file.FileEntity;
@@ -10,7 +11,6 @@ import de.unihamburg.daibetes.api.project.experiment.local.step.ProjectLocalExpe
 import de.unihamburg.daibetes.api.workflow.connection.WorkflowConnectionAO;
 import de.unihamburg.daibetes.api.workflow.connection.WorkflowConnectionBO;
 import de.unihamburg.daibetes.api.workflow.connection.WorkflowConnectionEntity;
-import de.unihamburg.daibetes.services.WorkflowOrchestratorBO;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -28,7 +28,7 @@ public class ProjectLocalExperimentStepDataBO extends BaseBo<ProjectLocalExperim
     FileAO fileAO;
 
     @Inject
-    WorkflowOrchestratorBO workflowOrchestratorBO;
+    WorkflowOrchestrator workflowOrchestrator;
 
     @Inject
     ProjectLocalExperimentStepAO stepAO;
@@ -72,7 +72,7 @@ public class ProjectLocalExperimentStepDataBO extends BaseBo<ProjectLocalExperim
         }
         Long workflowNodeId = step.getWorkflowNode().getId();
         Long experimentId = step.getExperiment().getId();
-        List<File> files = workflowOrchestratorBO.getFiles(experimentId, step.getId());
+        List<File> files = workflowOrchestrator.getFiles(experimentId, step.getId());
 
         createForStep(files, workflowNodeId, experimentId, step);
     }

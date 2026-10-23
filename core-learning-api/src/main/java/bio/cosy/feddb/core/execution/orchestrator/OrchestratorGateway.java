@@ -198,4 +198,8 @@ public class OrchestratorGateway {
             return "<unreadable response body: " + readError.getMessage() + ">";
         }
     }
+
+    public VolumeServiceClient getVolumeClient(){
+        return this.volumes;
+    }
 }

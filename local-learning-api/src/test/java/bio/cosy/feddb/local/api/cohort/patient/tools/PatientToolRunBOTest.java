@@ -2,11 +2,12 @@ package bio.cosy.feddb.local.api.cohort.patient.tools;
 
 import bio.cosy.feddb.core.api.app.FederatedAppDetailDTO;
 import bio.cosy.feddb.core.api.app.config.ToolConfigDataType;
-import bio.cosy.feddb.core.api.file.FileResult;
 import bio.cosy.feddb.core.api.app.config.ToolConfigsDTO;
 import bio.cosy.feddb.core.api.app.config.ToolInputConfigDTO;
-import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import bio.cosy.feddb.core.api.file.FileResult;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
+import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import bio.cosy.feddb.local.api.cohort.CohortAO;
 import bio.cosy.feddb.local.api.cohort.CohortBO;
@@ -14,7 +15,6 @@ import bio.cosy.feddb.local.api.cohort.CohortEntity;
 import bio.cosy.feddb.local.api.cohort.patient.tools.log.PatientToolRunLogAO;
 import bio.cosy.feddb.local.services.GlobalAPIStoreService;
 import bio.cosy.feddb.local.services.orch.OrchVolumeServiceClient;
-import bio.cosy.feddb.local.services.orch.WorkflowOrchestratorBO;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -41,13 +41,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @QuarkusTest
 class PatientToolRunBOTest {
@@ -77,7 +72,7 @@ class PatientToolRunBOTest {
     EntityManager entityManager;
 
     @InjectMock
-    WorkflowOrchestratorBO workflowOrchestrator;
+    WorkflowOrchestrator workflowOrchestrator;
 
     @InjectMock
     @RestClient

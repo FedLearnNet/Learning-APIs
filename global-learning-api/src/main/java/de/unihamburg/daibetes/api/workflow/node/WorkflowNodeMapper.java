@@ -65,7 +65,6 @@ public interface WorkflowNodeMapper extends BaseMapper<WorkflowNodeDetailDTO, Wo
             @Mapping(target = "hasChildren", ignore = true),
             @Mapping(target = "hasParent", ignore = true),
             @Mapping(target = "imageName", ignore = true),
-            @Mapping(target = "oldFCVersion", ignore = true),
             @Mapping(target = "hyperParams", expression = "java(hyperParamMapper.jsonStringToHyperparams(entity.getHyperParams()))"),
             @Mapping(target = "modelSubId", ignore = true),
             @Mapping(target = "appDetail", ignore = true),
@@ -114,7 +113,6 @@ public interface WorkflowNodeMapper extends BaseMapper<WorkflowNodeDetailDTO, Wo
         dto.setAppVersion(appVersion.getVersionFormatted());
         dto.setFederatedAppId(appVersion.getFederatedApp().getId());
         dto.setImageName(appVersion.getImageName());
-        dto.setOldFCVersion(appVersion.getFederatedApp().getOldFCVersion());
         dto.setSupportsFederatedLearning(appVersion.getFederatedApp().isSupportsFederatedLearning());
         dto.setIsTrainable(appVersion.getFederatedApp().getType().equals(FederatedAppType.ANALYSIS));
     }

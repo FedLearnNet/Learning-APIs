@@ -2,6 +2,7 @@ package bio.cosy.feddb.local.api.cohort.patient.tools;
 
 import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
+import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
 import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
 import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
@@ -10,16 +11,15 @@ import bio.cosy.feddb.core.execution.run.types.AppConnectionTypesEnum;
 import bio.cosy.feddb.core.execution.run.types.AppMessageTypeEnum;
 import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
-import bio.cosy.feddb.core.security.ToolAuthenticated;
-import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
-import jakarta.annotation.security.RolesAllowed;
-import bio.cosy.feddb.core.security.Scope;
-import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.execution.server.WorkflowAppServer;
+import bio.cosy.feddb.core.security.Scope;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
+import bio.cosy.feddb.core.security.ToolApiKeyService;
+import bio.cosy.feddb.core.security.ToolAuthenticated;
 import bio.cosy.feddb.local.api.cohort.patient.tools.log.PatientToolRunLogBO;
-import bio.cosy.feddb.local.services.orch.WorkflowOrchestratorBO;
 import io.quarkus.logging.Log;
 import io.quarkus.websockets.next.*;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
@@ -39,7 +39,7 @@ public class PatientToolWebsocketService extends WorkflowAppServer {
     WebSocketConnection connection;
 
     @Inject
-    WorkflowOrchestratorBO workflowOrchestrator;
+    WorkflowOrchestrator workflowOrchestrator;
 
     @Inject
     PatientToolRunBO toolRunBO;

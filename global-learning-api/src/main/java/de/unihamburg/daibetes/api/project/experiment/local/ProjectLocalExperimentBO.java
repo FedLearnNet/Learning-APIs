@@ -17,7 +17,6 @@ import de.unihamburg.daibetes.api.project.experiment.local.step.ProjectLocalExpe
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipAO;
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipEntity;
 import de.unihamburg.daibetes.api.workflow.WorkflowBO;
-import de.unihamburg.daibetes.services.WorkflowOrchestratorBO;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -51,7 +50,7 @@ public class ProjectLocalExperimentBO extends BaseWorkflowExperimentBO<ProjectLo
     WorkflowBO workflowBO;
 
     @Inject
-    WorkflowOrchestratorBO workflowOrchestratorBO;
+    WorkflowOrchestrator workflowOrchestrator;
 
     @Inject
     ProjectLocalExperimentStepDataBO stepResultBO;
@@ -214,7 +213,7 @@ public class ProjectLocalExperimentBO extends BaseWorkflowExperimentBO<ProjectLo
             Log.info("Uploading data for learning: " + data.size() + " files found.");
             for (Map.Entry<String, Path> entry : data.entrySet()) {
                 Log.info("Uploading file: " + entry.getKey() + " to workflow ID: " + entity.getId() + ", node: " + entity.getCurrentWorkflowNode().getId());
-                workflowOrchestratorBO.uploadFilesToVolume(entity.getId(), entity.getCurrentWorkflowNode().getId(), entry.getValue(), entry.getKey());
+                workflowOrchestrator.uploadFilesToVolume(entity.getId(), entity.getCurrentWorkflowNode().getId(), entry.getValue(), entry.getKey());
             }
         } catch (Exception e) {
             Log.error("Error during data export for learning experiment ID: " + entity.getId() + ", node: " + entity.getId(), e);
@@ -247,7 +246,7 @@ public class ProjectLocalExperimentBO extends BaseWorkflowExperimentBO<ProjectLo
 
     @Override
     protected WorkflowOrchestrator getWorkflowOrchestrator() {
-        return workflowOrchestratorBO;
+        return workflowOrchestrator;
     }
 
     @Override
