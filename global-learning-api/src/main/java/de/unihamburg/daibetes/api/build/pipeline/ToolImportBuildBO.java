@@ -275,12 +275,8 @@ public class ToolImportBuildBO {
                 try {
                     yield !version.hasImage() || !dockerClient.imageExistsInRegistry(version.getImageName());
                 } catch (Exception e) {
-                    // Unable to verify either way: only build when there is no existing image to fall
-                    // back on. Forcing a rebuild here would discard a working local-only image for a
-                    // build that depends on the same unreachable registry and is likely to fail too.
-                    Log.warnf(e, "Failed to check registry image for imported tool version %d; %s",
-                            version.getId(), version.hasImage() ? "keeping the existing image without rebuilding" : "proceeding with build");
-                    yield !version.hasImage();
+                    Log.warnf(e, "Failed to check registry image for imported tool version %d; proceeding with build", version.getId());
+                    yield true;
                 }
             }
             case NEVER -> false;
