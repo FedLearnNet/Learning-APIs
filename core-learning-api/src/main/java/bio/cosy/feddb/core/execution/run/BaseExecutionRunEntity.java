@@ -64,7 +64,7 @@ public class BaseExecutionRunEntity<Step extends BaseExecutionRunStepEntity<?, ?
     // The child's run relationship owns the foreign key; set both sides when adding a step.
     // ID order is stable presentation order, not the workflow's dependency/execution plan.
     @OneToMany(mappedBy = "run", fetch = FetchType.LAZY,
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
     @OrderBy("id ASC")
     private List<Step> steps = new ArrayList<>();
 }

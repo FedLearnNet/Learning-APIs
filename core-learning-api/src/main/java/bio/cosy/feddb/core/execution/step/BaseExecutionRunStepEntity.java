@@ -14,6 +14,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -21,6 +22,7 @@ import java.util.UUID;
 /**
  * Shared step mapping. Concrete tables should enforce uniqueness on (run_id, workflow_node_id).
  * The workflow node must be a versioned/snapshotted definition, not a mutable editor node.
+ * A step without a node runs a single app or model, which the concrete step entity names.
  */
 @Getter
 @Setter
@@ -37,8 +39,8 @@ public abstract class BaseExecutionRunStepEntity<
     @JoinColumn(name = "run_id", nullable = false, updatable = false)
     private Run run;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "workflow_node_id", nullable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "workflow_node_id", updatable = false)
     private Node workflowNode;
 
     @Column(name = "name")
@@ -62,12 +64,17 @@ public abstract class BaseExecutionRunStepEntity<
     @Column(name = "search", columnDefinition = "jsonb", updatable = false)
     private HyperParamSearchDTO search;
 
+    // Input data the app starts with, e.g. values or references to input files.
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "inputs", columnDefinition = "jsonb", updatable = false)
+    private LinkedHashMap<String, Object> inputs;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "selected_attempt_id")
     private Attempt selectedAttempt;
 
     @OneToMany(mappedBy = "step", fetch = FetchType.LAZY,
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
     @OrderBy("trialIndex ASC")
     private Set<Attempt> attempts = new LinkedHashSet<>();
 }

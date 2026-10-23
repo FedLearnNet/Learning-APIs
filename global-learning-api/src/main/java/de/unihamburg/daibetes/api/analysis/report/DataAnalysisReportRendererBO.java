@@ -25,7 +25,7 @@ public class DataAnalysisReportRendererBO {
     DataAnalysisReportMapper reportMapper;
 
     public String getSummaryForAgents(Long id, String keycloakId) {
-        DataAnalysisDetailDTO analysis = dataAnalysisBO.findById(id, keycloakId);
+        DataAnalysisDetailDTO analysis = dataAnalysisBO.findForReport(id, keycloakId, false);
         if (analysis == null) {
             return "DataAnalysis with id " + id + " not found";
         }
@@ -37,7 +37,7 @@ public class DataAnalysisReportRendererBO {
 
 
     public byte[] render(Long id, String keycloakId) {
-        DataAnalysisDetailDTO analysis = dataAnalysisBO.findByIdFlat(id, keycloakId);
+        DataAnalysisDetailDTO analysis = dataAnalysisBO.findForReport(id, keycloakId, true);
         ReportView view = reportMapper.runToReport(analysis);
         String html = dataAnalysis
                 .data("v", view)

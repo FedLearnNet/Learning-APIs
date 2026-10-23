@@ -3,9 +3,8 @@ package de.unihamburg.daibetes.api.analysis.file;
 import bio.cosy.feddb.core.api.app.config.ToolInputConfigDTO;
 import bio.cosy.feddb.core.base.BaseAuthEntity;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisEntity;
-import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionEntity;
-import de.unihamburg.daibetes.api.analysis.worklfow.step.DataAnalysisWorkflowRunStepEntity;
 import de.unihamburg.daibetes.api.file.FileEntity;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,7 +17,6 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "data_analysis_files")
 public class DataAnalysisFileEntity extends BaseAuthEntity {
 
-    //Optional association to a prediction
     @Column(name = "output_name")
     public String outputName;
 
@@ -34,13 +32,10 @@ public class DataAnalysisFileEntity extends BaseAuthEntity {
     @JoinColumn(name = "data_analysis_id", nullable = false)
     private DataAnalysisEntity dataAnalysis;
 
-    //Optional association to a prediction
+    // Optional association to the execution attempt that read or wrote the file
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "prediction_id")
-    private DataAnalysisPredictionEntity prediction;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "workflow_step_id")
-    private DataAnalysisWorkflowRunStepEntity workflowStep;
+    @JoinColumn(name = "attempt_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private ExecutionAttemptEntity attempt;
 
 }

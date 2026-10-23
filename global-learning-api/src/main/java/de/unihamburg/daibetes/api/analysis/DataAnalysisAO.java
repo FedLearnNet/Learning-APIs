@@ -22,4 +22,8 @@ public class DataAnalysisAO implements PanacheRepository<DataAnalysisEntity> {
     public Optional<DataAnalysisEntity> findById(String keycloakId, Long id) {
         return find("keycloakId = ?1 and id = ?2", keycloakId, id).firstResultOptional();
     }
+
+    public Optional<DataAnalysisEntity> findByRunId(Long runId) {
+        return find("select d from DataAnalysisEntity d join d.runs r where r.id = ?1", runId).firstResultOptional();
+    }
 }

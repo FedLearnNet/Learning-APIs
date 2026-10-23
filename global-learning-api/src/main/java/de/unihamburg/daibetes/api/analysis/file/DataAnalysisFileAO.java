@@ -18,16 +18,20 @@ public class DataAnalysisFileAO implements PanacheRepository<DataAnalysisFileEnt
         return list("dataAnalysis.id = ?1 and dataAnalysis.keycloakId = ?2", dataAnalysisId, keycloakId);
     }
 
-    public List<DataAnalysisFileEntity> getAllForWorkflow(Long workflowId, String keycloakId) {
-        return list("workflowStep.experiment.id = ?1 and dataAnalysis.keycloakId = ?2", workflowId, keycloakId);
+    public List<DataAnalysisFileEntity> getAllForAttempt(Long attemptId) {
+        return list("attempt.id = ?1 order by id", attemptId);
+    }
+
+    public List<DataAnalysisFileEntity> getAllForContainer(String containerId, String keycloakId) {
+        return list("attempt.containerId = ?1 and dataAnalysis.keycloakId = ?2", containerId, keycloakId);
+    }
+
+    public List<DataAnalysisFileEntity> getAllForRun(Long runId, String keycloakId) {
+        return list("attempt.step.run.id = ?1 and dataAnalysis.keycloakId = ?2", runId, keycloakId);
     }
 
     public Optional<DataAnalysisFileEntity> getById(Long id, String keycloakId) {
         return find("id = ?1 and dataAnalysis.keycloakId = ?2", id, keycloakId).firstResultOptional();
-    }
-
-    public Optional<DataAnalysisFileEntity> getByFileName(String fileName, String keycloakId) {
-        return find("path = ?1 and dataAnalysis.keycloakId = ?2", fileName, keycloakId).firstResultOptional();
     }
 
     public Optional<DataAnalysisFileEntity> getByFileName(String fileName) {

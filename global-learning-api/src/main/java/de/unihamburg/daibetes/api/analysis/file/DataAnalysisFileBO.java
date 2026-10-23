@@ -11,10 +11,10 @@ import bio.cosy.feddb.core.base.BaseFileEntity;
 import bio.cosy.feddb.core.helper.FileHelper;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisBO;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisEntity;
-import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionEntity;
-import de.unihamburg.daibetes.api.analysis.worklfow.step.DataAnalysisWorkflowRunStepEntity;
 import de.unihamburg.daibetes.api.file.FileBO;
 import de.unihamburg.daibetes.api.file.FileEntity;
+import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -23,7 +23,6 @@ import org.jboss.resteasy.reactive.multipart.FileUpload;
 
 import java.io.File;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -121,44 +120,16 @@ public class DataAnalysisFileBO extends BaseBo<DataAnalysisFileDTO, DataAnalysis
         return findById(fileId, id, keycloakId);
     }
 
-    public void storePrediction(DataAnalysisPredictionEntity prediction, List<FileUpload> files) throws RuntimeException {
+    public void storeAttemptOutputs(ExecutionAttemptEntity attempt, DataAnalysisEntity dataAnalysis, String keycloakId,
+                                    List<FileUpload> files) {
         for (FileUpload file : files) {
             String key = AppRunUploadData.getKey(file);
             try {
                 DataAnalysisFileEntity datafileEntity = new DataAnalysisFileEntity();
-                FileEntity createdFile = fileBo.createEntity(new FileDTO(), prediction.getKeycloakId(), file);
+                FileEntity createdFile = fileBo.createEntity(new FileDTO(), keycloakId, file);
                 datafileEntity.setOutputName(key);
-                datafileEntity.setPrediction(prediction);
-                create(prediction.getDataAnalysis(), createdFile, prediction.getKeycloakId(), datafileEntity);
-            } catch (Exception e) {
-                Log.error("Failed to store file for key, use dn store as backup: " + key, e);
-            }
-        }
-    }
-
-    public void storePrediction(DataAnalysisWorkflowRunStepEntity prediction, List<File> files) throws RuntimeException {
-        for (File value : files) {
-            try {
-                DataAnalysisFileEntity datafileEntity = new DataAnalysisFileEntity();
-                FileEntity createdFile = fileBo.createEntity(value, value.getName(), prediction.getExperiment().getKeycloakId());
-                datafileEntity.setOutputName(value.getName());
-                datafileEntity.setWorkflowStep(prediction);
-                create(prediction.getExperiment().getDataAnalysis(), createdFile, prediction.getExperiment().getKeycloakId(), datafileEntity);
-            } catch (Exception e) {
-                Log.error("Failed to store file for key, use dn store as backup: " + value.getName(), e);
-            }
-        }
-    }
-
-    public void storePredictionFileUpload(DataAnalysisWorkflowRunStepEntity prediction, List<FileUpload> files) throws RuntimeException {
-        for (FileUpload file : files) {
-            String key = AppRunUploadData.getKey(file);
-            try {
-                DataAnalysisFileEntity datafileEntity = new DataAnalysisFileEntity();
-                FileEntity createdFile = fileBo.createEntity(new FileDTO(), prediction.getExperiment().getKeycloakId(), file);
-                datafileEntity.setOutputName(key);
-                datafileEntity.setWorkflowStep(prediction);
-                create(prediction.getExperiment().getDataAnalysis(), createdFile, prediction.getExperiment().getKeycloakId(), datafileEntity);
+                datafileEntity.setAttempt(attempt);
+                create(dataAnalysis, createdFile, keycloakId, datafileEntity);
             } catch (Exception e) {
                 Log.error("Failed to store file for key, use dn store as backup: " + key, e);
             }
@@ -196,77 +167,6 @@ public class DataAnalysisFileBO extends BaseBo<DataAnalysisFileDTO, DataAnalysis
         ao.delete(file);
     }
 
-    public void createInputCopy(LinkedHashMap<String, Object> inputs, String keycloakId, DataAnalysisWorkflowRunStepEntity entity) {
-        processInputsForCopy(inputs, keycloakId, (key, fileId) -> createInputCopy(key, fileId, keycloakId, entity));
-    }
-
-    public void createInputCopy(String variableName, Object value, String keycloakId, DataAnalysisWorkflowRunStepEntity entity) {
-        processInputsForCopy(variableName, value, keycloakId, (key, fileId) -> createInputCopy(key, fileId, keycloakId, entity));
-    }
-
-    public void createInputCopy(LinkedHashMap<String, Object> inputs, String keycloakId, DataAnalysisPredictionEntity entity) {
-        processInputsForCopy(inputs, keycloakId, (key, fileId) -> createInputCopy(key, fileId, keycloakId, entity));
-    }
-
-    private void processInputsForCopy(String key, Object value, String keycloakId, BiConsumer<String, Long> copyAction) {
-        if (value instanceof String && ((String) value).startsWith("file://")) {
-            String[] fileParts = ((String) value).split("file://");
-            if (fileParts.length == 2) {
-                try {
-                    Long fileId = Long.parseLong(fileParts[1]);
-                    copyAction.accept(key, fileId);
-                } catch (NumberFormatException e) {
-                    Log.warnf("Invalid file reference format for input '%s'", key);
-                }
-            }
-        }
-    }
-
-    private void processInputsForCopy(LinkedHashMap<String, Object> inputs, String keycloakId, BiConsumer<String, Long> copyAction) {
-        inputs.forEach((key, value) -> {
-            processInputsForCopy(key, value, keycloakId, copyAction);
-        });
-    }
-
-    public void createInputCopy(String variableName, Long fileId, String keycloakId, DataAnalysisPredictionEntity entity) {
-        DataAnalysisFileEntity newFile = prepareCreateInputCopy(variableName, fileId, keycloakId);
-        newFile.setPrediction(entity);
-        newFile.setWorkflowStep(null);
-        ao.persist(newFile);
-    }
-
-
-    public void createInputCopy(String variableName, Long fileId, String keycloakId, DataAnalysisWorkflowRunStepEntity entity) {
-        DataAnalysisFileEntity newFile = prepareCreateInputCopy(variableName, fileId, keycloakId);
-        newFile.setWorkflowStep(entity);
-        newFile.setPrediction(null);
-        ao.persist(newFile);
-    }
-
-    public void createInputCopy(String variableName, DataAnalysisFileEntity file, DataAnalysisWorkflowRunStepEntity entity) {
-        DataAnalysisFileDTO dto = mapper.entityToDto(file);
-        setBaseValuesNull(dto);
-        dto.setInputName(variableName);
-        dto.setOutputName(null);
-        DataAnalysisFileEntity newFile = mapper.dtoToEntity(dto);
-
-        newFile.setWorkflowStep(entity);
-        newFile.setPrediction(null);
-        ao.persist(newFile);
-    }
-
-    private DataAnalysisFileEntity prepareCreateInputCopy(String variableName, Long fileId, String keycloakId) {
-        DataAnalysisFileEntity file = ao.getById(fileId, keycloakId)
-                .orElseThrow(() -> new NotFoundException("Workflow file not found: " + variableName));
-
-        DataAnalysisFileDTO dto = mapper.entityToDto(file);
-        setBaseValuesNull(dto);
-        DataAnalysisFileEntity newFile = mapper.dtoToEntity(dto);
-        newFile.setInputName(variableName);
-        return newFile;
-    }
-
-
     public byte[] downloadOutput(Set<DataAnalysisFileEntity> files) {
         Map<BaseFileEntity, File> fileMap = files.stream()
                 .map(DataAnalysisFileEntity::getFile)
@@ -279,44 +179,22 @@ public class DataAnalysisFileBO extends BaseBo<DataAnalysisFileDTO, DataAnalysis
         return FileHelper.filesToZip(fileMap);
     }
 
-    public byte[] downloadOutputForWorkflow(Long workflowId, String keycloakId) {
-        List<DataAnalysisFileEntity> all = ao.getAllForWorkflow(workflowId, keycloakId);
-
+    public byte[] downloadOutputForRun(Long runId, String keycloakId) {
         Map<String, File> zipEntries = new LinkedHashMap<>();
-
-        for (DataAnalysisFileEntity dataAnalysisFile : all) {
+        for (DataAnalysisFileEntity dataAnalysisFile : ao.getAllForRun(runId, keycloakId)) {
             FileEntity fileEntity = dataAnalysisFile.getFile();
-            if (fileEntity == null) {
-                continue;
-            }
-
-            File file = fileBo.loadFile(fileEntity);
+            File file = fileEntity == null ? null : fileBo.loadFile(fileEntity);
             if (file == null || !file.exists() || !file.isFile()) {
                 continue;
             }
-
-            DataAnalysisWorkflowRunStepEntity step = dataAnalysisFile.getWorkflowStep();
-            String stepFolder = step != null
-                    ? "step-" + (step.getWorkflowNode().getExecutionOrder() + 1)
-                    : "step-unknown";
-
-            String subFolder;
-            if (dataAnalysisFile.getInputName() != null) {
-                subFolder = "input";
-            } else if (dataAnalysisFile.getOutputName() != null) {
-                subFolder = "output";
-            } else {
-                subFolder = "other";
-            }
-
-            String fileName = fileEntity.getFileName();
-            String zipPath = stepFolder + "/" + subFolder + "/" + fileName;
-
-            zipPath = makeUnique(zipEntries, zipPath);
-
+            // A single app or model has no node and is the run's only step.
+            WorkflowNodeEntity node = dataAnalysisFile.getAttempt().getStep().getWorkflowNode();
+            String stepFolder = "step-" + (node != null && node.getExecutionOrder() != null ? node.getExecutionOrder() + 1 : 1);
+            String subFolder = dataAnalysisFile.getInputName() != null ? "input"
+                    : dataAnalysisFile.getOutputName() != null ? "output" : "other";
+            String zipPath = makeUnique(zipEntries, stepFolder + "/" + subFolder + "/" + fileEntity.getFileName());
             zipEntries.put(zipPath, file);
         }
-
         return FileHelper.filesToZipByPath(zipEntries);
     }
 

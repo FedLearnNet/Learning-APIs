@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -26,6 +27,7 @@ public class BaseExecutionRunStepDTO extends BaseDTO {
     private RunStatusTypes status;
     private ExecutionFailure failure;
     private HyperParamSearchDTO search;
+    private LinkedHashMap<String, Object> inputs;
     private Long selectedAttemptId;
     // Parent references remain IDs so nested run -> step -> attempt DTOs cannot recurse.
     private Set<BaseExecutionAttemptDTO> attempts = new LinkedHashSet<>();
