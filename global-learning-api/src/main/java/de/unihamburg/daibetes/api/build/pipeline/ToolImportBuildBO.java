@@ -2,6 +2,8 @@ package de.unihamburg.daibetes.api.build.pipeline;
 
 import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
 import bio.cosy.feddb.core.api.pipeline.PipelineRunMode;
+import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
+import bio.cosy.feddb.core.services.orch.clients.DockerServiceClient;
 import de.unihamburg.daibetes.api.app.FederatedAppAO;
 import de.unihamburg.daibetes.api.app.FederatedAppEntity;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
@@ -9,8 +11,6 @@ import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.build.pipeline.steps.StepName;
 import de.unihamburg.daibetes.config.FLNetConfig;
 import de.unihamburg.daibetes.config.ToolImportBuildingOnStart;
-import de.unihamburg.daibetes.services.OrchContainerServiceClient;
-import de.unihamburg.daibetes.services.OrchDockerServiceClient;
 import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.smallrye.context.api.ManagedExecutorConfig;
@@ -57,11 +57,11 @@ public class ToolImportBuildBO {
 
     @Inject
     @RestClient
-    OrchDockerServiceClient dockerClient;
+    DockerServiceClient dockerClient;
 
     @Inject
     @RestClient
-    OrchContainerServiceClient containerClient;
+    ContainerServiceClient containerClient;
 
     @Inject
     Event<PipelineRebuildDTO> buildRequests;

@@ -2,6 +2,7 @@ package rest;
 
 import bio.cosy.feddb.core.api.datamodler.schema.SchemaStructureDTO;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
+import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
 import bio.cosy.feddb.core.services.orch.dto.CreateContainerResponseDTO;
 import bio.cosy.feddb.core.services.orch.dto.StartAppDTO;
 import bio.cosy.feddb.local.api.cohort.AutoSubscriberBO;
@@ -16,7 +17,6 @@ import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
 import bio.cosy.feddb.local.api.importer.run.ImportStatusEnum;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import bio.cosy.feddb.local.services.datamodler.GlobalSchemaSubscriptionService;
-import bio.cosy.feddb.local.services.orch.OrchContainerServiceClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.narayana.jta.QuarkusTransaction;
@@ -143,7 +143,7 @@ public class AppTransformerBatchingE2ETest {
         QuarkusMock.installMockForType(schemaMock, GlobalSchemaSubscriptionService.class, RestClient.LITERAL);
 
         transformerApps = new TransformerAppStub(objectMapper);
-        OrchContainerServiceClient containerClient = org.mockito.Mockito.mock(OrchContainerServiceClient.class);
+        ContainerServiceClient containerClient = org.mockito.Mockito.mock(ContainerServiceClient.class);
         org.mockito.Mockito.when(containerClient.startContainer(
                         org.mockito.ArgumentMatchers.any(StartAppDTO.class),
                         org.mockito.ArgumentMatchers.anyBoolean(),
@@ -159,7 +159,7 @@ public class AppTransformerBatchingE2ETest {
                     transformerApps.closeSockets();
                     return Response.ok().build();
                 });
-        QuarkusMock.installMockForType(containerClient, OrchContainerServiceClient.class, RestClient.LITERAL);
+        QuarkusMock.installMockForType(containerClient, ContainerServiceClient.class, RestClient.LITERAL);
     }
 
     @Test

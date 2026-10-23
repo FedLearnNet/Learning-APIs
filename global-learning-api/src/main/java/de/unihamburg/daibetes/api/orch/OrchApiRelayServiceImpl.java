@@ -1,9 +1,9 @@
 package de.unihamburg.daibetes.api.orch;
 
+import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
+import bio.cosy.feddb.core.services.orch.clients.DockerServiceClient;
+import bio.cosy.feddb.core.services.orch.clients.VolumeServiceClient;
 import bio.cosy.feddb.core.services.orch.dto.*;
-import de.unihamburg.daibetes.services.OrchContainerServiceClient;
-import de.unihamburg.daibetes.services.OrchDockerServiceClient;
-import de.unihamburg.daibetes.services.OrchVolumeServiceClient;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -17,15 +17,15 @@ public class OrchApiRelayServiceImpl implements OrchApiRelayService {
 
     @Inject
     @RestClient
-    OrchContainerServiceClient containerClient;
+    ContainerServiceClient containerClient;
 
     @Inject
     @RestClient
-    OrchVolumeServiceClient volumeClient;
+    VolumeServiceClient volumeClient;
 
     @Inject
     @RestClient
-    OrchDockerServiceClient dockerClient;
+    DockerServiceClient dockerClient;
 
     @Override
     public InfoDTO dockerInfo() {

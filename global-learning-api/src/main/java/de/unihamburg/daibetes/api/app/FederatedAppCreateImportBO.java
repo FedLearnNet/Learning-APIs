@@ -5,6 +5,7 @@ import bio.cosy.feddb.core.api.app.FederatedAppAuthorDTO;
 import bio.cosy.feddb.core.api.app.FederatedAppDetailDTO;
 import bio.cosy.feddb.core.api.app.FederatedAppVersionDTO;
 import bio.cosy.feddb.core.api.app.PublishStatus;
+import bio.cosy.feddb.core.services.orch.clients.DockerServiceClient;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorEntity;
 import de.unihamburg.daibetes.api.app.config.FederatedAppConfigBO;
@@ -14,7 +15,6 @@ import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.build.pipeline.ToolImportBuildBO;
 import de.unihamburg.daibetes.config.FLNetConfig;
 import de.unihamburg.daibetes.config.ToolImportBuildingOnStart;
-import de.unihamburg.daibetes.services.OrchDockerServiceClient;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -60,7 +60,7 @@ public class FederatedAppCreateImportBO {
 
     @Inject
     @RestClient
-    OrchDockerServiceClient dockerClient;
+    DockerServiceClient dockerClient;
 
     @Transactional
     public void createExternal(FederatedAppDetailDTO external) {

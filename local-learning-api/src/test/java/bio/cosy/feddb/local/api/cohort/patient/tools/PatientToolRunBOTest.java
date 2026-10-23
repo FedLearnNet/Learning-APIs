@@ -8,13 +8,13 @@ import bio.cosy.feddb.core.api.file.FileResult;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import bio.cosy.feddb.core.services.orch.clients.VolumeServiceClient;
 import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import bio.cosy.feddb.local.api.cohort.CohortAO;
 import bio.cosy.feddb.local.api.cohort.CohortBO;
 import bio.cosy.feddb.local.api.cohort.CohortEntity;
 import bio.cosy.feddb.local.api.cohort.patient.tools.log.PatientToolRunLogAO;
 import bio.cosy.feddb.local.services.GlobalAPIStoreService;
-import bio.cosy.feddb.local.services.orch.OrchVolumeServiceClient;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -76,7 +76,7 @@ class PatientToolRunBOTest {
 
     @InjectMock
     @RestClient
-    OrchVolumeServiceClient volumeClient;
+    VolumeServiceClient volumeClient;
 
     @InjectMock
     @RestClient

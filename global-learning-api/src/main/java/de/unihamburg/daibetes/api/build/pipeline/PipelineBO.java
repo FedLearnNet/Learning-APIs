@@ -6,6 +6,7 @@ import bio.cosy.feddb.core.api.pipeline.PipelineRunMode;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
+import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
 import bio.cosy.feddb.core.services.orch.dto.CreateContainerResponseDTO;
 import bio.cosy.feddb.core.services.orch.dto.StartPipelineDTO;
 import de.unihamburg.daibetes.api.app.FederatedAppEntity;
@@ -18,7 +19,6 @@ import de.unihamburg.daibetes.api.model.access.ModelAccessBO;
 import de.unihamburg.daibetes.api.model.sub.ModelSubEntity;
 import de.unihamburg.daibetes.api.model.sub.file.ModelSubFileBO;
 import de.unihamburg.daibetes.config.FLNetConfig;
-import de.unihamburg.daibetes.services.OrchContainerServiceClient;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
@@ -48,7 +48,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
 
     @Inject
     @RestClient
-    OrchContainerServiceClient containerClient;
+    ContainerServiceClient containerClient;
 
     @Inject
     ToolApiKeyService toolApiKeyService;

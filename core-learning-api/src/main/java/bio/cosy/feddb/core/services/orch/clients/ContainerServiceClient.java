@@ -7,11 +7,13 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.jboss.resteasy.reactive.RestStreamElementType;
 
 import java.util.List;
 
 @Path("/container")
+@RegisterRestClient(configKey = "orch-docker-service")
 @Produces("application/json")
 @Consumes("application/json")
 public interface ContainerServiceClient {

@@ -27,7 +27,6 @@ import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepAO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepEntity;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import bio.cosy.feddb.local.services.datamodler.GlobalSchemaSubscriptionService;
-import bio.cosy.feddb.local.services.orch.OrchContainerServiceClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusMock;
@@ -171,7 +170,7 @@ public class AppBasedAutoSubscribeE2ETest {
         QuarkusMock.installMockForType(schemaMock, GlobalSchemaSubscriptionService.class, RestClient.LITERAL);
 
         extractorApp = new ExtractorAppStub();
-        QuarkusMock.installMockForType(extractorApp, OrchContainerServiceClient.class, RestClient.LITERAL);
+        QuarkusMock.installMockForType(extractorApp, ContainerServiceClient.class, RestClient.LITERAL);
     }
 
     @Test
@@ -313,7 +312,7 @@ public class AppBasedAutoSubscribeE2ETest {
      * image would do — read its API key and step id from the container environment, then post its
      * declared outputs back to the run's upload endpoint.
      */
-    private static class ExtractorAppStub implements OrchContainerServiceClient {
+    private static class ExtractorAppStub implements ContainerServiceClient {
 
         private static final String IDS_MAPPING_CSV = """
                 admission_type_id,description
