@@ -242,6 +242,9 @@ public class ToolImportBuildBO {
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void removeFailedVersionTransactional(Long appVersionId) {
+        if(!config.toolImports().removeImageOnBuildFailure()) {
+            return;
+        }
         FederatedAppVersionEntity version = versionAO.findById(appVersionId, LockModeType.PESSIMISTIC_WRITE);
         if (version == null || version.isRebuilding()
                 || pipelineAO.existsActiveByAppVersionId(appVersionId)) {

@@ -1,0 +1,579 @@
+{
+  "name" : "GaussianMixtureModel",
+  "uniqueAppId" : "911f4fbd-976b-4354-8479-eb885c5a1fc2",
+  "slug" : "gaussianmixturemodel",
+  "type" : "SELF_LEARNED",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://github.com/FedLearnNet/tool-gaussianmixturemodel",
+  "icon" : "https://scikit-learn.org/stable/_static/scikit-learn-logo-small.png",
+  "oldFCVersion" : false,
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "test"
+  }, {
+    "keycloakId" : "admin"
+  } ],
+  "versions" : [ {
+    "federatedAppId" : 5,
+    "appVersion" : "1.0.0",
+    "publishHash" : "gmm",
+    "publishInfo" : {
+      "commitHash" : "a2fb070763e783575e2d262fa0082e5d6f34378a",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-gaussianmixturemodel/blob/a2fb070763e783575e2d262fa0082e5d6f34378a/data/iris.csv" ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "localhost:5001/flnet/tools/gaussianmixturemodel:a2fb070763e783575e2d262fa0082e5d6f34378a",
+        "success" : false,
+        "summary" : {
+          "critical" : 2,
+          "high" : 5,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 7
+        },
+        "rawReport" : {
+          "os-pkgs-wolfi" : [ {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+              },
+              "bitnami" : {
+                "V40Score" : 8.4,
+                "V40Vector" : "CVSS:4.0/AV:L/AC:L/AT:N/PR:N/UI:P/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:19bff141e0a97e4ef278952b16aaf53b39f8999152247915c04d93cc682ef9a8"
+            },
+            "PkgID" : "python-3.11@3.11.16-r8",
+            "Title" : "python: Python tarfile module: File modification and content disclosure via crafted archives",
+            "CweIDs" : [ "CWE-59" ],
+            "Status" : "fixed",
+            "PkgName" : "python-3.11",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-82049",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/09/14/27", "https://access.redhat.com/security/cve/CVE-2026-82049", "https://github.com/python/cpython/commit/197663d63afed27f66e10e23c194e8a634e60913", "https://github.com/python/cpython/commit/28f315486b3da0352b9a1de1c3c97f4127ba4771", "https://github.com/python/cpython/commit/5a57248b22ad3b9aafcaaadae2c304a1923daeca", "https://github.com/python/cpython/commit/b38be2e6cf9d989075ab73412c63e003ebad4ff3", "https://github.com/python/cpython/commit/b8f23e307097552eaea2604383a12ab280520d0d", "https://github.com/python/cpython/commit/c66df4e70435d257fd488b35ea129c6f317433a8", "https://github.com/python/cpython/commit/cc1689830c6b9aaddded2fb9f2fe8116867e2c0e", "https://github.com/python/cpython/commit/cccc7ec30212dba2abef53ce4a2bed112ddb690c", "https://github.com/python/cpython/issues/157190", "https://github.com/python/cpython/pull/157191", "https://mail.python.org/archives/list/security-announce@python.org/thread/EFJWGAZJA56AKSBR2WHMHQZO7RRLZPRH/", "https://nvd.nist.gov/vuln/detail/CVE-2026-82049", "https://www.cve.org/CVERecord?id=CVE-2026-82049" ],
+            "Description" : "In CPython 3.13 and earlier, the tarfile module's data and tar extraction filters are vulnerable to crafted archives containing a hard link to a symbolic link. Such archives may cause extraction to modify the permissions or modification time of a file outside the destination directory, or expose the contents of that file within the extracted tree.",
+            "Fingerprint" : "sha256:58213d8fb2284630265fc98cc38cfefbb5676e82e012f043f4fd9c25e5edfd22",
+            "FixedVersion" : "3.11.17-r1",
+            "PkgIdentifier" : {
+              "UID" : "b78e4f535982ed9a",
+              "PURL" : "pkg:apk/wolfi/python-3.11@3.11.16-r8?arch=aarch64&origin=python-3.11"
+            },
+            "PublishedDate" : "2026-09-14T19:17:50.927Z",
+            "VendorSeverity" : {
+              "azure" : 2,
+              "redhat" : 3,
+              "bitnami" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-82049",
+            "InstalledVersion" : "3.11.16-r8",
+            "LastModifiedDate" : "2026-10-11T01:16:25.82Z"
+          } ],
+          "lang-pkgs-python-pkg" : [ {
+            "CVSS" : {
+              "ghsa" : {
+                "V40Score" : 9.1,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:H/AT:P/PR:N/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:e3a75ffdf78fc32d1f4c380e38c5cf3680a20a38badb9b69acdd83f4fbe454c6"
+            },
+            "Title" : "certifi bundles emSign root CAs with compromised intermediate CA keys",
+            "Status" : "fixed",
+            "PkgName" : "certifi",
+            "PkgPath" : "opt/venv/lib/python3.11/site-packages/certifi-2026.7.22.dist-info/METADATA",
+            "Severity" : "CRITICAL",
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://github.com/advisories/GHSA-6q48-6c7w-9gw2",
+            "References" : [ "https://advisory.echohq.com/cve/GHSA-6q48-6c7w-9gw2", "https://discuss.python.org/t/information-for-python-users-regarding-emudhra-emsign-ca-certificate-security-incident/109576", "https://emudhra.we-have-a-problem.com", "https://github.com/advisories/GHSA-6q48-6c7w-9gw2", "https://github.com/certifi/python-certifi", "https://github.com/certifi/python-certifi/security/advisories/GHSA-6q48-6c7w-9gw2" ],
+            "Description" : "Certifi versions before 2026.10.18 include the `emSign ECC Root CA - G3` root certificate in their bundled CA store. Eight eMudhra intermediate CA certificates that chain to this root have compromised private keys and the CA has revoked them. \n\nAn attacker with one of the compromised keys can issue valid-looking certificates for any hostname. If the attacker is also on-path, they can intercept or modify TLS traffic from clients that trust the certifi bundle. Examples include `requests`, `urllib3` and `pip`, and the Python.org macOS installer.\n\nCertifi 2026.10.18 removed all emSign roots from the bundle. Certifi 2026.10.19 restored the emSign roots that are not affected. Upgrade to 2026.10.19 or later, and rebuild container images that vendor certifi.",
+            "Fingerprint" : "sha256:f001d47976a730cdbf8a59a74c64cf5016be2fbc1b6e9c310d2a80613db875da",
+            "FixedVersion" : "2026.10.19",
+            "PkgIdentifier" : {
+              "UID" : "9f1d5abb11071073",
+              "PURL" : "pkg:pypi/certifi@2026.7.22"
+            },
+            "PublishedDate" : "2026-10-20T19:35:05Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "ghsa" : 4
+            },
+            "VulnerabilityID" : "GHSA-6q48-6c7w-9gw2",
+            "InstalledVersion" : "2026.7.22",
+            "LastModifiedDate" : "2026-10-20T19:35:05Z"
+          }, {
+            "CVSS" : {
+              "ghsa" : {
+                "V40Score" : 9.1,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:H/AT:P/PR:N/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:5a5dd2155999f675d11b4084cd0004519ceb17d6cf03ece97fee2f71a11a0311"
+            },
+            "PkgID" : "certifi@2026.6.17",
+            "Title" : "certifi bundles emSign root CAs with compromised intermediate CA keys",
+            "Status" : "fixed",
+            "PkgName" : "certifi",
+            "Severity" : "CRITICAL",
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://github.com/advisories/GHSA-6q48-6c7w-9gw2",
+            "References" : [ "https://advisory.echohq.com/cve/GHSA-6q48-6c7w-9gw2", "https://discuss.python.org/t/information-for-python-users-regarding-emudhra-emsign-ca-certificate-security-incident/109576", "https://emudhra.we-have-a-problem.com", "https://github.com/advisories/GHSA-6q48-6c7w-9gw2", "https://github.com/certifi/python-certifi", "https://github.com/certifi/python-certifi/security/advisories/GHSA-6q48-6c7w-9gw2" ],
+            "Description" : "Certifi versions before 2026.10.18 include the `emSign ECC Root CA - G3` root certificate in their bundled CA store. Eight eMudhra intermediate CA certificates that chain to this root have compromised private keys and the CA has revoked them. \n\nAn attacker with one of the compromised keys can issue valid-looking certificates for any hostname. If the attacker is also on-path, they can intercept or modify TLS traffic from clients that trust the certifi bundle. Examples include `requests`, `urllib3` and `pip`, and the Python.org macOS installer.\n\nCertifi 2026.10.18 removed all emSign roots from the bundle. Certifi 2026.10.19 restored the emSign roots that are not affected. Upgrade to 2026.10.19 or later, and rebuild container images that vendor certifi.",
+            "Fingerprint" : "sha256:54d249c74ccbe424c5e210b35db25991107570c1955066a68833568c20985a49",
+            "FixedVersion" : "2026.10.19",
+            "PkgIdentifier" : {
+              "UID" : "8b8f32f8d2b0d0a4",
+              "PURL" : "pkg:pypi/certifi@2026.6.17",
+              "BOMRef" : "pkg:pypi/certifi@2026.6.17"
+            },
+            "PublishedDate" : "2026-10-20T19:35:05Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "ghsa" : 4
+            },
+            "VulnerabilityID" : "GHSA-6q48-6c7w-9gw2",
+            "InstalledVersion" : "2026.6.17",
+            "LastModifiedDate" : "2026-10-20T19:35:05Z"
+          }, {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:5a5dd2155999f675d11b4084cd0004519ceb17d6cf03ece97fee2f71a11a0311"
+            },
+            "PkgID" : "msgpack@1.1.2",
+            "Title" : "MessagePack for Python: Out-of-bounds read / crash on Unpacker reuse after a caught error",
+            "Status" : "fixed",
+            "PkgName" : "msgpack",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://github.com/advisories/GHSA-6v7p-g79w-8964",
+            "References" : [ "https://advisory.echohq.com/cve/GHSA-6v7p-g79w-8964", "https://github.com/advisories/GHSA-6v7p-g79w-8964", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/2c56ddb5d0025ed481d962c0f5d62d19dec7476d", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.1", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-6v7p-g79w-8964" ],
+            "Description" : "### Impact\n\nIf the Unpacker is used repeatedly after an error occurs, the process may crash with a SEGV.\n\nIf the Unpacker is used repeatedly to unpack untrusted input from external sources, it may be vulnerable to a DoS attack.\n\n### Patches\n\nv1.2.1\n\n### Workarounds\n\nUsers should create a new Unpacker instead of reusing the same Unpacker after an error occurs.\n\nApplying the above patch can prevent SEGV, but reusing the Streaming Unpacker after it has encountered an error will not yield correct data. If an error occurs during Streaming Unpacking, the Stream and Streaming Unpacker should be discarded.\n\nTherefore, this is not just a workaround but the correct solution. The above patch only prevents crashes from incorrect usage.",
+            "Fingerprint" : "sha256:79dbe4574e614ccaae01b55cb7e1a5155cd13e0723780946dcb74b9aecf366b8",
+            "FixedVersion" : "1.2.1",
+            "PkgIdentifier" : {
+              "UID" : "f7dd9267d9d4da19",
+              "PURL" : "pkg:pypi/msgpack@1.1.2",
+              "BOMRef" : "pkg:pypi/msgpack@1.1.2"
+            },
+            "PublishedDate" : "2026-06-19T21:42:55Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "ghsa" : 3
+            },
+            "VulnerabilityID" : "GHSA-6v7p-g79w-8964",
+            "InstalledVersion" : "1.1.2",
+            "LastModifiedDate" : "2026-06-19T21:42:55Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 8.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "ghsa" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              },
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:L"
+              },
+              "bitnami" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:5a5dd2155999f675d11b4084cd0004519ceb17d6cf03ece97fee2f71a11a0311"
+            },
+            "PkgID" : "setuptools@70.3.0",
+            "Title" : "setuptools: Path Traversal Vulnerability in setuptools PackageIndex",
+            "CweIDs" : [ "CWE-22" ],
+            "Status" : "fixed",
+            "PkgName" : "setuptools",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-5rjg-fvgr-3xxf" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:13578", "https://access.redhat.com/errata/RHSA-2025:9940", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/9/ALSA-2025-13578.html", "https://errata.rockylinux.org/RLSA-2025:9940", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
+            "Fingerprint" : "sha256:b7d440358225b682cfdc626f5775e62a2054ea0672d5c35ded78318ed859c5ed",
+            "FixedVersion" : "78.1.1",
+            "PkgIdentifier" : {
+              "UID" : "c5eccaa7d8e0c308",
+              "PURL" : "pkg:pypi/setuptools@70.3.0",
+              "BOMRef" : "pkg:pypi/setuptools@70.3.0"
+            },
+            "PublishedDate" : "2025-05-17T16:15:19.11Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 2,
+              "ghsa" : 3,
+              "azure" : 3,
+              "rocky" : 2,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "bitnami" : 3,
+              "oracle-oval" : 2
+            },
+            "VulnerabilityID" : "CVE-2025-47273",
+            "InstalledVersion" : "70.3.0",
+            "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 8.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+              },
+              "ghsa" : {
+                "V40Score" : 7.6,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:P/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N"
+              },
+              "redhat" : {
+                "V3Score" : 7.4,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:5a5dd2155999f675d11b4084cd0004519ceb17d6cf03ece97fee2f71a11a0311"
+            },
+            "PkgID" : "urllib3@2.7.0",
+            "Title" : "urllib3: urllib3: Traffic interception via HTTPS proxy TLS configuration override",
+            "CweIDs" : [ "CWE-295", "CWE-440" ],
+            "Status" : "fixed",
+            "PkgName" : "urllib3",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-8988-9cw3-xx77" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-97687",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2026:84578", "https://access.redhat.com/errata/RHSA-2026:85929", "https://access.redhat.com/security/cve/CVE-2026-97687", "https://advisory.echohq.com/cve/CVE-2026-97687", "https://bugzilla.redhat.com/2543245", "https://bugzilla.redhat.com/2543255", "https://bugzilla.redhat.com/show_bug.cgi?id=2543245", "https://bugzilla.redhat.com/show_bug.cgi?id=2543255", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-97687", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-97689", "https://errata.almalinux.org/9/ALSA-2026-85929.html", "https://errata.rockylinux.org/RLSA-2026:84578", "https://github.com/urllib3/urllib3", "https://github.com/urllib3/urllib3/commit/07408cec79d1856d81bb42c74a904a24fdb9e465", "https://github.com/urllib3/urllib3/commit/b6447295fff7b38fdffc67e0df9712d60cef3cc3", "https://github.com/urllib3/urllib3/pull/5093", "https://github.com/urllib3/urllib3/releases/tag/2.8.0", "https://github.com/urllib3/urllib3/security/advisories/GHSA-8988-9cw3-xx77", "https://linux.oracle.com/cve/CVE-2026-97687.html", "https://linux.oracle.com/errata/ELSA-2026-85930.html", "https://nvd.nist.gov/vuln/detail/CVE-2026-97687", "https://ubuntu.com/security/notices/USN-8926-1", "https://www.cve.org/CVERecord?id=CVE-2026-97687" ],
+            "Description" : "urllib3 is an HTTP client library for Python. From 1.26.0 until 2.8.0, the proxy_ssl_context, proxy_assert_hostname, proxy_assert_fingerprint, ssl_context, cert_reqs, verify_mode, use_forwarding_for_https=True, and CERT_NONE configuration paths fail to remain separated because target-server TLS settings are incorrectly applied to the HTTPS proxy connection. The trigger is that an application uses an HTTPS proxy and configures target-server TLS settings that must remain separate from the proxy TLS handshake, including HTTPS forwarding with target-specific identity or credentials. Applying cert_reqs=CERT_NONE can overwrite proxy_ssl_context.verify_mode in place, and the mutation persists so later connections reusing the same context may connect to the HTTPS proxy without certificate verification. The attack mechanism is that an attacker intercepts and impersonates the HTTPS proxy after the effective proxy policy accepts the attacker's certificate. The impact is that the attacker can observe or modify forwarded traffic or receive a target TLS client certificate, while CONNECT tunneling still preserves the separate end-to-end target TLS connection. This issue is fixed in version 2.8.0.",
+            "Fingerprint" : "sha256:084d1ebed9cd11dd93d65a6d6628a478aadada3c93f082d9dc1c2a66f75fd887",
+            "FixedVersion" : "2.8.0",
+            "PkgIdentifier" : {
+              "UID" : "7530399791d1f7e7",
+              "PURL" : "pkg:pypi/urllib3@2.7.0",
+              "BOMRef" : "pkg:pypi/urllib3@2.7.0"
+            },
+            "PublishedDate" : "2026-09-29T16:17:18.517Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 3,
+              "ghsa" : 3,
+              "rocky" : 3,
+              "redhat" : 3,
+              "ubuntu" : 2,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-97687",
+            "InstalledVersion" : "2.7.0",
+            "LastModifiedDate" : "2026-10-13T20:27:23.13Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "ghsa" : {
+                "V40Score" : 8.9,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:5a5dd2155999f675d11b4084cd0004519ceb17d6cf03ece97fee2f71a11a0311"
+            },
+            "PkgID" : "urllib3@2.7.0",
+            "Title" : "urllib3: urllib3: Denial of Service via unbounded memory allocation in chunk parser",
+            "CweIDs" : [ "CWE-770" ],
+            "Status" : "fixed",
+            "PkgName" : "urllib3",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-vxq7-64xx-v4gw" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-97689",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2026:84578", "https://access.redhat.com/errata/RHSA-2026:85929", "https://access.redhat.com/security/cve/CVE-2026-97689", "https://advisory.echohq.com/cve/CVE-2026-97689", "https://bugzilla.redhat.com/2543245", "https://bugzilla.redhat.com/2543255", "https://bugzilla.redhat.com/show_bug.cgi?id=2543245", "https://bugzilla.redhat.com/show_bug.cgi?id=2543255", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-97687", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-97689", "https://errata.almalinux.org/9/ALSA-2026-85929.html", "https://errata.rockylinux.org/RLSA-2026:84578", "https://github.com/urllib3/urllib3", "https://github.com/urllib3/urllib3/commit/cd770b059b543be29298ea5c52afb0b1b090f5ed", "https://github.com/urllib3/urllib3/releases/tag/2.8.0", "https://github.com/urllib3/urllib3/security/advisories/GHSA-vxq7-64xx-v4gw", "https://linux.oracle.com/cve/CVE-2026-97689.html", "https://linux.oracle.com/errata/ELSA-2026-85930.html", "https://nvd.nist.gov/vuln/detail/CVE-2026-97689", "https://ubuntu.com/security/notices/USN-8926-1", "https://www.cve.org/CVERecord?id=CVE-2026-97689" ],
+            "Description" : "urllib3 is an HTTP client library for Python. From 1.10.3 until 2.8.0, the HTTPResponse.read_chunked and HTTPResponse.stream methods can allocate unbounded memory because the streaming chunk parser buffers the chunk-size field until newline or EOF without a length bound. The trigger is that a malicious server returns Transfer-Encoding: chunked followed by a very long run of bytes without a newline. The attack mechanism is that a malicious HTTP server sends a very long unterminated chunk-size line. The impact is that unbounded memory allocation can exhaust the client process. This issue is fixed in version 2.8.0.",
+            "Fingerprint" : "sha256:e3dce1dbaf643f1a57c4a00afea2d0f42eada5bdd97bb783b8d97540da7ccd0d",
+            "FixedVersion" : "2.8.0",
+            "PkgIdentifier" : {
+              "UID" : "7530399791d1f7e7",
+              "PURL" : "pkg:pypi/urllib3@2.7.0",
+              "BOMRef" : "pkg:pypi/urllib3@2.7.0"
+            },
+            "PublishedDate" : "2026-09-29T16:17:18.837Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 3,
+              "ghsa" : 3,
+              "azure" : 3,
+              "rocky" : 3,
+              "amazon" : 3,
+              "redhat" : 3,
+              "ubuntu" : 2,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-97689",
+            "InstalledVersion" : "2.7.0",
+            "LastModifiedDate" : "2026-10-13T20:20:06.95Z"
+          } ]
+        },
+        "startedAt" : "2026-10-23T14:57:06.782+00:00",
+        "finishedAt" : "2026-10-23T14:57:35.913+00:00"
+      },
+      "sastScanResult" : {
+        "tool" : "opengrep",
+        "version" : "1.31.0",
+        "target" : "/app/repo",
+        "success" : true,
+        "complete" : true,
+        "scannedFiles" : 2,
+        "summary" : {
+          "error" : 0,
+          "warning" : 0,
+          "info" : 0,
+          "unknown" : 0
+        },
+        "findings" : [ ],
+        "errors" : [ ],
+        "rawReport" : {
+          "paths" : {
+            "scanned" : [ "/app/repo/app.py", "/app/repo/main.py" ]
+          },
+          "errors" : [ ],
+          "results" : [ ],
+          "version" : "1.31.0",
+          "skipped_rules" : [ ],
+          "interfile_languages_used" : [ ]
+        },
+        "startedAt" : "2026-10-23T14:56:40.896+00:00",
+        "finishedAt" : "2026-10-23T14:56:43.729+00:00"
+      },
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ],
+        "startedAt" : "2026-10-23T14:57:35.925+00:00",
+        "finishedAt" : "2026-10-23T14:57:42.019+00:00"
+      },
+      "imageName" : "gaussianmixturemodel:a2fb070763e783575e2d262fa0082e5d6f34378a"
+    },
+    "rebuilding" : false,
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "gaussianmixturemodel:a2fb070763e783575e2d262fa0082e5d6f34378a",
+    "shortDescription" : "Probabilistisches Clustering mit scikit-learn Gaussian Mixture Models (EM), inkl. Responsibilities und Modellparameter.",
+    "longDescription" : "Dieses Tool führt Clustering mittels GaussianMixture (GMM) aus scikit-learn durch. Es passt ein Mischmodell aus multivariaten Gaußverteilungen per EM (Expectation-Maximization) an und liefert harte Labels (argmax), weiche Zuordnungen (Responsibilities) sowie Modellparameter (Gewichte, Mittelwerte, Kovarianzen). Optional werden Features standardisiert und ein HTML-Report erzeugt.",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "n_components",
+        "variableName" : "n_components",
+        "type" : "INTEGER",
+        "description" : "Anzahl der Gauss-Komponenten (Cluster).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "maxValue" : 200.0,
+        "default" : "3"
+      }, {
+        "name" : "covariance_type",
+        "variableName" : "covariance_type",
+        "type" : "STRING",
+        "description" : "Kovarianztyp: full, tied, diag, spherical.",
+        "mode" : "BOTH",
+        "options" : [ "full", "tied", "diag", "spherical" ],
+        "default" : "full"
+      }, {
+        "name" : "tol",
+        "variableName" : "tol",
+        "type" : "FLOAT",
+        "description" : "Konvergenzschwelle für EM (Stop wenn log-likelihood Verbesserung < tol).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "default" : "0.001"
+      }, {
+        "name" : "reg_covar",
+        "variableName" : "reg_covar",
+        "type" : "FLOAT",
+        "description" : "Nichtnegative Regularisierung für Kovarianzen (numerische Stabilität).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "default" : "0.000001"
+      }, {
+        "name" : "max_iter",
+        "variableName" : "max_iter",
+        "type" : "INTEGER",
+        "description" : "Maximale EM-Iterationen pro Initialisierung.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "maxValue" : 2000.0,
+        "default" : "100"
+      }, {
+        "name" : "n_init",
+        "variableName" : "n_init",
+        "type" : "INTEGER",
+        "description" : "Anzahl der unabhängigen Initialisierungen (bestes Resultat nach log-likelihood).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "maxValue" : 100.0,
+        "default" : "1"
+      }, {
+        "name" : "init_params",
+        "variableName" : "init_params",
+        "type" : "STRING",
+        "description" : "Initialisierungsstrategie: kmeans oder random.",
+        "mode" : "BOTH",
+        "options" : [ "kmeans", "random" ],
+        "default" : "kmeans"
+      }, {
+        "name" : "random_state",
+        "variableName" : "random_state",
+        "type" : "INTEGER",
+        "description" : "Seed für Reproduzierbarkeit (optional).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 0.0,
+        "maxValue" : 2.1474836E9,
+        "default" : "42"
+      }, {
+        "name" : "warm_start",
+        "variableName" : "warm_start",
+        "type" : "BOOLEAN",
+        "description" : "Wenn true, nutzt fit() die letzte Lösung als Startpunkt (bei wiederholtem Fit).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "0"
+      }, {
+        "name" : "compute_labels",
+        "variableName" : "compute_labels",
+        "type" : "BOOLEAN",
+        "description" : "Wenn true, werden harte Labels als argmax der Responsibilities ausgegeben.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "standardize",
+        "variableName" : "standardize",
+        "type" : "BOOLEAN",
+        "description" : "Standardisiert Features (zero mean / unit variance) vor dem Fit (empfohlen).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1"
+      }, {
+        "name" : "output_probabilities",
+        "variableName" : "output_probabilities",
+        "type" : "BOOLEAN",
+        "description" : "Wenn true, werden Responsibilities (Posterior) als CSV ausgegeben.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "1"
+      } ],
+      "input" : [ {
+        "name" : "features",
+        "variableName" : "features",
+        "type" : "CSV",
+        "description" : "Tabellarische Feature-Matrix. Zeilen = Samples, Spalten = numerische Features. Optional erste Spalte 'id'; sonst werden Indizes verwendet.",
+        "mode" : "BOTH",
+        "tabularSchema" : {
+          "allowOnlyNumbers" : true,
+          "prohibitedNulls" : false
+        },
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "labels",
+        "variableName" : "labels",
+        "type" : "CSV",
+        "description" : "Harte Clusterzuordnung pro Sample. Spalten: [id?/index, label]. (Nur wenn compute_labels=true).",
+        "mode" : "BOTH"
+      }, {
+        "name" : "responsibilities",
+        "variableName" : "responsibilities",
+        "type" : "CSV",
+        "description" : "Weiche Zuordnung (Posterior/Responsibilities). Zeilen=Samples, Spalten=Komponenten (p(z=k|x)). (Nur wenn output_probabilities=true).",
+        "mode" : "BOTH"
+      }, {
+        "name" : "weights",
+        "variableName" : "weights",
+        "type" : "CSV",
+        "description" : "Mischgewichte der Komponenten (weights_). Spalten: [component, weight].",
+        "mode" : "BOTH"
+      }, {
+        "name" : "means",
+        "variableName" : "means",
+        "type" : "CSV",
+        "description" : "Komponentenmittelwerte (means_). Zeilen=Komponenten, Spalten=Features.",
+        "mode" : "BOTH"
+      }, {
+        "name" : "covariances",
+        "variableName" : "covariances",
+        "type" : "CSV",
+        "description" : "Kovarianzparameter (covariances_). Für 'diag'/'spherical' als Matrix/Vector ausgegeben; für 'full'/'tied' als flach serialisierte Matrizen pro Komponente.",
+        "mode" : "BOTH"
+      }, {
+        "name" : "report",
+        "variableName" : "report",
+        "type" : "HTML",
+        "description" : "HTML-Report mit Parametern, Konvergenz, AIC/BIC, log-likelihood und Clustergrößenstatistik.",
+        "mode" : "BOTH"
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

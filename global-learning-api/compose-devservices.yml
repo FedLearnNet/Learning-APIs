@@ -46,7 +46,8 @@ services:
       ORCH_DOCKER__PRIVATE__REGISTRY_API_URL: http://registry:5000
       ORCH_DOCKER__PRIVATE__REGISTRY_USERNAME: ""
       ORCH_DOCKER__PRIVATE__REGISTRY_PASSWORD: ""
-      PIPELINE_IMAGE_PREFIX: localhost:5001/flnet/tool-build-pipeline
+      PIPELINE_IMAGE_PREFIX: ghcr.io/fedlearnnet/tool-build-pipeline/pipeline
+      PIPELINE_IMAGE_TAG: staging
       PIPELINE_DOCKER_REGISTRY: localhost:5001
       PIPELINE_DOCKER_GROUP: flnet/tools
       PIPELINE_DOCKER_LOGIN: false

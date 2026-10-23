@@ -113,6 +113,10 @@ public interface FLNetConfig {
         @WithDefault("IF_NOT_EXISTS_IN_REGISTRY")
         ToolImportBuildingOnStart buildOnImport();
 
+        @WithDefault("true")
+        @WithName("remove-image-on-build-failure")
+        boolean removeImageOnBuildFailure();
+
     }
 
     interface Ingestor {
