@@ -19,11 +19,15 @@ public final class FederatedRunEnricher {
     }
 
     /**
-     * Populates participants/config/startAggregator/totalRounds on {@code run} from {@code relay}.
-     * {@code run.getHyperParams()}/{@code run.getInputFilePaths()} must already be set - they're
-     * copied onto the single participant entry.
+     * Populates participants/config/startAggregator/aggregatorOnly/totalRounds on {@code run} from
+     * {@code relay}. {@code run.getHyperParams()}/{@code run.getInputFilePaths()} must already be
+     * set - they're copied onto the single participant entry.
+     *
+     * @param aggregatorOnly true when this participant only aggregates and never trains (the
+     *                       platform as aggregator); the tool then starts no training app for it
      */
-    public static void enrichWithFederatedRelay(final StartRunDTO run, final FederatedLearningRelayInfoDTO relay) {
+    public static void enrichWithFederatedRelay(final StartRunDTO run, final FederatedLearningRelayInfoDTO relay,
+                                                final boolean aggregatorOnly) {
         boolean isCoordinator = relay.getCoordinator();
 
         FederatedRunParticipantDTO participant = new FederatedRunParticipantDTO();
@@ -33,6 +37,7 @@ public final class FederatedRunEnricher {
         participant.setInputFilePaths(run.getInputFilePaths());
         run.setParticipants(List.of(participant));
         run.setStartAggregator(isCoordinator);
+        run.setAggregatorOnly(aggregatorOnly);
         run.setTotalRounds(extractTotalRounds(run.getHyperParams()));
 
         FederatedRunConfigDTO config = new FederatedRunConfigDTO();

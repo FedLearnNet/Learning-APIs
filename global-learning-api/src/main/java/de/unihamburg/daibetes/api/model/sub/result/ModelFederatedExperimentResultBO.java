@@ -98,7 +98,9 @@ public class ModelFederatedExperimentResultBO {
             throw new NotFoundException("No experiment found with ID: " + globalUniqueExperimentId);
         }
         ProjectFederatedExperimentEntity entity = entityOptional.get();
-        if (!entity.getCoordinator().getUniqueRandomClinicId().equals(clinicId)) {
+        // Only the designated model uploader may upload: the coordinator clinic, or with the platform as
+        // aggregator a random participant (see ProjectFederatedExperimentBO.startLearning).
+        if (entity.getModelUploader() == null || !clinicId.equals(entity.getModelUploader().getUniqueRandomClinicId())) {
             throw new BadRequestException("Clinic ID does not match");
         }
         return entity;

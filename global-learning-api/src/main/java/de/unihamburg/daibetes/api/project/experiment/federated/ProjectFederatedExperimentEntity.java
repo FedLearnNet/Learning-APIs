@@ -46,6 +46,13 @@ public class ProjectFederatedExperimentEntity extends BaseWorkflowExperimentEnti
     @JoinColumn(name = "coordinator_id", nullable = true)
     private ProjectFederatedExperimentParticipantEntity coordinator;
 
+    // The clinic that uploads the final model to the platform when the model may be public. This is the
+    // coordinator when a clinic aggregates; with the platform as aggregator it is a random participant.
+    // Lazy: an eager second participant join pushes the experiment select past PostgreSQL's 1664 column limit.
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.REFRESH})
+    @JoinColumn(name = "model_uploader_id", nullable = true)
+    private ProjectFederatedExperimentParticipantEntity modelUploader;
+
     @Column(columnDefinition = "TEXT", name = "diagram_config")
     private String diagramConfig;
 

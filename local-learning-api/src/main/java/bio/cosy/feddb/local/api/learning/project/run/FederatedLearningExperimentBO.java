@@ -358,7 +358,7 @@ public class FederatedLearningExperimentBO
             Log.warnf("No relay info on step %d - app will receive no participants and the round cannot start", entity.getId());
             return;
         }
-        FederatedRunEnricher.enrichWithFederatedRelay(run, relay);
+        FederatedRunEnricher.enrichWithFederatedRelay(run, relay, false);
 
         Log.infof("Federated run for step %d: participant %s role=%s coordinator=%b channel=%s",
                 entity.getId(), relay.getId(), relay.getCoordinator() ? "AGGREGATOR" : "CLIENT", relay.getCoordinator(), relay.getChannel());

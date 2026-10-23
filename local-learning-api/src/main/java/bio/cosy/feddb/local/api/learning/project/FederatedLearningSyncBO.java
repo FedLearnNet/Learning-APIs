@@ -50,6 +50,9 @@ public class FederatedLearningSyncBO {
         if (requestLearning.getCoordinatorId() != null && requestLearning.getCoordinatorId().equals(uniqueRandomClinicId)) {
             federatedLearningProjectBO.setProjectAsCoordinatedTransactional(experiment.getProject().getId());
         }
+        if (requestLearning.getModelUploaderId() != null && requestLearning.getModelUploaderId().equals(uniqueRandomClinicId)) {
+            federatedLearningProjectBO.setProjectAsModelUploaderTransactional(experiment.getProject().getId());
+        }
         if (Boolean.FALSE.equals(requestLearning.getModelCanBePublic())) {
             requestBO.applyModelCanBePublicVeto(requestLearning.getGlobalUniqueLearningExperimentId());
         }

@@ -211,32 +211,34 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
                 throw new NotAllowedException("Platform aggregator support is disabled on this deployment; "
                         + "cannot start this experiment with the platform as coordinator.");
             }
-            if (projectFederatedExperimentStepBO.workflowHasOldFCVersionNode(entity.getProject().getWorkflow())) {
-                Log.warnf("Platform-coordinator requested for experiment %d but workflow contains an old " +
-                        "FeatureCloud-version app, which has no aggregator-only relay slot", experimentId);
-                throw new NotAllowedException("The workflow contains an app that does not support running the "
-                        + "aggregator on the platform; cannot start this experiment with the platform as coordinator.");
-            }
         }
         boolean usePlatformCoordinator = platformIsCoordinatorRequested;
 
         projectFederatedExperimentStepBO.createForWorkflow(entity);
         ao.getEntityManager().detach(entity);
 
+        // The model uploader is the clinic that uploads the final model to the platform (only done when
+        // the model may be public). A coordinator clinic aggregates and therefore uploads it itself; with
+        // the platform as aggregator no clinic coordinates, so a random participant uploads it instead.
+        int randomIndex = new Random().nextInt(participants.size());
+        ProjectFederatedExperimentParticipantEntity randomParticipant = participants.get(randomIndex);
+
         if (usePlatformCoordinator) {
-            Log.infof("Platform-coordinator mode active for experiment %d - no clinic will be marked coordinator", experimentId);
-            ao.startLearningTransactional(experimentId, null);
+            Log.infof("Platform-coordinator mode active for experiment %d - no clinic will be marked coordinator, "
+                    + "clinic %s uploads the final model", experimentId, randomParticipant.getUniqueRandomClinicId());
+            ao.startLearningTransactional(experimentId, null, randomParticipant);
             ProjectFederatedExperimentEntity updatedEntity = ao.findById(experimentId);
-            fedDBClientBroadcastBO.startLearning(updatedEntity.getGlobalUniqueId(), null, updatedEntity.getModelCanBePublic());
+            fedDBClientBroadcastBO.startLearning(updatedEntity.getGlobalUniqueId(), null,
+                    randomParticipant.getUniqueRandomClinicId(), updatedEntity.getModelCanBePublic());
             return entityToDetailDto(updatedEntity);
         }
 
-        int randomIndex = new Random().nextInt(participants.size());
-        ProjectFederatedExperimentParticipantEntity coordinator = participants.get(randomIndex);
+        ProjectFederatedExperimentParticipantEntity coordinator = randomParticipant;
         coordinator.setIsCoordinator(true);
-        ao.startLearningTransactional(experimentId, coordinator);
+        ao.startLearningTransactional(experimentId, coordinator, coordinator);
         ProjectFederatedExperimentEntity updatedEntity = ao.findById(experimentId);
-        fedDBClientBroadcastBO.startLearning(updatedEntity.getGlobalUniqueId(), coordinator.getUniqueRandomClinicId(), updatedEntity.getModelCanBePublic());
+        fedDBClientBroadcastBO.startLearning(updatedEntity.getGlobalUniqueId(), coordinator.getUniqueRandomClinicId(),
+                coordinator.getUniqueRandomClinicId(), updatedEntity.getModelCanBePublic());
 
         return entityToDetailDto(updatedEntity);
     }

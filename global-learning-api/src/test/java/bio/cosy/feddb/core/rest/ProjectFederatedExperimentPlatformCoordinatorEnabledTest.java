@@ -34,6 +34,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 // Pins flnet.federated-learning.platform-aggregator.enabled=true explicitly rather than relying
@@ -87,6 +88,8 @@ class ProjectFederatedExperimentPlatformCoordinatorEnabledTest {
         assertEquals(ProjectStatus.RUNNING, started.getExperimentStatus());
         assertNull(started.getCoordinator(), "platform-aggregator support is enabled - "
                 + "no clinic should be marked coordinator");
+        assertNotNull(started.getModelUploader(), "with the platform as aggregator a participating clinic "
+                + "must be chosen to upload the final model");
     }
 
     private long createExperiment(long projectId, boolean platformIsCoordinator) {

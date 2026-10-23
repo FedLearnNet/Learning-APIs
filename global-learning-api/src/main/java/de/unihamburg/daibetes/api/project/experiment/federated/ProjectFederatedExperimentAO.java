@@ -62,19 +62,22 @@ public class ProjectFederatedExperimentAO extends BaseWorkflowExperimentAO<Proje
     }
 
     @Transactional
-    public boolean startLearningTransactional(Long experimentId, ProjectFederatedExperimentParticipantEntity coordinator) {
+    public boolean startLearningTransactional(Long experimentId, ProjectFederatedExperimentParticipantEntity coordinator,
+                                              ProjectFederatedExperimentParticipantEntity modelUploader) {
         Date now = new Date();
         int updated = update(
                 """
                         experimentStatus = ?1,
                         startedAt = ?2,
                         coordinator = ?3,
-                        updatedAt = ?4
-                        where id = ?5
+                        modelUploader = ?4,
+                        updatedAt = ?5
+                        where id = ?6
                         """,
                 ProjectStatus.RUNNING,
                 now,
                 coordinator,
+                modelUploader,
                 now,
                 experimentId
         );

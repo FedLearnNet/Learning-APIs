@@ -79,6 +79,7 @@ public interface ProjectFederatedExperimentMapper extends BaseMapper<ProjectFede
             @Mapping(target = "diagramConfig", expression = "java(diagramConfigToJsonString(dto.getDiagramConfigs()))"),
             @Mapping(target = "project.id", source = "projectId"),
             @Mapping(target = "coordinator", source = "coordinatorId", qualifiedByName = "coordinatorItToCoordinator"),
+            @Mapping(target = "modelUploader", ignore = true),
             @Mapping(target = "participants", ignore = true),
             @Mapping(target = "steps", ignore = true),
             @Mapping(target = "currentWorkflowNode", source = "currentWorkflowNodeId", qualifiedByName = "mapCurrentStep"),

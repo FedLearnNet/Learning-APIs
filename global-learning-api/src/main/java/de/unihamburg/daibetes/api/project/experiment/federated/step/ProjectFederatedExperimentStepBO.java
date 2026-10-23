@@ -11,7 +11,6 @@ import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
 import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantAO;
 import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantEntity;
-import de.unihamburg.daibetes.api.workflow.WorkflowEntity;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
 import de.unihamburg.daibetes.services.GlobalRelayService;
 import io.quarkus.logging.Log;
@@ -26,7 +25,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 
@@ -72,23 +70,6 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
         return appVersion;
     }
 
-    /**
-     * Platform-coordinator mode only works for v2 FeatureCloud apps - v2 relay setup mints a
-     * separate AGGREGATOR-only relay identity; v1 has no such slot (the first client is also the
-     * coordinator), so handing that slot to the platform would leave one clinic without a relay
-     * identity and the round would hang. Checked across every node, since a workflow can mix app
-     * versions across its steps.
-     */
-    public boolean workflowHasOldFCVersionNode(WorkflowEntity workflow) {
-        if (workflow == null || workflow.getNodes() == null) {
-            return false;
-        }
-        return workflow.getNodes().stream()
-                .map(this::resolveAppVersion)
-                .filter(Objects::nonNull)
-                .anyMatch(av -> Boolean.TRUE.equals(av.getFederatedApp().getOldFCVersion()));
-    }
-
     public FederatedRelaySetupResult handleRelaySetup(ProjectFederatedExperimentEntity experiment) {
         WorkflowNodeEntity workflowNode = experiment.getCurrentWorkflowNode().getWorkflowNode();
         FederatedAppVersionEntity appVersion = resolveAppVersion(workflowNode);
@@ -105,8 +86,10 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
                     .filter(FederatedLearningRelayInfoDTO::getCoordinator)
                     .findFirst()
                     .orElse(null);
-            boolean anyClinicIsCoordinator = experiment.getParticipants().stream()
-                    .anyMatch(ProjectFederatedExperimentParticipantEntity::getIsCoordinator);
+            if (experiment.isPlatformIsCoordinator() && coordinatorInfo == null) {
+                throw new IllegalStateException("Relay server returned no coordinator slot for the platform aggregator of experiment "
+                        + experiment.getId());
+            }
 
             for (ProjectFederatedExperimentParticipantEntity participant : experiment.getParticipants()) {
                 String id = participant.getUniqueRandomClinicId();
@@ -129,10 +112,9 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
             step.setRelayStopped(false);
             ao.setRelayRunTransactional(step.getId(), step.getChannel(), step.getRelayKey(), relayClientIds);
 
-            // No clinic is coordinator - the relay server still minted a coordinator-only slot
-            // (v2) for whoever it is; that's the platform when platformIsCoordinator is active.
-            // Surface it instead of silently dropping it.
-            FederatedLearningRelayInfoDTO platformRelayInfo = anyClinicIsCoordinator ? null : coordinatorInfo;
+            // With the platform as coordinator no clinic takes the coordinator slot; hand it to the
+            // platform's own aggregator instead.
+            FederatedLearningRelayInfoDTO platformRelayInfo = experiment.isPlatformIsCoordinator() ? coordinatorInfo : null;
             return new FederatedRelaySetupResult(result, platformRelayInfo);
         }
 

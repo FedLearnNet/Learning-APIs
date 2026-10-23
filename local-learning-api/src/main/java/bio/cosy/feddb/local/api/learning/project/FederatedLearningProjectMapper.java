@@ -31,7 +31,9 @@ public interface FederatedLearningProjectMapper extends BaseMapper<ProjectDetail
             @Mapping(target = "workflow.id", source = "workflowId"),
             // platformIsCoordinator no longer lives on ProjectDetailDTO (moved to the experiment
             // level) - FederatedLearningRequestBO.createTransactional() sets it explicitly instead.
-            @Mapping(target = "platformIsCoordinator", ignore = true)
+            @Mapping(target = "platformIsCoordinator", ignore = true),
+            // Set from the START_LEARNING message (FederatedLearningSyncBO), not from the project.
+            @Mapping(target = "isModelUploader", ignore = true)
     })
     FederatedLearningProjectEntity dtoToEntity(ProjectDetailDTO sourceCode);
 

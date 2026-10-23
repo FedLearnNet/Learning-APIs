@@ -115,6 +115,8 @@ class ProjectFederatedExperimentE2ETest {
         ProjectFederatedExperimentEntity started = loadExperiment(experimentId);
         assertEquals(ProjectStatus.RUNNING, started.getExperimentStatus());
         assertNotNull(started.getCoordinator());
+        // A coordinator clinic also uploads the final model.
+        assertEquals(started.getCoordinator().getId(), started.getModelUploader().getId());
         assertEquals(1, loadStepCount(experimentId));
         assertFalse(Boolean.TRUE.equals(started.getModelCanBePublic()));
 

@@ -201,7 +201,7 @@ public class ProjectFederatedExperimentAggregatorBO {
         // The platform never holds patient data - the aggregator-only role needs none.
         run.setInputFilePaths(new LinkedHashMap<>());
         run.setStatus(RunStatusTypes.PENDING);
-        FederatedRunEnricher.enrichWithFederatedRelay(run, relay);
+        FederatedRunEnricher.enrichWithFederatedRelay(run, relay, true);
         return run;
     }
 

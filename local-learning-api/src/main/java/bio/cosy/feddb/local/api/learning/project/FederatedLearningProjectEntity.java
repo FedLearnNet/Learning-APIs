@@ -51,6 +51,11 @@ public class FederatedLearningProjectEntity extends BaseEntity {
     @Column(name = "is_coordinator", columnDefinition = "boolean default false")
     private Boolean isCoordinator;
 
+    // Whether this clinic uploads the final model to the platform (if the model may be public). Same as
+    // isCoordinator when a clinic aggregates; with the platform as aggregator one participant is chosen.
+    @Column(name = "is_model_uploader", columnDefinition = "boolean default false")
+    private Boolean isModelUploader;
+
 
     @ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "query_id")
