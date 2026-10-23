@@ -39,6 +39,9 @@ public class ProjectFederatedExperimentEntity extends BaseWorkflowExperimentEnti
     @Column(name = "clinic_is_coordinator", columnDefinition = "boolean default false")
     private boolean clinicIsCoordinator;
 
+    @Column(name = "platform_is_coordinator", columnDefinition = "boolean default false")
+    private boolean platformIsCoordinator;
+
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "coordinator_id", nullable = true)
     private ProjectFederatedExperimentParticipantEntity coordinator;

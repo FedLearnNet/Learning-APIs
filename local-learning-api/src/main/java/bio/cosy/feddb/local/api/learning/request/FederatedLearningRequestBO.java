@@ -237,6 +237,7 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
 
         FederatedLearningProjectEntity project = projectBO.createForRequest(
                 query.getId(), entity, requestLearning.getProjectVersion(), requestLearning.getWorkflow());
+        project.setPlatformIsCoordinator(requestLearning.getPlatformIsCoordinator());
         entity.setProject(project);
 
         patientLearningBO.initPatientList(query.getId(), entity, harmonizedQueryResult);

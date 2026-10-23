@@ -31,6 +31,7 @@ public class ProjectFederatedExperimentDTO extends BaseWorkflowExperimentDTO {
     private String relayServerAddress;
 
     private Boolean clinicIsCoordinator;
+    private Boolean platformIsCoordinator;
     private Long coordinatorId;
 
     private Long projectId;
