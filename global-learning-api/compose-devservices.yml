@@ -37,6 +37,7 @@ services:
       QUARKUS_LOG_CONSOLE_JSON_ENABLED: false
       CONTAINER_HOST_OVERRIDE: host.docker.internal
       CONTAINER_NETWORK_NAMES: global-learning-network
+      CONTAINER_NETWORK_ALWAYS_BRIDGE: true
       CONTAINER_NETWORK_CONTROLLER: global-learning-controller:8001
       CONTAINER_FILE_TRANSFER_VOLUME_NAME: global-orch-data
       QUARKUS_LOG_CATEGORY_"bio.cosy.featurecloud"_LEVEL: DEBUG
