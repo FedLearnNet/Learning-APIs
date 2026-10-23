@@ -5,12 +5,12 @@ import bio.cosy.feddb.core.execution.hyperparam.strategy.Candidate;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Value;
+import lombok.Data;
 
 import java.util.Objects;
 
 /** What a step does next with its search. */
-@Value
+@Data
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class SearchPlan {
 
@@ -18,13 +18,13 @@ public class SearchPlan {
      * RUNNING while a trial runs or is about to start, FINISHED once every trial ended and one
      * finished, ERROR when none finished.
      */
-    RunStatusTypes status;
+    private RunStatusTypes status;
 
     /** Trial to create an attempt for and start; null while one runs or once the search is done. */
-    Candidate next;
+    private Candidate next;
 
     /** Attempt whose outputs the step hands on, only set once finished. */
-    BaseExecutionAttemptDTO selected;
+    private BaseExecutionAttemptDTO selected;
 
     static SearchPlan waiting() {
         return new SearchPlan(RunStatusTypes.RUNNING, null, null);
