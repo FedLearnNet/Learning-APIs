@@ -194,15 +194,19 @@ public class FLNetClientBroadcastBO {
      * Sends a message to all clients participating in this experiment to start learning
      *
      * @param globalUniqueExperimentId the id of the experiment to start learning
-     * @param uniqueRandomClinicId     the unique random clinic id of the participant (can be Null)
+     * @param uniqueRandomClinicId     the unique random clinic id of the coordinator (null when the platform is the aggregator)
+     * @param modelUploaderClinicId    the unique random clinic id of the clinic that uploads the final model
      */
-    public void startLearning(String globalUniqueExperimentId, @Nullable String uniqueRandomClinicId, Boolean modelCanBePublic) {
+    public void startLearning(String globalUniqueExperimentId, @Nullable String uniqueRandomClinicId,
+                              String modelUploaderClinicId, Boolean modelCanBePublic) {
         if (globalUniqueExperimentId == null) {
             logger.warnf("ExperimentId is null");
             return;
         }
-        logger.infof("Starting learning for experiment %s with clinic %s", globalUniqueExperimentId, uniqueRandomClinicId);
-        StartLearningClientRequestDTO startLearningClientRequestDTO = new StartLearningClientRequestDTO(globalUniqueExperimentId, uniqueRandomClinicId, modelCanBePublic);
+        logger.infof("Starting learning for experiment %s with coordinator clinic %s and model uploader clinic %s",
+                globalUniqueExperimentId, uniqueRandomClinicId, modelUploaderClinicId);
+        StartLearningClientRequestDTO startLearningClientRequestDTO = new StartLearningClientRequestDTO(
+                globalUniqueExperimentId, uniqueRandomClinicId, modelUploaderClinicId, modelCanBePublic);
         FedDBClientDataDTO<StartLearningClientRequestDTO> fedDBClientDataDTO = new FedDBClientDataDTO<>(
                 FedDBClientTypeEnum.START_LEARNING, startLearningClientRequestDTO);
 

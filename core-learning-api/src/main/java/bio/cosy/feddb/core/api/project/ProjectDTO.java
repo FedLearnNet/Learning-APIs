@@ -30,9 +30,6 @@ public class ProjectDTO extends BaseDTO {
     //For the controller, that he can decide if the controller needs data
     private boolean coordinatorHasData = false;
 
-    //IF not set, the platform will decide randomly which client is coordinator
-    private boolean platformIsCoordinator = false;
-
     //People can upload one file tom project for experiments and coordinator data but dont need to
     private FileDTO file;
 }

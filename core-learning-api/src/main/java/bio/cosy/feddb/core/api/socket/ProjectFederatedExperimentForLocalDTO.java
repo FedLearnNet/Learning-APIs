@@ -16,6 +16,7 @@ public class ProjectFederatedExperimentForLocalDTO extends BaseAuthDTO {
     private String name;
     private String description;
     private Boolean modelNeedToBePublic;
+    private Boolean platformIsCoordinator;
 
     private ProjectDetailDTO projectVersion;
     private WorkflowDTO workflow;

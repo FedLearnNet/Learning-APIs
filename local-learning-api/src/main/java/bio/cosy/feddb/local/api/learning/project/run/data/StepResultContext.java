@@ -10,7 +10,7 @@ public record StepResultContext(
         Long appVersionId,
         String clinicId,
         String globalFLExperimentUniqueId,
-        boolean coordinator,
+        boolean modelUploader,
         boolean modelCanBePublic,
         FederatedAppType appType
 ) {
