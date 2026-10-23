@@ -40,7 +40,7 @@ services:
       # Override CONTROLLER_NAME in a (gitignored) .env file next to this compose file if you
       # need to run multiple global-learning-api instances/checkouts at once - Docker container
       # names must be unique per daemon, so a shared literal name would collide between them.
-      CONTAINER_NETWORK_CONTROLLER: ${CONTROLLER_NAME:-global-controller}:8001
+      CONTAINER_NETWORK_CONTROLLER: ${CONTROLLER_NAME:-global-learning-controller}:8001
       CONTAINER_FILE_TRANSFER_VOLUME_NAME: global-orch-data
       QUARKUS_LOG_CATEGORY_"bio.cosy.featurecloud"_LEVEL: DEBUG
       CONTAINER_MEMORY_LIMIT: 34179869184
@@ -73,7 +73,7 @@ services:
       - global-learning-network
   controller:
     image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller:staging
-    container_name: ${CONTROLLER_NAME:-global-controller}
+    container_name: ${CONTROLLER_NAME:-global-learning-controller}
     ports:
       - '8192:8000'
     profiles:
@@ -93,7 +93,7 @@ services:
 
   controller-test:
     image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller:staging
-    container_name: ${CONTROLLER_NAME:-global-controller}
+    container_name: ${CONTROLLER_NAME:-global-learning-controller}
     ports:
       - '8192:8000'
     profiles:
