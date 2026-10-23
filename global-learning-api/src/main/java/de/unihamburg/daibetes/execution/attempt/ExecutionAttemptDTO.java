@@ -7,4 +7,5 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class ExecutionAttemptDTO extends BaseExecutionAttemptDTO {
+    private String result;
 }

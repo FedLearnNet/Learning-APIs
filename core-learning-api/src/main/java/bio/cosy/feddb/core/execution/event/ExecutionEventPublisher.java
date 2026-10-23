@@ -1,5 +1,6 @@
 package bio.cosy.feddb.core.execution.event;
 
+import bio.cosy.feddb.core.execution.attempt.BaseExecutionAttemptEntity;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
@@ -17,6 +18,9 @@ public class ExecutionEventPublisher {
 
     @Inject
     Event<AttemptLaunchEvent> attemptLaunch;
+
+    @Inject
+    Event<AttemptUpdatedEvent> attemptUpdated;
 
     @Inject
     Event<AttemptFinishedEvent> attemptFinished;
@@ -39,10 +43,15 @@ public class ExecutionEventPublisher {
         attemptLaunch.fire(new AttemptLaunchEvent(attemptId));
     }
 
+    public void attemptUpdated(Long attemptId) {
+        attemptUpdated.fire(new AttemptUpdatedEvent(attemptId));
+    }
+
     // Also a change of its step, so the step coordinator plans the next trial.
-    public void attemptFinished(Long attemptId, Long stepId, RunStatusTypes status) {
-        attemptFinished.fire(new AttemptFinishedEvent(attemptId, status));
-        stepChanged(stepId);
+    public void attemptFinished(BaseExecutionAttemptEntity<?, ?> attempt) {
+        attemptFinished.fire(new AttemptFinishedEvent(attempt.getId(), attempt.getStatus(), attempt.getContainerId(),
+                attempt.getStep().getRun().getPurpose()));
+        stepChanged(attempt.getStep().getId());
     }
 
     public void stepFinished(Long stepId, RunStatusTypes status) {
