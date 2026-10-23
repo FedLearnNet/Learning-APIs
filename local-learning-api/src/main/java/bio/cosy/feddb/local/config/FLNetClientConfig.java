@@ -172,6 +172,12 @@ public interface FLNetClientConfig {
         @WithName("enabled")
         @WithDefault("false")
         Boolean enabled();
+
+        // wait this long after startup before subscribing, e.g. while a platform started together
+        // with this client is still importing its schemas
+        @WithName("delay")
+        @WithDefault("PT0S")
+        Duration delay();
     }
 
     interface AutoSubscribeGroupConfig {
