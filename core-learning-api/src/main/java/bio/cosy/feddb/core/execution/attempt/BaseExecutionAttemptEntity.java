@@ -2,6 +2,7 @@ package bio.cosy.feddb.core.execution.attempt;
 
 import bio.cosy.feddb.core.base.BaseEntity;
 import bio.cosy.feddb.core.execution.failure.ExecutionFailure;
+import bio.cosy.feddb.core.execution.message.BaseExecutionMessageEntity;
 import bio.cosy.feddb.core.execution.run.dto.RunMetaDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepEntity;
@@ -12,17 +13,20 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.UUID;
 
 /**
  * Shared physical attempt mapping. Concrete tables should enforce uniqueness on
- * (step_id, attempt_number). Local and Global bind Step to their concrete step entity.
+ * (step_id, trial_index). Local and Global bind Step and Message to their concrete entities.
+ * A step's hyper parameter search runs one attempt per parameter set, trial_index naming the set.
  */
 @Getter
 @Setter
 @MappedSuperclass
-public abstract class BaseExecutionAttemptEntity<Step extends BaseExecutionRunStepEntity<?, ?, ?>>
-        extends BaseEntity {
+public abstract class BaseExecutionAttemptEntity<
+        Step extends BaseExecutionRunStepEntity<?, ?, ?>,
+        Message extends BaseExecutionMessageEntity> extends BaseEntity {
 
     @Column(name = "public_id", nullable = false, unique = true, updatable = false)
     private UUID publicId;
@@ -31,8 +35,17 @@ public abstract class BaseExecutionAttemptEntity<Step extends BaseExecutionRunSt
     @JoinColumn(name = "step_id", nullable = false, updatable = false)
     private Step step;
 
-    @Column(name = "attempt_number", nullable = false, updatable = false)
-    private int attemptNumber;
+    @Column(name = "trial_index", nullable = false, updatable = false)
+    private int trialIndex;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "params", columnDefinition = "jsonb", updatable = false)
+    private LinkedHashMap<String, Object> params;
+
+    // Latest message of the search metric the attempt reported, which ranks its trial; null when none.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "score_message_id")
+    private Message scoreMessage;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

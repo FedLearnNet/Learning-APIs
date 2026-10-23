@@ -4,6 +4,7 @@ import bio.cosy.feddb.core.api.workflow.node.BaseWorkflowNodeEntity;
 import bio.cosy.feddb.core.base.BaseEntity;
 import bio.cosy.feddb.core.execution.attempt.BaseExecutionAttemptEntity;
 import bio.cosy.feddb.core.execution.failure.ExecutionFailure;
+import bio.cosy.feddb.core.execution.hyperparam.config.HyperParamSearchDTO;
 import bio.cosy.feddb.core.execution.run.BaseExecutionRunEntity;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import jakarta.persistence.*;
@@ -27,7 +28,7 @@ import java.util.UUID;
 public abstract class BaseExecutionRunStepEntity<
         Run extends BaseExecutionRunEntity<?>,
         Node extends BaseWorkflowNodeEntity,
-        Attempt extends BaseExecutionAttemptEntity<?>> extends BaseEntity {
+        Attempt extends BaseExecutionAttemptEntity<?, ?>> extends BaseEntity {
 
     @Column(name = "public_id", nullable = false, unique = true, updatable = false)
     private UUID publicId;
@@ -57,9 +58,16 @@ public abstract class BaseExecutionRunStepEntity<
     @Column(name = "failure", columnDefinition = "jsonb")
     private ExecutionFailure failure;
 
-    // The attempt's step relationship owns the foreign key; keep both sides in sync.
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "search", columnDefinition = "jsonb", updatable = false)
+    private HyperParamSearchDTO search;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "selected_attempt_id")
+    private Attempt selectedAttempt;
+
     @OneToMany(mappedBy = "step", fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @OrderBy("attemptNumber ASC")
+    @OrderBy("trialIndex ASC")
     private Set<Attempt> attempts = new LinkedHashSet<>();
 }

@@ -3,6 +3,7 @@ package bio.cosy.feddb.core.execution.step;
 import bio.cosy.feddb.core.base.BaseDTO;
 import bio.cosy.feddb.core.execution.attempt.BaseExecutionAttemptDTO;
 import bio.cosy.feddb.core.execution.failure.ExecutionFailure;
+import bio.cosy.feddb.core.execution.hyperparam.config.HyperParamSearchDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -24,6 +25,8 @@ public class BaseExecutionRunStepDTO extends BaseDTO {
     private Instant finishedAt;
     private RunStatusTypes status;
     private ExecutionFailure failure;
+    private HyperParamSearchDTO search;
+    private Long selectedAttemptId;
     // Parent references remain IDs so nested run -> step -> attempt DTOs cannot recurse.
     private Set<BaseExecutionAttemptDTO> attempts = new LinkedHashSet<>();
 }

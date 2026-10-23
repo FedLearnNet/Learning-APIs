@@ -2,6 +2,7 @@ package bio.cosy.feddb.core.execution.step;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Page;
+import jakarta.persistence.LockModeType;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,10 @@ public abstract class BaseExecutionRunStepAO<Entity extends BaseExecutionRunStep
 
     public Optional<Entity> findByWorkflowNodeId(Long runId, Long workflowNodeId) {
         return find("run.id = ?1 and workflowNode.id = ?2", runId, workflowNodeId).firstResultOptional();
+    }
+
+    public Optional<Entity> findByIdWrite(Long id) {
+        return findByIdOptional(id, LockModeType.PESSIMISTIC_WRITE);
     }
 
     public List<Entity> listByRun(Long runId, Page page) {
