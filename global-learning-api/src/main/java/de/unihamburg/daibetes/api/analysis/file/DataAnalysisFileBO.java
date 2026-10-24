@@ -5,9 +5,10 @@ import bio.cosy.feddb.core.api.file.FileDTO;
 import bio.cosy.feddb.core.api.file.FileRenameDTO;
 import bio.cosy.feddb.core.api.file.analytics.FileProfile;
 import bio.cosy.feddb.core.api.model.workflow.DataAnalysisFileDTO;
-import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.base.BaseFileEntity;
+import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
+import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
 import bio.cosy.feddb.core.helper.FileHelper;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisBO;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisEntity;
@@ -15,9 +16,11 @@ import de.unihamburg.daibetes.api.file.FileBO;
 import de.unihamburg.daibetes.api.file.FileEntity;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
+import de.unihamburg.daibetes.execution.run.ExecutionRunEntity;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
@@ -25,6 +28,8 @@ import java.io.File;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static de.unihamburg.daibetes.api.analysis.run.DataAnalysisRunResultBO.FILE_PREFIX;
 
 
 @ApplicationScoped
@@ -216,5 +221,28 @@ public class DataAnalysisFileBO extends BaseBo<DataAnalysisFileDTO, DataAnalysis
 
         return candidate;
     }
+
+    public void requireOwnFiles(Map<String, Object> inputs, String keycloakId) {
+        inputs.forEach((name, value) -> {
+            if (value instanceof String reference && reference.startsWith(FILE_PREFIX)) {
+                try {
+                    ao.getById(Long.parseLong(reference.substring(FILE_PREFIX.length())), keycloakId)
+                            .orElseThrow(() -> new NotFoundException("Workflow file not found: " + name));
+                } catch (NumberFormatException e) {
+                    throw new NotFoundException("Invalid file reference for input: " + name);
+                }
+            }
+        });
+    }
+
+    @Transactional
+    public byte[] downloadOutput(String containerId, String keycloakId) {
+        var files = ao.getAllForContainer(containerId, keycloakId);
+        if (files.isEmpty()) {
+            throw new NotFoundException("No outputs found for container ID: " + containerId);
+        }
+        return downloadOutput(new HashSet<>(files));
+    }
+
 
 }

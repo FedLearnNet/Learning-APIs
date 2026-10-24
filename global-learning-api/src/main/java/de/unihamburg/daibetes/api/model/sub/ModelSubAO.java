@@ -3,6 +3,7 @@ package de.unihamburg.daibetes.api.model.sub;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.NotFoundException;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -11,6 +12,14 @@ import java.util.UUID;
 @ApplicationScoped
 public class ModelSubAO implements PanacheRepository<ModelSubEntity> {
 
+
+    public ModelSubEntity findByIdAuthorChecked(Long modelSubId, String keycloakId) {
+        return find("from ModelSubEntity s where s.id = ?1 and exists ("
+                        + "select 1 from ModelAccessEntity a where a.model = s.modelVersion.model and a.keycloakId = ?2)",
+                modelSubId, keycloakId)
+                .firstResultOptional()
+                .orElseThrow(() -> new NotFoundException("Sub model " + modelSubId + " not found"));
+    }
 
     public Optional<ModelSubEntity> findByRunId(Long experimentRunId) {
         return find("experimentRun.id", experimentRunId).firstResultOptional();

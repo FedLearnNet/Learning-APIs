@@ -4,6 +4,7 @@ import bio.cosy.feddb.core.api.app.PublishStatus;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.NotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,14 @@ import java.util.UUID;
 
 @ApplicationScoped
 public class FederatedAppVersionAO implements PanacheRepository<FederatedAppVersionEntity> {
+
+    public FederatedAppVersionEntity findByIdAuthorChecked(Long appVersionId, String keycloakId) {
+        return find("from FederatedAppVersionEntity v where v.id = ?1 and exists ("
+                        + "select 1 from FederatedAppAuthorEntity a where a.federatedApp = v.federatedApp and a.keycloakId = ?2)",
+                appVersionId, keycloakId)
+                .firstResultOptional()
+                .orElseThrow(() -> new NotFoundException("App version " + appVersionId + " not found"));
+    }
 
     public List<FederatedAppVersionEntity> listForAudit(String keycloakId, long minAuditCount) {
         return find(

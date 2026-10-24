@@ -4,6 +4,7 @@ import bio.cosy.feddb.core.api.model.prediction.DataAnalysisRunModesEnum;
 import bio.cosy.feddb.core.execution.orchestrator.DataAnalysisCreatePredictionDTO;
 import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisBO;
+import de.unihamburg.daibetes.api.analysis.file.DataAnalysisFileBO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Multi;
@@ -28,6 +29,9 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
 
     @Inject
     DataAnalysisRunResultBO resultBO;
+
+    @Inject
+    DataAnalysisFileBO fileBO;
 
     @Inject
     DataAnalysisBO dataAnalysisBO;
@@ -77,7 +81,7 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
     @Transactional
     public Response downloadOutput(DataAnalysisRunModesEnum mode, String containerId) {
         String keycloakId = userIdentity.getKeycloakId();
-        byte[] result = executionBO.downloadOutput(containerId, keycloakId);
+        byte[] result = fileBO.downloadOutput(containerId, keycloakId);
 
         String filename = "result-" + containerId + "-files.zip";
         return Response.ok(result, "application/zip")
@@ -91,7 +95,7 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
     @Transactional
     public Response downloadWorkflowOutput(Long experimentId) {
         String keycloakId = userIdentity.getKeycloakId();
-        byte[] result = executionBO.downloadRunOutput(experimentId, keycloakId);
+        byte[] result = fileBO.downloadOutputForRun(experimentId, keycloakId);
 
         String filename = "result-workflow" + experimentId + "-files.zip";
         return Response.ok(result, "application/zip")

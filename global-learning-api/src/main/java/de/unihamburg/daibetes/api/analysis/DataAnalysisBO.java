@@ -15,6 +15,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotAllowedException;
+import jakarta.ws.rs.NotFoundException;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -36,7 +37,9 @@ public class DataAnalysisBO extends BaseBo<ModelWorkflowDTO, DataAnalysisEntity,
         return mapper.entitiesToDtos(ao.getAll(keycloakId));
     }
 
-    /** The analysis with its timeline: chat messages and the runs of the execution. */
+    /**
+     * The analysis with its timeline: chat messages and the runs of the execution.
+     */
     public DataAnalysisDetailDTO findById(Long id, String keycloakId) {
         return ao.findById(keycloakId, id)
                 .map(mapper::entityToDetail)
@@ -45,7 +48,9 @@ public class DataAnalysisBO extends BaseBo<ModelWorkflowDTO, DataAnalysisEntity,
                 .orElseThrow(() -> new NotAllowedException("Workflow not found"));
     }
 
-    /** The analysis for its report, runs as results; flat lists every workflow step on its own. */
+    /**
+     * The analysis for its report, runs as results; flat lists every workflow step on its own.
+     */
     public DataAnalysisDetailDTO findForReport(Long id, String keycloakId, boolean flat) {
         return ao.findById(keycloakId, id)
                 .map(entity -> flat ? mapper.entityToDetailFlat(entity) : mapper.entityToDetail(entity))
@@ -73,8 +78,11 @@ public class DataAnalysisBO extends BaseBo<ModelWorkflowDTO, DataAnalysisEntity,
     }
 
     public DataAnalysisEntity findEntityById(Long id, String keycloakId) {
+        if (id == null) {
+            throw new NotFoundException("ID cannot be null, therefore no DataAnalysis can be found");
+        }
         return ao.findById(keycloakId, id)
-                .orElseThrow(() -> new NotAllowedException("Workflow not found"));
+                .orElseThrow(() -> new NotFoundException("DataAnalysis not found"));
     }
 
     public void delete(Long id, String keycloakId) {
