@@ -43,7 +43,7 @@ public class DataAnalysisBO extends BaseBo<ModelWorkflowDTO, DataAnalysisEntity,
     public DataAnalysisDetailDTO findById(Long id, String keycloakId) {
         return ao.findById(keycloakId, id)
                 .map(mapper::entityToDetail)
-                .map(detail -> withTimeline(detail, runResultBO.runsOfAnalysis(detail.getId()).stream()
+                .map(detail -> withTimeline(detail, runResultBO.findAnalysisRuns(detail.getId()).stream()
                         .map(run -> wrap(run, ModelWorkflowChatMessageType.RUN))))
                 .orElseThrow(() -> new NotAllowedException("Workflow not found"));
     }

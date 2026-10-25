@@ -69,14 +69,6 @@ public class DataAnalysisFileBO extends BaseBo<DataAnalysisFileDTO, DataAnalysis
                 .toList();
     }
 
-
-    public FileContentDTO getFileContent(Long id, Long fileId, String keycloakId) {
-        FileEntity file = ao.getById(fileId, id, keycloakId)
-                .map(DataAnalysisFileEntity::getFile)
-                .orElseThrow(() -> new NotFoundException("File not found"));
-        return fileBo.getFileContent(file);
-    }
-
     public String getFileContentForAnalyzing(Long id, Long fileId, String keycloakId) {
         FileEntity file = ao.getByFileId(fileId, id, keycloakId)
                 .map(DataAnalysisFileEntity::getFile)
@@ -92,13 +84,6 @@ public class DataAnalysisFileBO extends BaseBo<DataAnalysisFileDTO, DataAnalysis
     public DataAnalysisFileEntity getFileEntity(Long id, Long fileId, String keycloakId) {
         return ao.getById(fileId, id, keycloakId)
                 .orElseThrow(() -> new NotFoundException("File not found"));
-    }
-
-    public FileProfile getFileStatistics(Long id, Long fileId, String keycloakId) {
-        FileEntity file = ao.getById(fileId, id, keycloakId)
-                .map(DataAnalysisFileEntity::getFile)
-                .orElseThrow(() -> new NotFoundException("File not found"));
-        return fileBo.getFileStatistics(file);
     }
 
     public FileProfile getFileStatisticsByName(String fileName) {

@@ -1,14 +1,15 @@
 package de.unihamburg.daibetes.execution.attempt;
 
 import bio.cosy.feddb.core.execution.attempt.BaseExecutionAttemptEntity;
+import de.unihamburg.daibetes.api.analysis.file.DataAnalysisFileEntity;
 import de.unihamburg.daibetes.execution.message.ExecutionMessageEntity;
 import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Setter
 @Getter
@@ -19,4 +20,7 @@ public class ExecutionAttemptEntity extends BaseExecutionAttemptEntity<Execution
     // Result the app uploaded with its outputs.
     @Column(columnDefinition = "TEXT")
     private String result;
+
+    @OneToMany(mappedBy = "attempt", fetch = FetchType.LAZY)
+    private List<DataAnalysisFileEntity> files = new ArrayList<>();
 }

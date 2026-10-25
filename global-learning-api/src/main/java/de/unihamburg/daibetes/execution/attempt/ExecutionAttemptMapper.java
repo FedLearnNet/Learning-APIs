@@ -23,7 +23,8 @@ public interface ExecutionAttemptMapper extends BaseExecutionAttemptMapper<Execu
     // The score message is linked when the app reports the search metric, never taken over from a request.
     @Mappings({
             @Mapping(target = "step.id", source = "stepId"),
-            @Mapping(target = "scoreMessage", ignore = true)
+            @Mapping(target = "scoreMessage", ignore = true),
+            @Mapping(target = "files", ignore = true)
     })
     ExecutionAttemptEntity dtoToEntity(ExecutionAttemptDTO dto);
 

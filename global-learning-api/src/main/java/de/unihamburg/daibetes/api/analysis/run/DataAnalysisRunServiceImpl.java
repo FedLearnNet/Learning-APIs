@@ -115,7 +115,7 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
     private Multi<DataAnalysisRunDTO> follow(Long runId, String keycloakId) {
         Multi<DataAnalysisRunDTO> changes = runChanges
                 .filter(run -> runId.equals(run.getId()) && keycloakId.equals(run.getKeycloakId()));
-        Multi<DataAnalysisRunDTO> current = Uni.createFrom().item(() -> resultBO.runOf(runId, keycloakId, false))
+        Multi<DataAnalysisRunDTO> current = Uni.createFrom().item(() -> resultBO.findRunByIdTransactional(runId, keycloakId, false))
                 .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
                 .toMulti();
         return Multi.createBy().merging().streams(changes, current);

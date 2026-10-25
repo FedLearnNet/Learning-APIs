@@ -63,6 +63,9 @@ public class DataAnalysisExecutionBO {
     @Inject
     ExecutionAttemptLifecycle lifecycle;
 
+    @Inject
+    DataAnalysisRunResultMapper runResultMapper;
+
     @Transactional
     public Long start(Long dataAnalysisId, DataAnalysisCreatePredictionDTO data, String keycloakId) {
         if (data == null) {
@@ -88,6 +91,8 @@ public class DataAnalysisExecutionBO {
         }
         run.setKeycloakId(keycloakId);
 
+        // The run owns the link, the analysis only lists it.
+        run.setDataAnalysis(analysis);
         analysis.getRuns().add(run);
         dataAnalysisBO.invalidateLlmSummary(analysis.getId());
 
@@ -112,13 +117,14 @@ public class DataAnalysisExecutionBO {
     @Transactional
     public DataAnalysisRunDTO getRun(Long dataAnalysisId, Long runId, String keycloakId) {
         requireOwnRun(dataAnalysisId, runId, keycloakId);
-        return resultBO.runOf(runId, keycloakId, true);
+        return resultBO.findRunByIdTransactional(runId, keycloakId, true);
     }
 
     @Transactional
     public DataAnalysisRunDTO stop(Long dataAnalysisId, Long runId, String keycloakId) {
         requireOwnRun(dataAnalysisId, runId, keycloakId);
-        return resultBO.runOf(workflowExecutionBO.stop(runId), false);
+        ExecutionRunEntity run = workflowExecutionBO.stop(runId);
+        return runResultMapper.mapRunEntityToResultDTO(run, false);
     }
 
     @Transactional
