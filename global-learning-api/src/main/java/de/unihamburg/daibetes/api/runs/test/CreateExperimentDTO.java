@@ -1,4 +1,4 @@
-package de.unihamburg.daibetes.api.runs.experiment;
+package de.unihamburg.daibetes.api.runs.test;
 
 import bio.cosy.feddb.core.execution.config.ExecutionDiagramConfigDTO;
 import jakarta.validation.constraints.NotBlank;

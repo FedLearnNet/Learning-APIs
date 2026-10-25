@@ -1,8 +1,7 @@
-package de.unihamburg.daibetes.api.runs.base;
+package de.unihamburg.daibetes.helper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import org.mapstruct.Mapper;
 
 import java.io.IOException;

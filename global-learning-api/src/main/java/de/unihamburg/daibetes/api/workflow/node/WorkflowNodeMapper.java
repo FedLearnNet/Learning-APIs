@@ -14,7 +14,7 @@ import de.unihamburg.daibetes.api.app.FederatedAppMapper;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.model.ModelMapper;
 import de.unihamburg.daibetes.api.model.sub.ModelSubEntity;
-import de.unihamburg.daibetes.api.runs.base.HyperParamMapper;
+import de.unihamburg.daibetes.helper.HyperParamMapper;
 import de.unihamburg.daibetes.api.workflow.export.WorkflowNodeExportDTO;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import org.mapstruct.*;

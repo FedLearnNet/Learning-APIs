@@ -7,7 +7,7 @@ import de.unihamburg.daibetes.api.app.config.FederatedAppConfigNameMapper;
 import de.unihamburg.daibetes.api.app.config.input.FederatedAppInputConfigEntity;
 import de.unihamburg.daibetes.api.app.config.output.FederatedAppOutputConfigEntity;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
-import de.unihamburg.daibetes.api.runs.base.HyperParamMapper;
+import de.unihamburg.daibetes.helper.HyperParamMapper;
 import de.unihamburg.daibetes.api.workflow.WorkflowEntity;
 import de.unihamburg.daibetes.api.workflow.connection.WorkflowConnectionEntity;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;

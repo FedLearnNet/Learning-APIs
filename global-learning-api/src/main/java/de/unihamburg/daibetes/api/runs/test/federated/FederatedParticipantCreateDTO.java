@@ -1,4 +1,4 @@
-package de.unihamburg.daibetes.api.runs.test.federated.participant;
+package de.unihamburg.daibetes.api.runs.test.federated;
 
 import bio.cosy.feddb.core.execution.run.types.FederatedParticipantType;
 import lombok.Data;
@@ -12,5 +12,4 @@ public class FederatedParticipantCreateDTO {
 
     private LinkedHashMap<String, Object> hyperParams;
     private LinkedHashMap<String, String> inputFilePaths;
-    private FederatedParticipantConfigDTO config;
 }

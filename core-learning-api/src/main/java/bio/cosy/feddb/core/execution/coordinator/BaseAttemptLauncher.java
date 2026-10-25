@@ -92,9 +92,13 @@ public abstract class BaseAttemptLauncher<
             return null;
         }
         Attempt attempt = locked.get();
+        ExecutionCallback callback = callbacks.get(attempt.getStep().getRun().getPurpose());
+        // Without a callback the attempt runs elsewhere, e.g. in the developer's own app engine.
+        if (callback == null) {
+            return null;
+        }
         attempt.setStatus(RunStatusTypes.INITIALIZED);
 
-        ExecutionCallback callback = callbackOf(attempt);
         String apiKey = toolApiKeyService.issue(callback.getScope(), attempt.getId());
         StartWorkflowNodeDTO start = ENGINE.getStartDTO(targetOf(attempt), apiKey);
         // Every attempt gets its own volume, and the app connects back with the attempt id.
@@ -102,15 +106,6 @@ public abstract class BaseAttemptLauncher<
         start.setWorkflowNodeId(attempt.getId());
         start.upsertEnv("APP_ID", String.valueOf(attempt.getId()));
         return Map.entry(callback.getPath(), start);
-    }
-
-    private ExecutionCallback callbackOf(Attempt attempt) {
-        ExecutionPurpose purpose = attempt.getStep().getRun().getPurpose();
-        ExecutionCallback callback = callbacks.get(purpose);
-        if (callback == null) {
-            throw new IllegalStateException("No app callback for runs of purpose " + purpose);
-        }
-        return callback;
     }
 
     // False when the attempt ended while its container was starting, so the container is not needed anymore.

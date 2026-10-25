@@ -10,6 +10,7 @@ import bio.cosy.feddb.core.execution.message.BaseExecutionMessageEntity;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageDTO;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageRoundDTO;
 import bio.cosy.feddb.core.execution.message.RunMessageTypes;
 import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
@@ -87,7 +88,8 @@ public abstract class BaseAttemptLifecycle<
     protected void customizeStartup(Attempt attempt, StartRunDTO start) {
         LinkedHashMap<String, Object> inputs = attempt.getStep().getInputs();
         start.setInputData(inputs != null ? new LinkedHashMap<>(inputs) : new LinkedHashMap<>());
-        start.setInputFilePaths(new LinkedHashMap<>());
+        LinkedHashMap<String, String> inputFilePaths = attempt.getStep().getInputFilePaths();
+        start.setInputFilePaths(inputFilePaths != null ? new LinkedHashMap<>(inputFilePaths) : new LinkedHashMap<>());
     }
 
     @Transactional
@@ -140,6 +142,11 @@ public abstract class BaseAttemptLifecycle<
                 attempt.setScoreMessage(message);
             }
         });
+    }
+
+    @Transactional
+    public void round(Long attemptId, ExecutionMessageRoundDTO round) {
+        withAttempt(attemptId, attempt -> store(attempt, RunMessageTypes.ROUND, round));
     }
 
     // Every applied report is announced, so views of the attempt can refresh.

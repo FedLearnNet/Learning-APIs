@@ -12,7 +12,7 @@ import de.unihamburg.daibetes.api.analysis.DataAnalysisResultDTO;
 import de.unihamburg.daibetes.api.app.FederatedAppBO;
 import de.unihamburg.daibetes.api.file.FileBO;
 import de.unihamburg.daibetes.api.model.ModelBO;
-import de.unihamburg.daibetes.api.runs.base.HyperParamMapper;
+import de.unihamburg.daibetes.helper.HyperParamMapper;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

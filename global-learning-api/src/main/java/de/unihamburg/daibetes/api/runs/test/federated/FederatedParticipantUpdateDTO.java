@@ -1,4 +1,4 @@
-package de.unihamburg.daibetes.api.runs.test.federated.participant;
+package de.unihamburg.daibetes.api.runs.test.federated;
 
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import lombok.Data;

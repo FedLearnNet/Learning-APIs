@@ -1,4 +1,4 @@
-package de.unihamburg.daibetes.api.runs.test.federated.message;
+package de.unihamburg.daibetes.api.runs.test.federated;
 
 import lombok.Data;
 
