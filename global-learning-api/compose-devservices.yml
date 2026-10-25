@@ -64,10 +64,9 @@ services:
       registry:
         condition: service_healthy
     labels:
-      # Change to `true` to disable waiting for ports
-      io.quarkus.devservices.compose.wait_for.ports.disable: true
-      # Or set a custom timeout for port waiting
-      #io.quarkus.devservices.compose.wait_for.ports.timeout: "30s"
+      # Wait for the port so tool imports on startup can reach orch
+      #io.quarkus.devservices.compose.wait_for.ports.disable: true
+      io.quarkus.devservices.compose.wait_for.ports.timeout: "120s"
     networks:
       - global-learning-network
   controller:
