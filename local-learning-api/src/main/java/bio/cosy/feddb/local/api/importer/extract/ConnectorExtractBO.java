@@ -379,7 +379,7 @@ public class ConnectorExtractBO {
             ExecutionRunDTO run = appRunBO.startTransactional(appSettings.getExtractor(), appSettings.getHyperParams(), connectorRunId,
                     cohortId, keycloakId, false);
             // The import reads the table next, so it waits here; the timeout stops the run.
-            ConnectorAppOutputDTO output = appRunBO.output(run.getId(), APP_OUTPUT_TIMEOUT).await().indefinitely();
+            ConnectorAppOutputDTO output = appRunBO.awaitOutput(run.getId(), APP_OUTPUT_TIMEOUT).await().indefinitely();
             recordStoredOutputs(appSettings, connectorId, output, keycloakId);
             TableData outputData = loadSelectedStoredOutputs(appSettings, cohortId, request);
             if (outputData == null) {
@@ -459,13 +459,13 @@ public class ConnectorExtractBO {
         }
         ExecutionRunDTO run = appRunBO.startTransactional(appSettings.getExtractor(), appSettings.getHyperParams(), null, cohortId, keycloakId, false);
         return Multi.createBy().concatenating().streams(
-                runBO.follow(run.getId()).map(this::streamOf),
+                runBO.subscribe(run.getId()).map(this::streamOf),
                 Multi.createFrom().uni(previewOf(run, appSettings)));
     }
 
     // Subscribed once the run's stream completed, so the run has ended.
     private Uni<ConnectorExtractorStreamDTO> previewOf(ExecutionRunDTO run, AppBasedUploadSettingsDTO appSettings) {
-        return appRunBO.output(run.getId(), APP_OUTPUT_TIMEOUT)
+        return appRunBO.awaitOutput(run.getId(), APP_OUTPUT_TIMEOUT)
                 .map(output -> {
                     TableData outputData = output.getOutputData();
                     TableData previewData = limit(outputData, config.connector().previewRows());

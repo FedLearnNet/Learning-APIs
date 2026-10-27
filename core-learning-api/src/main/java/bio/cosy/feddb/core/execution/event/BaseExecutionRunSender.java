@@ -58,7 +58,7 @@ public abstract class BaseExecutionRunSender<
         changes.group().intoLists().every(WINDOW)
                 .filter(window -> !window.isEmpty())
                 .onItem().transformToUniAndConcatenate(window -> Uni.createFrom().item(() -> {
-                            announceTransactional(window);
+                            announceChangedRunsTransactional(window);
                             return window.size();
                         })
                         .runSubscriptionOn(virtualThreads)
@@ -72,12 +72,12 @@ public abstract class BaseExecutionRunSender<
 
     // Reading the runs needs a transaction of its own, which cannot begin on the committing thread.
     @Transactional(Transactional.TxType.REQUIRES_NEW)
-    protected void announceTransactional(List<ExecutionRunChange> window) {
-        runsOf(window).forEach((purpose, runIds) -> runsChanged.fire(new ExecutionRunsChangedEvent(purpose, runIds)));
+    protected void announceChangedRunsTransactional(List<ExecutionRunChange> window) {
+        runIdsByPurposeOf(window).forEach((purpose, runIds) -> runsChanged.fire(new ExecutionRunsChangedEvent(purpose, runIds)));
     }
 
     // The runs behind the changes, by purpose; empty for what is gone.
-    private Map<ExecutionPurpose, List<Long>> runsOf(List<ExecutionRunChange> changes) {
+    private Map<ExecutionPurpose, List<Long>> runIdsByPurposeOf(List<ExecutionRunChange> changes) {
         Map<ExecutionPurpose, Set<Long>> runs = new EnumMap<>(ExecutionPurpose.class);
         changes.forEach(change -> runOf(change).ifPresent(run ->
                 runs.computeIfAbsent(run.getPurpose(), purpose -> new LinkedHashSet<>()).add(run.getId())));

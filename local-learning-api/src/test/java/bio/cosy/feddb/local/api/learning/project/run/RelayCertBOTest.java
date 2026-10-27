@@ -105,7 +105,7 @@ class RelayCertBOTest {
     }
 
     private void verifyStepFailed(RelayCertBO bo) {
-        verify(bo.federatedLearningRunBO).fail(eq(step), anyString());
+        verify(bo.federatedLearningRunBO).failStep(eq(step), anyString());
     }
 
     @Test
@@ -130,7 +130,7 @@ class RelayCertBOTest {
         // The app key of the controller run is the relay client id.
         verify(bo.controllerService).startRelaying(new ControllerStartRelayingRequestDTO(CHANNEL, CLIENT, "signed-cert"));
         assertTrue(federation.getRelayCertSigned());
-        verify(bo.federatedLearningRunBO, never()).fail(any(), anyString());
+        verify(bo.federatedLearningRunBO, never()).failStep(any(), anyString());
     }
 
     @Test
@@ -167,7 +167,7 @@ class RelayCertBOTest {
         bo.handleSignedTransactional(otherClient);
 
         verify(bo.controllerService, never()).startRelaying(any());
-        verify(bo.federatedLearningRunBO, never()).fail(any(), anyString());
+        verify(bo.federatedLearningRunBO, never()).failStep(any(), anyString());
         assertEquals(false, federation.getRelayCertSigned());
     }
 
@@ -242,7 +242,7 @@ class RelayCertBOTest {
 
         assertEquals(3, federation.getRelayCertAttempts());
         verify(bo.websocketSender).sendRelayCertRequest(new RelayCertSignRequestDTO(EXPERIMENT, CLINIC, NODE, CLIENT, CSR));
-        verify(bo.federatedLearningRunBO, never()).fail(any(), anyString());
+        verify(bo.federatedLearningRunBO, never()).failStep(any(), anyString());
     }
 
     @Test

@@ -64,7 +64,7 @@ public class RelayCertBO {
         federation.setRelayCertSigned(false);
         federation.setRelayStopped(false);
         Log.infof("Requesting relay certificate for step %d", federation.getStep().getId());
-        send(federation);
+        sendCertRequest(federation);
     }
 
     /**
@@ -95,7 +95,7 @@ public class RelayCertBO {
         }
         federation.setRelayCertSigned(true);
         if (response.getCertificate() == null || response.getCertificate().isBlank()) {
-            federatedLearningRunBO.fail(step, "Relay certificate was not signed: " + response.getError());
+            federatedLearningRunBO.failStep(step, "Relay certificate was not signed: " + response.getError());
             return;
         }
         // The app key of a controller run is the relay client id.
@@ -113,7 +113,7 @@ public class RelayCertBO {
             error = e.getMessage();
         }
         if (error != null) {
-            federatedLearningRunBO.fail(step, "Controller could not connect to the relay server: " + error);
+            federatedLearningRunBO.failStep(step, "Controller could not connect to the relay server: " + error);
             return;
         }
         Log.infof("Controller of step %d joined the relay", step.getId());
@@ -137,13 +137,13 @@ public class RelayCertBO {
             if (attempts >= maxAttempts) {
                 // A late answer must not connect the controller of a failed step.
                 pending.setRelayCertSigned(true);
-                federatedLearningRunBO.fail(pending.getStep(), "Relay certificate was not signed after " + attempts + " attempts");
+                federatedLearningRunBO.failStep(pending.getStep(), "Relay certificate was not signed after " + attempts + " attempts");
                 continue;
             }
             Log.warnf("No relay certificate for step %d yet, sending request %d of %d", pending.getStep().getId(), attempts + 1, maxAttempts);
             pending.setRelayCertAttempts(attempts + 1);
             pending.setRelayCertRequestedAt(now);
-            send(pending);
+            sendCertRequest(pending);
         }
     }
 

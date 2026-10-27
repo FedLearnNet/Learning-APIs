@@ -48,7 +48,7 @@ public class ProjectExperimentServiceImpl implements ProjectExperimentService {
     @Override
     public Multi<ExecutionRunDetailDTO> retrieveFederated(Long projectId, Long runId) {
         String keycloakId = userIdentity.getKeycloakId();
-        return follow(Uni.createFrom().item(() -> federatedTrainingBO.findRunTransactional(projectId, runId, keycloakId)));
+        return subscribe(Uni.createFrom().item(() -> federatedTrainingBO.findRunTransactional(projectId, runId, keycloakId)));
     }
 
     @Override
@@ -75,7 +75,7 @@ public class ProjectExperimentServiceImpl implements ProjectExperimentService {
     @Override
     public Multi<ExecutionRunDetailDTO> retrieveLocal(Long projectId, Long runId) {
         String keycloakId = userIdentity.getKeycloakId();
-        return follow(Uni.createFrom().item(() -> platformTrainingBO.findRunTransactional(projectId, runId, keycloakId, false)));
+        return subscribe(Uni.createFrom().item(() -> platformTrainingBO.findRunTransactional(projectId, runId, keycloakId, false)));
     }
 
     @Override
@@ -102,11 +102,11 @@ public class ProjectExperimentServiceImpl implements ProjectExperimentService {
     @Override
     public Multi<ExecutionRunDetailDTO> retrieveLocalTest(Long projectId) {
         String keycloakId = userIdentity.getKeycloakId();
-        return follow(Uni.createFrom().item(() -> platformTrainingBO.findTestTransactional(projectId, keycloakId)));
+        return subscribe(Uni.createFrom().item(() -> platformTrainingBO.findTestTransactional(projectId, keycloakId)));
     }
 
     // The training now, then every change of it; nothing for a project never tested.
-    private Multi<ExecutionRunDetailDTO> follow(Uni<ExecutionRunDetailDTO> current) {
+    private Multi<ExecutionRunDetailDTO> subscribe(Uni<ExecutionRunDetailDTO> current) {
         return current.runSubscriptionOn(Infrastructure.getDefaultExecutor())
                 .toMulti()
                 .onItem().transformToMultiAndConcatenate(run -> Multi.createBy().concatenating().streams(

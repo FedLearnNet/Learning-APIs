@@ -68,7 +68,7 @@ public abstract class BaseWorkflowCoordinator<
                 .findFirst();
         if (ended.isPresent()) {
             stopWaiting(steps);
-            finish(run, ended.get().getStatus(), failureOf(ended.get()));
+            finishRun(run, ended.get().getStatus(), failureOf(ended.get()));
             return;
         }
 
@@ -84,7 +84,7 @@ public abstract class BaseWorkflowCoordinator<
             return;
         }
 
-        finish(run, RunStatusTypes.FINISHED, null);
+        finishRun(run, RunStatusTypes.FINISHED, null);
     }
 
     private void stopWaiting(List<Step> steps) {
@@ -93,7 +93,7 @@ public abstract class BaseWorkflowCoordinator<
                 .forEach(step -> step.setStatus(RunStatusTypes.STOPPED));
     }
 
-    private void finish(Run run, RunStatusTypes status, ExecutionFailure failure) {
+    private void finishRun(Run run, RunStatusTypes status, ExecutionFailure failure) {
         run.end(status, failure);
         events.runFinished(run.getId(), status);
         Log.infof("Run %d finished as %s", run.getId(), status);

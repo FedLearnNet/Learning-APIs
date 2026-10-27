@@ -66,7 +66,7 @@ public class AppTransformerSessionBO {
         Map<Long, Long> forPreview = new ConcurrentHashMap<>();
         sessions.put(previewId, forPreview);
         try {
-            forPreview.put(keyOf(transformer, previewId), start(transformer, null, keycloakId, onRunCreated));
+            forPreview.put(sessionKeyOf(transformer, previewId), start(transformer, null, keycloakId, onRunCreated));
         } catch (RuntimeException e) {
             close(previewId);
             throw e;
@@ -87,7 +87,7 @@ public class AppTransformerSessionBO {
         Log.infof("Starting %d app-based transformer(s) for import %d", transformers.size(), run.getId());
         try {
             for (ConnectorTransformerDTO transformer : transformers) {
-                forRun.put(keyOf(transformer, run.getId()), start(transformer, run.getId(), run.getKeycloakId(), created -> {
+                forRun.put(sessionKeyOf(transformer, run.getId()), start(transformer, run.getId(), run.getKeycloakId(), created -> {
                 }));
             }
         } catch (RuntimeException e) {
@@ -98,7 +98,7 @@ public class AppTransformerSessionBO {
 
     public List<Map<String, Object>> transform(Long sessionId, ConnectorTransformerDTO transformer, List<Map<String, Object>> rows) {
         Long attemptId = Optional.ofNullable(sessions.get(sessionId))
-                .map(forSession -> forSession.get(keyOf(transformer, sessionId)))
+                .map(forSession -> forSession.get(sessionKeyOf(transformer, sessionId)))
                 .orElseThrow(() -> new AppTransformerSessionFailure("No running app transformer for '"
                         + transformer.getAppImage() + "' in import " + sessionId));
         WebSocketConnection connection = connectionOf(attemptId, transformer);
@@ -181,7 +181,7 @@ public class AppTransformerSessionBO {
         AppTransformerSessionFailure timedOut = new AppTransformerSessionFailure("App transformer '" + transformer.getAppImage() + "' " + failure);
         return Uni.createFrom().<Long>item(() -> {
                     if (runId != null) {
-                        runBO.findLatestAttemptIdTransactional(runId).ifPresent(attemptId -> appRunBO.fail(attemptId, timedOut.getMessage()));
+                        runBO.findLatestAttemptIdTransactional(runId).ifPresent(attemptId -> appRunBO.failAttempt(attemptId, timedOut.getMessage()));
                     }
                     return null;
                 })
@@ -189,7 +189,7 @@ public class AppTransformerSessionBO {
                 .onItem().failWith(() -> timedOut);
     }
 
-    private Long keyOf(ConnectorTransformerDTO transformer, Long sessionId) {
+    private Long sessionKeyOf(ConnectorTransformerDTO transformer, Long sessionId) {
         return transformer.getId() != null ? transformer.getId() : sessionId;
     }
 }

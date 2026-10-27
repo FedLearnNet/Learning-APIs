@@ -127,7 +127,7 @@ public class TestEmbedBO {
 
     // Forwarded as it comes, the run sent to the frontend leaves round messages out.
     public AppMessageWrapperDTO<ExecutionMessageRoundDTO> logFederatedRoundMessage(FederatedRoundMessageCreateDTO create) {
-        ExecutionMessageRoundDTO dto = testRunBO.roundMessageTransactional(create);
+        ExecutionMessageRoundDTO dto = testRunBO.storeRoundMessageTransactional(create);
         return new AppMessageWrapperDTO<>(AppMessageTypeEnum.FEDERATED_ROUND_MESSAGE, dto, AppRunTypeEnum.FEDERATED_TEST_RUN);
     }
 
@@ -182,13 +182,13 @@ public class TestEmbedBO {
     // Forwarded as stored, with the attempt it belongs to as its run.
     @Transactional
     public AppMessageWrapperDTO<ExecutionMessageLogDTO> logTestMessageTransactional(Long runId, ExecutionMessageLogDTO log, AppRunTypeEnum runType) {
-        ExecutionMessageLogDTO dto = testRunBO.logTransactional(runId, log, runType);
+        ExecutionMessageLogDTO dto = testRunBO.storeLogTransactional(runId, log, runType);
         return new AppMessageWrapperDTO<>(AppMessageTypeEnum.LOG_MESSAGE, dto, forwardedRunType(runType));
     }
 
     @Transactional
     public AppMessageWrapperDTO<ExecutionMessageMetricDTO> logTestMetricTransactional(Long runId, ExecutionMessageMetricDTO log, AppRunTypeEnum runType) {
-        ExecutionMessageMetricDTO dto = testRunBO.metricTransactional(runId, log, runType);
+        ExecutionMessageMetricDTO dto = testRunBO.storeMetricTransactional(runId, log, runType);
         return new AppMessageWrapperDTO<>(AppMessageTypeEnum.LOG_METRIC, dto, forwardedRunType(runType));
     }
 

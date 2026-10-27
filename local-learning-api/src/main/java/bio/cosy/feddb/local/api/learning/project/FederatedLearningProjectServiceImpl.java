@@ -78,7 +78,7 @@ public class FederatedLearningProjectServiceImpl implements FederatedLearningPro
         return Uni.createFrom().item(() -> runIdOf(id))
                 .runSubscriptionOn(Infrastructure.getDefaultExecutor())
                 .toMulti()
-                .onItem().transformToMultiAndConcatenate(runBO::follow);
+                .onItem().transformToMultiAndConcatenate(runBO::subscribe);
     }
 
     // Only for members of every cohort the training reads.

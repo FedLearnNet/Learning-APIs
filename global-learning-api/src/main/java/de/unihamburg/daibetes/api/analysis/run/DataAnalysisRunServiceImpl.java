@@ -41,12 +41,12 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
 
     @Override
     public Multi<DataAnalysisRunDTO> createDataAnalysisRun(DataAnalysisCreatePredictionDTO data) {
-        return startAndFollow(null, data);
+        return startAndSubscribe(null, data);
     }
 
     @Override
     public Multi<DataAnalysisRunDTO> getDataAnalysisRun(Long runId) {
-        return follow(runId, userIdentity.getKeycloakId());
+        return subscribe(runId, userIdentity.getKeycloakId());
     }
 
     @Override
@@ -66,7 +66,7 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
 
     @Override
     public Multi<DataAnalysisRunDTO> createDataAnalysisWorkflowRun(Long dataAnalysisId, DataAnalysisCreatePredictionDTO data) {
-        return startAndFollow(dataAnalysisId, data);
+        return startAndSubscribe(dataAnalysisId, data);
     }
 
     @Override
@@ -101,7 +101,7 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
         String keycloakId = userIdentity.getKeycloakId();
         return Uni.createFrom().item(() -> executionBO.startTransactional(dataAnalysisId, data, keycloakId))
                 .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
-                .onItem().transformToMulti(runId -> follow(runId, keycloakId));
+                .onItem().transformToMulti(runId -> subscribe(runId, keycloakId));
     }
 
     private Multi<DataAnalysisRunDTO> subscribe(Long runId, String keycloakId) {

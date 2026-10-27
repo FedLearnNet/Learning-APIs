@@ -78,7 +78,7 @@ public class PatientDataExportServiceImpl implements PatientDataExportService {
         // once the stream is subscribed rather than on the IO thread
         Multi<ExecutionRunDTO> run = Multi.createFrom().<ExecutionRunDTO>deferred(() -> {
                     ExecutionRunDTO started = exportBO.startAppExport(cohortId, config);
-                    return runBO.follow(started.getId());
+                    return runBO.subscribe(started.getId());
                 })
                 .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
                 // The stream is already open, so a failure is reported as its terminal event

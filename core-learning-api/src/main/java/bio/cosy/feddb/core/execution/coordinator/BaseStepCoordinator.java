@@ -82,18 +82,18 @@ public abstract class BaseStepCoordinator<
             plan = planner.plan(searchOf(step), step.getAttempts().stream().map(attemptMapper::entityToDto).toList());
         } catch (ConstraintViolationException | IllegalArgumentException e) {
             ExecutionFailure failure = new ExecutionFailure(FailureCategory.VALIDATION, "Search cannot run: " + e.getMessage());
-            finish(step, RunStatusTypes.ERROR, failure);
+            finishStep(step, RunStatusTypes.ERROR, failure);
             return;
         }
 
         if (plan.getNext() != null) {
-            start(step, plan.getNext());
+            startTrial(step, plan.getNext());
         } else if (plan.getSelected() != null) {
             step.setSelectedAttempt(attemptOf(step, plan.getSelected()));
-            finish(step, plan.getStatus(), null);
+            finishStep(step, plan.getStatus(), null);
         } else if (plan.isDone()) {
             ExecutionFailure failure = new ExecutionFailure(FailureCategory.TOOL, "No trial of the step finished");
-            finish(step, plan.getStatus(), failure);
+            finishStep(step, plan.getStatus(), failure);
         }
     }
 
@@ -104,7 +104,7 @@ public abstract class BaseStepCoordinator<
                 : HyperParamSearchDTO.fixed(NodeHyperParams.of(objectMapper, step.getWorkflowNode()));
     }
 
-    private void start(Step step, Candidate trial) {
+    private void startTrial(Step step, Candidate trial) {
         AttemptEntity attempt = newAttempt.get();
         attempt.setPublicId(UUID.randomUUID());
         attempt.setStep(step);
@@ -119,7 +119,7 @@ public abstract class BaseStepCoordinator<
         Log.infof("Step %d starts trial %d as attempt %d", step.getId(), trial.getTrialIndex(), attempt.getId());
     }
 
-    private void finish(Step step, RunStatusTypes status, ExecutionFailure failure) {
+    private void finishStep(Step step, RunStatusTypes status, ExecutionFailure failure) {
         step.end(status, failure);
         events.stepFinished(step.getId(), status);
         Log.infof("Step %d finished as %s", step.getId(), status);

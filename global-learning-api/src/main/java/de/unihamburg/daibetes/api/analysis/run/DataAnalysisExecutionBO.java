@@ -104,7 +104,7 @@ public class DataAnalysisExecutionBO {
         ExecutionAttemptEntity attempt = attemptAO.findByIdOptional(attemptId)
                 .orElseThrow(() -> new NotFoundException("Attempt " + attemptId + " not found"));
         ExecutionRunEntity run = attempt.getStep().getRun();
-        attempt.setResult(json(upload.getFieldsNullsafe()));
+        attempt.setResult(toJson(upload.getFieldsNullsafe()));
         dataAnalysisAO.findByRunId(run.getId()).ifPresentOrElse(
                 analysis -> dataAnalysisFileBO.storeAttemptOutputs(attempt, analysis, run.getKeycloakId(), upload.getFilesNullsafe()),
                 () -> Log.warnf("Run %d belongs to no data analysis, its output files are not kept", run.getId()));
@@ -151,7 +151,7 @@ public class DataAnalysisExecutionBO {
                 .orElseThrow(() -> new NotFoundException("Data analysis run not found"));
     }
 
-    private String json(LinkedHashMap<String, Object> fields) {
+    private String toJson(LinkedHashMap<String, Object> fields) {
         try {
             return objectMapper.writeValueAsString(fields);
         } catch (JsonProcessingException e) {

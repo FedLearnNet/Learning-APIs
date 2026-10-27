@@ -53,7 +53,7 @@ public abstract class BaseExecutionFileBO<
     public List<DTO> linkFiles(Attempt attempt, Map<String, F> files, ExecutionFileDirection direction) {
         List<DTO> inputs = new ArrayList<>();
         files.forEach((name, file) -> {
-            DTO input = create(attempt, file, name, direction);
+            DTO input = createLink(attempt, file, name, direction);
             input.setContent(loadFile(file));
             inputs.add(input);
         });
@@ -81,7 +81,7 @@ public abstract class BaseExecutionFileBO<
             String name = AppRunUploadData.keyOf(upload);
             try {
                 F storedFile = storeFile(attempt, upload);
-                DTO created = create(attempt, storedFile, name, ExecutionFileDirection.OUTPUT);
+                DTO created = createLink(attempt, storedFile, name, ExecutionFileDirection.OUTPUT);
                 outputs.add(created);
             } catch (RuntimeException e) {
                 Log.errorf(e, "Could not store output %s of attempt %d", name, attempt.getId());
@@ -98,7 +98,7 @@ public abstract class BaseExecutionFileBO<
         return mapper.entitiesToDtos(ao.listForRun(runId, direction));
     }
 
-    private DTO create(Attempt attempt, F file, String name, ExecutionFileDirection direction) {
+    private DTO createLink(Attempt attempt, F file, String name, ExecutionFileDirection direction) {
         Entity entity = newEntity.get();
         entity.setAttempt(attempt);
         entity.setFile(file);

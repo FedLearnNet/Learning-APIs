@@ -54,7 +54,7 @@ public class ExecutionAttemptLifecycle extends BaseAttemptLifecycle<ExecutionAtt
 
     /** An app that waits to be started connected; the step across clinics then counts it as ready. */
     @Transactional
-    public void connectedTransactional(Long attemptId) {
+    public void markConnectedTransactional(Long attemptId) {
         UpdateRunDTO update = new UpdateRunDTO();
         update.setStatus(RunStatusTypes.STARTED);
         updateTransactional(attemptId, update);

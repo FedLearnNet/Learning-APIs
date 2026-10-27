@@ -38,7 +38,7 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
             return open(connection);
         }
         Log.infof("App of attempt %d connected, it waits to be started", attemptId(connection));
-        lifecycle.connectedTransactional(attemptId(connection));
+        lifecycle.markConnectedTransactional(attemptId(connection));
         return Uni.createFrom().voidItem();
     }
 

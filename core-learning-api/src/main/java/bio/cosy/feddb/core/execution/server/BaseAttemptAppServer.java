@@ -30,7 +30,7 @@ public abstract class BaseAttemptAppServer extends BaseAppServer {
      * Sends the app its start, without waiting for the write; nothing to an app connecting for an attempt that
      * ended already, an empty message makes it close. Reads the attempt, so the endpoint calls it blocking.
      */
-    protected Uni<Void> open(WebSocketConnection connection) {
+    protected Uni<Void> sendStart(WebSocketConnection connection) {
         Long attemptId = attemptId(connection);
         Log.infof("App connected for attempt %d", attemptId);
         if (lifecycle().checkIfEndedTransactional(attemptId)) {
@@ -45,7 +45,7 @@ public abstract class BaseAttemptAppServer extends BaseAppServer {
     }
 
     // An app gone before it finished failed; ignored for an attempt that ended already.
-    protected void closed(WebSocketConnection connection) {
+    protected void failUnfinishedAttempt(WebSocketConnection connection) {
         Long attemptId = attemptId(connection);
         try {
             UpdateRunDTO closed = new UpdateRunDTO();
@@ -74,7 +74,7 @@ public abstract class BaseAttemptAppServer extends BaseAppServer {
     @Override
     protected <T> void handleAppMessages(AppMessageWrapperDTO<T> m, Long attemptId, AppRunTypeEnum runType) {
         switch (m.getType()) {
-            case LOG_METRIC -> lifecycle().metricTransactional(attemptId, decode(m.getMessage(), ExecutionMessageMetricDTO.class));
+            case LOG_METRIC -> lifecycle().storeMetricTransactional(attemptId, decode(m.getMessage(), ExecutionMessageMetricDTO.class));
             case UPDATE_FEDERATED_RUN -> {
                 FederatedRunLifecycleDTO federated = decode(m.getMessage(), FederatedRunLifecycleDTO.class);
                 if (federated.toRunStatus() != null) {
@@ -120,7 +120,7 @@ public abstract class BaseAttemptAppServer extends BaseAppServer {
 
     @Override
     protected void logMessage(Long attemptId, ExecutionMessageLogDTO log, AppRunTypeEnum runType) {
-        lifecycle().logTransactional(attemptId, log);
+        lifecycle().storeLogTransactional(attemptId, log);
     }
 
     // Console output is kept as a log of its own kind.
@@ -129,7 +129,7 @@ public abstract class BaseAttemptAppServer extends BaseAppServer {
         ExecutionMessageLogDTO log = new ExecutionMessageLogDTO();
         log.setSeverity("CONSOLE");
         log.setMessage(console.getMsg());
-        lifecycle().logTransactional(attemptId, log);
+        lifecycle().storeLogTransactional(attemptId, log);
     }
 
     protected Long attemptId(WebSocketConnection connection) {

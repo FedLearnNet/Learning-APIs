@@ -67,19 +67,19 @@ public abstract class BaseAttemptLauncher<
         Long attemptId = event.getAttemptId();
         try {
             // Callback path and start request of the claimed attempt.
-            Map.Entry<String, StartWorkflowNodeDTO> launch = prepareTransactional(attemptId);
+            Map.Entry<String, StartWorkflowNodeDTO> launch = claimStartTransactional(attemptId);
             if (launch == null) {
                 return;
             }
             // What the app reads is in its volume before it starts.
             stageInputsTransactional(attemptId);
             String containerId = orchestrator.startWorkflow(launch.getValue(), launch.getKey());
-            if (!startedTransactional(attemptId, containerId)) {
-                stop(attemptId, containerId);
+            if (!markStartedTransactional(attemptId, containerId)) {
+                stopContainer(attemptId, containerId);
             }
         } catch (RuntimeException e) {
             Log.errorf(e, "Could not launch attempt %d", attemptId);
-            failTransactional(attemptId, e);
+            failLaunchTransactional(attemptId, e);
         }
     }
 
@@ -89,12 +89,12 @@ public abstract class BaseAttemptLauncher<
         // No callback means no key was ever issued for it.
         Optional.ofNullable(callbacks.get(event.getPurpose()))
                 .ifPresent(callback -> toolApiKeyService.revoke(callback.getScope(), event.getAttemptId()));
-        stop(event.getAttemptId(), event.getContainerId());
+        stopContainer(event.getAttemptId(), event.getContainerId());
     }
 
     // Claims the attempt, so a duplicated launch event cannot start a second container.
     @Transactional(Transactional.TxType.REQUIRES_NEW)
-    protected Map.Entry<String, StartWorkflowNodeDTO> prepareTransactional(Long attemptId) {
+    protected Map.Entry<String, StartWorkflowNodeDTO> claimStartTransactional(Long attemptId) {
         Optional<Attempt> locked = attemptAO.findByIdWrite(attemptId);
         if (locked.isEmpty() || locked.get().getStatus() != RunStatusTypes.PENDING) {
             Log.debugf("Ignoring launch of attempt %d, it is gone or already launched", attemptId);
@@ -166,7 +166,7 @@ public abstract class BaseAttemptLauncher<
 
     // False when the attempt ended while its container was starting, so the container is not needed anymore.
     @Transactional(Transactional.TxType.REQUIRES_NEW)
-    protected boolean startedTransactional(Long attemptId, String containerId) {
+    protected boolean markStartedTransactional(Long attemptId, String containerId) {
         Attempt attempt = attemptAO.findByIdWrite(attemptId).orElse(null);
         if (attempt == null || attempt.hasEnded()) {
             return false;
@@ -182,7 +182,7 @@ public abstract class BaseAttemptLauncher<
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
-    protected void failTransactional(Long attemptId, RuntimeException e) {
+    protected void failLaunchTransactional(Long attemptId, RuntimeException e) {
         attemptAO.findByIdWrite(attemptId)
                 .filter(attempt -> !attempt.hasEnded())
                 .ifPresent(attempt -> {
@@ -193,7 +193,7 @@ public abstract class BaseAttemptLauncher<
     }
 
     // Volumes stay, a later step may still read the attempt's outputs.
-    private void stop(Long attemptId, String containerId) {
+    private void stopContainer(Long attemptId, String containerId) {
         if (containerId == null) {
             return;
         }

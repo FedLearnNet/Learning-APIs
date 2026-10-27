@@ -73,16 +73,16 @@ public class AppTransformerPreviewBO {
         try {
             sessionId = sessionBO.openPreview(input.getTransformer(), keycloakId, created -> {
                 run.set(created);
-                emitter.emit(message(created, stepIndex, false, null));
-                following.set(runBO.follow(created.getId()).subscribe().with(
-                        changed -> emitter.emit(message(changed, stepIndex, false, null)),
+                emitter.emit(previewMessageOf(created, stepIndex, false, null));
+                following.set(runBO.subscribe(created.getId()).subscribe().with(
+                        changed -> emitter.emit(previewMessageOf(changed, stepIndex, false, null)),
                         failure -> Log.debugf("Stopped following preview run %d: %s", created.getId(), failure.getMessage())));
             });
             List<Map<String, Object>> rows = sessionBO.transform(sessionId, input.getTransformer(), input.getRows());
             previewBO.storeAppStage(config.getConnectorId(), stepIndex, input.getTransformer(),
                     input.getFingerprint(), rows, ColumnNames.withRowColumns(input.getColumns(), rows));
             Optional.ofNullable(following.get()).ifPresent(Cancellable::cancel);
-            AppTransformerPreviewStreamDTO done = message(run.get(), stepIndex, true, null);
+            AppTransformerPreviewStreamDTO done = previewMessageOf(run.get(), stepIndex, true, null);
             done.setStatus(RunStatusTypes.FINISHED);
             done.setRowCount(rows.size());
             emitter.emit(done);
@@ -91,7 +91,7 @@ public class AppTransformerPreviewBO {
         } catch (Exception e) {
             Log.errorf("App transformer preview of step %d failed: %s", stepIndex, e.getMessage());
             Optional.ofNullable(following.get()).ifPresent(Cancellable::cancel);
-            emitter.emit(message(run.get(), stepIndex, true, e.getMessage()));
+            emitter.emit(previewMessageOf(run.get(), stepIndex, true, e.getMessage()));
         } finally {
             if (sessionId != null) {
                 sessionBO.close(sessionId);
@@ -100,7 +100,7 @@ public class AppTransformerPreviewBO {
         }
     }
 
-    private AppTransformerPreviewStreamDTO message(ExecutionRunDTO run, int stepIndex, boolean finished, String error) {
+    private AppTransformerPreviewStreamDTO previewMessageOf(ExecutionRunDTO run, int stepIndex, boolean finished, String error) {
         AppTransformerPreviewStreamDTO message = run == null ? new AppTransformerPreviewStreamDTO() : mapper.runToStreamDTO(run);
         message.setStepIndex(stepIndex);
         message.setFinished(finished);

@@ -50,7 +50,7 @@ public abstract class BaseWorkflowExecutionBO<
 
     @Transactional
     public Run executeTransactional(@NotNull @Valid ExecutionStartDTO start, @NotEmpty Collection<Node> nodes) {
-        return start(createTransactional(start, nodes));
+        return announceStarted(createTransactional(start, nodes));
     }
 
     @Transactional
@@ -74,7 +74,7 @@ public abstract class BaseWorkflowExecutionBO<
         if (run.getStatus() != RunStatusTypes.PENDING || run.getStartedAt() != null) {
             throw new IllegalStateException("Run " + runId + " was started already");
         }
-        return start(run);
+        return announceStarted(run);
     }
 
     /**
@@ -89,7 +89,7 @@ public abstract class BaseWorkflowExecutionBO<
 
         Run run = newRun(start);
         target.accept(newStep(run, start.getName(), search, inputs));
-        return started(run);
+        return persistAndStart(run);
     }
 
     /**
@@ -160,12 +160,12 @@ public abstract class BaseWorkflowExecutionBO<
     }
 
     // Steps are persisted with the run.
-    private Run started(Run run) {
+    private Run persistAndStart(Run run) {
         runAO.persist(run);
-        return start(run);
+        return announceStarted(run);
     }
 
-    private Run start(Run run) {
+    private Run announceStarted(Run run) {
         events.runStarted(run.getId());
         Log.infof("Started run %d with %d step(s)", run.getId(), run.getSteps().size());
         return run;

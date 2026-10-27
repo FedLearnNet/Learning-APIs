@@ -147,14 +147,14 @@ public abstract class BaseAttemptLifecycle<
     }
 
     @Transactional
-    public void logTransactional(Long attemptId, ExecutionMessageLogDTO log) {
-        withAttempt(attemptId, attempt -> attempt.setLastLogMessage(store(attempt, RunMessageTypes.LOG, log)));
+    public void storeLogTransactional(Long attemptId, ExecutionMessageLogDTO log) {
+        withAttempt(attemptId, attempt -> attempt.setLastLogMessage(storeMessage(attempt, RunMessageTypes.LOG, log)));
     }
 
     @Transactional
-    public void metricTransactional(Long attemptId, ExecutionMessageMetricDTO metric) {
+    public void storeMetricTransactional(Long attemptId, ExecutionMessageMetricDTO metric) {
         withAttempt(attemptId, attempt -> {
-            Message message = store(attempt, RunMessageTypes.METRIC, metric);
+            Message message = storeMessage(attempt, RunMessageTypes.METRIC, metric);
             HyperParamSearchDTO search = attempt.getStep().getSearch();
             // The latest value of the search metric is the one its trial is ranked by.
             if (search != null && metric.getMetric() != null && metric.getMetric().equals(search.getMetric())) {
@@ -164,8 +164,8 @@ public abstract class BaseAttemptLifecycle<
     }
 
     @Transactional
-    public void roundTransactional(Long attemptId, ExecutionMessageRoundDTO round) {
-        withAttempt(attemptId, attempt -> store(attempt, RunMessageTypes.ROUND, round));
+    public void storeRoundTransactional(Long attemptId, ExecutionMessageRoundDTO round) {
+        withAttempt(attemptId, attempt -> storeMessage(attempt, RunMessageTypes.ROUND, round));
     }
 
     // Every applied report is announced, so views of the attempt can refresh.
@@ -194,7 +194,7 @@ public abstract class BaseAttemptLifecycle<
         Log.infof("Attempt %d finished as %s", attempt.getId(), status);
     }
 
-    private Message store(Attempt attempt, RunMessageTypes type, ExecutionMessageDTO payload) {
+    private Message storeMessage(Attempt attempt, RunMessageTypes type, ExecutionMessageDTO payload) {
         payload.setRunId(attempt.getId());
         payload.setType(type);
         Message message = newMessage.apply(attempt);
