@@ -1,6 +1,6 @@
 package bio.cosy.feddb.core.execution.attempt;
 
-import bio.cosy.feddb.core.base.BaseEntity;
+import bio.cosy.feddb.core.execution.BaseExecutionStatusEntity;
 import bio.cosy.feddb.core.execution.failure.ExecutionFailure;
 import bio.cosy.feddb.core.execution.message.BaseExecutionMessageEntity;
 import bio.cosy.feddb.core.execution.run.dto.RunMetaDTO;
@@ -26,7 +26,7 @@ import java.util.UUID;
 @MappedSuperclass
 public abstract class BaseExecutionAttemptEntity<
         Step extends BaseExecutionRunStepEntity<?, ?, ?>,
-        Message extends BaseExecutionMessageEntity> extends BaseEntity {
+        Message extends BaseExecutionMessageEntity> extends BaseExecutionStatusEntity {
 
     @Column(name = "public_id", nullable = false, unique = true, updatable = false)
     private UUID publicId;
@@ -47,9 +47,6 @@ public abstract class BaseExecutionAttemptEntity<
     @JoinColumn(name = "score_message_id")
     private Message scoreMessage;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private RunStatusTypes status = RunStatusTypes.PENDING;
 
     @Column(name = "container_id")
     private String containerId;
@@ -57,15 +54,6 @@ public abstract class BaseExecutionAttemptEntity<
     // Percentage in the range 0..100, not a fraction.
     private Float progress;
 
-    @Column(name = "started_at")
-    private Instant startedAt;
-
-    @Column(name = "finished_at")
-    private Instant finishedAt;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "failure", columnDefinition = "jsonb")
-    private ExecutionFailure failure;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "meta", columnDefinition = "jsonb")

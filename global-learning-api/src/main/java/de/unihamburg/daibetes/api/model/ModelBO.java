@@ -194,7 +194,8 @@ public class ModelBO extends BaseBo<ModelDTO, ModelEntity, ModelAO, ModelMapper>
                 .stream()
                 .flatMap(v -> Optional.ofNullable(v.getSubModels()).orElseGet(Collections::emptySet).stream())
                 .anyMatch(sub ->
-                        (experimentId == null || (sub.getExperimentRun() != null && Objects.equals(sub.getExperimentRun().getId(), experimentId))) &&
+                        (experimentId == null || (sub.getExperimentRun() != null && sub.getExperimentRun().getStep().getRun().getExperiment() != null
+                                && Objects.equals(sub.getExperimentRun().getStep().getRun().getExperiment().getId(), experimentId))) &&
                                 (federatedExperimentId == null || (sub.getFederatedExperiment() != null && Objects.equals(sub.getFederatedExperiment().getId(), federatedExperimentId)))
                 );
     }

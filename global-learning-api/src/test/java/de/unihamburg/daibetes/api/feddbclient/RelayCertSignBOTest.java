@@ -4,7 +4,7 @@ import bio.cosy.feddb.core.api.socket.RelayCertSignRequestDTO;
 import bio.cosy.feddb.core.api.socket.RelayCertSignResponseDTO;
 import bio.cosy.feddb.core.services.controller.RelaySignCertRequestDTO;
 import bio.cosy.feddb.core.services.controller.RelaySignCertResponseDTO;
-import de.unihamburg.daibetes.api.project.experiment.federated.step.ProjectFederatedExperimentStepBO;
+import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingBO;
 import de.unihamburg.daibetes.services.GlobalRelayService;
 import jakarta.ws.rs.WebApplicationException;
 import org.jboss.logging.Logger;
@@ -32,11 +32,11 @@ class RelayCertSignBOTest {
     private RelayCertSignBO signBO() {
         RelayCertSignBO bo = new RelayCertSignBO();
         bo.broadcastBO = mock(FLNetClientBroadcastBO.class);
-        bo.stepBO = mock(ProjectFederatedExperimentStepBO.class);
+        bo.federatedTrainingBO = mock(FederatedTrainingBO.class);
         bo.globalRelayService = mock(GlobalRelayService.class);
         bo.logger = Logger.getLogger(RelayCertSignBOTest.class);
         when(bo.broadcastBO.isConnectionInExperiment(CONNECTION, EXPERIMENT)).thenReturn(true);
-        when(bo.stepBO.findRelayChannelForClient(EXPERIMENT, NODE, CLINIC, CLIENT)).thenReturn(Optional.of("channel-1"));
+        when(bo.federatedTrainingBO.findRelayChannelForClient(EXPERIMENT, NODE, CLINIC, CLIENT)).thenReturn(Optional.of("channel-1"));
         when(bo.globalRelayService.signCert(new RelaySignCertRequestDTO("channel-1", CLIENT, CSR)))
                 .thenReturn(new RelaySignCertResponseDTO("signed-cert"));
         return bo;
@@ -75,7 +75,7 @@ class RelayCertSignBOTest {
         RelayCertSignRequestDTO request = request();
         // e.g. the relay client id of another clinic, another step or an unknown clinic
         request.setClientId("ffffffffffffffff");
-        when(bo.stepBO.findRelayChannelForClient(EXPERIMENT, NODE, CLINIC, "ffffffffffffffff")).thenReturn(Optional.empty());
+        when(bo.federatedTrainingBO.findRelayChannelForClient(EXPERIMENT, NODE, CLINIC, "ffffffffffffffff")).thenReturn(Optional.empty());
 
         RelayCertSignResponseDTO response = bo.sign(request, CONNECTION);
 

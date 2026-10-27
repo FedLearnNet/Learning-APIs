@@ -22,6 +22,9 @@ public class WorkflowNodeDetailDTO extends WorkflowNodeDTO {
     private ModelDetailDTO modelDetail;
 
     public List<ToolInputConfigDTO> getAppInputConfig() {
+        if (appDetail == null || appDetail.getAppConfig() == null || appDetail.getAppConfig().getInput() == null) {
+            return List.of();
+        }
         return appDetail.getAppConfig().getInput();
     }
 

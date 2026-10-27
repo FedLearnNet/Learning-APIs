@@ -1,11 +1,10 @@
 package bio.cosy.feddb.local.api.learning.project;
 
-import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.local.api.auth.UserIdentity;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
-import bio.cosy.feddb.local.api.learning.project.run.step.FederatedLearningExperimentStepBO;
-import bio.cosy.feddb.local.api.learning.project.run.step.FederatedLearningExperimentStepDetailDTO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunBO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
 import io.quarkus.panache.common.Page;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
@@ -15,29 +14,22 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.reactive.messaging.Channel;
 
 import java.io.File;
 
 @ApplicationScoped
 public class FederatedLearningProjectServiceImpl implements FederatedLearningProjectService {
-    public static final String TRAINING_STEP_LOG_CHANNEL = "training-step-log-info";
-
     @Inject
     FederatedLearningProjectBO bo;
 
     @Inject
-    FederatedLearningExperimentStepBO stepBO;
+    ExecutionRunBO runBO;
 
     @Inject
     UserIdentity userIdentity;
 
     @Inject
     CohortMemberAuthBO cohortMemberAuthBO;
-
-    @Inject
-    @Channel(TRAINING_STEP_LOG_CHANNEL)
-    Multi<ExecutionMessageLogDTO> localStepLogInfo;
 
     @Override
     public PagedResponse<FederatedLearningProjectDTO> list(int pageIndex, int size) {
@@ -77,28 +69,26 @@ public class FederatedLearningProjectServiceImpl implements FederatedLearningPro
     }
 
     @Override
-    public Multi<ExecutionMessageLogDTO> listLogMessages(Long id, Long stepId) {
-        String keycloakId = userIdentity.getKeycloakId();
-        return Uni.createFrom()
-                .item(() -> {
-                    bo.getCohortIds(id).forEach(cohortId -> cohortMemberAuthBO.checkForMember(cohortId, keycloakId));
-                    return stepBO.getById(id, stepId);
-                })
-                .runSubscriptionOn(Infrastructure.getDefaultExecutor())
-                .onFailure(NotFoundException.class).recoverWithNull()
-                .toMulti()
-                .onItem().transformToMultiAndConcatenate(step -> {
-                    if (step == null) {
-                        return Multi.createFrom().empty();
-                    }
-                    return localStepLogInfo.filter(l -> l.getRunId().equals(step.getId()));
-                });
+    public ExecutionRunDTO retrieveRun(Long id) {
+        return runBO.get(runIdOf(id), true);
     }
 
     @Override
-    public FederatedLearningExperimentStepDetailDTO getStepDetailUpdates(Long id, Long stepId) {
+    public Multi<ExecutionRunDTO> followRun(Long id) {
+        return Uni.createFrom().item(() -> runIdOf(id))
+                .runSubscriptionOn(Infrastructure.getDefaultExecutor())
+                .toMulti()
+                .onItem().transformToMultiAndConcatenate(runBO::follow);
+    }
+
+    // Only for members of every cohort the training reads.
+    private Long runIdOf(Long id) {
         String keycloakId = userIdentity.getKeycloakId();
         bo.getCohortIds(id).forEach(cohortId -> cohortMemberAuthBO.checkForMember(cohortId, keycloakId));
-        return stepBO.getDetailById(id, stepId);
+        FederatedLearningProjectDTO project = bo.getProjectDetailById(id);
+        if (project.getRun() == null) {
+            throw new NotFoundException("Training " + id + " has no run yet");
+        }
+        return project.getRun().getId();
     }
 }

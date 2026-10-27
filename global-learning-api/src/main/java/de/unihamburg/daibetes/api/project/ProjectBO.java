@@ -7,7 +7,7 @@ import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.project.ProjectStatus;
 import bio.cosy.feddb.core.base.BaseBo;
 import de.unihamburg.daibetes.api.file.FileBO;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
+import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipAO;
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipBO;
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipDTO;
@@ -78,7 +78,7 @@ public class ProjectBO extends BaseBo<ProjectDetailDTO, ProjectEntity, ProjectAO
             throw new NotFoundException("Project not found");
         }
         List<ProjectStatus> statusList = projectEntity.getExperiments().stream()
-                .map(ProjectFederatedExperimentEntity::getExperimentStatus).toList();
+                .map(ExecutionExperimentEntity::getStatus).toList();
 
         if (statusList.contains(ProjectStatus.RUNNING) || statusList.contains(ProjectStatus.PREPARE)) {
             throw new NotAllowedException("Project is running");

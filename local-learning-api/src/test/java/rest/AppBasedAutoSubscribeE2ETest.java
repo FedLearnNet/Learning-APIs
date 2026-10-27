@@ -4,6 +4,8 @@ import bio.cosy.feddb.core.api.datamodler.schema.SchemaStructureDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
+import bio.cosy.feddb.core.services.orch.clients.WorkflowServiceClient;
+import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import bio.cosy.feddb.core.services.orch.dto.ContainerDTO;
 import bio.cosy.feddb.core.services.orch.dto.ContainerLogDTO;
 import bio.cosy.feddb.core.services.orch.dto.ContainerRunDTO;
@@ -23,8 +25,8 @@ import bio.cosy.feddb.local.api.importer.files.ConnectorFilesDTO;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunBO;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
 import bio.cosy.feddb.local.api.importer.run.ImportStatusEnum;
-import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepAO;
-import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepEntity;
+import bio.cosy.feddb.local.execution.run.ExecutionRunAO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import bio.cosy.feddb.local.services.datamodler.GlobalSchemaSubscriptionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -129,7 +131,7 @@ public class AppBasedAutoSubscribeE2ETest {
     ConnectorRunBO connectorRunBO;
 
     @Inject
-    ConnectorRunStepAO stepAO;
+    ExecutionRunAO runAO;
 
     @Inject
     ConnectorFilesBO filesBO;
@@ -171,6 +173,7 @@ public class AppBasedAutoSubscribeE2ETest {
 
         extractorApp = new ExtractorAppStub();
         QuarkusMock.installMockForType(extractorApp, ContainerServiceClient.class, RestClient.LITERAL);
+        QuarkusMock.installMockForType(extractorApp, WorkflowServiceClient.class, RestClient.LITERAL);
     }
 
     @Test
@@ -241,13 +244,13 @@ public class AppBasedAutoSubscribeE2ETest {
                 storedFileIds.contains(Long.valueOf(String.valueOf(fileId))),
                 "Output '" + name + "' should point at a file of the cohort, was " + fileId));
 
-        // The extraction is visible under the run, like an app-based transformer step, instead of
-        // being an orphaned step nothing can show.
-        List<ConnectorRunStepEntity> steps = QuarkusTransaction.requiringNew()
-                .call(() -> stepAO.find("connectorRun.id", finalRun.getId()).list());
-        assertFalse(steps.isEmpty(), "The extractor execution should be recorded as a step of the run");
-        assertEquals(RunStatusTypes.FINISHED, steps.getFirst().getStatus(),
-                "The extractor step should be finished once its output was imported");
+        // The extraction is visible under the import, like the run of an app-based transformer, instead of
+        // being an orphaned run nothing can show.
+        List<ExecutionRunEntity> runs = QuarkusTransaction.requiringNew()
+                .call(() -> runAO.listByConnectorRun(finalRun.getId()));
+        assertFalse(runs.isEmpty(), "The extractor execution should be recorded as a run of the import");
+        assertEquals(RunStatusTypes.FINISHED, runs.getFirst().getStatus(),
+                "The extractor run should be finished once its output was imported");
     }
 
     /** Reads the app input out of the connector configuration this group imports. */
@@ -309,10 +312,10 @@ public class AppBasedAutoSubscribeE2ETest {
 
     /**
      * Stands in for orch-api plus docker: instead of running the extractor image it does what that
-     * image would do — read its API key and step id from the container environment, then post its
+     * image would do — read its API key and attempt id from the container environment, then post its
      * declared outputs back to the run's upload endpoint.
      */
-    private static class ExtractorAppStub implements ContainerServiceClient {
+    private static class ExtractorAppStub implements ContainerServiceClient, WorkflowServiceClient {
 
         private static final String IDS_MAPPING_CSV = """
                 admission_type_id,description
@@ -330,10 +333,22 @@ public class AppBasedAutoSubscribeE2ETest {
                                                          boolean sendConsoleLog,
                                                          String path,
                                                          Integer port) {
-            startedImages.add(createDTO.getAppImage());
-            Long stepId = environmentValue(createDTO, "APP_ID").map(Long::valueOf).orElseThrow(
+            return start(createDTO.getAppImage(), createDTO.getEnvironments());
+        }
+
+        @Override
+        public CreateContainerResponseDTO startWorkflow(StartWorkflowNodeDTO createDTO,
+                                                        boolean changeUrl,
+                                                        String path,
+                                                        Integer port) {
+            return start(createDTO.getAppImage(), createDTO.getEnvironments());
+        }
+
+        private CreateContainerResponseDTO start(String image, List<String> environments) {
+            startedImages.add(image);
+            Long stepId = environmentValue(environments, "APP_ID").map(Long::valueOf).orElseThrow(
                     () -> new IllegalStateException("Container environment is missing APP_ID"));
-            String apiKey = environmentValue(createDTO, "APP_API_KEY").orElseThrow(
+            String apiKey = environmentValue(environments, "APP_API_KEY").orElseThrow(
                     () -> new IllegalStateException("Container environment is missing APP_API_KEY"));
 
             Thread appThread = new Thread(() -> uploadOutputs(stepId, apiKey), "extractor-app-stub");
@@ -369,7 +384,7 @@ public class AppBasedAutoSubscribeE2ETest {
                                 .build())
                         .multiPart("runId", String.valueOf(stepId))
                         .when()
-                        .post("/connectors/run/execution/{runId}/upload/output", stepId)
+                        .post("/execution/tool/{runId}/upload/output", stepId)
                         .then()
                         .statusCode(201);
             } catch (Exception e) {
@@ -394,8 +409,7 @@ public class AppBasedAutoSubscribeE2ETest {
             return file;
         }
 
-        private static Optional<String> environmentValue(StartAppDTO dto, String key) {
-            List<String> environments = dto.getEnvironments();
+        private static Optional<String> environmentValue(List<String> environments, String key) {
             if (environments == null) {
                 return Optional.empty();
             }
@@ -407,6 +421,16 @@ public class AppBasedAutoSubscribeE2ETest {
 
         @Override
         public Response cleanupWorkflow(String containerId, boolean cleanup) {
+            return Response.ok().build();
+        }
+
+        @Override
+        public Response cleanupWorkflow(String containerId, boolean cleanup, boolean runInBackground) {
+            return Response.ok().build();
+        }
+
+        @Override
+        public Response cleanupWorkflowStep(String appId, boolean cleanup, boolean runInBackground) {
             return Response.ok().build();
         }
 

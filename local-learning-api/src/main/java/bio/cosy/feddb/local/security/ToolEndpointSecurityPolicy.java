@@ -14,11 +14,10 @@ import java.util.Optional;
 public class ToolEndpointSecurityPolicy extends BaseToolEndpointSecurityPolicy {
 
     private static final List<Rule> RULES = List.of(
-            post(Scope.CONNECTOR_RUN, "/connectors/run/execution/([^/]+)/upload/output"),
-            websocket(Scope.CONNECTOR_RUN, "/connectors/run/execution/([^/]+)/app"),
-            post(Scope.LEARNING_RUN, "/learning/run/([^/]+)/upload/(?:output|model)"),
-            websocket(Scope.LEARNING_RUN, "/learning/run/([^/]+)/app"),
-            websocket(Scope.PATIENT_TOOL_RUN, "/patient/tool/run/([^/]+)/app")
+            post(Scope.TOOL_RUN, "/execution/tool/([^/]+)/upload/output"),
+            websocket(Scope.TOOL_RUN, "/execution/tool/([^/]+)/app"),
+            post(Scope.LEARNING_RUN, "/execution/learning/([^/]+)/upload/(?:output|model)"),
+            websocket(Scope.LEARNING_RUN, "/execution/learning/([^/]+)/app")
     );
 
     @Override

@@ -3,7 +3,7 @@ package de.unihamburg.daibetes.api.project;
 import bio.cosy.feddb.core.api.project.PatientDataExportConfigDTO;
 import bio.cosy.feddb.core.base.BaseEntity;
 import de.unihamburg.daibetes.api.file.FileEntity;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
+import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipEntity;
 import de.unihamburg.daibetes.api.query.QueryEntity;
 import de.unihamburg.daibetes.api.workflow.WorkflowEntity;
@@ -67,6 +67,6 @@ public class ProjectEntity extends BaseEntity {
     private Set<ProjectMembershipEntity> memberships;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
-    private Set<ProjectFederatedExperimentEntity> experiments;
+    private Set<ExecutionExperimentEntity> experiments;
 
 }

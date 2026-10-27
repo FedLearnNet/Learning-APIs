@@ -6,8 +6,8 @@ import bio.cosy.feddb.core.base.BaseEntity;
 import de.unihamburg.daibetes.api.build.pipeline.PipelineEntity;
 import de.unihamburg.daibetes.api.model.sub.file.ModelSubFileEntity;
 import de.unihamburg.daibetes.api.model.version.ModelVersionEntity;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
-import de.unihamburg.daibetes.api.runs.experiment.run.ExperimentRunEntity;
+import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,15 +44,16 @@ public class ModelSubEntity extends BaseEntity {
     //TRAINING
     /*@ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "federated_training_id")
-    private ExperimentRunEntity federatedExperimentRun; */
+    private ExecutionAttemptEntity federatedExperimentRun; */
 
+    // The trial of an experiment that trained it.
     @OneToOne
     @JoinColumn(name = "experiment_run_id")
-    private ExperimentRunEntity experimentRun;
+    private ExecutionAttemptEntity experimentRun;
 
     @ManyToOne
     @JoinColumn(name = "federated_experiment_id")
-    private ProjectFederatedExperimentEntity federatedExperiment;
+    private ExecutionExperimentEntity federatedExperiment;
 
     @ManyToOne
     @JoinColumn(name = "model_version_id", nullable = false)

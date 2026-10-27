@@ -42,10 +42,10 @@ class ToolApiKeyServiceTest {
     @Test
     void keyCanBeRevokedByItsRunIdentity() {
         ToolApiKeyService service = new ToolApiKeyService();
-        String apiKey = service.issue(Scope.CONNECTOR_RUN, 3L);
+        String apiKey = service.issue(Scope.TOOL_RUN, 3L);
 
-        service.revoke(Scope.CONNECTOR_RUN, 3L);
+        service.revoke(Scope.TOOL_RUN, 3L);
 
-        assertFalse(service.isAuthorized(apiKey, Scope.CONNECTOR_RUN, 3L));
+        assertFalse(service.isAuthorized(apiKey, Scope.TOOL_RUN, 3L));
     }
 }

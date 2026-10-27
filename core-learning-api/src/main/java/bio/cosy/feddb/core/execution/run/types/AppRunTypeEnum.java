@@ -8,4 +8,8 @@ public enum AppRunTypeEnum {
     FEDERATED_TEST_RUN,
     MODEL_RUN,
     NOT_DEFINED;
+
+    public boolean isFederated() {
+        return this == FEDERATED_RUN || this == FEDERATED_TEST_RUN;
+    }
 }

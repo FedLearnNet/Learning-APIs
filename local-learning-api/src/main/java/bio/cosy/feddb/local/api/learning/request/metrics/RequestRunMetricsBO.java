@@ -12,10 +12,8 @@ import bio.cosy.feddb.local.api.cohort.permission.PermissionBO;
 import bio.cosy.feddb.local.api.eam.WebsocketSender;
 import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectAO;
 import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectEntity;
-import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningExperimentEntity;
-import bio.cosy.feddb.local.api.learning.project.run.message.FederatedLearningExperimentStepMessageAO;
-import bio.cosy.feddb.local.api.learning.project.run.message.FederatedLearningExperimentStepMessageMapper;
-import bio.cosy.feddb.local.api.learning.project.run.message.RunMessageMetricMapper;
+import bio.cosy.feddb.local.execution.message.ExecutionMessageAO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
 import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestStatus;
 import bio.cosy.feddb.local.api.notification.WebsocketClientNotificationBO;
 import bio.cosy.feddb.local.api.search.SearchResultDTO;
@@ -45,13 +43,7 @@ public class RequestRunMetricsBO extends BaseBo<RequestRunMetricsDTO, RequestRun
     CohortMemberAuthBO cohortMemberAuthBO;
 
     @Inject
-    FederatedLearningExperimentStepMessageAO stepMessageAO;
-
-    @Inject
-    FederatedLearningExperimentStepMessageMapper stepMessageMapper;
-
-    @Inject
-    RunMessageMetricMapper metricMapper;
+    ExecutionMessageAO messageAO;
 
     @Inject
     WebsocketSender websocketSender;
@@ -186,27 +178,22 @@ public class RequestRunMetricsBO extends BaseBo<RequestRunMetricsDTO, RequestRun
 
     private void sendMetricsResponse(RequestRunMetricsEntity entity) {
         FederatedLearningProjectEntity project = entity.getProject();
-        FederatedLearningExperimentEntity experiment = project.getExperiment();
-        if (experiment == null) {
-            Log.errorf("No experiment found for project %d — cannot send metrics", project.getId());
+        ExecutionRunEntity run = project.getRun();
+        if (run == null) {
+            Log.errorf("No run found for project %d — cannot send metrics", project.getId());
             return;
         }
 
-        List<ExecutionMessageMetricDTO> metricMessages = experiment.getSteps().stream()
-                .flatMap(step -> metricMapper.dtosToMetricDtos(
-                        stepMessageMapper.entitiesToDtos(
-                                stepMessageAO.findByStep(step.getId(), RunMessageTypes.METRIC)
-                        )
-                ).stream())
-                .collect(Collectors.toList());
-
-        List<RunMetricDTO> metrics = metricMessages.stream()
+        List<RunMetricDTO> metrics = messageAO.listForRun(run.getId(), RunMessageTypes.METRIC).stream()
+                .map(message -> message.getPayload())
+                .filter(ExecutionMessageMetricDTO.class::isInstance)
+                .map(ExecutionMessageMetricDTO.class::cast)
                 .map(m -> new RunMetricDTO(m.getMetric(), m.getValue(), m.getX(), m.getXUnit()))
                 .collect(Collectors.toList());
 
         RunMetricsResponseClientDTO response = new RunMetricsResponseClientDTO();
         response.setGlobalExperimentUniqueId(project.getRequest().getGlobalFLExperimentUniqueId());
-        response.setRandomClinicId(experiment.getUniqueRandomClinicId());
+        response.setRandomClinicId(run.getParticipantId());
         response.setRequestId(entity.getGlobalRequestId());
         response.setMetrics(metrics);
 

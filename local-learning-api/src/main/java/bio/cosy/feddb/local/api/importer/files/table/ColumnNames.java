@@ -13,6 +13,13 @@ public final class ColumnNames {
     // Byte-order mark and the zero-width characters exports leave in header cells.
     private static final String INVISIBLE = "\uFEFF\u200B\u200C\u200D";
 
+    // The columns, then those only rows have, in the order they turn up.
+    public static List<String> withRowColumns(List<String> columns, List<Map<String, Object>> rows) {
+        LinkedHashSet<String> all = new LinkedHashSet<>(columns == null ? List.of() : columns);
+        rows.forEach(row -> all.addAll(row.keySet()));
+        return new ArrayList<>(all);
+    }
+
     // A column name as it is compared: invisible characters and surrounding space removed.
     public static String column(String name) {
         return strip(name).trim();

@@ -417,7 +417,7 @@ public class ConnectorRunETLBO {
     }
 
     private boolean openAppTransformerSession(ConnectorDTO connectorDTO, ConnectorRunDTO run) {
-        if (AppTransformerSessionBO.appTransformersOf(connectorDTO).isEmpty()) {
+        if (connectorDTO.getAppTransformers().isEmpty()) {
             return false;
         }
         runMessagesBO.createTransactional("Starting app-based transformers",

@@ -1,0 +1,19 @@
+package de.unihamburg.daibetes.api.development.run.federated;
+
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/** Live update sent by the python wrapper per participant. */
+@Data
+public class FederatedParticipantUpdateDTO {
+    private Long federatedRunId;
+    private String participantId;
+    private RunStatusTypes status;
+    private Integer currentRound;
+    private Integer messagesReceived;
+    private Integer messagesSent;
+    private List<String> waitingFor = new ArrayList<>();
+}

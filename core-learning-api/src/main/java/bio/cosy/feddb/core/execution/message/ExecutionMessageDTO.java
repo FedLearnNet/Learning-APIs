@@ -22,6 +22,10 @@ import lombok.EqualsAndHashCode;
         @JsonSubTypes.Type(
                 value = ExecutionMessageMetricDTO.class,
                 name = "METRIC"
+        ),
+        @JsonSubTypes.Type(
+                value = ExecutionMessageRoundDTO.class,
+                name = "ROUND"
         )
 })
 public class ExecutionMessageDTO extends BaseDTO {

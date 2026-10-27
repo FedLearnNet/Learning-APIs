@@ -2,9 +2,9 @@ package bio.cosy.feddb.local.api.cohort.patient.export;
 
 import bio.cosy.feddb.core.api.project.PatientDataExportConfigDTO;
 import bio.cosy.feddb.local.api.cohort.patient.PatientService;
-import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunProgressDTO;
-import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunSummaryDTO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
 import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -46,7 +46,7 @@ public interface PatientDataExportService {
     @APIResponse(responseCode = "400", description = "Invalid patientId (must be a positive number)")
     @APIResponse(responseCode = "404", description = "Patient or patient data not found")
     @APIResponse(responseCode = "500", description = "Internal server error while generating CSV")
-    Response exportPatientData(
+    Uni<Response> exportPatientData(
             @PathParam("cohortId") Long cohortId,
             @DefaultValue("true")
             @QueryParam("downloadFiles") boolean downloadFiles,
@@ -60,14 +60,14 @@ public interface PatientDataExportService {
     @Operation(
             summary = "Run an app-based cohort export",
             description = "Starts the export app configured in the export config on the cohort's patient data and streams " +
-                    "the run's progress as Server-Sent Events. The last event has a terminal status; when the run " +
+                    "the run as Server-Sent Events whenever it changes. The last event has a terminal status; when the run " +
                     "finished, its outputs can be downloaded as a zip from app/{runId}/download."
     )
     @APIResponse(responseCode = "200", description = "SSE stream of progress events",
             content = @Content(mediaType = MediaType.SERVER_SENT_EVENTS,
-                    schema = @Schema(implementation = PatientToolRunProgressDTO.class)))
+                    schema = @Schema(implementation = ExecutionRunDTO.class)))
     @APIResponse(responseCode = "400", description = "No app selected or no patient data to export")
-    Multi<PatientToolRunProgressDTO> streamAppExport(
+    Multi<ExecutionRunDTO> streamAppExport(
             @PathParam("cohortId") Long cohortId,
             @Valid PatientDataExportConfigDTO config);
 
@@ -78,15 +78,15 @@ public interface PatientDataExportService {
             description = "The latest app-based export runs of the cohort, newest first, with their stored outputs."
     )
     @APIResponse(responseCode = "200", description = "Past app-based exports")
-    List<PatientToolRunSummaryDTO> listAppExports(@PathParam("cohortId") Long cohortId);
+    List<ExecutionRunDTO> listAppExports(@PathParam("cohortId") Long cohortId);
 
     @GET
     @Path("app/{runId}/download")
     @Produces("application/zip")
     @Operation(
             summary = "Download the outputs of an app-based export",
-            description = "Returns every output of a finished app-based export run as a zip. The zip is stored with " +
-                    "the run and can be downloaded again."
+            description = "Returns every output of a finished app-based export run as a zip. The outputs are stored " +
+                    "with the run and can be downloaded again."
     )
     @APIResponse(responseCode = "200", description = "Zip with the app's outputs",
             content = @Content(mediaType = "application/zip",

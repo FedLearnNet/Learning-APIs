@@ -4,7 +4,7 @@ import bio.cosy.feddb.core.api.socket.RelayCertSignRequestDTO;
 import bio.cosy.feddb.core.api.socket.RelayCertSignResponseDTO;
 import bio.cosy.feddb.core.services.controller.RelaySignCertRequestDTO;
 import bio.cosy.feddb.core.services.controller.RelaySignCertResponseDTO;
-import de.unihamburg.daibetes.api.project.experiment.federated.step.ProjectFederatedExperimentStepBO;
+import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingBO;
 import de.unihamburg.daibetes.services.GlobalRelayService;
 import io.quarkus.arc.log.LoggerName;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -30,7 +30,7 @@ public class RelayCertSignBO {
     FLNetClientBroadcastBO broadcastBO;
 
     @Inject
-    ProjectFederatedExperimentStepBO stepBO;
+    FederatedTrainingBO federatedTrainingBO;
 
     @Inject
     @RestClient
@@ -53,7 +53,7 @@ public class RelayCertSignBO {
                     connectionId, request.getGlobalUniqueExperimentId());
             return RelayCertSignResponseDTO.createErrorResponse(request, ERROR_REFUSED);
         }
-        Optional<String> channel = stepBO.findRelayChannelForClient(
+        Optional<String> channel = federatedTrainingBO.findRelayChannelForClient(
                 request.getGlobalUniqueExperimentId(),
                 request.getCurrentNodeId(),
                 request.getUniqueRandomClinicId(),

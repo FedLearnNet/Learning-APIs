@@ -9,12 +9,13 @@ import bio.cosy.feddb.local.api.cohort.patient.PatientAO;
 import bio.cosy.feddb.local.api.cohort.patient.PatientEntity;
 import bio.cosy.feddb.local.api.cohort.patient.dataentry.PatientDataEntryBO;
 import bio.cosy.feddb.local.api.cohort.patient.dataentry.PatientDataEntryExportDTO;
-import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunBO;
-import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunDTO;
+import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolBO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
 import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunType;
 import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectBO;
 import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
@@ -40,7 +41,7 @@ public class PatientDataExportBO {
     PatientDataExportTransformerBO transformerBO;
 
     @Inject
-    PatientToolRunBO patientToolRunBO;
+    PatientToolBO patientToolBO;
 
     @Transactional
     public List<Map<String, Object>> exportPatientData(Long cohortId, PatientDataExportConfigDTO config) {
@@ -48,16 +49,16 @@ public class PatientDataExportBO {
         return formatConfiguredDataEntries(dataEntries, config);
     }
 
-    public List<Path> exportPatientDataTool(Long cohortId, PatientDataExportConfigDTO config) {
+    public Uni<List<Path>> exportPatientDataTool(Long cohortId, PatientDataExportConfigDTO config) {
         Path input = writeAppExportInput(cohortId, config);
-        return patientToolRunBO.runAndAwait(cohortId, config.getGlobalAppVersionId(), config.getHyperParams(),
+        return patientToolBO.run(cohortId, config.getGlobalAppVersionId(), config.getHyperParams(),
                 PatientToolRunType.EXPORT, input);
     }
 
     @ActivateRequestContext
-    public PatientToolRunDTO startAppExport(Long cohortId, PatientDataExportConfigDTO config) {
+    public ExecutionRunDTO startAppExport(Long cohortId, PatientDataExportConfigDTO config) {
         Path input = writeAppExportInput(cohortId, config);
-        return patientToolRunBO.start(cohortId, config.getGlobalAppVersionId(), config.getHyperParams(),
+        return patientToolBO.start(cohortId, config.getGlobalAppVersionId(), config.getHyperParams(),
                 PatientToolRunType.EXPORT, input);
     }
 
@@ -79,8 +80,9 @@ public class PatientDataExportBO {
 
     private List<Path> runAppBasedExport(List<PatientDataEntryExportDTO> dataEntries, PatientDataExportConfigDTO config) {
         Path input = PatientDataExportHelper.writeStreamToTempFile(dataEntries);
-        return patientToolRunBO.runAndAwait(null, config.getGlobalAppVersionId(), config.getHyperParams(),
-                PatientToolRunType.EXPORT, input);
+        // The launcher stages a step's inputs before its app starts, so the learning export waits here.
+        return patientToolBO.run(null, config.getGlobalAppVersionId(), config.getHyperParams(),
+                PatientToolRunType.EXPORT, input).await().indefinitely();
     }
 
     public Path exportDataForLearning(PatientDataExportConfigDTO config, Long queryId, Long learningRequestId) {

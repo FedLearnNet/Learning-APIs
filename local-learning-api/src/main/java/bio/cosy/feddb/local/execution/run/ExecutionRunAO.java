@@ -1,0 +1,24 @@
+package bio.cosy.feddb.local.execution.run;
+
+import bio.cosy.feddb.core.execution.run.BaseExecutionRunAO;
+import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunType;
+import io.quarkus.panache.common.Page;
+import jakarta.enterprise.context.ApplicationScoped;
+
+import java.util.List;
+
+@ApplicationScoped
+public class ExecutionRunAO extends BaseExecutionRunAO<ExecutionRunEntity> {
+
+    public List<ExecutionRunEntity> listToolRuns(Long cohortId, PatientToolRunType toolType, int max) {
+        return find("cohort.id = ?1 and toolType = ?2 order by id desc", cohortId, toolType).page(Page.ofSize(max)).list();
+    }
+
+    public List<ExecutionRunEntity> listByCohort(Long cohortId) {
+        return list("cohort.id", cohortId);
+    }
+
+    public List<ExecutionRunEntity> listByConnectorRun(Long connectorRunId) {
+        return list("connectorRun.id = ?1 order by id", connectorRunId);
+    }
+}

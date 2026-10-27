@@ -6,8 +6,8 @@ import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
 import bio.cosy.feddb.local.api.cohort.patient.export.PatientDataExportBO;
-import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningExperimentBO;
-import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningExperimentDTO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunMapper;
+import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
 import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestDTO;
 import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
 import bio.cosy.feddb.local.api.query.QueryAO;
@@ -37,7 +37,7 @@ public class FederatedLearningProjectBO extends BaseBo<ProjectDetailDTO, Federat
     CohortMemberAuthBO cohortMemberAuthBO;
 
     @Inject
-    FederatedLearningExperimentBO experimentBO;
+    ExecutionRunMapper runMapper;
 
     @Inject
     QueryAO queryAO;
@@ -53,9 +53,9 @@ public class FederatedLearningProjectBO extends BaseBo<ProjectDetailDTO, Federat
         List<FederatedLearningProjectDTO> found = foundEntities.stream()
                 .map(e -> {
                     final ProjectDetailDTO project = mapper.entityToDto(e);
-                    final FederatedLearningExperimentDTO experiment = experimentBO.getMapper().entityToDto(e.getExperiment());
+                    final ExecutionRunDTO run = e.getRun() != null ? runMapper.mapRunEntityToDTO(e.getRun(), false) : null;
                     final Long workflowId = project.getWorkflowId();
-                    return new FederatedLearningProjectDTO(project, experiment, workflowId);
+                    return new FederatedLearningProjectDTO(project, run, workflowId);
                 }).toList();
 
         return new PagedResponse<>(found, page.index, page.size);
@@ -97,9 +97,9 @@ public class FederatedLearningProjectBO extends BaseBo<ProjectDetailDTO, Federat
     public FederatedLearningProjectDTO getProjectDetailById(Long id) {
         return ao.findByIdOptional(id).map(e -> {
             final ProjectDetailDTO project = mapper.entityToDto(e);
-            final FederatedLearningExperimentDTO experiment = experimentBO.entityToDTO(e.getExperiment());
+            final ExecutionRunDTO run = e.getRun() != null ? runMapper.mapRunEntityToDTO(e.getRun(), false) : null;
             final Long workflowId = project.getWorkflowId();
-            return new FederatedLearningProjectDTO(project, experiment, workflowId);
+            return new FederatedLearningProjectDTO(project, run, workflowId);
         }).orElseThrow(() -> new NotFoundException("Project with id " + id + " not found"));
     }
 

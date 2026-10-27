@@ -61,6 +61,11 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-rest-client</artifactId>
         </dependency>
+        <!-- The socket apps report their attempt over -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-websockets-next</artifactId>
+        </dependency>
         <!-- In-memory channels the execution events run on -->
         <dependency>
             <groupId>io.quarkus</groupId>

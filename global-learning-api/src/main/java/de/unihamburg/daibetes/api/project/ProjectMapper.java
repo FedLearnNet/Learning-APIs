@@ -7,8 +7,8 @@ import bio.cosy.feddb.core.api.project.ProjectStatus;
 import bio.cosy.feddb.core.base.BaseMapper;
 import de.unihamburg.daibetes.api.file.FileEntity;
 import de.unihamburg.daibetes.api.file.FileMapper;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
-import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantEntity;
+import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
+import de.unihamburg.daibetes.execution.federation.ExecutionParticipantEntity;
 import de.unihamburg.daibetes.api.query.QueryEntity;
 import de.unihamburg.daibetes.api.workflow.WorkflowEntity;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
@@ -121,16 +121,17 @@ public interface ProjectMapper extends BaseMapper<ProjectDetailDTO, ProjectEntit
     ProjectDTO entityToSimpleDTO(ProjectEntity entity);
 
     @Named("mapProjectStatus")
-    default ProjectStatus mapProjectStatus(Set<ProjectFederatedExperimentEntity> experiments) {
+    default ProjectStatus mapProjectStatus(Set<ExecutionExperimentEntity> experiments) {
         if (experiments == null) {
             return ProjectStatus.INIT;
         }
         return experiments.stream()
-                .map(ProjectFederatedExperimentEntity::getParticipants)
+                .flatMap(experiment -> experiment.getRuns().stream())
+                .map(run -> run.getParticipants())
                 .filter(participants -> !participants.isEmpty())
                 .findFirst()
                 .flatMap(participants -> participants.stream()
-                        .map(ProjectFederatedExperimentParticipantEntity::getStepStatus)
+                        .map(ExecutionParticipantEntity::getStepStatus)
                         .filter(Objects::nonNull)
                         .findFirst())
                 .orElse(ProjectStatus.INIT);

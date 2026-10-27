@@ -62,7 +62,7 @@ public class ExecutionEventForwarder {
         forward(stepFinished, event);
     }
 
-    private static <T> void forward(Emitter<T> emitter, T event) {
+    private <T> void forward(Emitter<T> emitter, T event) {
         emitter.send(event).whenComplete((ignored, e) -> {
             if (e != null) {
                 Log.warnf(e, "Execution event %s was not handled", event);

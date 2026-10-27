@@ -2,7 +2,7 @@ package bio.cosy.feddb.core.execution.message;
 
 public enum RunMessageTypes {
 
-    METRIC("metric"), LOG("log");
+    METRIC("metric"), LOG("log"), ROUND("round");
 
     private final String name;
 

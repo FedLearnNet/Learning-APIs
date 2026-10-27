@@ -13,8 +13,8 @@ import de.unihamburg.daibetes.api.model.access.ModelAccessBO;
 import de.unihamburg.daibetes.api.model.sub.ModelSubBO;
 import de.unihamburg.daibetes.api.model.sub.file.ModelSubFileBO;
 import de.unihamburg.daibetes.api.model.version.ModelVersionBO;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentAO;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
+import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentAO;
+import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -27,7 +27,7 @@ import java.util.Optional;
 public class ModelFederatedExperimentResultBO {
 
     @Inject
-    ProjectFederatedExperimentAO projectFederatedExperimentAO;
+    ExecutionExperimentAO experimentAO;
 
     @Inject
     ModelBO modelBO;
@@ -59,7 +59,7 @@ public class ModelFederatedExperimentResultBO {
             throw new BadRequestException("App Version ID must be provided");
         }
 
-        ProjectFederatedExperimentEntity experiment = findExperiment(dto.getGlobalFLExperimentUniqueId(), dto.getClinicId());
+        ExecutionExperimentEntity experiment = findExperiment(dto.getGlobalFLExperimentUniqueId(), dto.getClinicId());
         if (Boolean.FALSE.equals(experiment.getModelCanBePublic())) {
             Log.warnf("Model of experiment %s cannot be public", experiment.getGlobalUniqueId());
             throw new BadRequestException("Model of experiment " + experiment.getGlobalUniqueId() + " cannot be public");
@@ -89,16 +89,18 @@ public class ModelFederatedExperimentResultBO {
     }
 
 
-    public ProjectFederatedExperimentEntity findExperiment(String globalUniqueExperimentId, String clinicId) {
+    public ExecutionExperimentEntity findExperiment(String globalUniqueExperimentId, String clinicId) {
         if (globalUniqueExperimentId == null || clinicId == null || clinicId.isBlank()) {
             throw new BadRequestException("Experiment ID and Clinic ID must be provided");
         }
-        Optional<ProjectFederatedExperimentEntity> entityOptional = projectFederatedExperimentAO.findByGlobalUniqueID(globalUniqueExperimentId);
+        Optional<ExecutionExperimentEntity> entityOptional = experimentAO.find("globalUniqueId", globalUniqueExperimentId).firstResultOptional();
         if (entityOptional.isEmpty()) {
             throw new NotFoundException("No experiment found with ID: " + globalUniqueExperimentId);
         }
-        ProjectFederatedExperimentEntity entity = entityOptional.get();
-        if (!entity.getCoordinator().getUniqueRandomClinicId().equals(clinicId)) {
+        ExecutionExperimentEntity entity = entityOptional.get();
+        boolean coordinator = entity.getRuns().stream().flatMap(run -> run.getParticipants().stream())
+                .anyMatch(participant -> participant.isCoordinator() && clinicId.equals(participant.getParticipantId()));
+        if (!coordinator) {
             throw new BadRequestException("Clinic ID does not match");
         }
         return entity;

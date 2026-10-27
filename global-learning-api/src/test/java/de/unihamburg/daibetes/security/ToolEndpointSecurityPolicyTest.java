@@ -2,8 +2,8 @@ package de.unihamburg.daibetes.security;
 
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
-import de.unihamburg.daibetes.api.analysis.run.DataAnalysisRunWebsocketService;
-import de.unihamburg.daibetes.api.testembed.TestEmbedService;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptWebsocketService;
+import de.unihamburg.daibetes.api.development.testembed.TestEmbedService;
 import io.quarkus.security.Authenticated;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +15,7 @@ class ToolEndpointSecurityPolicyTest {
     @Test
     void distinguishesToolAuthenticationFromUserAuthentication() {
         assertTrue(ToolAuthenticated.class.isAnnotationPresent(Authenticated.class));
-        assertTrue(DataAnalysisRunWebsocketService.class.isAnnotationPresent(ToolAuthenticated.class));
+        assertTrue(ExecutionAttemptWebsocketService.class.isAnnotationPresent(ToolAuthenticated.class));
         assertTrue(TestEmbedService.class.isAnnotationPresent(Authenticated.class));
         assertFalse(TestEmbedService.class.isAnnotationPresent(ToolAuthenticated.class));
     }
@@ -26,8 +26,8 @@ class ToolEndpointSecurityPolicyTest {
                 Scope.MODEL_PREDICTION_RUN, 42L);
         assertGrant("POST", "/model/run/workflow/42/upload/output", null,
                 Scope.MODEL_WORKFLOW_RUN, 42L);
-        assertGrant("GET", "/project/experiment/local/42/app", "websocket",
-                Scope.LOCAL_EXPERIMENT_RUN, 42L);
+        assertGrant("GET", "/model/run/workflow/42/app", "websocket",
+                Scope.MODEL_WORKFLOW_RUN, 42L);
         assertGrant("GET", "/pipeline/42/info", null, Scope.PIPELINE_RUN, 42L);
         assertGrant("GET", "/pipeline/42/zip", null, Scope.PIPELINE_RUN, 42L);
         assertGrant("PUT", "/pipeline/42/update", null, Scope.PIPELINE_RUN, 42L);

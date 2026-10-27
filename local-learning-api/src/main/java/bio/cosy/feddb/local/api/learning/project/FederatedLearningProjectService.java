@@ -1,9 +1,8 @@
 package bio.cosy.feddb.local.api.learning.project;
 
-import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.local.api.cohort.permission.PermissionDTO;
-import bio.cosy.feddb.local.api.learning.project.run.step.FederatedLearningExperimentStepDetailDTO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
 import io.smallrye.mutiny.Multi;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -53,22 +52,16 @@ public interface FederatedLearningProjectService {
     Response downloadFile(@PathParam("id") Long fileId);
 
     @GET
-    @Path("/{id}/step/{stepId}/messages")
-    @Operation(summary = "Stream Log messages")
-    @APIResponse(responseCode = "200", description = "Project experiment found")
-    @APIResponse(responseCode = "404", description = "Project experiment not found")
-    @RestStreamElementType(MediaType.APPLICATION_JSON)
-    Multi<ExecutionMessageLogDTO> listLogMessages(@PathParam("id") Long id,
-                                                  @PathParam("stepId") Long stepId);
+    @Path("/{id}/run")
+    @Operation(summary = "Retrieves this clinic's run of the training with the logs and metrics of its steps")
+    @APIResponse(responseCode = "200", description = "Run found")
+    @APIResponse(responseCode = "404", description = "Training or run not found")
+    ExecutionRunDTO retrieveRun(@PathParam("id") Long id);
 
     @GET
-    @Path("/{id}/step/{stepId}")
-    @Operation(summary = "Stream Log messages")
-    @APIResponse(responseCode = "200", description = "Project experiment found")
-    @APIResponse(responseCode = "404", description = "Project experiment not found")
-    @Transactional
-    FederatedLearningExperimentStepDetailDTO getStepDetailUpdates(@PathParam("id") Long id,
-                                                                       @PathParam("stepId") Long stepId
-    );
-
+    @Path("/{id}/run/stream")
+    @Operation(summary = "Follows this clinic's run of the training: the run now and on every change after")
+    @APIResponse(responseCode = "200", description = "Run found")
+    @RestStreamElementType(MediaType.APPLICATION_JSON)
+    Multi<ExecutionRunDTO> followRun(@PathParam("id") Long id);
 }

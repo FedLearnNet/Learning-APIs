@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.cohort;
 
-import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunBO;
+import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolBO;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.local.api.cohort.inclusion.CohortCriterionBO;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
@@ -46,7 +46,7 @@ public class CohortBO extends BaseBo<CohortDTO, CohortEntity, CohortAO, CohortMa
     Instance<CohortBO> self;
 
     @Inject
-    PatientToolRunBO patientToolRunBO;
+    PatientToolBO patientToolBO;
 
     @Inject
     SchemaBO schemaBO;
@@ -272,7 +272,7 @@ public class CohortBO extends BaseBo<CohortDTO, CohortEntity, CohortAO, CohortMa
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void deletePatientToolRuns(Long cohortId) {
-        patientToolRunBO.deleteAllForCohort(cohortId);
+        patientToolBO.deleteAllForCohort(cohortId);
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)

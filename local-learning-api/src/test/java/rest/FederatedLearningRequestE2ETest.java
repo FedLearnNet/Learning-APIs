@@ -20,13 +20,17 @@ import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLear
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningDTO;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningEntity;
 import bio.cosy.feddb.local.api.eam.WebsocketSender;
-import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningExperimentAO;
-import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningExperimentBO;
-import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningExperimentEntity;
-import bio.cosy.feddb.local.api.learning.project.run.data.FederatedLearningExperimentStepDataBO;
-import bio.cosy.feddb.local.api.learning.project.run.data.StepResultContext;
-import bio.cosy.feddb.local.api.learning.project.run.step.FederatedLearningExperimentStepBO;
-import bio.cosy.feddb.local.api.learning.project.run.step.FederatedLearningExperimentStepDTO;
+import bio.cosy.feddb.core.api.socket.LearningClientSyncResponseDTO;
+import bio.cosy.feddb.core.api.socket.StartLearningClientRequestDTO;
+import bio.cosy.feddb.core.execution.orchestrator.OrchestratorGateway;
+import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
+import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectAO;
+import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectEntity;
+import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningRunBO;
+import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptLifecycle;
+import bio.cosy.feddb.local.execution.run.ExecutionRunAO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunBO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
 import bio.cosy.feddb.local.api.learning.request.*;
 import bio.cosy.feddb.local.api.query.LocalQueryDTO;
 import bio.cosy.feddb.local.api.query.QueryBO;
@@ -71,13 +75,19 @@ class FederatedLearningRequestE2ETest {
     FederatedLearningRequestAO requestAO;
 
     @Inject
-    FederatedLearningExperimentBO experimentBO;
+    FederatedLearningRunBO federatedLearningRunBO;
 
     @Inject
-    FederatedLearningExperimentAO experimentAO;
+    FederatedLearningProjectAO projectAO;
 
     @Inject
-    FederatedLearningExperimentStepBO stepBO;
+    ExecutionRunAO runAO;
+
+    @Inject
+    ExecutionRunBO runBO;
+
+    @Inject
+    ExecutionAttemptLifecycle lifecycle;
 
     @Inject
     PatientLearningAO patientLearningAO;
@@ -89,7 +99,7 @@ class FederatedLearningRequestE2ETest {
     WorkflowOrchestrator workflowOrchestrator;
 
     @InjectMock
-    FederatedLearningExperimentStepDataBO stepDataBO;
+    OrchestratorGateway gateway;
 
     @InjectMock
     PatientDataExportBO exportBO;
@@ -102,7 +112,7 @@ class FederatedLearningRequestE2ETest {
 
     @BeforeEach
     void setup() {
-        reset(websocketSender, workflowOrchestrator, stepDataBO, exportBO, keycloakService, queryBO);
+        reset(websocketSender, workflowOrchestrator, gateway, exportBO, keycloakService, queryBO);
         when(keycloakService.getServiceAccountToken()).thenReturn("service-account-token");
         when(queryBO.findByGlobalIdOptionalTransactional(SEEDED_QUERY_GLOBAL_ID))
                 .thenReturn(Optional.of(createSeededQuery()));
@@ -165,10 +175,8 @@ class FederatedLearningRequestE2ETest {
                 .body("status", is("APPROVED"))
                 .body("modelCanBePublic", is(false));
 
-        FederatedLearningExperimentEntity experiment = experimentAO.getByGlobalRequestId(globalExperimentId)
-                .orElseThrow();
-        assertNotNull(experiment.getUniqueRandomClinicId());
-        assertEquals(1, experiment.getSteps().size());
+        assertNotNull(inTransaction(() -> runOf(globalExperimentId).getParticipantId()));
+        assertEquals(1, (int) inTransaction(() -> runOf(globalExperimentId).getSteps().size()));
 
         verify(websocketSender).sendLearningClientResponse(
                 anyInt(),
@@ -278,52 +286,42 @@ class FederatedLearningRequestE2ETest {
                 .statusCode(200)
                 .body("status", is("APPROVED"));
 
-        FederatedLearningExperimentEntity experiment = experimentAO.getByGlobalRequestId(globalExperimentId)
-                .orElseThrow();
+        Long runId = inTransaction(() -> runOf(globalExperimentId).getId());
+        String participantId = inTransaction(() -> runOf(globalExperimentId).getParticipantId());
+        String nodeId = inTransaction(() -> runOf(globalExperimentId).getSteps().getFirst().getWorkflowNode().getNodeId());
 
         Path inputFile = Files.createTempFile("federated-learning-input-", ".csv");
         Files.writeString(inputFile, "PATIENT_ID,feature_5001\n1,1\n");
-        when(workflowOrchestrator.executeWorkflow(any(), anyString())).thenReturn("container-123");
+        when(gateway.startWorkflow(any(), anyString())).thenReturn("container-123");
         when(exportBO.exportDataForLearning(any(), anyLong(), anyLong())).thenReturn(inputFile);
 
-        ProjectStatus startStatus = experimentBO.startLearning(experiment, true);
-        assertEquals(ProjectStatus.INIT, startStatus);
+        LearningClientSyncResponseDTO started = federatedLearningRunBO.handleStartLearningRequest(
+                new StartLearningClientRequestDTO(globalExperimentId, null, true)).orElseThrow();
+        assertEquals(ProjectStatus.INIT, started.getStepStatus());
 
-        FederatedLearningExperimentEntity started = experimentAO.findById(experiment.getId());
-        FederatedLearningExperimentStepDTO step = started.getSteps().stream()
-                .findFirst()
-                .map(entity -> stepBO.getById(experiment.getId(), entity.getId()))
-                .orElseThrow();
-        assertEquals(RunStatusTypes.PENDING, step.getStepStatus());
-        verify(workflowOrchestrator).executeWorkflow(any(), anyString());
+        // The app of the first step starts with the clinic's data in its volume.
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> verify(gateway).startWorkflow(any(), anyString()));
+        Long attemptId = runBO.attemptOf(runId).orElseThrow();
         verify(exportBO, atLeastOnce()).exportDataForLearning(any(), anyLong(), anyLong());
-        long expectedNodeExecutionOrder = started.getSteps().stream().findFirst().orElseThrow()
-                .getWorkflowNode().getExecutionOrder();
-        verify(workflowOrchestrator).uploadFilesToVolume(
-                eq(experiment.getId()),
-                eq(expectedNodeExecutionOrder),
-                eq(inputFile),
-                eq("training_data.csv")
-        );
+        verify(workflowOrchestrator).uploadFilesToVolume(eq(runId), eq(attemptId), eq(inputFile), eq("training_data.csv"));
 
-        step.setStepStatus(RunStatusTypes.FINISHED);
-        stepBO.updateStatus(step);
+        FinishRunDTO finish = new FinishRunDTO();
+        finish.setStatus(RunStatusTypes.FINISHED);
+        lifecycle.finish(attemptId, finish);
 
-        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             assertEquals(FederatedLearningRequestStatus.COMPLETED, loadRequestStatus(globalExperimentId));
-            assertEquals(ProjectStatus.FINISHED, loadExperimentStatus(experiment.getId()));
+            assertEquals(RunStatusTypes.FINISHED, inTransaction(() -> runAO.findById(runId).getStatus()));
         });
-
-        verify(stepDataBO).saveResults(any(StepResultContext.class));
-        verify(workflowOrchestrator).cleanup(experiment.getId());
+        verify(workflowOrchestrator).getFiles(runId, attemptId);
         // The last step finishing must report the run itself as finished, not just the step
-        verify(websocketSender).sendRunningUpdate(
-                eq(started.getSteps().stream().findFirst().orElseThrow().getWorkflowNode().getNodeId()),
-                eq(globalExperimentId),
-                eq(RunStatusTypes.FINISHED),
-                eq(ProjectStatus.FINISHED),
-                eq(started.getUniqueRandomClinicId())
-        );
+        verify(websocketSender).sendRunningUpdate(eq(nodeId), eq(globalExperimentId), eq(RunStatusTypes.FINISHED),
+                eq(ProjectStatus.FINISHED), eq(participantId));
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> verify(workflowOrchestrator).cleanup(runId));
+    }
+
+    private ExecutionRunEntity runOf(String globalExperimentId) {
+        return projectAO.findByRequestIdOptional(globalExperimentId).map(FederatedLearningProjectEntity::getRun).orElseThrow();
     }
 
     private ProjectFederatedExperimentForLocalDTO buildIncomingRequest(String globalExperimentId,
@@ -409,7 +407,4 @@ class FederatedLearningRequestE2ETest {
                 .getStatus());
     }
 
-    private ProjectStatus loadExperimentStatus(Long experimentId) {
-        return QuarkusTransaction.requiringNew().call(() -> experimentAO.findById(experimentId).getExperimentStatus());
-    }
 }

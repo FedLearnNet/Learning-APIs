@@ -11,8 +11,7 @@ import de.unihamburg.daibetes.api.analysis.run.DataAnalysisExecutionBO;
 import de.unihamburg.daibetes.api.model.access.ModelAccessBO;
 import de.unihamburg.daibetes.api.model.sub.file.ModelSubFileBO;
 import de.unihamburg.daibetes.api.project.ProjectMapper;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentMapper;
+import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
 import de.unihamburg.daibetes.api.query.QueryAO;
 import de.unihamburg.daibetes.api.query.QueryEntity;
 import de.unihamburg.daibetes.api.query.QueryMapper;
@@ -38,9 +37,6 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
     ModelSubFileBO modelSubFileBO;
 
     @Inject
-    ProjectFederatedExperimentMapper federatedExperimentMapper;
-
-    @Inject
     ProjectMapper projectMapper;
 
     @Inject
@@ -62,7 +58,7 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
     }
 
     private Optional<FederatedModelSubDetailDataDTO> createFederatedData(ModelSubEntity modelSub) {
-        ProjectFederatedExperimentEntity experiment = modelSub.getFederatedExperiment();
+        ExecutionExperimentEntity experiment = modelSub.getFederatedExperiment();
         if (experiment == null) {
             return Optional.empty();
         }
@@ -74,8 +70,8 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
         return Optional.of(federatedData);
     }
 
-    private ProjectDTO getProjectSnapshot(ProjectFederatedExperimentEntity experiment) {
-        ProjectDetailDTO snapshot = federatedExperimentMapper.jsonStringToProject(experiment.getProjectVersion());
+    private ProjectDTO getProjectSnapshot(ExecutionExperimentEntity experiment) {
+        ProjectDetailDTO snapshot = experiment.getProjectVersion();
         ProjectDTO project = snapshot != null ? snapshot : projectMapper.entityToSimpleDTO(experiment.getProject());
 
         // Uploaded source files are not needed for traceability and may contain private metadata.
@@ -84,7 +80,7 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
     }
 
     private Optional<QueryDTO> getRedactedQuerySnapshot(ProjectDTO project,
-                                                         ProjectFederatedExperimentEntity experiment) {
+                                                         ExecutionExperimentEntity experiment) {
         QueryEntity query = null;
         if (project.getQueryId() != null) {
             query = queryAO.findByIdOptional(project.getQueryId()).orElse(null);

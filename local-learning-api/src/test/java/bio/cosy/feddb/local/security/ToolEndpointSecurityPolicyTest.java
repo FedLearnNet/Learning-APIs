@@ -2,7 +2,7 @@ package bio.cosy.feddb.local.security;
 
 import bio.cosy.feddb.core.security.ToolAuthenticated;
 import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
-import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningExperimentWebsocketService;
+import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptWebsocketService;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.runtime.QuarkusSecurityIdentity;
 import io.quarkus.vertx.http.runtime.security.HttpSecurityPolicy.CheckResult;
@@ -25,23 +25,25 @@ class ToolEndpointSecurityPolicyTest {
     @Test
     void toolAnnotationRequiresAuthentication() {
         assertTrue(ToolAuthenticated.class.isAnnotationPresent(Authenticated.class));
-        assertTrue(FederatedLearningExperimentWebsocketService.class
+        assertTrue(ExecutionAttemptWebsocketService.class
                 .isAnnotationPresent(ToolAuthenticated.class));
     }
 
     @Test
     void allowsOnlyToolCallbacks() {
-        assertGrant("POST", "/learning/run/42/upload/output", null,
+        assertGrant("POST", "/execution/learning/42/upload/output", null,
                 Scope.LEARNING_RUN, 42L);
-        assertGrant("GET", "/patient/tool/run/42/app", "websocket",
-                Scope.PATIENT_TOOL_RUN, 42L);
-        assertGrant("GET", "/connectors/run/execution/42/APP", "WebSocket",
-                Scope.CONNECTOR_RUN, 42L);
+        assertGrant("POST", "/execution/learning/42/upload/model", null,
+                Scope.LEARNING_RUN, 42L);
+        assertGrant("GET", "/execution/tool/42/app", "websocket",
+                Scope.TOOL_RUN, 42L);
+        assertGrant("GET", "/execution/tool/42/APP", "WebSocket",
+                Scope.TOOL_RUN, 42L);
 
-        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/learning/run/42/download", null).isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/execution/learning/42/download", null).isPresent());
         assertFalse(ToolEndpointSecurityPolicy.match("GET", "/cohort", null).isPresent());
-        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/learning/run/42/app", null).isPresent());
-        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/learning/run/42/controller", "websocket").isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/execution/learning/42/app", null).isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/execution/learning/42/controller", "websocket").isPresent());
     }
 
     @Test
@@ -55,10 +57,10 @@ class ToolEndpointSecurityPolicyTest {
 
         ToolEndpointSecurityPolicy policy = new ToolEndpointSecurityPolicy();
         assertSame(CheckResult.DENY, policy.checkPermission(
-                websocketContext("/learning/run/2/app"), Uni.createFrom().item(identity), null)
+                websocketContext("/execution/learning/2/app"), Uni.createFrom().item(identity), null)
                 .await().indefinitely());
         assertSame(CheckResult.PERMIT, policy.checkPermission(
-                websocketContext("/learning/run/3/app"), Uni.createFrom().item(identity), null)
+                websocketContext("/execution/learning/3/app"), Uni.createFrom().item(identity), null)
                 .await().indefinitely());
     }
 

@@ -37,7 +37,7 @@ public class HyperParamSearchPlanner {
 
     public SearchPlan plan(@NotNull @Valid HyperParamSearchDTO search,
                            @NotNull Collection<? extends BaseExecutionAttemptDTO> attempts) {
-        if (attempts.stream().anyMatch(attempt -> !RunStatusTypes.isFinalStatus(attempt.getStatus()))) {
+        if (attempts.stream().anyMatch(attempt -> !attempt.hasEnded())) {
             return SearchPlan.waiting();
         }
         Set<Integer> issued = attempts.stream().map(BaseExecutionAttemptDTO::getTrialIndex).collect(Collectors.toSet());

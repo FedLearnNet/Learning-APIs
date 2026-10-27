@@ -56,7 +56,6 @@ public class WorkflowNodeBO extends BaseBo<WorkflowNodeDTO, WorkflowNodeEntity, 
             detailDto.setAppDetail(detailDto.getModelDetail().getFederatedApp());
         }
         dto.setImageName(detailDto.getImageName());
-        dto.setOldFCVersion(detailDto.getOldFCVersion());
         dto.setSupportsFederatedLearning(((WorkflowNodeDTO) detailDto).getSupportsFederatedLearning());
         dto.setAppVersion(detailDto.getAppVersion());
         return detailDto;
@@ -65,7 +64,6 @@ public class WorkflowNodeBO extends BaseBo<WorkflowNodeDTO, WorkflowNodeEntity, 
     public WorkflowNodeEntity createEntity(Long workflowId, WorkflowNodeDetailDTO dto) {
         dto.setWorkflowId(workflowId);
         WorkflowNodeEntity entity = mapper.dtoToEntity(dto);
-        entity.setOldFCVersion(dto.getOldFCVersion());
         entity.setSupportsFederatedLearning(((WorkflowNodeDTO) dto).getSupportsFederatedLearning());
         ao.persist(entity);
         return entity;

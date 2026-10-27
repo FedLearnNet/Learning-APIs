@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.api.importer.transformer;
 
+import bio.cosy.feddb.local.api.importer.connector.ConnectorHelper;
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
@@ -21,7 +22,7 @@ class AppTransformerSessionBOTest {
                 Map.of("diag_combined", "250.83|?"),
                 Map.of("diag_combined", "599|276"));
 
-        List<Map<String, Object>> merged = AppTransformerSessionBO.merge(sent, returned, transformer);
+        List<Map<String, Object>> merged = ConnectorHelper.mergeRows(sent, returned, transformer);
 
         // Without this the patient id was gone after the first app step and every patient failed to
         // load with "Every mapped row must have an external patient id".
@@ -36,7 +37,7 @@ class AppTransformerSessionBOTest {
         List<Map<String, Object>> sent = List.of(row("patient_nbr", "8222157", "diag_1", "250.83", "diag_2", "?"));
         List<Map<String, Object>> returned = List.of(Map.of("diag_1", "250", "diag_2", "83"));
 
-        List<Map<String, Object>> merged = AppTransformerSessionBO.merge(sent, returned, appTransformer());
+        List<Map<String, Object>> merged = ConnectorHelper.mergeRows(sent, returned, appTransformer());
 
         assertEquals("250", merged.get(0).get("diag_1"));
         assertEquals("83", merged.get(0).get("diag_2"));
@@ -51,7 +52,7 @@ class AppTransformerSessionBOTest {
         // An app that filters or splits has changed the row set, so there is nothing to line up.
         List<Map<String, Object>> returned = List.of(Map.of("diag_combined", "250.83|?"));
 
-        List<Map<String, Object>> merged = AppTransformerSessionBO.merge(sent, returned, appTransformer());
+        List<Map<String, Object>> merged = ConnectorHelper.mergeRows(sent, returned, appTransformer());
 
         assertEquals(1, merged.size());
         assertEquals(Map.of("diag_combined", "250.83|?"), merged.get(0));

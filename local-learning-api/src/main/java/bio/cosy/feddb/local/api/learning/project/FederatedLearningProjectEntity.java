@@ -2,7 +2,7 @@ package bio.cosy.feddb.local.api.learning.project;
 
 import bio.cosy.feddb.core.api.project.PatientDataExportConfigDTO;
 import bio.cosy.feddb.core.base.BaseEntity;
-import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningExperimentEntity;
+import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
 import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
 import bio.cosy.feddb.local.api.query.QueryEntity;
 import bio.cosy.feddb.local.api.workflow.WorkflowEntity;
@@ -64,6 +64,8 @@ public class FederatedLearningProjectEntity extends BaseEntity {
     @JoinColumn(name = "request_id", nullable = false)
     private FederatedLearningRequestEntity request;
 
-    @OneToOne(mappedBy = "project")
-    private FederatedLearningExperimentEntity experiment;
+    // This clinic's run of the training, set up once it was approved.
+    @OneToOne
+    @JoinColumn(name = "run_id")
+    private ExecutionRunEntity run;
 }

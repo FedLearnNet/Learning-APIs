@@ -11,7 +11,7 @@ import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLear
 import bio.cosy.feddb.local.api.eam.WebsocketSender;
 import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectBO;
 import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectEntity;
-import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningExperimentBO;
+import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningRunBO;
 import bio.cosy.feddb.local.api.learning.request.cohort.FederatedLearningRequestCohortBO;
 import bio.cosy.feddb.local.api.learning.request.cohort.FederatedLearningRequestCohortDTO;
 import bio.cosy.feddb.local.api.learning.request.cohort.FederatedLearningRequestCohortStatus;
@@ -55,7 +55,7 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
     WebsocketSender websocketSender;
 
     @Inject
-    FederatedLearningExperimentBO experimentBO;
+    FederatedLearningRunBO federatedLearningRunBO;
 
     @Inject
     PrivacyBO privacyBO;
@@ -335,7 +335,7 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
 
         String globalId = entity.getGlobalFLExperimentUniqueId();
         int count = privacyBO.modifyQueryCount(patientCount).intValue();
-        String clinicId = experimentBO.ensureApprovedLearning(entity).getUniqueRandomClinicId();
+        String clinicId = federatedLearningRunBO.approve(entity);
         Log.infof("Notify accepted patients for request %s: count=%d (raw=%d), clinic=%s",
                 id, count, patientCount, clinicId);
         websocketSender.sendLearningClientResponse(count, globalId, clinicId, entity.getModelCanBePublic());

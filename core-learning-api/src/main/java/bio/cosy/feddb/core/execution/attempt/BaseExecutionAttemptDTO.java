@@ -1,6 +1,6 @@
 package bio.cosy.feddb.core.execution.attempt;
 
-import bio.cosy.feddb.core.base.BaseDTO;
+import bio.cosy.feddb.core.execution.BaseExecutionStatusDTO;
 import bio.cosy.feddb.core.execution.failure.ExecutionFailure;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
 import bio.cosy.feddb.core.execution.run.dto.RunMetaDTO;
@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class BaseExecutionAttemptDTO extends BaseDTO {
+public class BaseExecutionAttemptDTO extends BaseExecutionStatusDTO {
     private UUID publicId;
     private Long stepId;
     private UUID stepPublicId;
@@ -24,11 +24,7 @@ public class BaseExecutionAttemptDTO extends BaseDTO {
     private LinkedHashMap<String, Object> params;
     // Payload of the attempt's score message; its value ranks the trial.
     private ExecutionMessageMetricDTO scoreMetric;
-    private RunStatusTypes status;
     private String containerId;
     private Float progress;
-    private Instant startedAt;
-    private Instant finishedAt;
-    private ExecutionFailure failure;
     private RunMetaDTO meta;
 }

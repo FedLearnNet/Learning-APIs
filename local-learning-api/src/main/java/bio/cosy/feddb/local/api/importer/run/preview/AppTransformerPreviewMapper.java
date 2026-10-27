@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.importer.run.preview;
 
-import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepDTO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
 import bio.cosy.feddb.local.helper.QuarkusMappingConfig;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -14,5 +14,5 @@ public interface AppTransformerPreviewMapper {
             @Mapping(target = "rowCount", ignore = true),
             @Mapping(target = "finished", ignore = true)
     })
-    AppTransformerPreviewStreamDTO dtoToStreamDTO(ConnectorRunStepDTO dto);
+    AppTransformerPreviewStreamDTO runToStreamDTO(ExecutionRunDTO run);
 }

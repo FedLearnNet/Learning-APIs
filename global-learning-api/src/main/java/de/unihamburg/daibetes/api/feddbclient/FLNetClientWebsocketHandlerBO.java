@@ -3,10 +3,8 @@ package de.unihamburg.daibetes.api.feddbclient;
 import bio.cosy.feddb.core.api.query.QueryClientResponseDTO;
 import bio.cosy.feddb.core.api.socket.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentBO;
-import de.unihamburg.daibetes.api.project.experiment.federated.metrics.RunMetricsRequestBO;
-import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantBO;
-import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantEntity;
+import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingBO;
+import de.unihamburg.daibetes.api.project.training.metrics.RunMetricsRequestBO;
 import de.unihamburg.daibetes.api.query.response.QueryResponseBO;
 import de.unihamburg.daibetes.api.query.statistics.DataStatisticsResponseBO;
 import io.quarkus.arc.log.LoggerName;
@@ -29,10 +27,7 @@ public class FLNetClientWebsocketHandlerBO {
     RunMetricsRequestBO runMetricsRequestBO;
 
     @Inject
-    ProjectFederatedExperimentBO projectFederatedExperimentBO;
-
-    @Inject
-    ProjectFederatedExperimentParticipantBO projectFederatedExperimentParticipantBO;
+    FederatedTrainingBO federatedTrainingBO;
 
     @Inject
     FLNetClientBroadcastBO broadcastBO;
@@ -69,7 +64,7 @@ public class FLNetClientWebsocketHandlerBO {
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.LEARNING_QUERY)) {
             LearningQueryClientResponseDTO query = objectMapper.convertValue(m.getMessage(), LearningQueryClientResponseDTO.class);
-            projectFederatedExperimentBO.updateCount(
+            federatedTrainingBO.accept(
                     query.getGlobalFLExperimentUniqueId(),
                     query.getCount(),
                     query.getUniqueRandomClinicId(),
@@ -79,10 +74,7 @@ public class FLNetClientWebsocketHandlerBO {
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.UPDATE_LEARNING)) {
             LearningClientSyncResponseDTO response = objectMapper.convertValue(m.getMessage(), LearningClientSyncResponseDTO.class);
-            ProjectFederatedExperimentParticipantEntity participant = projectFederatedExperimentParticipantBO.updateStatus(response);
-            if (participant != null) {
-                projectFederatedExperimentBO.updateStepAndNotify(participant);
-            }
+            federatedTrainingBO.update(response);
         }
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.CURRENT_LEARNINGS)) {

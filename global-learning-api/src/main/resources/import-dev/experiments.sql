@@ -1,9 +1,15 @@
--- Experiments of apps under development: test runs whose step searches a grid of hyper parameters.
+-- Experiments of apps under development, each with a test run whose step searches a grid of hyper parameters.
+INSERT INTO execution_experiment (id, created_at, updated_at, version, name, description, diagram_configs, keycloak_id,
+                                  is_test, app_version_id)
+VALUES (1, NOW(), NOW(), 0, 'Experiment 1', 'Description for Experiment 1', '[]', 'test', false, 2),
+       (2, NOW(), NOW(), 0, 'Experiment 2', 'Description for Experiment 2', '[]', 'test', false, 2),
+       (3, NOW(), NOW(), 0, 'Experiment 3', 'Description for Experiment 3', '[]', 'test', false, 3);
+
 INSERT INTO execution_run (id, created_at, updated_at, version, public_id, name, purpose, mode, location, status,
-                           started_at, keycloak_id, experiment, description, diagram_configs)
-VALUES (1, NOW(), NOW(), 0, gen_random_uuid(), 'Experiment 1', 'TEST', 'SINGLE', 'PLATFORM', 'RUNNING', NOW(), 'test', true, 'Description for Experiment 1', '[]'),
-       (2, NOW(), NOW(), 0, gen_random_uuid(), 'Experiment 2', 'TEST', 'SINGLE', 'PLATFORM', 'RUNNING', NOW(), 'test', true, 'Description for Experiment 2', '[]'),
-       (3, NOW(), NOW(), 0, gen_random_uuid(), 'Experiment 3', 'TEST', 'SINGLE', 'PLATFORM', 'RUNNING', NOW(), 'test', true, 'Description for Experiment 3', '[]');
+                           started_at, keycloak_id, experiment_id)
+VALUES (1, NOW(), NOW(), 0, gen_random_uuid(), 'Experiment 1', 'TEST', 'SINGLE', 'PLATFORM', 'RUNNING', NOW(), 'test', 1),
+       (2, NOW(), NOW(), 0, gen_random_uuid(), 'Experiment 2', 'TEST', 'SINGLE', 'PLATFORM', 'RUNNING', NOW(), 'test', 2),
+       (3, NOW(), NOW(), 0, gen_random_uuid(), 'Experiment 3', 'TEST', 'SINGLE', 'PLATFORM', 'RUNNING', NOW(), 'test', 3);
 
 INSERT INTO execution_run_step (id, created_at, updated_at, version, public_id, run_id, name, started_at, status, search,
                                 app_version_id)
@@ -40,17 +46,22 @@ VALUES (1, NOW(), NOW(), 0, 'Prozess 1', 'METRIC', '{"type": "METRIC", "metric":
        (15, NOW(), NOW(), 0, 'Prozess 1', 'METRIC', '{"type": "METRIC", "metric": "Metrik-Nachricht 1", "value": "95", "x": "10", "xUnit": "epoch", "runId": 1}', 1),
        (16, NOW(), NOW(), 0, 'Prozess 1', 'METRIC', '{"type": "METRIC", "metric": "Metrik-Nachricht 1", "value": "95", "x": "11", "xUnit": "epoch", "runId": 1}', 1);
 
-ALTER TABLE execution_run ALTER COLUMN id RESTART WITH 4;
+-- Trainings of projects across clinics, waiting for clinics to accept them.
+INSERT INTO execution_experiment (id, created_at, updated_at, version, name, description, diagram_configs, keycloak_id,
+                                  is_test, project_id, global_unique_id, status, acceptance_count, acceptance_clinic_count,
+                                  model_can_be_public)
+VALUES (4, NOW(), NOW(), 0, 'Experiment Alpha', 'Test-Experiment', '[]', 'test', false, 1, '54bc4d77-a641-4e17-9c07-85a8c79c39a0', 'INIT', 10, 3, true),
+       (5, NOW(), NOW(), 0, 'Experiment Beta', 'Test-Experiment', '[]', 'test', false, 1, '64bc4d77-a641-4e17-9c07-85a8c79c39a0', 'INIT', 10, 3, true),
+       (6, NOW(), NOW(), 0, 'Experiment Delta', 'Test-Experiment', '[]', 'test', false, 2, '74bc4d77-a641-4e17-9c07-85a8c79c39a0', 'INIT', 10, 3, true);
+
+INSERT INTO execution_run (id, created_at, updated_at, version, public_id, name, purpose, mode, location, status,
+                           keycloak_id, experiment_id)
+VALUES (4, NOW(), NOW(), 0, gen_random_uuid(), 'Experiment Alpha', 'TRAINING', 'FEDERATED', 'LOCAL', 'PENDING', 'test', 4),
+       (5, NOW(), NOW(), 0, gen_random_uuid(), 'Experiment Beta', 'TRAINING', 'FEDERATED', 'LOCAL', 'PENDING', 'test', 5),
+       (6, NOW(), NOW(), 0, gen_random_uuid(), 'Experiment Delta', 'TRAINING', 'FEDERATED', 'LOCAL', 'PENDING', 'test', 6);
+
+ALTER TABLE execution_experiment ALTER COLUMN id RESTART WITH 7;
+ALTER TABLE execution_run ALTER COLUMN id RESTART WITH 7;
 ALTER TABLE execution_run_step ALTER COLUMN id RESTART WITH 4;
 ALTER TABLE execution_attempt ALTER COLUMN id RESTART WITH 10;
 ALTER TABLE execution_message ALTER COLUMN id RESTART WITH 17;
-
-INSERT INTO project_federated_experiments (id, created_at, updated_at, version, global_unique_id, name, description, project_version, acceptance_count,
-                                           acceptance_clinic_count, experiment_status, relay_server_address, clinic_is_coordinator,
-                                           coordinator_id, started_at, finished_at, diagram_config, project_id)
-VALUES (1, NOW(), NOW(), 0, '54bc4d77-a641-4e17-9c07-85a8c79c39a0', 'Experiment Alpha', 'Test-Experiment', NULL, 10, 3, 'INIT', NULL,  FALSE, NULL, NULL, NULL, NULL, 1),
-       (2, NOW(), NOW(), 0, '64bc4d77-a641-4e17-9c07-85a8c79c39a0', 'Experiment Beta', 'Test-Experiment', NULL, 10, 3, 'INIT', NULL,  FALSE, NULL, NULL, NULL, NULL, 1),
-       (3, NOW(), NOW(), 0, '74bc4d77-a641-4e17-9c07-85a8c79c39a0', 'Experiment Delta', 'Test-Experiment', NULL, 10, 3, 'INIT', NULL,  FALSE, NULL, NULL, NULL, NULL, 2);
-
-ALTER TABLE project_federated_experiments ALTER COLUMN id RESTART WITH 4;
-

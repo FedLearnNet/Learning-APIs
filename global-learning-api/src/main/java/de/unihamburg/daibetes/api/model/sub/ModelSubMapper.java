@@ -6,8 +6,8 @@ import bio.cosy.feddb.core.base.BaseMapper;
 import de.unihamburg.daibetes.api.build.pipeline.PipelineEntity;
 import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
 import de.unihamburg.daibetes.api.model.sub.file.ModelSubFileMapper;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
-import de.unihamburg.daibetes.api.runs.experiment.run.ExperimentRunEntity;
+import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -60,27 +60,27 @@ public interface ModelSubMapper extends BaseMapper<ModelSubDTO, ModelSubEntity> 
     }
 
     @Named("mapExperiment")
-    default ExperimentRunEntity mapExperiment(Long experimentId) {
+    default ExecutionAttemptEntity mapExperiment(Long experimentId) {
         if (experimentId == null) {
             return null;
         }
-        ExperimentRunEntity experiment = new ExperimentRunEntity();
+        ExecutionAttemptEntity experiment = new ExecutionAttemptEntity();
         experiment.setId(experimentId);
         return experiment;
     }
 
     @Named("mapFedExperiment")
-    default ProjectFederatedExperimentEntity mapFedExperiment(Long experimentId) {
+    default ExecutionExperimentEntity mapFedExperiment(Long experimentId) {
         if (experimentId == null) {
             return null;
         }
-        ProjectFederatedExperimentEntity experiment = new ProjectFederatedExperimentEntity();
+        ExecutionExperimentEntity experiment = new ExecutionExperimentEntity();
         experiment.setId(experimentId);
         return experiment;
     }
 
     @Named("mapExperimentId")
-    default Long mapExperimentId(ExperimentRunEntity experiment) {
+    default Long mapExperimentId(ExecutionAttemptEntity experiment) {
         if (experiment == null) {
             return null;
         }
@@ -88,7 +88,7 @@ public interface ModelSubMapper extends BaseMapper<ModelSubDTO, ModelSubEntity> 
     }
 
     @Named("mapFedExperimentId")
-    default Long mapFedExperimentId(ProjectFederatedExperimentEntity experiment) {
+    default Long mapFedExperimentId(ExecutionExperimentEntity experiment) {
         if (experiment == null) {
             return null;
         }

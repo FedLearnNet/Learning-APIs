@@ -2,12 +2,13 @@ package de.unihamburg.daibetes.execution.step;
 
 import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepMapper;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptMapper;
+import de.unihamburg.daibetes.execution.federation.ExecutionFederationMapper;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
-@Mapper(config = QuarkusMappingConfig.class, uses = ExecutionAttemptMapper.class)
+@Mapper(config = QuarkusMappingConfig.class, uses = {ExecutionAttemptMapper.class, ExecutionFederationMapper.class})
 public interface ExecutionRunStepMapper extends BaseExecutionRunStepMapper<ExecutionRunStepDTO, ExecutionRunStepEntity> {
 
     @Mappings({
@@ -28,7 +29,8 @@ public interface ExecutionRunStepMapper extends BaseExecutionRunStepMapper<Execu
             @Mapping(target = "selectedAttempt", ignore = true),
             @Mapping(target = "attempts", ignore = true),
             @Mapping(target = "federatedAppVersion", ignore = true),
-            @Mapping(target = "subModel", ignore = true)
+            @Mapping(target = "subModel", ignore = true),
+            @Mapping(target = "federation", ignore = true)
     })
     ExecutionRunStepEntity dtoToEntity(ExecutionRunStepDTO dto);
 }

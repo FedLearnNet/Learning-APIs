@@ -1,21 +1,14 @@
 package bio.cosy.feddb.local.api.importer.transformer;
 
-import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorAO;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorEntity;
-import bio.cosy.feddb.local.api.importer.files.table.TableData;
 import bio.cosy.feddb.local.api.importer.functions.FunctionExecutionMode;
 import bio.cosy.feddb.local.api.importer.functions.FunctionRunnerBO;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
-import bio.cosy.feddb.local.api.importer.run.execution.ConnectorRunExecutionOutputAwaiter;
-import bio.cosy.feddb.local.api.importer.run.execution.ConnectorRunExecutionResult;
-import bio.cosy.feddb.local.api.importer.run.execution.ConnectorRunExecutionRunBO;
 import bio.cosy.feddb.local.api.importer.run.message.ConnectorRunMessagesAO;
-import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepAO;
-import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepBO;
-import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepDTO;
+import bio.cosy.feddb.local.execution.step.ExecutionRunStepAO;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -23,12 +16,7 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -47,19 +35,10 @@ public class ConnectorTransformerBO extends BaseBo<
     FunctionRunnerBO functionRunnerBO;
 
     @Inject
-    ConnectorRunExecutionRunBO executionRunBO;
-
-    @Inject
-    ConnectorRunExecutionOutputAwaiter outputAwaiter;
-
-    @Inject
-    ConnectorRunStepAO runStepAO;
+    ExecutionRunStepAO runStepAO;
 
     @Inject
     ConnectorRunMessagesAO runMessagesAO;
-
-    @Inject
-    ConnectorRunStepBO stepBO;
 
     @Inject
     AppTransformerSessionBO sessionBO;
@@ -369,98 +348,6 @@ public class ConnectorTransformerBO extends BaseBo<
                 run.getCohortId() == null ? null : String.valueOf(run.getCohortId()),
                 run.getId()
         );
-    }
-
-    /**
-     * Executes an app-based transformer via the execution subsystem.
-     * <p>
-     * Flow:
-     * 1. Create a pending step for the current connector run.
-     * 2. Start the container through the execution subsystem.
-     * 3. Wait reactively until the container uploads its output.
-     * 4. Read the uploaded {@link TableData} from the finished step and return its rows.
-     * <p>
-     * This method is still synchronous from the caller's perspective because the surrounding
-     * transformer pipeline expects a materialized row set. Internally, however, waiting for
-     * the uploaded result is event-driven and no longer implemented with database polling.
-     */
-    private List<Map<String, Object>> startAppTransformer(
-            ConnectorTransformerDTO transformer,
-            ConnectorRunDTO run
-    ) {
-        Log.infof(
-                "Starting app-based transformer '%s' (image: %s) for run %d",
-                transformer.getMethodName(),
-                transformer.getAppImage(),
-                run.getId()
-        );
-
-        ConnectorRunStepDTO step = createPendingStep(transformer, run);
-        outputAwaiter.register(step.getId(), null);
-
-        try {
-            ConnectorRunStepDTO result = executionRunBO.startModel(transformer, step, run.getKeycloakId());
-            if (result == null) {
-                throw new RuntimeException("Execution subsystem returned no step result");
-            }
-
-            if (result.getLastError() != null && !result.getLastError().isBlank()) {
-                Log.errorf(
-                        "App transformer '%s' failed to start: %s",
-                        transformer.getMethodName(),
-                        result.getLastError()
-                );
-                throw new RuntimeException("App transformer failed: " + result.getLastError());
-            }
-
-            Log.infof(
-                    "App transformer '%s' started with containerId=%s, stepId=%d. Waiting for uploaded output.",
-                    transformer.getMethodName(),
-                    result.getContainerId(),
-                    result.getId()
-            );
-
-            ConnectorRunExecutionResult finishedStep = outputAwaiter.awaitOutput(result.getId())
-                    .await().atMost(APP_OUTPUT_TIMEOUT);
-
-            if (finishedStep == null) {
-                throw new RuntimeException("App transformer finished without a final step");
-            }
-
-            TableData outputData = finishedStep.outputData();
-            if (outputData == null) {
-                throw new RuntimeException("App transformer finished without tabular output");
-            }
-
-            try {
-                return new ArrayList<>(outputData.getRows());
-            } finally {
-                outputData.close();
-            }
-
-        } catch (RuntimeException e) {
-            outputAwaiter.cancel(step.getId());
-            stepBO.updateAndNotify(step.getId(), RunStatusTypes.ERROR, e.getMessage());
-            throw e;
-        } catch (Exception e) {
-            Log.errorf(e, "Failed to execute app transformer '%s'", transformer.getMethodName());
-            outputAwaiter.cancel(step.getId());
-            stepBO.updateAndNotify(step.getId(), RunStatusTypes.ERROR, e.getMessage());
-            throw new RuntimeException("Failed to execute app transformer: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Creates the initial pending step that tracks the app transformer execution.
-     */
-    private ConnectorRunStepDTO createPendingStep(ConnectorTransformerDTO transformer, ConnectorRunDTO run) {
-        ConnectorRunStepDTO step = new ConnectorRunStepDTO();
-        step.setConnectorRunId(run.getId());
-        step.setTransformationId(transformer.getId());
-        step.setStatus(RunStatusTypes.PENDING);
-        step.setProgress(0f);
-        step.setHyperParams(transformer.getHyperparams());
-        return stepBO.createInNewTransaction(step);
     }
 
     private boolean isAppTransformer(ConnectorTransformerDTO transformer) {
