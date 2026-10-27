@@ -1,10 +1,8 @@
 package bio.cosy.feddb.core.execution.attempt;
 
 import bio.cosy.feddb.core.execution.BaseExecutionStatusEntity;
-import bio.cosy.feddb.core.execution.failure.ExecutionFailure;
 import bio.cosy.feddb.core.execution.message.BaseExecutionMessageEntity;
 import bio.cosy.feddb.core.execution.run.dto.RunMetaDTO;
-import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -12,7 +10,6 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.UUID;
 

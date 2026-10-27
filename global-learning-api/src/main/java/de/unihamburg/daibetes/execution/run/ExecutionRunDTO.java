@@ -8,4 +8,5 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class ExecutionRunDTO extends BaseExecutionRunDTO {
     private String keycloakId;
+    private Long experimentId;
 }
