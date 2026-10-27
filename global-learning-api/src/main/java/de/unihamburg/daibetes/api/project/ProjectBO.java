@@ -22,6 +22,7 @@ import jakarta.ws.rs.core.Response;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -147,6 +148,10 @@ public class ProjectBO extends BaseBo<ProjectDetailDTO, ProjectEntity, ProjectAO
     public TabularSchemaDTO createExportConfigSchema(Long id, String keycloakId) {
         ProjectDetailDTO currentDto = get(id, keycloakId);
         return exportConfigUtilsBO.createSchema(currentDto.getExportConfig());
+    }
+
+    public LinkedHashMap<String, Object> dummyTrainingInputsOf(Long id, Long appVersionId) {
+        return exportConfigUtilsBO.dummyTrainingInputsOf(appVersionId, getById(id).getExportConfig());
     }
 
     public Response generateExportConfigTestCsv(Long id, Integer amount, String keycloakId) {

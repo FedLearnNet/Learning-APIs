@@ -39,4 +39,11 @@ public class FederatedLearningProjectAO implements PanacheRepository<FederatedLe
         return updated == 1;
     }
 
+    public FederatedLearningProjectEntity findByRunId(Long runId) {
+        return find("run.id", runId).firstResult();
+    }
+
+    public List<FederatedLearningProjectEntity> listWithRun() {
+        return list("run is not null");
+    }
 }

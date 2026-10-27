@@ -6,6 +6,7 @@ import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 public class ExecutionRunAO extends BaseExecutionRunAO<ExecutionRunEntity> {
@@ -20,5 +21,9 @@ public class ExecutionRunAO extends BaseExecutionRunAO<ExecutionRunEntity> {
 
     public List<ExecutionRunEntity> listByConnectorRun(Long connectorRunId) {
         return list("connectorRun.id = ?1 order by id", connectorRunId);
+    }
+
+    public Optional<ExecutionRunEntity> findByIdAndCohortIdOptional(Long runId, Long cohortId) {
+        return find("id = ?1 and cohort.id = ?2", runId, cohortId).firstResultOptional();
     }
 }

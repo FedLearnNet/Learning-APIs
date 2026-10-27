@@ -1,10 +1,12 @@
 package bio.cosy.feddb.core.services.controller;
 
 import bio.cosy.feddb.core.api.socket.FederatedLearningRelayInfoDTO;
+import bio.cosy.feddb.core.execution.run.dto.FederatedRunConfigDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,6 +29,17 @@ public class CreateFLLearningRelayServerResponseDTO {
      * during the TCP connection handshake.
      */
     private String relayKey;
+
+    public FederatedRunConfigDTO runConfigOf(RelayServerAppVersions version) {
+        FederatedRunConfigDTO config = new FederatedRunConfigDTO();
+        config.setChannel(channel);
+        config.setRelayKey(relayKey);
+        config.setCoordinatorId(coordinatorId);
+        config.setMaxNumClients(clientIds.size());
+        config.setOrderClientIds(List.copyOf(clientIds));
+        config.setAppVersion(version.name());
+        return config;
+    }
 
     public FederatedLearningRelayInfoDTO relayInfoFor(RelayServerAppVersions version, String id, String key) {
         FederatedLearningRelayInfoDTO info = new FederatedLearningRelayInfoDTO();

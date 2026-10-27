@@ -1,5 +1,6 @@
 package de.unihamburg.daibetes.execution.run;
 
+import bio.cosy.feddb.core.execution.ExecutionLocation;
 import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.core.execution.ExecutionPurpose;
 import bio.cosy.feddb.core.execution.run.BaseExecutionRunAO;
@@ -34,5 +35,37 @@ public class ExecutionRunAO extends BaseExecutionRunAO<ExecutionRunEntity> {
         return list("from ExecutionRunEntity r where r.purpose = ?1 and r.status not in ?2 and exists ("
                         + "from ExecutionRunStepEntity s where s.run = r and s.federatedAppVersion.federatedApp.id = ?3)",
                 ExecutionPurpose.TEST, List.of(RunStatusTypes.FINISHED, RunStatusTypes.STOPPED, RunStatusTypes.ERROR), appId);
+    }
+
+    public List<ExecutionRunEntity> listByIds(List<Long> runIds) {
+        return list("id in ?1", runIds);
+    }
+
+    public Optional<ExecutionRunEntity> findTestRunOfAppOptional(Long runId, Long appId) {
+        return find("from ExecutionRunEntity r where r.id = ?1 and r.purpose = ?2 and exists ("
+                        + "from ExecutionRunStepEntity s where s.run = r and s.federatedAppVersion.federatedApp.id = ?3)",
+                runId, ExecutionPurpose.TEST, appId).firstResultOptional();
+    }
+
+    public Optional<ExecutionRunEntity> findFederatedTestRunOptional(Long runId) {
+        return find("id = ?1 and purpose = ?2 and mode = ?3", runId, ExecutionPurpose.TEST, ExecutionMode.FEDERATED).firstResultOptional();
+    }
+
+    public List<ExecutionRunEntity> listFederatedTrainingsOfProject(Long projectId) {
+        return list("experiment.project.id = ?1 and mode = ?2 order by createdAt desc", projectId, ExecutionMode.FEDERATED);
+    }
+
+    public Optional<ExecutionRunEntity> findFederatedTrainingOfProjectOptional(Long runId, Long projectId) {
+        return find("id = ?1 and mode = ?2 and experiment.project.id = ?3", runId, ExecutionMode.FEDERATED, projectId).firstResultOptional();
+    }
+
+    public List<ExecutionRunEntity> listPlatformTrainingsOfProject(Long projectId, boolean tests) {
+        return list("experiment.project.id = ?1 and experiment.test = ?2 and location = ?3 order by createdAt desc",
+                projectId, tests, ExecutionLocation.PLATFORM);
+    }
+
+    public Optional<ExecutionRunEntity> findPlatformTrainingOfProjectOptional(Long runId, Long projectId) {
+        return find("id = ?1 and location = ?2 and experiment.project.id = ?3", runId, ExecutionLocation.PLATFORM, projectId)
+                .firstResultOptional();
     }
 }

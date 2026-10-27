@@ -1,5 +1,6 @@
 package de.unihamburg.daibetes.execution.run;
 
+import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptDetailDTO;
 
 import bio.cosy.feddb.core.execution.attempt.BaseExecutionAttemptDTO;
@@ -78,6 +79,13 @@ public abstract class ExecutionRunDetailMapper {
     })
     public abstract ExecutionAttemptDetailDTO mapAttemptEntityToDetailDTO(ExecutionAttemptEntity attempt, @Context boolean withMessages);
 
+    @BeanMapping(ignoreByDefault = true)
+    @Mappings({
+            @Mapping(target = "federatedAppId", source = "federatedApp.id"),
+            @Mapping(target = "federatedAppVersionId", source = "id")
+    })
+    public abstract void mapAppVersionToStartRunDTO(FederatedAppVersionEntity version, @MappingTarget StartRunDTO start);
+
     // A run of a single app runs one app version, the one of its step.
     @AfterMapping
     protected void withAppVersion(ExecutionRunEntity run, @MappingTarget ExecutionRunDetailDTO dto) {
@@ -109,6 +117,14 @@ public abstract class ExecutionRunDetailMapper {
                     .collect(Collectors.toCollection(LinkedHashSet::new)));
             return dto;
         }).toList();
+    }
+
+    public String mapFieldsToJson(LinkedHashMap<String, Object> fields) {
+        try {
+            return objectMapper.writeValueAsString(fields);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Output is not valid JSON", e);
+        }
     }
 
     /** The uploaded output, parsed; empty when there is none or it cannot be read. */

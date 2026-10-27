@@ -73,4 +73,8 @@ public abstract class BaseExecutionRunStepEntity<
                 .max(Comparator.comparingInt(BaseExecutionAttemptEntity::getTrialIndex))
                 .orElse(null);
     }
+
+    public boolean isFirstInExecutionOrder() {
+        return run.getStepsInExecutionOrder().getFirst() == this;
+    }
 }

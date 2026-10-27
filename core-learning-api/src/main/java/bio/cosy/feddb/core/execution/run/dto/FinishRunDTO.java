@@ -2,8 +2,10 @@ package bio.cosy.feddb.core.execution.run.dto;
 
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class FinishRunDTO {
     private Long runId;
 
@@ -16,4 +18,8 @@ public class FinishRunDTO {
     // is marked ERROR (not silently FINISHED) and the failure is persisted and reported to global.
     private RunStatusTypes status;
     private String error;
+
+    public FinishRunDTO(RunStatusTypes status) {
+        this.status = status;
+    }
 }

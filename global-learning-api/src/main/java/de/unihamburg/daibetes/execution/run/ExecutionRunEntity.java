@@ -42,6 +42,12 @@ public class ExecutionRunEntity extends BaseExecutionRunEntity<ExecutionRunStepE
         return Optional.ofNullable(experiment).map(ExecutionExperimentEntity::getProject);
     }
 
+    public ExecutionParticipantEntity addParticipant(ExecutionParticipantEntity participant) {
+        participant.setRun(this);
+        participants.add(participant);
+        return participant;
+    }
+
     public Optional<ExecutionParticipantEntity> participant(String participantId) {
         return participants.stream().filter(participant -> participantId.equals(participant.getParticipantId())).findFirst();
     }

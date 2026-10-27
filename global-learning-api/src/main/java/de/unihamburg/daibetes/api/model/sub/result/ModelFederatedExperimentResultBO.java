@@ -93,7 +93,7 @@ public class ModelFederatedExperimentResultBO {
         if (globalUniqueExperimentId == null || clinicId == null || clinicId.isBlank()) {
             throw new BadRequestException("Experiment ID and Clinic ID must be provided");
         }
-        Optional<ExecutionExperimentEntity> entityOptional = experimentAO.find("globalUniqueId", globalUniqueExperimentId).firstResultOptional();
+        Optional<ExecutionExperimentEntity> entityOptional = experimentAO.findByGlobalUniqueIdOptional(globalUniqueExperimentId);
         if (entityOptional.isEmpty()) {
             throw new NotFoundException("No experiment found with ID: " + globalUniqueExperimentId);
         }

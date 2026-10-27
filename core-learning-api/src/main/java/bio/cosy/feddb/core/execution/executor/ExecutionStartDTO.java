@@ -6,10 +6,12 @@ import bio.cosy.feddb.core.execution.hyperparam.config.HyperParamSearchDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.LinkedHashMap;
 
 @Data
+@NoArgsConstructor
 public class ExecutionStartDTO {
 
     private String name;
@@ -27,4 +29,10 @@ public class ExecutionStartDTO {
     // Input data per workflow node id, e.g. values or references to input files
     @NotNull
     private LinkedHashMap<Long, @NotNull LinkedHashMap<String, Object>> inputs = new LinkedHashMap<>();
+
+    public ExecutionStartDTO(ExecutionPurpose purpose, ExecutionMode mode, String name) {
+        this.purpose = purpose;
+        this.mode = mode;
+        this.name = name;
+    }
 }

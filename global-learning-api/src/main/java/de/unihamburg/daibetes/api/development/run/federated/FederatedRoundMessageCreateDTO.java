@@ -2,6 +2,7 @@ package de.unihamburg.daibetes.api.development.run.federated;
 
 import bio.cosy.feddb.core.execution.message.ExecutionRoundDirection;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 /** Live round-message notification sent by the python wrapper. */
@@ -15,4 +16,9 @@ public class FederatedRoundMessageCreateDTO {
     private String toParticipant;
     private String communicationId;
     private String payloadPreview;
+
+    @JsonIgnore
+    public String getReportingParticipantId() {
+        return direction == ExecutionRoundDirection.RECEIVE ? toParticipant : fromParticipant;
+    }
 }

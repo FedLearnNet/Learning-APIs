@@ -5,6 +5,7 @@ import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepAO;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 public class ExecutionRunStepAO extends BaseExecutionRunStepAO<ExecutionRunStepEntity> {
@@ -24,5 +25,9 @@ public class ExecutionRunStepAO extends BaseExecutionRunStepAO<ExecutionRunStepE
                 .createQuery("select distinct s.run.id from ExecutionRunStepEntity s where s.subModel.id = :subModelId", Long.class)
                 .setParameter("subModelId", subModelId)
                 .getResultList();
+    }
+
+    public Optional<ExecutionRunStepEntity> findProjectTrainingStepOptional(Long stepId) {
+        return find("id = ?1 and run.purpose = ?2 and run.experiment.test = false", stepId, ExecutionPurpose.TRAINING).firstResultOptional();
     }
 }

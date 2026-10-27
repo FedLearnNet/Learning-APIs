@@ -14,6 +14,7 @@ import de.unihamburg.daibetes.services.DataModelerDataTypeService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -49,6 +50,27 @@ public class ExportConfigUtilsBO {
 
         List<PatientExportFeatureDTO> features = getOrderedFeatures(config);
         return createWideFormatSchema(config, features, findDataTypes(features));
+    }
+
+    public LinkedHashMap<String, Object> dummyTrainingInputsOf(Long appVersionId, PatientDataExportConfigDTO config) {
+        ToolConfigsDTO appConfig = federatedAppConfigBO.findByAppVersionId(appVersionId);
+        if (appConfig == null) {
+            throw new NotFoundException("No config found for app version");
+        }
+        LinkedHashMap<String, Object> inputs = new LinkedHashMap<>();
+        appConfig.getInput().stream()
+                .filter(input -> ToolConfigModeType.isTraining(input.getMode()))
+                .map(ToolInputConfigDTO::getVariableName)
+                .filter(Objects::nonNull)
+                .forEach(variableName -> inputs.put(variableName, null));
+        if (inputs.isEmpty()) {
+            return inputs;
+        }
+        List<PatientExportFeatureDTO> features = config != null && config.getFeatures() != null ? config.getFeatures() : new ArrayList<>();
+        try (Response data = dataModelerDataTypeService.generateDummyData(new DummyDataRequestDTO(features, 100, false, false)).await().indefinitely()) {
+            inputs.put(inputs.keySet().iterator().next(), data.readEntity(List.class).toString());
+        }
+        return inputs;
     }
 
     public Response generateTestCsv(PatientDataExportConfigDTO config, Integer amount) {

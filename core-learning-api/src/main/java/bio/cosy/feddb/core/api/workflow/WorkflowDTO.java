@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.List;
+import java.util.Optional;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -19,4 +20,13 @@ public class WorkflowDTO extends BaseAuthDTO {
     private String name;
     private String description;
     private PublishStatus publishStatus;
+
+    public Optional<WorkflowNodeDetailDTO> nodeOf(String nodeId) {
+        return nodes.stream().filter(node -> nodeId.equals(node.getNodeId())).findFirst();
+    }
+
+    /** Whether one of the workflow's inputs feeds the node. */
+    public boolean feedsInputInto(String nodeId) {
+        return connections.stream().anyMatch(connection -> connection.isInputConnection() && nodeId.equals(connection.getInputNodeId()));
+    }
 }

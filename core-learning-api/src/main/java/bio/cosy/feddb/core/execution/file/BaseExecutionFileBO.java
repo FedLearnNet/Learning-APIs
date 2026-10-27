@@ -8,6 +8,7 @@ import bio.cosy.feddb.core.execution.attempt.BaseExecutionAttemptEntity;
 import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
 import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
+import org.apache.commons.io.FilenameUtils;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
 import java.io.File;
@@ -28,7 +29,7 @@ public abstract class BaseExecutionFileBO<
         extends BaseBo<DTO, Entity, AO, Mapper> {
 
     @Inject
-    FileBO fileBO;
+    protected FileBO fileBO;
 
     private final Supplier<Entity> newEntity;
 
@@ -88,6 +89,27 @@ public abstract class BaseExecutionFileBO<
             }
         }
         return outputs;
+    }
+
+    public List<DTO> storeAndLinkFiles(Attempt attempt, List<File> files, ExecutionFileDirection direction) {
+        Map<String, F> stored = new LinkedHashMap<>();
+        files.forEach(file -> stored.putIfAbsent(FilenameUtils.getBaseName(file.getName()),
+                fileBO.createEntity(new FileDTO(), ownerOf(attempt), file, file.getName())));
+        return linkFiles(attempt, stored, direction);
+    }
+
+    public Map<String, File> loadForRun(Long runId, ExecutionFileDirection direction) {
+        Map<String, File> loaded = new LinkedHashMap<>();
+        ao.listForRun(runId, direction).forEach(linked -> loaded.putIfAbsent(linked.getFile().getFileName(), loadFile(linked.getFile())));
+        return loaded;
+    }
+
+    public void deleteForRun(Long runId, ExecutionFileDirection direction) {
+        ao.listForRun(runId, direction).forEach(linked -> {
+            F file = linked.getFile();
+            ao.delete(linked);
+            fileBO.deleteWithStoredFile(file);
+        });
     }
 
     public List<DTO> listForAttempt(Long attemptId, ExecutionFileDirection direction) {

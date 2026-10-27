@@ -1,6 +1,8 @@
 package bio.cosy.feddb.core.execution.run.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.LinkedHashMap;
 
@@ -10,6 +12,8 @@ import java.util.LinkedHashMap;
  * {@code CLIENT}; the coordinator clinic additionally sends an {@code AGGREGATOR}.
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class FederatedRunParticipantDTO {
     /** Relay client id for this participant. */
     private String participantId;

@@ -41,5 +41,12 @@ public class FederatedAppDetailDTO extends FederatedAppDTO {
         if (this.appConfig != null && !this.appConfig.equals(other.appConfig)) return false;
         return true;
     }
-}
 
+    @JsonIgnore
+    public String getFirstInputVariableName() {
+        if (appConfig == null || appConfig.getInput() == null || appConfig.getInput().isEmpty()) {
+            return null;
+        }
+        return appConfig.getInput().getFirst().getVariableName();
+    }
+}

@@ -13,7 +13,6 @@ import bio.cosy.feddb.core.execution.helper.NodeHyperParams;
 import bio.cosy.feddb.core.execution.hyperparam.config.HyperParamSearchDTO;
 import bio.cosy.feddb.core.execution.hyperparam.planner.HyperParamSearchPlanner;
 import bio.cosy.feddb.core.execution.hyperparam.planner.SearchPlan;
-import bio.cosy.feddb.core.execution.hyperparam.strategy.Candidate;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepAO;
 import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepEntity;
@@ -87,7 +86,7 @@ public abstract class BaseStepCoordinator<
         }
 
         if (plan.getNext() != null) {
-            startTrial(step, plan.getNext());
+            launchTrial(step, plan.getNext().getTrialIndex(), plan.getNext().getParams());
         } else if (plan.getSelected() != null) {
             step.setSelectedAttempt(attemptOf(step, plan.getSelected()));
             finishStep(step, plan.getStatus(), null);
@@ -104,19 +103,21 @@ public abstract class BaseStepCoordinator<
                 : HyperParamSearchDTO.fixed(NodeHyperParams.of(objectMapper, step.getWorkflowNode()));
     }
 
-    private void startTrial(Step step, Candidate trial) {
+    /** Launches a trial of the step with the parameters it runs with; its app starts once the launcher has it. */
+    public AttemptEntity launchTrial(Step step, int trialIndex, Map<String, Object> params) {
         AttemptEntity attempt = newAttempt.get();
         attempt.setPublicId(UUID.randomUUID());
         attempt.setStep(step);
-        attempt.setTrialIndex(trial.getTrialIndex());
-        attempt.setParams(new LinkedHashMap<>(trial.getParams()));
+        attempt.setTrialIndex(trialIndex);
+        attempt.setParams(new LinkedHashMap<>(params));
         attempt.setStatus(RunStatusTypes.PENDING);
         step.getAttempts().add(attempt);
         attemptAO.persist(attempt);
 
         step.begin(RunStatusTypes.RUNNING);
         events.attemptLaunch(attempt.getId());
-        Log.infof("Step %d starts trial %d as attempt %d", step.getId(), trial.getTrialIndex(), attempt.getId());
+        Log.infof("Step %d starts trial %d as attempt %d", step.getId(), trialIndex, attempt.getId());
+        return attempt;
     }
 
     private void finishStep(Step step, RunStatusTypes status, ExecutionFailure failure) {
