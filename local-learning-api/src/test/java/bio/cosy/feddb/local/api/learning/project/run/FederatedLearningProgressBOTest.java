@@ -11,6 +11,8 @@ import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectEntity;
 import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
 import bio.cosy.feddb.local.api.workflow.node.WorkflowNodeEntity;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
+import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptEntity;
+import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptLifecycle;
 import bio.cosy.feddb.local.execution.federation.ExecutionFederationAO;
 import bio.cosy.feddb.local.execution.federation.ExecutionFederationEntity;
 import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
@@ -30,14 +32,14 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-class RelayCertBOTest {
+class FederatedLearningProgressBOTest {
 
     private static final long RUN_ID = 3L;
     private static final long FEDERATION_ID = 19L;
+    private static final long ATTEMPT_ID = 11L;
     private static final String EXPERIMENT = "experiment-1";
     private static final String CLINIC = "clinic-a";
     private static final String NODE = "node-1";
@@ -49,12 +51,12 @@ class RelayCertBOTest {
     private ExecutionFederationEntity federation;
 
     @SuppressWarnings("unchecked")
-    private RelayCertBO relayCertBO() {
-        RelayCertBO bo = new RelayCertBO();
+    private FederatedLearningProgressBO progressBO() {
+        FederatedLearningProgressBO bo = new FederatedLearningProgressBO();
         bo.federationAO = mock(ExecutionFederationAO.class);
         bo.stepAO = mock(ExecutionRunStepAO.class);
         bo.projectAO = mock(FederatedLearningProjectAO.class);
-        bo.federatedLearningRunBO = mock(FederatedLearningRunBO.class);
+        bo.lifecycle = mock(ExecutionAttemptLifecycle.class);
         bo.websocketSender = mock(WebsocketSender.class);
         bo.controllerService = mock(LocalControllerLearningService.class);
         bo.config = mock(FLNetClientConfig.class, RETURNS_DEEP_STUBS);
@@ -90,6 +92,10 @@ class RelayCertBOTest {
         federation.setRelayCertSigned(false);
         federation.setRelayCertAttempts(1);
         step.setFederation(federation);
+        ExecutionAttemptEntity attempt = new ExecutionAttemptEntity();
+        attempt.setId(ATTEMPT_ID);
+        attempt.setStep(step);
+        step.getAttempts().add(attempt);
         when(bo.stepAO.findByNodeId(RUN_ID, NODE)).thenReturn(Optional.of(step));
         when(bo.federationAO.findByIdOptional(FEDERATION_ID, LockModeType.PESSIMISTIC_WRITE)).thenReturn(Optional.of(federation));
 
@@ -101,13 +107,13 @@ class RelayCertBOTest {
         return RelayCertSignResponseDTO.createResponse(new RelayCertSignRequestDTO(EXPERIMENT, CLINIC, NODE, CLIENT, CSR), "signed-cert");
     }
 
-    private void verifyStepFailed(RelayCertBO bo) {
-        verify(bo.federatedLearningRunBO).failStep(eq(step), anyString());
+    private void verifyStepFailed(FederatedLearningProgressBO bo) {
+        verify(bo.lifecycle).updateTransactional(eq(ATTEMPT_ID), argThat(update -> update.getStatus() == RunStatusTypes.ERROR));
     }
 
     @Test
     void requestCertificateStoresCsrAndSendsItToGlobal() {
-        RelayCertBO bo = relayCertBO();
+        FederatedLearningProgressBO bo = progressBO();
         federation.setRelayCsr(null);
         federation.setRelayCertAttempts(null);
 
@@ -120,75 +126,75 @@ class RelayCertBOTest {
 
     @Test
     void signedCertificateIsPassedToTheController() {
-        RelayCertBO bo = relayCertBO();
+        FederatedLearningProgressBO bo = progressBO();
 
-        bo.handleSignedTransactional(signed());
+        bo.handleSigned(signed());
 
         // The app key of the controller run is the relay client id.
         verify(bo.controllerService).startRelaying(new ControllerStartRelayingRequestDTO(CHANNEL, CLIENT, "signed-cert"));
         assertTrue(federation.getRelayCertSigned());
-        verify(bo.federatedLearningRunBO, never()).failStep(any(), anyString());
+        verify(bo.lifecycle, never()).updateTransactional(any(), any());
     }
 
     @Test
     void secondAnswerIsIgnored() {
-        RelayCertBO bo = relayCertBO();
+        FederatedLearningProgressBO bo = progressBO();
 
         // E.g. the answers to the first and to a retried request both arrive.
-        bo.handleSignedTransactional(signed());
-        bo.handleSignedTransactional(signed());
+        bo.handleSigned(signed());
+        bo.handleSigned(signed());
 
         verify(bo.controllerService, times(1)).startRelaying(any());
     }
 
     @Test
     void certificateForAnotherClinicNodeOrClientIsIgnored() {
-        RelayCertBO bo = relayCertBO();
+        FederatedLearningProgressBO bo = progressBO();
 
         RelayCertSignResponseDTO otherClinic = signed();
         otherClinic.setUniqueRandomClinicId("clinic-b");
-        bo.handleSignedTransactional(otherClinic);
+        bo.handleSigned(otherClinic);
 
         RelayCertSignResponseDTO otherExperiment = signed();
         otherExperiment.setGlobalUniqueExperimentId("experiment-unknown");
         when(bo.projectAO.findByRequestIdOptional("experiment-unknown")).thenReturn(Optional.empty());
-        bo.handleSignedTransactional(otherExperiment);
+        bo.handleSigned(otherExperiment);
 
         RelayCertSignResponseDTO otherNode = signed();
         otherNode.setCurrentNodeId("node-2");
         when(bo.stepAO.findByNodeId(RUN_ID, "node-2")).thenReturn(Optional.empty());
-        bo.handleSignedTransactional(otherNode);
+        bo.handleSigned(otherNode);
 
         RelayCertSignResponseDTO otherClient = signed();
         otherClient.setClientId("ffffffffffffffff");
-        bo.handleSignedTransactional(otherClient);
+        bo.handleSigned(otherClient);
 
         verify(bo.controllerService, never()).startRelaying(any());
-        verify(bo.federatedLearningRunBO, never()).failStep(any(), anyString());
+        verify(bo.lifecycle, never()).updateTransactional(any(), any());
         assertEquals(false, federation.getRelayCertSigned());
     }
 
     @Test
     void certificateForFinishedOrStoppedStepIsIgnored() {
-        RelayCertBO bo = relayCertBO();
+        FederatedLearningProgressBO bo = progressBO();
 
         step.setStatus(RunStatusTypes.STOPPED);
-        bo.handleSignedTransactional(signed());
+        bo.handleSigned(signed());
 
         step.setStatus(RunStatusTypes.RUNNING);
         federation.setRelayStopped(true);
-        bo.handleSignedTransactional(signed());
+        bo.handleSigned(signed());
 
         verify(bo.controllerService, never()).startRelaying(any());
     }
 
     @Test
     void refusedSigningFailsTheStep() {
-        RelayCertBO bo = relayCertBO();
+        FederatedLearningProgressBO bo = progressBO();
         RelayCertSignResponseDTO refused = RelayCertSignResponseDTO.createErrorResponse(
                 new RelayCertSignRequestDTO(EXPERIMENT, CLINIC, NODE, CLIENT, CSR), "refused");
 
-        bo.handleSignedTransactional(refused);
+        bo.handleSigned(refused);
 
         verify(bo.controllerService, never()).startRelaying(any());
         verifyStepFailed(bo);
@@ -196,27 +202,27 @@ class RelayCertBOTest {
 
     @Test
     void controllerThatCannotConnectFailsTheStep() {
-        RelayCertBO bo = relayCertBO();
+        FederatedLearningProgressBO bo = progressBO();
         when(bo.controllerService.startRelaying(any())).thenReturn(Response.serverError().build());
 
-        bo.handleSignedTransactional(signed());
+        bo.handleSigned(signed());
 
         verifyStepFailed(bo);
     }
 
     @Test
     void controllerErrorThrownByTheRestClientFailsTheStep() {
-        RelayCertBO bo = relayCertBO();
+        FederatedLearningProgressBO bo = progressBO();
         when(bo.controllerService.startRelaying(any())).thenThrow(new WebApplicationException(400));
 
-        bo.handleSignedTransactional(signed());
+        bo.handleSigned(signed());
 
         verifyStepFailed(bo);
     }
 
     @Test
     void retryLeavesRecentRequestsAlone() {
-        RelayCertBO bo = relayCertBO();
+        FederatedLearningProgressBO bo = progressBO();
         Instant now = Instant.now();
         federation.setRelayCertRequestedAt(now.minus(Duration.ofMinutes(4)));
         when(bo.federationAO.listPendingRelayCerts()).thenReturn(List.of(federation));
@@ -229,7 +235,7 @@ class RelayCertBOTest {
 
     @Test
     void retrySendsTheSameCsrAgainAfterTheTimeout() {
-        RelayCertBO bo = relayCertBO();
+        FederatedLearningProgressBO bo = progressBO();
         Instant now = Instant.now();
         federation.setRelayCertAttempts(2);
         federation.setRelayCertRequestedAt(now.minus(Duration.ofMinutes(6)));
@@ -239,12 +245,12 @@ class RelayCertBOTest {
 
         assertEquals(3, federation.getRelayCertAttempts());
         verify(bo.websocketSender).sendRelayCertRequest(new RelayCertSignRequestDTO(EXPERIMENT, CLINIC, NODE, CLIENT, CSR));
-        verify(bo.federatedLearningRunBO, never()).failStep(any(), anyString());
+        verify(bo.lifecycle, never()).updateTransactional(any(), any());
     }
 
     @Test
     void retryFailsTheStepAfterTheLastAttemptTimedOut() {
-        RelayCertBO bo = relayCertBO();
+        FederatedLearningProgressBO bo = progressBO();
         Instant now = Instant.now();
         federation.setRelayCertAttempts(3);
         federation.setRelayCertRequestedAt(now.minus(Duration.ofMinutes(6)));

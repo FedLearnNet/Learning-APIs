@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.scheduler;
 
-import bio.cosy.feddb.local.api.learning.project.run.RelayCertBO;
+import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningRunBO;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -9,10 +9,10 @@ import jakarta.inject.Inject;
 public class RelayCertificateScheduler {
 
     @Inject
-    RelayCertBO relayCertBO;
+    FederatedLearningRunBO federatedLearningRunBO;
 
     @Scheduled(every = "30s", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     void retryPendingCertificates() {
-        relayCertBO.retryPendingTransactional();
+        federatedLearningRunBO.retryPendingTransactional();
     }
 }
