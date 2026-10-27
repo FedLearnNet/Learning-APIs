@@ -2,6 +2,7 @@ package de.unihamburg.daibetes.execution.attempt;
 
 import bio.cosy.feddb.core.execution.attempt.BaseExecutionAttemptEntity;
 import de.unihamburg.daibetes.api.analysis.file.DataAnalysisFileEntity;
+import de.unihamburg.daibetes.execution.federation.ExecutionFederatedAttemptEntity;
 import de.unihamburg.daibetes.execution.message.ExecutionMessageEntity;
 import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
 import jakarta.persistence.*;
@@ -23,4 +24,17 @@ public class ExecutionAttemptEntity extends BaseExecutionAttemptEntity<Execution
 
     @OneToMany(mappedBy = "attempt", fetch = FetchType.LAZY)
     private List<DataAnalysisFileEntity> files = new ArrayList<>();
+
+    // Set for a participant's share of a federated step.
+    @OneToOne(mappedBy = "attempt", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private ExecutionFederatedAttemptEntity federation;
+
+    /** The federation of the attempt, created when it has none yet. */
+    public ExecutionFederatedAttemptEntity federationOrNew() {
+        if (federation == null) {
+            federation = new ExecutionFederatedAttemptEntity();
+            federation.setAttempt(this);
+        }
+        return federation;
+    }
 }

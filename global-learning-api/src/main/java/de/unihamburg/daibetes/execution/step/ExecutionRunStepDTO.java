@@ -1,6 +1,7 @@
 package de.unihamburg.daibetes.execution.step;
 
 import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepDTO;
+import de.unihamburg.daibetes.execution.federation.ExecutionFederationDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -11,4 +12,5 @@ public class ExecutionRunStepDTO extends BaseExecutionRunStepDTO {
     private Long federatedAppVersionId;
     private Long modelSubId;
     private Long modelId;
+    private ExecutionFederationDTO federation;
 }

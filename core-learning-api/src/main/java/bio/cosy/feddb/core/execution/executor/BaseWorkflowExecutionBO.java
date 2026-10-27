@@ -17,7 +17,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.NotFoundException;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -51,6 +50,11 @@ public abstract class BaseWorkflowExecutionBO<
 
     @Transactional
     public Run execute(@NotNull @Valid ExecutionStartDTO start, @NotEmpty Collection<Node> nodes) {
+        return start(create(start, nodes));
+    }
+
+    @Transactional
+    public Run create(@NotNull @Valid ExecutionStartDTO start, @NotEmpty Collection<Node> nodes) {
         Set<Long> nodeIds = new HashSet<>();
         nodes.forEach(node -> nodeIds.add(node.getId()));
         requireNodesOf(nodeIds, start.getSearches().keySet(), "Searches");
@@ -60,7 +64,17 @@ public abstract class BaseWorkflowExecutionBO<
         inExecutionOrder(nodes).forEach(node -> newStep(run, node.getNodeId(),
                 start.getSearches().get(node.getId()), start.getInputs().get(node.getId()))
                 .setWorkflowNode(node));
-        return started(run);
+        runAO.persist(run);
+        return run;
+    }
+
+    @Transactional
+    public Run start(@NotNull Long runId) {
+        Run run = runAO.findByIdWrite(runId).orElseThrow(() -> new NotFoundException("Run " + runId + " not found"));
+        if (run.getStatus() != RunStatusTypes.PENDING || run.getStartedAt() != null) {
+            throw new IllegalStateException("Run " + runId + " was started already");
+        }
+        return start(run);
     }
 
     /**
@@ -85,25 +99,21 @@ public abstract class BaseWorkflowExecutionBO<
     @Transactional
     public Run stop(@NotNull Long runId) {
         Run run = runAO.findByIdWrite(runId).orElseThrow(() -> new NotFoundException("Run " + runId + " not found"));
-        if (RunStatusTypes.isFinalStatus(run.getStatus())) {
+        if (run.hasEnded()) {
             return run;
         }
-        Instant now = Instant.now();
         run.getSteps().forEach(step -> {
             step.getAttempts().stream()
-                    .filter(attempt -> !RunStatusTypes.isFinalStatus(attempt.getStatus()))
+                    .filter(attempt -> !attempt.hasEnded())
                     .forEach(attempt -> {
-                        attempt.setStatus(RunStatusTypes.STOPPED);
-                        attempt.setFinishedAt(now);
+                        attempt.end(RunStatusTypes.STOPPED, null);
                         events.attemptFinished(attempt);
                     });
-            if (!RunStatusTypes.isFinalStatus(step.getStatus())) {
-                step.setStatus(RunStatusTypes.STOPPED);
-                step.setFinishedAt(now);
+            if (!step.hasEnded()) {
+                step.end(RunStatusTypes.STOPPED, null);
             }
         });
-        run.setStatus(RunStatusTypes.STOPPED);
-        run.setFinishedAt(now);
+        run.end(RunStatusTypes.STOPPED, null);
         events.runFinished(run.getId(), RunStatusTypes.STOPPED);
         Log.infof("Stopped run %d", run.getId());
         return run;
@@ -120,7 +130,7 @@ public abstract class BaseWorkflowExecutionBO<
         Log.infof("Deleted run %d", runId);
     }
 
-    private static void requireNodesOf(Set<Long> nodeIds, Set<Long> keys, String what) {
+    private void requireNodesOf(Set<Long> nodeIds, Set<Long> keys, String what) {
         if (!nodeIds.containsAll(keys)) {
             throw new IllegalArgumentException(what + " are set for nodes outside the execution: " + keys);
         }
@@ -152,6 +162,10 @@ public abstract class BaseWorkflowExecutionBO<
     // Steps are persisted with the run.
     private Run started(Run run) {
         runAO.persist(run);
+        return start(run);
+    }
+
+    private Run start(Run run) {
         events.runStarted(run.getId());
         Log.infof("Started run %d with %d step(s)", run.getId(), run.getSteps().size());
         return run;

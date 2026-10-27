@@ -1,5 +1,8 @@
 package bio.cosy.feddb.core.execution.coordinator;
 
+import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepEntity;
+import bio.cosy.feddb.core.api.workflow.node.BaseWorkflowNodeEntity;
+import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.api.workflow.base.BaseWorkflowEngine;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
 import bio.cosy.feddb.core.execution.ExecutionPurpose;
@@ -14,11 +17,13 @@ import bio.cosy.feddb.core.execution.orchestrator.OrchestratorGateway;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
+import bio.cosy.feddb.core.services.orch.dto.WorkflowNodeInputActionDTO;
 import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.inject.Inject;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -66,6 +71,8 @@ public abstract class BaseAttemptLauncher<
             if (launch == null) {
                 return;
             }
+            // What the app reads is in its volume before it starts.
+            QuarkusTransaction.requiringNew().run(() -> attemptAO.findByIdOptional(attemptId).ifPresent(this::stageInputs));
             String containerId = orchestrator.startWorkflow(launch.getValue(), launch.getKey());
             if (!QuarkusTransaction.requiringNew().call(() -> started(attemptId, containerId))) {
                 stop(attemptId, containerId);
@@ -105,13 +112,55 @@ public abstract class BaseAttemptLauncher<
         start.setWorkflowId(attempt.getStep().getRun().getId());
         start.setWorkflowNodeId(attempt.getId());
         start.upsertEnv("APP_ID", String.valueOf(attempt.getId()));
+        // Outputs of earlier steps the app reads, copied from their attempts' volumes.
+        start.setInputs(inputsOf(attempt));
+        start.setIsFistNode(start.getInputs().isEmpty());
+        customizeStart(attempt, start);
         return Map.entry(callback.getPath(), start);
+    }
+
+    /** Adjusts the container start, e.g. whether the app uploads its results; nothing by default. */
+    protected void customizeStart(Attempt attempt, StartWorkflowNodeDTO start) {
+    }
+
+    /** The workflow of the attempt's node, whose connections hand over outputs; none by default. */
+    protected WorkflowDTO workflowOf(Attempt attempt) {
+        return null;
+    }
+
+    // Every connection into the step's node from another node hands over a file of that node's selected attempt.
+    private List<WorkflowNodeInputActionDTO> inputsOf(Attempt attempt) {
+        BaseWorkflowNodeEntity node = attempt.getStep().getWorkflowNode();
+        WorkflowDTO workflow = node == null ? null : workflowOf(attempt);
+        if (workflow == null) {
+            return List.of();
+        }
+        List<? extends BaseExecutionRunStepEntity<?, ?, ?>> steps = attempt.getStep().getRun().getSteps();
+        return workflow.getConnections().stream()
+                .filter(connection -> !connection.isInputConnection() && node.getNodeId().equals(connection.getInputNodeId()))
+                .map(connection -> steps.stream()
+                        .filter(step -> step.getWorkflowNode() != null
+                                && step.getWorkflowNode().getNodeId().equals(connection.getOutputNodeId())
+                                && step.getSelectedAttempt() != null)
+                        .findFirst()
+                        .map(step -> {
+                            WorkflowNodeInputActionDTO input = new WorkflowNodeInputActionDTO();
+                            input.setInputNodeId(step.getSelectedAttempt().getId());
+                            input.setOriginalFileName(connection.getOutputFileName());
+                            input.setNewFileName(connection.getInputFileName());
+                            return input;
+                        }))
+                .flatMap(Optional::stream)
+                .toList();
+    }
+
+    protected void stageInputs(Attempt attempt) {
     }
 
     // False when the attempt ended while its container was starting, so the container is not needed anymore.
     private boolean started(Long attemptId, String containerId) {
         Attempt attempt = attemptAO.findByIdWrite(attemptId).orElse(null);
-        if (attempt == null || RunStatusTypes.isFinalStatus(attempt.getStatus())) {
+        if (attempt == null || attempt.hasEnded()) {
             return false;
         }
         attempt.setContainerId(containerId);
@@ -127,11 +176,9 @@ public abstract class BaseAttemptLauncher<
     private void fail(Long attemptId, RuntimeException e) {
         Log.errorf(e, "Could not launch attempt %d", attemptId);
         QuarkusTransaction.requiringNew().run(() -> attemptAO.findByIdWrite(attemptId)
-                .filter(attempt -> !RunStatusTypes.isFinalStatus(attempt.getStatus()))
+                .filter(attempt -> !attempt.hasEnded())
                 .ifPresent(attempt -> {
-                    attempt.setStatus(RunStatusTypes.ERROR);
-                    attempt.setFinishedAt(Instant.now());
-                    attempt.setFailure(new ExecutionFailure(FailureCategory.INFRASTRUCTURE,
+                    attempt.end(RunStatusTypes.ERROR, new ExecutionFailure(FailureCategory.INFRASTRUCTURE,
                             "Container could not be started: " + e.getMessage()));
                     events.attemptFinished(attempt);
                 }));
