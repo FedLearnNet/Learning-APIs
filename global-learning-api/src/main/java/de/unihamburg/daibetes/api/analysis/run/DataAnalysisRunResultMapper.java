@@ -20,7 +20,7 @@ import de.unihamburg.daibetes.api.model.sub.ModelSubEntity;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptMapper;
-import de.unihamburg.daibetes.execution.message.ExecutionMessageAO;
+import de.unihamburg.daibetes.execution.message.ExecutionMessageEntity;
 import de.unihamburg.daibetes.execution.run.ExecutionRunEntity;
 import de.unihamburg.daibetes.execution.step.ExecutionRunStepDTO;
 import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
@@ -51,9 +51,6 @@ public abstract class DataAnalysisRunResultMapper {
     ObjectMapper objectMapper;
 
     @Inject
-    ExecutionMessageAO messageAO;
-
-    @Inject
     DataAnalysisFileAO fileAO;
 
     @Inject
@@ -79,7 +76,7 @@ public abstract class DataAnalysisRunResultMapper {
             @Mapping(target = "outputData", source = "result", qualifiedByName = "mapJsonToFields"),
             @Mapping(target = "inputFiles", source = "step.inputs", qualifiedByName = "mapInputsToFileDTOs"),
             @Mapping(target = "outputFiles", source = "files", qualifiedByName = "mapFileEntitiesToOutputDTOs"),
-            @Mapping(target = "lastLog", source = "id", qualifiedByName = "mapAttemptIdToLastLog"),
+            @Mapping(target = "lastLog", source = "lastLogMessage.payload.message"),
             @Mapping(target = "logs", ignore = true),
             @Mapping(target = "metrics", ignore = true)
     })
@@ -124,7 +121,7 @@ public abstract class DataAnalysisRunResultMapper {
             @Mapping(target = "result", source = "result", qualifiedByName = "mapJsonToFields"),
             @Mapping(target = "containerId", source = "containerId"),
             @Mapping(target = "outputFiles", source = "files", qualifiedByName = "mapFileEntitiesToOutputDTOs"),
-            @Mapping(target = "lastLog", source = "id", qualifiedByName = "mapAttemptIdToLastLog"),
+            @Mapping(target = "lastLog", source = "lastLogMessage.payload.message"),
             @Mapping(target = "meta", source = "meta", qualifiedByName = "mapMetaToVisibleMetaDTO")
     })
     protected abstract void mapAttemptEntityToAnalysisResultDTO(ExecutionAttemptEntity attempt, @MappingTarget DataAnalysisResultDTO dto);
@@ -152,8 +149,8 @@ public abstract class DataAnalysisRunResultMapper {
     protected void withMessages(ExecutionAttemptEntity attempt, @MappingTarget DataAnalysisAttemptDTO dto,
                                 @Context boolean withMessages) {
         if (withMessages) {
-            dto.setLogs(payloadsOf(attempt.getId(), RunMessageTypes.LOG, ExecutionMessageLogDTO.class));
-            dto.setMetrics(payloadsOf(attempt.getId(), RunMessageTypes.METRIC, ExecutionMessageMetricDTO.class));
+            dto.setLogs(payloadsOf(attempt.getMessages(), RunMessageTypes.LOG, ExecutionMessageLogDTO.class));
+            dto.setMetrics(payloadsOf(attempt.getMessages(), RunMessageTypes.METRIC, ExecutionMessageMetricDTO.class));
         }
     }
 
@@ -258,14 +255,6 @@ public abstract class DataAnalysisRunResultMapper {
         return meta == null ? null : objectMapper.convertValue(meta, RunMetaDTO.class).withOverheadVisibility(config.runtime().overheadEnabled());
     }
 
-    @Named("mapAttemptIdToLastLog")
-    protected String mapAttemptIdToLastLog(Long attemptId) {
-        return messageAO.findLatest(attemptId, RunMessageTypes.LOG)
-                .map(BaseExecutionMessageEntity::getPayload)
-                .map(ExecutionMessageDTO::getMessage)
-                .orElse(null);
-    }
-
     /** The analysis file an input value refers to; empty for a plain value or an unknown file. */
     @Named("mapReferenceToFileEntity")
     public Optional<DataAnalysisFileEntity> mapReferenceToFileEntity(Object value) {
@@ -280,15 +269,16 @@ public abstract class DataAnalysisRunResultMapper {
         }
     }
 
-    private <T extends ExecutionMessageDTO> List<T> payloadsOf(Long attemptId, RunMessageTypes type, Class<T> payloadType) {
-        return messageAO.listForAttempt(attemptId, type).stream()
+    private <T extends ExecutionMessageDTO> List<T> payloadsOf(List<ExecutionMessageEntity> messages, RunMessageTypes type, Class<T> payloadType) {
+        return messages.stream()
+                .filter(message -> message.getType() == type)
                 .map(BaseExecutionMessageEntity::getPayload)
                 .filter(payloadType::isInstance)
                 .map(payloadType::cast)
                 .toList();
     }
 
-    private static void withWorkflowPosition(DataAnalysisResultDTO dto, ExecutionRunStepEntity step,
+    private void withWorkflowPosition(DataAnalysisResultDTO dto, ExecutionRunStepEntity step,
                                              ExecutionRunEntity run, WorkflowNodeEntity node) {
         dto.setWorkflowId(node.getWorkflow().getId());
         dto.setName(node.getWorkflow().getName());
@@ -304,7 +294,7 @@ public abstract class DataAnalysisRunResultMapper {
     }
 
     // The selected attempt once the step is done, otherwise the latest one.
-    private static ExecutionAttemptEntity displayedAttemptOf(ExecutionRunStepEntity step) {
+    private ExecutionAttemptEntity displayedAttemptOf(ExecutionRunStepEntity step) {
         if (step.getSelectedAttempt() != null) {
             return step.getSelectedAttempt();
         }
@@ -314,7 +304,7 @@ public abstract class DataAnalysisRunResultMapper {
     }
 
     // Same order the workflow coordinator runs them in; steps without a node last, by id.
-    private static List<ExecutionRunStepEntity> inExecutionOrder(Collection<ExecutionRunStepEntity> steps) {
+    private List<ExecutionRunStepEntity> inExecutionOrder(Collection<ExecutionRunStepEntity> steps) {
         return steps.stream()
                 .sorted(Comparator
                         .comparing((ExecutionRunStepEntity step) -> step.getWorkflowNode() == null ? null : step.getWorkflowNode().getExecutionOrder(),

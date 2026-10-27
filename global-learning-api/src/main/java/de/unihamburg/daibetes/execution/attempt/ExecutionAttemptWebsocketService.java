@@ -27,18 +27,18 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
     @OnOpen
     @Blocking
     public Uni<Void> onOpen(WebSocketConnection connection) {
-        return open(connection);
+        return sendStart(connection);
     }
 
     // The key is revoked once the attempt ends. An app gone before it finished failed.
     @OnClose
     public void onClose(WebSocketConnection connection) {
-        closed(connection);
+        failUnfinishedAttempt(connection);
     }
 
     @OnError
     public void onError(WebSocketConnection connection, Throwable throwable) {
-        closed(connection);
+        failUnfinishedAttempt(connection);
     }
 
     @OnTextMessage

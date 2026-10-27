@@ -35,7 +35,7 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
     @Blocking
     public Uni<Void> onOpen(WebSocketConnection connection) {
         if (lifecycle.startsOnConnectTransactional(attemptId(connection))) {
-            return open(connection);
+            return sendStart(connection);
         }
         Log.infof("App of attempt %d connected, it waits to be started", attemptId(connection));
         lifecycle.markConnectedTransactional(attemptId(connection));
@@ -46,7 +46,7 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
     @OnClose
     public void onClose(WebSocketConnection connection) {
         if (lifecycle.startsOnConnectTransactional(attemptId(connection))) {
-            closed(connection);
+            failUnfinishedAttempt(connection);
         }
     }
 
