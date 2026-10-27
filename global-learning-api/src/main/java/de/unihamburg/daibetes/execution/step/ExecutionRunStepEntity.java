@@ -5,6 +5,7 @@ import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.model.sub.ModelSubEntity;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
+import de.unihamburg.daibetes.execution.federation.ExecutionFederationEntity;
 import de.unihamburg.daibetes.execution.run.ExecutionRunEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -24,4 +25,17 @@ public class ExecutionRunStepEntity extends BaseExecutionRunStepEntity<Execution
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sub_model_id", updatable = false)
     private ModelSubEntity subModel;
+
+    // Set for a federated step, whose attempts are the participants' share of it.
+    @OneToOne(mappedBy = "step", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ExecutionFederationEntity federation;
+
+    /** The federation of the step, created when it has none yet. */
+    public ExecutionFederationEntity federationOrNew() {
+        if (federation == null) {
+            federation = new ExecutionFederationEntity();
+            federation.setStep(this);
+        }
+        return federation;
+    }
 }

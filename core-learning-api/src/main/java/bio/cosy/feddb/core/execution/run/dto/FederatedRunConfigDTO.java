@@ -22,4 +22,9 @@ public class FederatedRunConfigDTO {
     private Integer maxNumClients;
     private List<String> orderClientIds;
     private String appVersion;
+    // Polling of the controller, as a federated test run in the developer's app engine sets it.
+    private Double pollInterval;
+    private Double timeout;
+    private Integer maxPolls;
+    private Boolean useContainerizedController;
 }
