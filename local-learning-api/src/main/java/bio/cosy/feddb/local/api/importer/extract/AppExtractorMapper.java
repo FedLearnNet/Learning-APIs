@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.importer.extract;
 
-import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepDTO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
 import bio.cosy.feddb.local.helper.QuarkusMappingConfig;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -14,7 +14,7 @@ public interface AppExtractorMapper {
             @Mapping(target = "hash", ignore = true),
             @Mapping(target = "uploadInfo", ignore = true)
     })
-    ConnectorExtractorStreamDTO dtoToStreamDTO(ConnectorRunStepDTO dto);
+    ConnectorExtractorStreamDTO runToStreamDTO(ExecutionRunDTO run);
 
     ConnectorExtractorStreamDTO copy(ConnectorExtractorStreamDTO copy);
 }

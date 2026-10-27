@@ -1,5 +1,7 @@
 package bio.cosy.feddb.local.api.importer.connector.input;
 
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -21,4 +23,12 @@ public class AppBasedUploadSettingsDTO extends ConnectorInputConfigDTO {
 
     private LinkedHashMap<String, Object> outputParams;
     private List<String> selectedOutputs;
+
+    @JsonIgnore
+    public ConnectorTransformerDTO getExtractor() {
+        ConnectorTransformerDTO extractor = new ConnectorTransformerDTO();
+        extractor.setAppImage(appImage);
+        extractor.setAppVersionId(appVersionId != null ? Long.valueOf(appVersionId) : null);
+        return extractor;
+    }
 }
