@@ -1,5 +1,6 @@
 package bio.cosy.feddb.core.execution.coordinator;
 
+import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.core.execution.attempt.BaseExecutionAttemptAO;
 import bio.cosy.feddb.core.execution.attempt.BaseExecutionAttemptDTO;
 import bio.cosy.feddb.core.execution.attempt.BaseExecutionAttemptEntity;
@@ -22,7 +23,6 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -72,6 +72,10 @@ public abstract class BaseStepCoordinator<
             return;
         }
         Step step = locked.get();
+        // A federated step runs all its participants at once, the app that runs them drives it.
+        if (step.getRun().getMode() == ExecutionMode.FEDERATED) {
+            return;
+        }
 
         SearchPlan plan;
         try {
@@ -110,18 +114,13 @@ public abstract class BaseStepCoordinator<
         step.getAttempts().add(attempt);
         attemptAO.persist(attempt);
 
-        if (step.getStartedAt() == null) {
-            step.setStartedAt(Instant.now());
-        }
-        step.setStatus(RunStatusTypes.RUNNING);
+        step.begin(RunStatusTypes.RUNNING);
         events.attemptLaunch(attempt.getId());
         Log.infof("Step %d starts trial %d as attempt %d", step.getId(), trial.getTrialIndex(), attempt.getId());
     }
 
     private void finish(Step step, RunStatusTypes status, ExecutionFailure failure) {
-        step.setStatus(status);
-        step.setFinishedAt(Instant.now());
-        step.setFailure(failure);
+        step.end(status, failure);
         events.stepFinished(step.getId(), status);
         Log.infof("Step %d finished as %s", step.getId(), status);
     }

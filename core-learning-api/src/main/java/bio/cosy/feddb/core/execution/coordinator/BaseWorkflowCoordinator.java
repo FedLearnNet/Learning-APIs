@@ -1,6 +1,5 @@
 package bio.cosy.feddb.core.execution.coordinator;
 
-import bio.cosy.feddb.core.base.BaseEntity;
 import bio.cosy.feddb.core.execution.event.ExecutionEventPublisher;
 import bio.cosy.feddb.core.execution.event.RunStartedEvent;
 import bio.cosy.feddb.core.execution.event.StepFinishedEvent;
@@ -15,8 +14,10 @@ import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-import java.time.Instant;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Moves a run through its steps one at a time in workflow execution order, on run started and
@@ -60,10 +61,10 @@ public abstract class BaseWorkflowCoordinator<
             return;
         }
         Run run = locked.get();
-        List<Step> steps = inExecutionOrder(run.getSteps());
+        List<Step> steps = run.getStepsInExecutionOrder();
 
         Optional<Step> ended = steps.stream()
-                .filter(step -> RunStatusTypes.isFinalStatus(step.getStatus()) && step.getStatus() != RunStatusTypes.FINISHED)
+                .filter(step -> step.hasEnded() && step.getStatus() != RunStatusTypes.FINISHED)
                 .findFirst();
         if (ended.isPresent()) {
             stopWaiting(steps);
@@ -71,32 +72,19 @@ public abstract class BaseWorkflowCoordinator<
             return;
         }
 
-        if (steps.stream().anyMatch(step -> !RunStatusTypes.isFinalStatus(step.getStatus()) && !WAITING.contains(step.getStatus()))) {
+        if (steps.stream().anyMatch(step -> !step.hasEnded() && !WAITING.contains(step.getStatus()))) {
             return;
         }
 
         Optional<Step> next = steps.stream().filter(step -> WAITING.contains(step.getStatus())).findFirst();
         if (next.isPresent()) {
-            if (run.getStartedAt() == null) {
-                run.setStartedAt(Instant.now());
-            }
-            run.setStatus(RunStatusTypes.RUNNING);
+            run.begin(RunStatusTypes.RUNNING);
             events.stepChanged(next.get().getId());
             Log.infof("Run %d hands step %d to its coordinator", run.getId(), next.get().getId());
             return;
         }
 
         finish(run, RunStatusTypes.FINISHED, null);
-    }
-
-    // Steps without a node order run after the ordered ones, in creation order.
-    private List<Step> inExecutionOrder(Collection<Step> steps) {
-        return steps.stream()
-                .sorted(Comparator
-                        .comparing((Step step) -> step.getWorkflowNode() == null ? null : step.getWorkflowNode().getExecutionOrder(),
-                                Comparator.nullsLast(Comparator.naturalOrder()))
-                        .thenComparing(BaseEntity::getId, Comparator.nullsLast(Comparator.naturalOrder())))
-                .toList();
     }
 
     private void stopWaiting(List<Step> steps) {
@@ -106,9 +94,7 @@ public abstract class BaseWorkflowCoordinator<
     }
 
     private void finish(Run run, RunStatusTypes status, ExecutionFailure failure) {
-        run.setStatus(status);
-        run.setFinishedAt(Instant.now());
-        run.setFailure(failure);
+        run.end(status, failure);
         events.runFinished(run.getId(), status);
         Log.infof("Run %d finished as %s", run.getId(), status);
     }

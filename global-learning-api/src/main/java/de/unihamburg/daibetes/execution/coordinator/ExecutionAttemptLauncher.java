@@ -1,5 +1,6 @@
 package de.unihamburg.daibetes.execution.coordinator;
 
+import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisRunModesEnum;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
 import bio.cosy.feddb.core.execution.ExecutionPurpose;
@@ -8,7 +9,6 @@ import bio.cosy.feddb.core.execution.coordinator.ExecutionCallback;
 import bio.cosy.feddb.core.execution.event.AttemptFinishedEvent;
 import bio.cosy.feddb.core.execution.event.AttemptLaunchEvent;
 import bio.cosy.feddb.core.execution.event.ExecutionChannels;
-import bio.cosy.feddb.core.execution.orchestrator.DataAnalysisOrchestrator;
 import bio.cosy.feddb.core.security.Scope;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeMapper;
@@ -16,6 +16,8 @@ import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptAO;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
 import io.smallrye.common.annotation.RunOnVirtualThread;
+import de.unihamburg.daibetes.api.project.training.platform.PlatformTrainingBO;
+import de.unihamburg.daibetes.api.workflow.WorkflowBO;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -28,12 +30,19 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
     @Inject
     WorkflowNodeMapper workflowNodeMapper;
 
+    @Inject
+    WorkflowBO workflowBO;
+
+    @Inject
+    PlatformTrainingBO platformTrainingBO;
+
     // The apps talk back through the existing BO and websocket of their purpose.
     public ExecutionAttemptLauncher() {
         super(Map.of(
                 ExecutionPurpose.ANALYSIS, new ExecutionCallback(Scope.MODEL_WORKFLOW_RUN,
-                        DataAnalysisOrchestrator.getUrlForRunning(DataAnalysisRunModesEnum.WORKFLOW)),
-                ExecutionPurpose.TRAINING, new ExecutionCallback(Scope.LOCAL_EXPERIMENT_RUN, "project/experiment/local")));
+                        DataAnalysisRunModesEnum.WORKFLOW.socketPath()),
+                ExecutionPurpose.TRAINING, new ExecutionCallback(Scope.MODEL_WORKFLOW_RUN,
+                        DataAnalysisRunModesEnum.WORKFLOW.socketPath())));
     }
 
     @Override
@@ -50,6 +59,18 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
             throw new IllegalStateException("Step " + step.getId() + " names neither an app nor a model to run");
         }
         return workflowNodeMapper.entityToDto(node);
+    }
+
+    @Override
+    protected WorkflowDTO workflowOf(ExecutionAttemptEntity attempt) {
+        return workflowBO.entityToDto(attempt.getStep().getWorkflowNode().getWorkflow());
+    }
+
+    @Override
+    protected void stageInputs(ExecutionAttemptEntity attempt) {
+        if (attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TRAINING) {
+            platformTrainingBO.stageInputs(attempt);
+        }
     }
 
     @Incoming(ExecutionChannels.ATTEMPT_LAUNCH)

@@ -1,5 +1,6 @@
 package bio.cosy.feddb.core.execution.attempt;
 
+import bio.cosy.feddb.core.execution.ExecutionPurpose;
 import bio.cosy.feddb.core.execution.event.ExecutionEventPublisher;
 import bio.cosy.feddb.core.execution.failure.ExecutionFailure;
 import bio.cosy.feddb.core.execution.failure.FailureCategory;
@@ -21,7 +22,6 @@ import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Consumer;
@@ -62,6 +62,13 @@ public abstract class BaseAttemptLifecycle<
         this.newMessage = newMessage;
     }
 
+    @Transactional
+    public boolean checkIfEndedTransactional(Long attemptId) {
+        return attemptAO.findByIdOptional(attemptId)
+                .map(attempt -> attempt.hasEnded())
+                .orElse(true);
+    }
+
     /** What the app runs: its node's hyper parameters with the trial's on top. */
     @Transactional
     public StartRunDTO startupOf(Long attemptId) {
@@ -77,6 +84,8 @@ public abstract class BaseAttemptLifecycle<
         start.setHyperParams(hyperParams);
         start.setSupportFederatedLearning(attempt.getStep().getWorkflowNode() != null
                 && attempt.getStep().getWorkflowNode().isSupportsFederatedLearning());
+        // A training keeps the model the app trains.
+        start.setTrainable(attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TRAINING);
         customizeStartup(attempt, start);
         return start;
     }
@@ -166,13 +175,11 @@ public abstract class BaseAttemptLifecycle<
     }
 
     private void end(Attempt attempt, RunStatusTypes status, ExecutionFailure failure) {
-        if (RunStatusTypes.isFinalStatus(attempt.getStatus())) {
+        if (attempt.hasEnded()) {
             Log.debugf("Ignoring end of attempt %d, it already ended as %s", attempt.getId(), attempt.getStatus());
             return;
         }
-        attempt.setStatus(status);
-        attempt.setFinishedAt(Instant.now());
-        attempt.setFailure(failure);
+        attempt.end(status, failure);
         events.attemptFinished(attempt);
         Log.infof("Attempt %d finished as %s", attempt.getId(), status);
     }
@@ -188,7 +195,7 @@ public abstract class BaseAttemptLifecycle<
         return message;
     }
 
-    private static ExecutionFailure appFailure(String error) {
+    private ExecutionFailure appFailure(String error) {
         return new ExecutionFailure(FailureCategory.TOOL, error != null ? error : "App reported an error");
     }
 }
