@@ -9,24 +9,29 @@ import bio.cosy.feddb.core.execution.run.dto.OutputRunDataDTO;
 import bio.cosy.feddb.core.execution.run.dto.UpdateRunDTO;
 import de.unihamburg.daibetes.api.development.run.federated.FederatedParticipantUpdateDTO;
 import de.unihamburg.daibetes.api.development.run.federated.FederatedRoundMessageCreateDTO;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptAO;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptLifecycle;
-import de.unihamburg.daibetes.execution.federation.ExecutionFederatedAttemptEntity;
+import de.unihamburg.daibetes.execution.federation.ExecutionFederationAO;
 import de.unihamburg.daibetes.execution.federation.ExecutionFederationMapper;
 import de.unihamburg.daibetes.execution.run.ExecutionRunDetailMapper;
 import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Optional;
 
 @ApplicationScoped
 public class TestRunProgressBO {
 
     @Inject
     ExecutionAttemptLifecycle lifecycle;
+
+    @Inject
+    ExecutionAttemptAO attemptAO;
+
+    @Inject
+    ExecutionFederationAO federationAO;
 
     @Inject
     ExecutionEventPublisher events;
@@ -37,16 +42,16 @@ public class TestRunProgressBO {
     @Inject
     ExecutionFederationMapper federationMapper;
 
-    public void update(UpdateRunDTO update) {
+    public void updateAttempt(UpdateRunDTO update) {
         lifecycle.updateTransactional(update.getRunId(), update);
     }
 
-    public void storeLog(ExecutionAttemptEntity attempt, ExecutionMessageLogDTO log) {
-        lifecycle.storeLogTransactional(attempt.getId(), log);
+    public void storeLog(Long attemptId, ExecutionMessageLogDTO log) {
+        lifecycle.storeLogTransactional(attemptId, log);
     }
 
-    public void storeMetric(ExecutionAttemptEntity attempt, ExecutionMessageMetricDTO metric) {
-        lifecycle.storeMetricTransactional(attempt.getId(), metric);
+    public void storeMetric(Long attemptId, ExecutionMessageMetricDTO metric) {
+        lifecycle.storeMetricTransactional(attemptId, metric);
     }
 
     public ExecutionMessageRoundDTO storeRound(ExecutionAttemptEntity attempt, FederatedRoundMessageCreateDTO create) {
@@ -65,18 +70,12 @@ public class TestRunProgressBO {
     }
 
     public void updateFederatedRun(ExecutionRunStepEntity step, FederatedRunLifecycleDTO update) {
-        if (update.getCurrentRound() != null) {
-            step.getFederation().setCurrentRound(update.getCurrentRound());
-        }
+        federationAO.updateCurrentRound(step.getFederation(), update.getCurrentRound());
         events.stepChanged(step.getId());
     }
 
     public void updateParticipant(ExecutionAttemptEntity attempt, FederatedParticipantUpdateDTO update) {
-        ExecutionFederatedAttemptEntity federation = attempt.federationOrNew();
-        Optional.ofNullable(update.getCurrentRound()).ifPresent(federation::setCurrentRound);
-        Optional.ofNullable(update.getMessagesReceived()).ifPresent(federation::setMessagesReceived);
-        Optional.ofNullable(update.getMessagesSent()).ifPresent(federation::setMessagesSent);
-        Optional.ofNullable(update.getWaitingFor()).ifPresent(waitingFor -> federation.setWaitingFor(new ArrayList<>(waitingFor)));
+        attemptAO.applyParticipantUpdate(attempt, update);
         if (update.getStatus() != null) {
             lifecycle.updateTransactional(attempt.getId(), new UpdateRunDTO(attempt.getId(), update.getStatus(), null));
         } else {
