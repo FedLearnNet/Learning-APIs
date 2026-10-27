@@ -2,6 +2,7 @@ package de.unihamburg.daibetes.api.feddbclient;
 
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.socket.*;
+import bio.cosy.feddb.core.execution.helper.AfterCommitTask;
 import de.unihamburg.daibetes.api.observer.FLNetClientObserverEmitter;
 import de.unihamburg.daibetes.api.observer.FLNetClientObserverEventDTO;
 import io.quarkus.arc.log.LoggerName;
@@ -10,6 +11,7 @@ import io.quarkus.websockets.next.OpenConnections;
 import jakarta.annotation.Nullable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 import org.jboss.logging.Logger;
 
 import java.util.List;
@@ -32,12 +34,20 @@ public class FLNetClientBroadcastBO {
     @Inject
     FLNetClientObserverEmitter observerEmitter;
 
+    @Inject
+    TransactionSynchronizationRegistry transactions;
+
     @LoggerName("FedDBClientBroadcast")
     Logger logger;
 
     private static final String ENDPOINT_ID = FLNetClientWebsocket.class.getName();
 
     private final Map<String, Set<String>> learningConnectionMap = new ConcurrentHashMap<>();
+
+    /** Sends once the current transaction committed; a change rolled back never reaches the clinics. */
+    public void sendAfterCommit(String what, Runnable send) {
+        transactions.registerInterposedSynchronization(new AfterCommitTask(what, send));
+    }
 
     /**
      * Associates a WebSocket connection with a specific learning experiment.
