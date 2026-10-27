@@ -1,7 +1,7 @@
 package bio.cosy.feddb.local.api.learning.project;
 
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
-import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningExperimentDTO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class FederatedLearningProjectDTO {
 
     private ProjectDetailDTO project;
-    private FederatedLearningExperimentDTO experiment;
+    // This clinic's run of the training, once it was approved.
+    private ExecutionRunDTO run;
     private Long workflowId;
 }

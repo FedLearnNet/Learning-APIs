@@ -1,11 +1,11 @@
-package de.unihamburg.daibetes.api.testembed;
+package de.unihamburg.daibetes.api.development.testembed;
 
 import bio.cosy.feddb.core.api.app.FederatedAppDetailDTO;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
 import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
+import bio.cosy.feddb.core.execution.run.dto.FederatedRunLifecycleDTO;
 import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
-import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
 import bio.cosy.feddb.core.execution.run.dto.UpdateRunDTO;
 import bio.cosy.feddb.core.execution.run.types.AppConnectionTypesEnum;
 import bio.cosy.feddb.core.execution.run.types.AppMessageTypeEnum;
@@ -13,13 +13,11 @@ import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
-import de.unihamburg.daibetes.api.runs.test.federated.participant.FederatedParticipantUpdateDTO;
-import de.unihamburg.daibetes.api.runs.test.federated.message.FederatedRoundMessageCreateDTO;
-import de.unihamburg.daibetes.api.runs.test.federated.FederatedTestRunCreateDTO;
-import de.unihamburg.daibetes.api.runs.test.federated.FederatedTestRunDTO;
-import de.unihamburg.daibetes.api.runs.test.TestRunCreateDTO;
-import de.unihamburg.daibetes.api.runs.test.TestRunDTO;
-import de.unihamburg.daibetes.api.testembed.pydantic.PydanticUpdateDTO;
+import de.unihamburg.daibetes.api.development.run.federated.FederatedParticipantUpdateDTO;
+import de.unihamburg.daibetes.api.development.run.federated.FederatedRoundMessageCreateDTO;
+import de.unihamburg.daibetes.api.development.run.federated.FederatedTestRunCreateDTO;
+import de.unihamburg.daibetes.api.development.run.TestRunCreateDTO;
+import de.unihamburg.daibetes.api.development.testembed.pydantic.PydanticUpdateDTO;
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.security.Authenticated;
 import io.quarkus.websockets.next.*;
@@ -112,11 +110,9 @@ public class TestEmbedService {
                 "Type " + type + " disconnected",
                 AppRunTypeEnum.NOT_DEFINED);
         getConnections(appId, AppConnectionTypesEnum.getOpposite(type)).forEach(c -> c.sendTextAndAwait(dto));
+        // The frontend learns about the ended test runs from the test run sender.
         if (AppConnectionTypesEnum.APP.isEqual(type)) {
-            List<AppMessageWrapperDTO<TestRunDTO>> closed = testEmbedBO.closeAllTest(appId);
-            getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> closed.forEach(c::sendTextAndAwait));
-            List<AppMessageWrapperDTO<FederatedTestRunDTO>> closedFed = testEmbedBO.closeAllFederatedOnDisconnect(appId);
-            getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> closedFed.forEach(c::sendTextAndAwait));
+            testEmbedBO.closeAllTest(appId);
         }
     }
 
@@ -135,9 +131,7 @@ public class TestEmbedService {
         if (!AppConnectionTypesEnum.APP.isEqual(type)) {
             return;
         }
-        testEmbedBO.getNextExperimentRun(appId).ifPresent(run -> {
-            getConnections(appId, AppConnectionTypesEnum.APP).forEach(c -> c.sendTextAndAwait(run));
-        });
+        testEmbedBO.launchPendingTestRuns(appId);
         testEmbedBO.getAppConfig(appId).ifPresent(config -> {
             getConnections(appId, AppConnectionTypesEnum.APP).forEach(c -> c.sendTextAndAwait(config));
         });
@@ -159,21 +153,16 @@ public class TestEmbedService {
                 getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(pydanticDto));
                 break;
             case START_RUN:
+                // The test run launcher hands it to the app, the test run sender shows it to the frontend.
                 TestRunCreateDTO createDTO = objectMapper.convertValue(m.getMessage(), TestRunCreateDTO.class);
-                AppMessageWrapperDTO<StartRunDTO> response = testEmbedBO.startTest(appId, createDTO, "TODO");
-                getConnections(appId).forEach(c -> c.sendTextAndAwait(response));
-                this.connection.sendTextAndAwait(response);
+                testEmbedBO.startTest(appId, createDTO, userIdentity.getKeycloakId());
                 break;
             case START_FEDERATED_RUN:
                 FederatedTestRunCreateDTO fedCreate = objectMapper.convertValue(m.getMessage(), FederatedTestRunCreateDTO.class);
-                AppMessageWrapperDTO<FederatedTestRunDTO> fedResponse = testEmbedBO.startFederatedTest(appId, fedCreate);
-                // broadcast to both APP and CLIENT: APP needs it to execute, CLIENT to update list
-                getConnections(appId).forEach(c -> c.sendTextAndAwait(fedResponse));
+                testEmbedBO.startFederatedTest(appId, fedCreate, userIdentity.getKeycloakId());
                 break;
             case NOTIFY_START_EXPERIMENT:
-                testEmbedBO.getNextExperimentRun(appId).ifPresent(run -> {
-                    getConnections(appId, AppConnectionTypesEnum.APP).forEach(c -> c.sendTextAndAwait(run));
-                });
+                testEmbedBO.launchPendingTestRuns(appId);
             default:
                 break;
 
@@ -202,16 +191,12 @@ public class TestEmbedService {
                 break;
             case UPDATE_RUN:
                 UpdateRunDTO updateTest = objectMapper.convertValue(m.getMessage(), UpdateRunDTO.class);
-                AppMessageWrapperDTO<?> updatedTest = testEmbedBO.updateRun(updateTest, runType);
-                getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(updatedTest));
+                testEmbedBO.updateRun(updateTest, runType);
                 break;
             case FINISH_RUN:
                 FinishRunDTO finishTest = objectMapper.convertValue(m.getMessage(), FinishRunDTO.class);
-                AppMessageWrapperDTO<?> finishedTest = testEmbedBO.finishRun(finishTest, runType);
-                getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(finishedTest));
-                finishedTest.setType(AppMessageTypeEnum.UPDATE_RUN);
-                getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(finishedTest));
-                handleAppConnected(appId, type);
+                // The next trial of an experiment is launched by its step coordinator.
+                testEmbedBO.finishRun(finishTest, runType);
                 break;
             case LOG_MESSAGE:
                 ExecutionMessageLogDTO runMessage = objectMapper.convertValue(m.getMessage(), ExecutionMessageLogDTO.class);
@@ -225,20 +210,18 @@ public class TestEmbedService {
                 break;
             case UPDATE_FEDERATED_RUN:
             case FINISH_FEDERATED_RUN:
-                FederatedTestRunDTO fedUpdate = objectMapper.convertValue(m.getMessage(), FederatedTestRunDTO.class);
-                AppMessageWrapperDTO<FederatedTestRunDTO> fedUpdateResponse = testEmbedBO.updateFederatedRun(fedUpdate);
-                if (m.getType() == AppMessageTypeEnum.FINISH_FEDERATED_RUN) {
-                    fedUpdateResponse.setType(AppMessageTypeEnum.FINISH_FEDERATED_RUN);
-                }
-                getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(fedUpdateResponse));
+                // The app sends its whole run, only status, error and round are taken from it.
+                FederatedRunLifecycleDTO fedUpdate = objectMapper.convertValue(m.getMessage(), FederatedRunLifecycleDTO.class);
+                testEmbedBO.updateFederatedRun(fedUpdate);
                 break;
             case FEDERATED_PARTICIPANT_UPDATE:
                 FederatedParticipantUpdateDTO pUpdate = objectMapper.convertValue(m.getMessage(), FederatedParticipantUpdateDTO.class);
-                getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(testEmbedBO.updateFederatedParticipant(pUpdate)));
+                testEmbedBO.updateFederatedParticipant(pUpdate);
                 break;
             case FEDERATED_ROUND_MESSAGE:
                 FederatedRoundMessageCreateDTO rmCreate = objectMapper.convertValue(m.getMessage(), FederatedRoundMessageCreateDTO.class);
-                getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(testEmbedBO.logFederatedRoundMessage(rmCreate)));
+                AppMessageWrapperDTO<?> round = testEmbedBO.logFederatedRoundMessage(rmCreate);
+                getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(round));
                 break;
             default:
                 break;
