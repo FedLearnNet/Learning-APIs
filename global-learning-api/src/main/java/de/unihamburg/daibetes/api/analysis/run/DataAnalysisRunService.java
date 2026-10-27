@@ -2,12 +2,7 @@ package de.unihamburg.daibetes.api.analysis.run;
 
 import bio.cosy.feddb.core.execution.orchestrator.DataAnalysisCreatePredictionDTO;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisRunModesEnum;
-import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
-import bio.cosy.feddb.core.security.Scope;
-import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
-import bio.cosy.feddb.core.security.ToolAuthenticated;
 import io.smallrye.mutiny.Multi;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;

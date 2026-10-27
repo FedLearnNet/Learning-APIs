@@ -1,7 +1,6 @@
 package bio.cosy.feddb.local.api.importer.load;
 
 import bio.cosy.feddb.core.api.datamodler.schema.SchemaNodeType;
-import bio.cosy.feddb.local.api.cohort.CohortBO;
 import bio.cosy.feddb.local.api.cohort.CohortEntity;
 import bio.cosy.feddb.local.api.cohort.patient.PatientAO;
 import bio.cosy.feddb.local.api.cohort.patient.PatientEntity;

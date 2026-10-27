@@ -2,7 +2,6 @@ package de.unihamburg.daibetes;
 
 import de.unihamburg.daibetes.agent.embedding.EmbeddingAO;
 import de.unihamburg.daibetes.agent.store.StoreIngestor;
-import de.unihamburg.daibetes.api.app.FederatedAppCreateImportBO;
 import de.unihamburg.daibetes.api.app.ToolExternalHandler;
 import de.unihamburg.daibetes.api.workflow.export.WorkflowExportBO;
 import de.unihamburg.daibetes.config.FLNetConfig;

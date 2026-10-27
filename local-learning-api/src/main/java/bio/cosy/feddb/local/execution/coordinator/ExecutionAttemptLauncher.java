@@ -17,7 +17,6 @@ import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolBO;
 import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningRunBO;
 import bio.cosy.feddb.local.api.workflow.WorkflowBO;
 import bio.cosy.feddb.local.api.workflow.node.WorkflowNodeBO;
-import bio.cosy.feddb.local.api.workflow.node.WorkflowNodeEntity;
 import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptAO;
 import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptEntity;
 import bio.cosy.feddb.local.execution.step.ExecutionRunStepEntity;

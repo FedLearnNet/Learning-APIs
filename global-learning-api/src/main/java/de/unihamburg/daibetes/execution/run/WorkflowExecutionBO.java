@@ -7,7 +7,6 @@ import bio.cosy.feddb.core.execution.executor.ExecutionStartDTO;
 import de.unihamburg.daibetes.api.workflow.WorkflowAO;
 import de.unihamburg.daibetes.api.workflow.WorkflowEntity;
 import de.unihamburg.daibetes.api.workflow.WorkflowMapper;
-import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeAO;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
 import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -16,7 +15,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 
 @ApplicationScoped
 public class WorkflowExecutionBO extends BaseWorkflowExecutionBO<ExecutionRunEntity, ExecutionRunStepEntity,

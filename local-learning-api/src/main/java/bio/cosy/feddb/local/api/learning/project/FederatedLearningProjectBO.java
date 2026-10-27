@@ -8,7 +8,6 @@ import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
 import bio.cosy.feddb.local.api.cohort.patient.export.PatientDataExportBO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunMapper;
 import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestDTO;
 import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
 import bio.cosy.feddb.local.api.query.QueryAO;
 import bio.cosy.feddb.local.api.search.SearchResultDTO;
@@ -18,12 +17,10 @@ import bio.cosy.feddb.local.api.workflow.WorkflowBO;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 

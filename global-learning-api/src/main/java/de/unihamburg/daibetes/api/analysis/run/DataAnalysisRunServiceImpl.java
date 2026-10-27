@@ -2,7 +2,6 @@ package de.unihamburg.daibetes.api.analysis.run;
 
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisRunModesEnum;
 import bio.cosy.feddb.core.execution.orchestrator.DataAnalysisCreatePredictionDTO;
-import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisBO;
 import de.unihamburg.daibetes.api.analysis.file.DataAnalysisFileBO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
@@ -98,14 +97,14 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
                 .build();
     }
 
-    private Multi<DataAnalysisRunDTO> startAndFollow(Long dataAnalysisId, DataAnalysisCreatePredictionDTO data) {
+    private Multi<DataAnalysisRunDTO> startAndSubscribe(Long dataAnalysisId, DataAnalysisCreatePredictionDTO data) {
         String keycloakId = userIdentity.getKeycloakId();
         return Uni.createFrom().item(() -> executionBO.startTransactional(dataAnalysisId, data, keycloakId))
                 .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
                 .onItem().transformToMulti(runId -> follow(runId, keycloakId));
     }
 
-    private Multi<DataAnalysisRunDTO> follow(Long runId, String keycloakId) {
+    private Multi<DataAnalysisRunDTO> subscribe(Long runId, String keycloakId) {
         Multi<DataAnalysisRunDTO> changes = runChanges
                 .filter(run -> runId.equals(run.getId()) && keycloakId.equals(run.getKeycloakId()));
         Multi<DataAnalysisRunDTO> current = Uni.createFrom().item(() -> resultBO.findRunByIdTransactional(runId, keycloakId, false))

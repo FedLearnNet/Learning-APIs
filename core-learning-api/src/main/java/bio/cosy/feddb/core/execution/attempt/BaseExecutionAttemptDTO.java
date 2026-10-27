@@ -1,14 +1,11 @@
 package bio.cosy.feddb.core.execution.attempt;
 
 import bio.cosy.feddb.core.execution.BaseExecutionStatusDTO;
-import bio.cosy.feddb.core.execution.failure.ExecutionFailure;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
 import bio.cosy.feddb.core.execution.run.dto.RunMetaDTO;
-import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.UUID;
 

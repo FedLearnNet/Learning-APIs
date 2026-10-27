@@ -1,7 +1,6 @@
 package bio.cosy.feddb.core.execution.orchestrator;
 
 import bio.cosy.feddb.core.helper.FileHelper;
-import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

@@ -2,7 +2,6 @@ package bio.cosy.feddb.local.api.learning.project.run;
 
 import bio.cosy.feddb.core.api.socket.RelayCertSignRequestDTO;
 import bio.cosy.feddb.core.api.socket.RelayCertSignResponseDTO;
-import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.services.controller.ControllerStartRelayingRequestDTO;
 import bio.cosy.feddb.local.api.eam.WebsocketSender;
 import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectAO;
@@ -148,7 +147,7 @@ public class RelayCertBO {
         }
     }
 
-    private void send(ExecutionFederationEntity federation) {
+    private void sendCertRequest(ExecutionFederationEntity federation) {
         ExecutionRunStepEntity step = federation.getStep();
         ExecutionRunEntity run = step.getRun();
         String globalId = projectAO.find("run.id", run.getId()).firstResult().getRequest().getGlobalFLExperimentUniqueId();

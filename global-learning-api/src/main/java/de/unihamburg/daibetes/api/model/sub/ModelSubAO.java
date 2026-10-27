@@ -1,6 +1,5 @@
 package de.unihamburg.daibetes.api.model.sub;
 
-import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.NotFoundException;

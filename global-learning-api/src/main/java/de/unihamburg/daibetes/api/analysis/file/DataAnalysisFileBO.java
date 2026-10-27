@@ -8,7 +8,6 @@ import bio.cosy.feddb.core.api.model.workflow.DataAnalysisFileDTO;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.base.BaseFileEntity;
 import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
-import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
 import bio.cosy.feddb.core.helper.FileHelper;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisBO;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisEntity;
@@ -16,7 +15,6 @@ import de.unihamburg.daibetes.api.file.FileBO;
 import de.unihamburg.daibetes.api.file.FileEntity;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
-import de.unihamburg.daibetes.execution.run.ExecutionRunEntity;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -30,7 +28,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.unihamburg.daibetes.api.analysis.run.DataAnalysisRunResultBO.FILE_PREFIX;
-
 
 @ApplicationScoped
 public class DataAnalysisFileBO extends BaseBo<DataAnalysisFileDTO, DataAnalysisFileEntity, DataAnalysisFileAO, DataAnalysisFileMapper> {

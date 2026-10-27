@@ -6,7 +6,6 @@ import bio.cosy.feddb.core.services.orch.clients.DockerServiceClient;
 import bio.cosy.feddb.core.services.orch.clients.VolumeServiceClient;
 import bio.cosy.feddb.core.services.orch.clients.WorkflowServiceClient;
 import bio.cosy.feddb.core.services.orch.dto.CreateContainerResponseDTO;
-import bio.cosy.feddb.core.services.orch.dto.StartAppDTO;
 import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import bio.cosy.feddb.core.services.orch.dto.VolumeUploadForm;
 import io.quarkus.logging.Log;

@@ -8,7 +8,6 @@ import bio.cosy.feddb.core.api.model.workflow.DataAnalysisFileDTO;
 import de.unihamburg.daibetes.agent.anlysis.bots.ResultAnalyzer;
 import de.unihamburg.daibetes.agent.anlysis.pojo.FileResultAnalyzer;
 import de.unihamburg.daibetes.agent.anlysis.pojo.ResultAnalyzerHyperParam;
-import de.unihamburg.daibetes.api.analysis.DataAnalysisBO;
 import de.unihamburg.daibetes.api.analysis.file.DataAnalysisFileBO;
 import de.unihamburg.daibetes.api.analysis.file.DataAnalysisFileEntity;
 import de.unihamburg.daibetes.api.analysis.run.DataAnalysisRunResultBO;

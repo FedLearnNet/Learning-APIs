@@ -1,6 +1,5 @@
 package de.unihamburg.daibetes.api.analysis.file;
 
-import bio.cosy.feddb.core.api.app.config.ToolInputConfigDTO;
 import bio.cosy.feddb.core.base.BaseAuthEntity;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisEntity;
 import de.unihamburg.daibetes.api.file.FileEntity;
