@@ -1,5 +1,6 @@
 package bio.cosy.feddb.core.services.controller;
 
+import bio.cosy.feddb.core.api.socket.FederatedLearningRelayInfoDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,4 +27,18 @@ public class CreateFLLearningRelayServerResponseDTO {
      * during the TCP connection handshake.
      */
     private String relayKey;
+
+    public FederatedLearningRelayInfoDTO relayInfoFor(RelayServerAppVersions version, String id, String key) {
+        FederatedLearningRelayInfoDTO info = new FederatedLearningRelayInfoDTO();
+        info.setId(id);
+        info.setKey(key);
+        info.setChannel(channel);
+        info.setRelayKey(relayKey);
+        info.setCoordinator(false);
+        info.setCoordinatorId(coordinatorId);
+        info.setMaxNumClients(clientIds.size());
+        info.setOrderClientIds(clientIds);
+        info.setAppVersion(version);
+        return info;
+    }
 }

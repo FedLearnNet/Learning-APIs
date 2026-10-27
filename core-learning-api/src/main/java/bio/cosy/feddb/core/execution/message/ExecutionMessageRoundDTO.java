@@ -1,5 +1,6 @@
 package bio.cosy.feddb.core.execution.message;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -7,8 +8,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class ExecutionMessageRoundDTO extends ExecutionMessageDTO {
-    // "SEND" or "RECEIVE", seen from the participant that reported it.
-    private String direction;
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_VALUES)
+    private ExecutionRoundDirection direction;
     private Integer round;
     private String fromParticipant;
     private String toParticipant;
