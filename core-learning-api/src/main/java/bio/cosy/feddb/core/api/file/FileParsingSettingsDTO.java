@@ -36,6 +36,10 @@ public class FileParsingSettingsDTO {
     @NotNull
     private Boolean firstSheetOnly = true;
 
+    public FileParsingSettingsDTO(FileParsingType fileType) {
+        this.fileType = fileType;
+    }
+
     /**
      * The settings a file name implies, for an upload that arrives without any of its own.
      *

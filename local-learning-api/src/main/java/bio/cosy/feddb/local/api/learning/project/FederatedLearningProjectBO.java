@@ -4,8 +4,11 @@ import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.base.PagedResponse;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageDTO;
+import bio.cosy.feddb.core.execution.message.RunMessageTypes;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
 import bio.cosy.feddb.local.api.cohort.patient.export.PatientDataExportBO;
+import bio.cosy.feddb.local.execution.message.ExecutionMessageAO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunMapper;
 import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
 import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
@@ -17,6 +20,7 @@ import bio.cosy.feddb.local.api.workflow.WorkflowBO;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 
 import java.nio.file.Path;
@@ -41,6 +45,9 @@ public class FederatedLearningProjectBO extends BaseBo<ProjectDetailDTO, Federat
 
     @Inject
     PatientDataExportBO exportBO;
+
+    @Inject
+    ExecutionMessageAO messageAO;
 
     public PagedResponse<FederatedLearningProjectDTO> list(Page page) {
         List<FederatedLearningProjectEntity> foundEntities = ao.list(page);
@@ -67,6 +74,20 @@ public class FederatedLearningProjectBO extends BaseBo<ProjectDetailDTO, Federat
                     int score = SearchScoreUtil.score(query, title, dto.getDescription(),
                             dto.getGlobalUniqueQueryId(), String.valueOf(dto.getStatus()));
                     return SearchScoreUtil.toResult(SearchResultType.TRAINING, dto, title, score);
+                })
+                .filter(result -> result.getScore() > 0)
+                .toList();
+    }
+
+    @Transactional
+    public List<SearchResultDTO<ExecutionMessageDTO>> searchLogsTransactional(String query, String keycloakId) {
+        return ao.listWithRun().stream()
+                .filter(project -> hasCohortSearchAccess(getCohortIds(project), keycloakId))
+                .flatMap(project -> messageAO.listForRun(project.getRun().getId(), RunMessageTypes.LOG).stream())
+                .map(message -> {
+                    ExecutionMessageDTO log = message.getPayload();
+                    int score = SearchScoreUtil.score(query, log.getMessage(), log.getProcess(), log.getWorkerId());
+                    return SearchScoreUtil.toResult(SearchResultType.LOG, log, log.getMessage(), score);
                 })
                 .filter(result -> result.getScore() > 0)
                 .toList();

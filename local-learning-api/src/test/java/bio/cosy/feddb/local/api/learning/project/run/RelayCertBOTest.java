@@ -17,7 +17,6 @@ import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
 import bio.cosy.feddb.local.execution.step.ExecutionRunStepAO;
 import bio.cosy.feddb.local.execution.step.ExecutionRunStepEntity;
 import bio.cosy.feddb.local.services.controller.LocalControllerLearningService;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.persistence.LockModeType;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
@@ -71,9 +70,7 @@ class RelayCertBOTest {
         project.setRequest(request);
         project.setRun(run);
         when(bo.projectAO.findByRequestIdOptional(EXPERIMENT)).thenReturn(Optional.of(project));
-        PanacheQuery<FederatedLearningProjectEntity> byRun = mock(PanacheQuery.class);
-        when(byRun.firstResult()).thenReturn(project);
-        when(bo.projectAO.find(eq("run.id"), eq(RUN_ID))).thenReturn(byRun);
+        when(bo.projectAO.findByRunId(RUN_ID)).thenReturn(project);
 
         WorkflowNodeEntity node = new WorkflowNodeEntity();
         node.setNodeId(NODE);

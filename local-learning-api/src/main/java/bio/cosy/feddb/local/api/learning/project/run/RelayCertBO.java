@@ -2,10 +2,14 @@ package bio.cosy.feddb.local.api.learning.project.run;
 
 import bio.cosy.feddb.core.api.socket.RelayCertSignRequestDTO;
 import bio.cosy.feddb.core.api.socket.RelayCertSignResponseDTO;
+import bio.cosy.feddb.core.services.controller.ControllerStartLearningRequestDTO;
+import bio.cosy.feddb.core.services.controller.ControllerStartLearningResponseDTO;
 import bio.cosy.feddb.core.services.controller.ControllerStartRelayingRequestDTO;
+import bio.cosy.feddb.core.services.controller.ControllerStopLearningRequestDTO;
 import bio.cosy.feddb.local.api.eam.WebsocketSender;
 import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectAO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
+import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptEntity;
 import bio.cosy.feddb.local.execution.federation.ExecutionFederationAO;
 import bio.cosy.feddb.local.execution.federation.ExecutionFederationEntity;
 import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
@@ -55,6 +59,54 @@ public class RelayCertBO {
     @Inject
     @RestClient
     LocalControllerLearningService controllerService;
+
+    /** Starts the controller run of the step; it joins the relay once the platform had its certificate signed. */
+    public void startController(ExecutionRunStepEntity step, ExecutionAttemptEntity attempt) {
+        ExecutionFederationEntity federation = step.getFederation();
+        if (federation == null || federation.getConfig() == null) {
+            throw new IllegalStateException("Step " + step.getId() + " has no relay to learn through");
+        }
+        String csr;
+        try (Response response = controllerService.startLearning(new ControllerStartLearningRequestDTO(federation.getConfig(), attempt.getId()))) {
+            if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+                throw new IllegalStateException("controller answered " + response.getStatus() + ": " + response.readEntity(String.class));
+            }
+            ControllerStartLearningResponseDTO started = response.readEntity(ControllerStartLearningResponseDTO.class);
+            csr = started != null ? started.getCsr() : null;
+        }
+        if (csr == null || csr.isBlank()) {
+            throw new IllegalStateException("controller returned no certificate signing request");
+        }
+        requestCertificate(federation, csr);
+    }
+
+    public void stopControllerRuns(ExecutionRunEntity run) {
+        federationAO.listOpenControllerRuns(run.getId()).forEach(this::stopController);
+    }
+
+    // Never throws: a controller that cannot be reached must not break the training, its run stays open.
+    public void stopController(ExecutionFederationEntity federation) {
+        if (federation == null || federation.getConfig() == null || federation.getRelayCsr() == null
+                || Boolean.TRUE.equals(federation.getRelayStopped())) {
+            return;
+        }
+        int status;
+        try (Response response = controllerService.stopLearning(new ControllerStopLearningRequestDTO(
+                federation.getConfig().getChannel(), federation.getConfig().getClientId()))) {
+            status = response.getStatus();
+        } catch (WebApplicationException e) {
+            status = e.getResponse().getStatus();
+        } catch (RuntimeException e) {
+            Log.warnf(e, "Could not stop the controller run of step %d", federation.getStep().getId());
+            return;
+        }
+        // 404: the controller does not know the run anymore, e.g. after it restarted.
+        if (status == Response.Status.OK.getStatusCode() || status == Response.Status.NOT_FOUND.getStatusCode()) {
+            federation.setRelayStopped(true);
+        } else {
+            Log.warnf("Controller answered %d when stopping the run of step %d", status, federation.getStep().getId());
+        }
+    }
 
     /** Stores the request of the step's controller run and asks the platform to have it signed. */
     public void requestCertificate(ExecutionFederationEntity federation, String csr) {
@@ -150,7 +202,7 @@ public class RelayCertBO {
     private void sendCertRequest(ExecutionFederationEntity federation) {
         ExecutionRunStepEntity step = federation.getStep();
         ExecutionRunEntity run = step.getRun();
-        String globalId = projectAO.find("run.id", run.getId()).firstResult().getRequest().getGlobalFLExperimentUniqueId();
+        String globalId = projectAO.findByRunId(run.getId()).getRequest().getGlobalFLExperimentUniqueId();
         websocketSender.sendRelayCertRequest(new RelayCertSignRequestDTO(globalId, run.getParticipantId(),
                 step.getWorkflowNode().getNodeId(), federation.getConfig().getClientId(), federation.getRelayCsr()));
     }
