@@ -19,12 +19,14 @@ public final class FederatedRunEnricher {
     }
 
     /**
-     * Populates participants/config/startAggregator/totalRounds on {@code run} from {@code relay}.
-     * {@code run.getHyperParams()}/{@code run.getInputFilePaths()} must already be set - they're
-     * copied onto the single participant entry.
+     * Populates participants/config/startAggregator/aggregatorOnly/totalRounds on {@code run} from
+     * {@code relay}. {@code run.getHyperParams()}/{@code run.getInputFilePaths()} must already be
+     * set - they're copied onto the single participant entry.
      */
     public static void enrichWithFederatedRelay(final StartRunDTO run, final FederatedLearningRelayInfoDTO relay) {
         boolean isCoordinator = relay.getCoordinator();
+        boolean hasInputData = (run.getInputFilePaths() != null && !run.getInputFilePaths().isEmpty())
+                || (run.getInputData() != null && !run.getInputData().isEmpty());
 
         FederatedRunParticipantDTO participant = new FederatedRunParticipantDTO();
         participant.setParticipantId(relay.getId());
@@ -33,6 +35,9 @@ public final class FederatedRunEnricher {
         participant.setInputFilePaths(run.getInputFilePaths());
         run.setParticipants(List.of(participant));
         run.setStartAggregator(isCoordinator);
+        // A coordinator with no data of its own is the platform running as aggregator; a coordinator
+        // clinic always has real input data. Told to pyfedappwrap explicitly instead of re-derived.
+        run.setAggregatorOnly(isCoordinator && !hasInputData);
         run.setTotalRounds(extractTotalRounds(run.getHyperParams()));
 
         FederatedRunConfigDTO config = new FederatedRunConfigDTO();
@@ -48,8 +53,7 @@ public final class FederatedRunEnricher {
     }
 
     /**
-     * Reads the total-rounds hyperparameter, accepting either {@code federated_rounds} (preferred)
-     * or the legacy {@code total_rounds} key, and tolerating a numeric or string-encoded value.
+     * Reads the {@code federated_rounds} hyperparameter, tolerating a numeric or string-encoded value.
      *
      * @param hyperParams the run's hyperparameters, or {@code null}
      * @return the configured round count, or {@code null} if absent or unparseable
@@ -58,7 +62,7 @@ public final class FederatedRunEnricher {
         if (hyperParams == null) {
             return null;
         }
-        Object value = hyperParams.getOrDefault("federated_rounds", hyperParams.get("total_rounds"));
+        Object value = hyperParams.get("federated_rounds");
         if (value instanceof Number number) {
             return number.intValue();
         }

@@ -11,7 +11,6 @@ import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
 import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantAO;
 import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantEntity;
-import de.unihamburg.daibetes.api.workflow.WorkflowEntity;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
 import de.unihamburg.daibetes.services.GlobalRelayService;
 import io.quarkus.logging.Log;
@@ -26,7 +25,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 
@@ -70,23 +68,6 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
             appVersion = workflowNode.getSubModel().getModelVersion().getModel().getFederatedAppVersion();
         }
         return appVersion;
-    }
-
-    /**
-     * Platform-coordinator mode only works for v2 FeatureCloud apps - v2 relay setup mints a
-     * separate AGGREGATOR-only relay identity; v1 has no such slot (the first client is also the
-     * coordinator), so handing that slot to the platform would leave one clinic without a relay
-     * identity and the round would hang. Checked across every node, since a workflow can mix app
-     * versions across its steps.
-     */
-    public boolean workflowHasOldFCVersionNode(WorkflowEntity workflow) {
-        if (workflow == null || workflow.getNodes() == null) {
-            return false;
-        }
-        return workflow.getNodes().stream()
-                .map(this::resolveAppVersion)
-                .filter(Objects::nonNull)
-                .anyMatch(av -> Boolean.TRUE.equals(av.getFederatedApp().getOldFCVersion()));
     }
 
     public FederatedRelaySetupResult handleRelaySetup(ProjectFederatedExperimentEntity experiment) {

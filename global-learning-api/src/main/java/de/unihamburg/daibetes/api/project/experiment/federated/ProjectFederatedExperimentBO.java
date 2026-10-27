@@ -211,12 +211,6 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
                 throw new NotAllowedException("Platform aggregator support is disabled on this deployment; "
                         + "cannot start this experiment with the platform as coordinator.");
             }
-            if (projectFederatedExperimentStepBO.workflowHasOldFCVersionNode(entity.getProject().getWorkflow())) {
-                Log.warnf("Platform-coordinator requested for experiment %d but workflow contains an old " +
-                        "FeatureCloud-version app, which has no aggregator-only relay slot", experimentId);
-                throw new NotAllowedException("The workflow contains an app that does not support running the "
-                        + "aggregator on the platform; cannot start this experiment with the platform as coordinator.");
-            }
         }
         boolean usePlatformCoordinator = platformIsCoordinatorRequested;
 
