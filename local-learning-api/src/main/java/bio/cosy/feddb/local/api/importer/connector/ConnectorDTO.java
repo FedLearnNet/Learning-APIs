@@ -8,6 +8,7 @@ import bio.cosy.feddb.local.api.importer.extract.UploadInfoDTO;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,6 +17,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Data
 @NoArgsConstructor
@@ -45,4 +47,12 @@ public class ConnectorDTO extends BaseDTO {
 
     //based on runs
     private ConnectorRunDTO lastRun;
+
+    @JsonIgnore
+    public List<ConnectorTransformerDTO> getAppTransformers() {
+        if (transformer == null) {
+            return List.of();
+        }
+        return transformer.stream().filter(Objects::nonNull).filter(ConnectorTransformerDTO::isAppBased).toList();
+    }
 }

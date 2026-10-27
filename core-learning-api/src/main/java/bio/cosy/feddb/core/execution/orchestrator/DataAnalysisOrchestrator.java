@@ -28,12 +28,6 @@ public class DataAnalysisOrchestrator {
         this.gateway = gateway;
     }
 
-    public static final String WS_WORKFLOW_PATH = "model/run/{mode}";
-
-    public static String getUrlForRunning(DataAnalysisRunModesEnum mode) {
-        return WS_WORKFLOW_PATH
-                .replace("{mode}", mode.name());
-    }
 
     /**
      * Executes a createPrediction in a container with specified parameters.
@@ -59,10 +53,10 @@ public class DataAnalysisOrchestrator {
                 "APP_ID=" + id,
                 "APP_API_KEY=" + apiKey
         ));
-        // changeUrl is set to true to allow the container to access the ModelAppServer
-        // Path is set to "createPrediction/run" to allow the container to access the ModelAppServer
-        // The serverPort is set to the port of the ModelAppServer
-        String path = getUrlForRunning(DataAnalysisRunModesEnum.PREDICTION);
+        // changeUrl is set to true to allow the container to access the app server
+        // Path is set to "createPrediction/run" to allow the container to access the app server
+        // The serverPort is set to the port of the app server
+        String path = DataAnalysisRunModesEnum.PREDICTION.socketPath();
         return gateway.startApplication(dto, path);
     }
 

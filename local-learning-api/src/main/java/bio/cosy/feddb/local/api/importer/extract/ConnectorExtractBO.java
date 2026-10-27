@@ -1,34 +1,33 @@
 package bio.cosy.feddb.local.api.importer.extract;
 
-import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.api.file.FileParsingSettingsDTO;
 import bio.cosy.feddb.core.api.file.FileParsingType;
+import bio.cosy.feddb.core.execution.failure.ExecutionFailure;
+import bio.cosy.feddb.core.execution.failure.FailureCategory;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorBO;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
-import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
 import bio.cosy.feddb.local.api.importer.connector.input.AppBasedUploadSettingsDTO;
 import bio.cosy.feddb.local.api.importer.connector.input.ConnectorInputConfigDTO;
 import bio.cosy.feddb.local.api.importer.connector.input.FileUploadSettingsDTO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadInfoDTO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFilesBO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFilesDTO;
-import bio.cosy.feddb.local.api.importer.files.read.TabularFileReaderBO;
 import bio.cosy.feddb.local.api.importer.files.read.TableReadSpec;
+import bio.cosy.feddb.local.api.importer.files.read.TabularFileReaderBO;
 import bio.cosy.feddb.local.api.importer.files.table.SheetMergePlan;
 import bio.cosy.feddb.local.api.importer.files.table.TableData;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
-import bio.cosy.feddb.local.api.importer.run.execution.ConnectorRunExecutionOutputAwaiter;
-import bio.cosy.feddb.local.api.importer.run.execution.ConnectorRunExecutionResult;
-import bio.cosy.feddb.local.api.importer.run.execution.ConnectorRunExecutionRunBO;
-import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepBO;
-import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepDTO;
-import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepMessageSender;
-import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
+import bio.cosy.feddb.local.api.importer.run.ConnectorAppOutputDTO;
+import bio.cosy.feddb.local.api.importer.run.ConnectorAppRunBO;
+import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
+import bio.cosy.feddb.local.execution.run.ExecutionRunBO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
 import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.runtime.TransactionConfiguration;
 import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.infrastructure.Infrastructure;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -37,12 +36,7 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
 import java.io.File;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBO.APP_OUTPUT_TIMEOUT;
 
@@ -56,19 +50,13 @@ public class ConnectorExtractBO {
     TabularFileReaderBO fileHandlerBO;
 
     @Inject
-    ConnectorRunExecutionRunBO executionRunBO;
+    ConnectorAppRunBO appRunBO;
 
     @Inject
-    ConnectorRunStepBO stepBO;
-
-    @Inject
-    ConnectorRunStepMessageSender messageSender;
+    ExecutionRunBO runBO;
 
     @Inject
     AppExtractorMapper appExtractorMapper;
-
-    @Inject
-    ConnectorRunExecutionOutputAwaiter outputAwaiter;
 
     @Inject
     FLNetClientConfig config;
@@ -386,54 +374,25 @@ public class ConnectorExtractBO {
             Log.warn("App-based extractor has no appImage configured");
             throw new BadRequestException("App-based extractor has no app image configured");
         }
-
-        ConnectorRunStepDTO step = createStep(appSettings, connectorRunId);
-        ConnectorTransformerDTO extractorTransformer = createExtractorTransformer(appSettings, step.getId());
-        outputAwaiter.register(step.getId(), cohortId);
-
-        Log.infof("Starting app-based extractor (image: %s, step: %d, run: %s)",
-                appSettings.getAppImage(), step.getId(), connectorRunId);
-
+        Log.infof("Starting app-based extractor (image: %s, import: %s)", appSettings.getAppImage(), connectorRunId);
         try {
-            ConnectorRunStepDTO result = executionRunBO.startModel(extractorTransformer, step, keycloakId);
-            if (!isSuccessfulAppStart(result, appSettings)) {
-                outputAwaiter.cancel(step.getId());
-                String error = result == null || result.getLastError() == null || result.getLastError().isBlank()
-                        ? "App-based extractor '" + appSettings.getAppImage() + "' could not be started"
-                        : result.getLastError();
-                markStepError(step, error);
-                throw new AppExtractorException(error);
-            }
-
-            ConnectorRunExecutionResult finishedStep = outputAwaiter.awaitOutput(result.getId())
-                    .await().atMost(APP_OUTPUT_TIMEOUT);
-            recordStoredOutputs(appSettings, connectorId, finishedStep, keycloakId);
+            ExecutionRunDTO run = appRunBO.start(appSettings.getExtractor(), appSettings.getHyperParams(), connectorRunId,
+                    cohortId, keycloakId, false);
+            // The import reads the table next, so it waits here; the timeout stops the run.
+            ConnectorAppOutputDTO output = appRunBO.output(run.getId(), APP_OUTPUT_TIMEOUT).await().indefinitely();
+            recordStoredOutputs(appSettings, connectorId, output, keycloakId);
             TableData outputData = loadSelectedStoredOutputs(appSettings, cohortId, request);
-            if (outputData != null) {
-                if (finishedStep != null && finishedStep.outputData() != null) {
-                    finishedStep.outputData().close();
-                }
-            } else {
-                outputData = resolveAppOutput(finishedStep, appSettings);
-            }
             if (outputData == null) {
-                String error = "App-based extractor '" + appSettings.getAppImage()
-                        + "' finished without tabular output";
-                markStepError(step, error);
-                throw new AppExtractorException(error);
+                return output.getOutputData();
             }
+            output.getOutputData().close();
             return outputData;
-
-        } catch (AppExtractorException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             Log.errorf(e, "Failed to run app-based extractor with image '%s'", appSettings.getAppImage());
-            outputAwaiter.cancel(step.getId());
-            String error = "Failed to run app-based extractor: " + e.getMessage();
-            markStepError(step, error);
-            throw new AppExtractorException(error, e);
+            throw new AppExtractorException("Failed to run app-based extractor: " + e.getMessage(), e);
         }
     }
+
     public static class AppExtractorException extends RuntimeException {
         public AppExtractorException(String message) {
             super(message);
@@ -447,13 +406,12 @@ public class ConnectorExtractBO {
 
     private void recordStoredOutputs(AppBasedUploadSettingsDTO appSettings,
                                      Long connectorId,
-                                     ConnectorRunExecutionResult finishedStep,
+                                     ConnectorAppOutputDTO output,
                                      String keycloakId) {
-        if (finishedStep == null || finishedStep.storedOutputs() == null
-                || finishedStep.storedOutputs().isEmpty()) {
+        if (output.getStoredOutputs() == null || output.getStoredOutputs().isEmpty()) {
             return;
         }
-        appSettings.setOutputParams(new LinkedHashMap<>(finishedStep.storedOutputs()));
+        appSettings.setOutputParams(new LinkedHashMap<>(output.getStoredOutputs()));
         if (connectorId == null) {
             return;
         }
@@ -495,148 +453,48 @@ public class ConnectorExtractBO {
     }
 
     public Multi<ConnectorExtractorStreamDTO> startFromApp(AppBasedUploadSettingsDTO appSettings, Long cohortId, String keycloakId) {
-        return Multi.createFrom().emitter(emitter -> {
-            if (!hasAppImage(appSettings)) {
-                Log.warn("App-based extractor has no appImage configured");
-                emitter.complete();
-                return;
-            }
+        if (!hasAppImage(appSettings)) {
+            Log.warn("App-based extractor has no appImage configured");
+            return Multi.createFrom().empty();
+        }
+        ExecutionRunDTO run = appRunBO.start(appSettings.getExtractor(), appSettings.getHyperParams(), null, cohortId, keycloakId, false);
+        return Multi.createBy().concatenating().streams(
+                runBO.follow(run.getId()).map(this::streamOf),
+                Multi.createFrom().uni(previewOf(run, appSettings)));
+    }
 
-            ConnectorRunStepDTO step = createStep(appSettings);
-            ConnectorTransformerDTO extractorTransformer = createExtractorTransformer(appSettings, step.getId());
-            outputAwaiter.register(step.getId(), cohortId);
-
-            ConnectorExtractorStreamDTO initialDto = appExtractorMapper.dtoToStreamDTO(step);
-            initialDto.setCached(false);
-            messageSender.sendMessage(initialDto);
-
-            ConnectorRunStepDTO finalStep = step;
-            Infrastructure.getDefaultExecutor().execute(() -> {
-                try {
-                    ConnectorRunStepDTO result = executionRunBO.startModel(extractorTransformer, finalStep, keycloakId);
-                    if (!isSuccessfulAppStart(result, appSettings)) {
-                        emitter.complete();
-                        return;
+    // Subscribed once the run's stream completed, so the run has ended.
+    private Uni<ConnectorExtractorStreamDTO> previewOf(ExecutionRunDTO run, AppBasedUploadSettingsDTO appSettings) {
+        return appRunBO.output(run.getId(), APP_OUTPUT_TIMEOUT)
+                .map(output -> {
+                    TableData outputData = output.getOutputData();
+                    TableData previewData = limit(outputData, config.connector().previewRows());
+                    if (previewData != outputData) {
+                        outputData.close();
                     }
-
-                    ConnectorExtractorStreamDTO updateDto = appExtractorMapper.dtoToStreamDTO(result);
-                    updateDto.setCached(false);
-                    messageSender.sendMessage(updateDto);
-
-                    outputAwaiter.awaitOutput(result.getId())
-                            .onItem().transform(finishedStep -> {
-                                TableData outputData = resolveAppOutput(finishedStep, appSettings);
-                                if (outputData == null) {
-                                    throw new RuntimeException("App transformer finished without tabular output");
-                                }
-                                TableData previewData = limit(outputData, config.connector().previewRows());
-                                if (previewData != outputData) {
-                                    outputData.close();
-                                }
-                                ConnectorFileUploadInfoDTO fileUpload = new ConnectorFileUploadInfoDTO(previewData, fileHandlerBO.getJson(previewData));
-
-                                ConnectorRunStepDTO finishedRun = finishedStep == null ? result : finishedStep.run();
-                                ConnectorExtractorStreamDTO finalDto = appExtractorMapper.dtoToStreamDTO(finishedRun);
-                                finalDto.setUploadInfo(List.of(fileUpload));
-                                finalDto.setCached(false);
-
-                                emitter.emit(finalDto);
-                                messageSender.sendMessage(finalDto);
-                                return finalDto;
-                            })
-                            .subscribe().with(
-                                    finalDto -> emitter.complete(),
-                                    e -> {
-                                        Log.errorf(e, "Failed while waiting for uploaded output for image '%s'", appSettings.getAppImage());
-                                        markStepError(finalStep, "Failed to process uploaded output: " + e.getMessage());
-
-                                        ConnectorExtractorStreamDTO errorDto = appExtractorMapper.dtoToStreamDTO(finalStep);
-                                        errorDto.setCached(false);
-
-                                        emitter.emit(errorDto);
-                                        messageSender.sendMessage(errorDto);
-                                        emitter.complete();
-                                    }
-                            );
-
-                } catch (Exception e) {
-                    Log.errorf(e, "Failed to start app-based extractor with image '%s'", appSettings.getAppImage());
-                    markStepError(finalStep, "Failed to start app-based extractor: " + e.getMessage());
-
-                    ConnectorExtractorStreamDTO errorDto = appExtractorMapper.dtoToStreamDTO(finalStep);
-                    errorDto.setCached(false);
-
-                    emitter.emit(errorDto);
-                    messageSender.sendMessage(errorDto);
-                    emitter.complete();
-                }
-            });
-        });
+                    ConnectorExtractorStreamDTO done = streamOf(output.getRun());
+                    done.setUploadInfo(List.of(new ConnectorFileUploadInfoDTO(previewData, fileHandlerBO.getJson(previewData))));
+                    return done;
+                })
+                .onFailure().recoverWithItem(e -> {
+                    Log.errorf(e, "App-based extractor with image '%s' failed", appSettings.getAppImage());
+                    ConnectorExtractorStreamDTO failed = streamOf(run);
+                    failed.setStatus(RunStatusTypes.ERROR);
+                    failed.setFailure(new ExecutionFailure(FailureCategory.TOOL, e.getMessage()));
+                    return failed;
+                });
     }
 
-    private ConnectorRunStepDTO createStep(AppBasedUploadSettingsDTO appSettings) {
-        return createStep(appSettings, null);
-    }
-
-    private ConnectorRunStepDTO createStep(AppBasedUploadSettingsDTO appSettings, Long connectorRunId) {
-        ConnectorRunStepDTO step = new ConnectorRunStepDTO();
-        step.setTransformationId(null);
-        step.setConnectorRunId(connectorRunId);
-        step.setStatus(RunStatusTypes.PENDING);
-        step.setProgress(0f);
-        step.setHyperParams(appSettings.getHyperParams());
-        return stepBO.createInNewTransaction(step);
-    }
-
-    private ConnectorTransformerDTO createExtractorTransformer(AppBasedUploadSettingsDTO appSettings, Long stepId) {
-        ConnectorTransformerDTO extractorTransformer = new ConnectorTransformerDTO();
-        extractorTransformer.setId(stepId);
-        extractorTransformer.setAppImage(appSettings.getAppImage());
-        extractorTransformer.setAppVersionId(
-                appSettings.getAppVersionId() != null ? Long.valueOf(appSettings.getAppVersionId()) : null
-        );
-        extractorTransformer.setHyperparams(appSettings.getHyperParams());
-        return extractorTransformer;
-    }
-
-    private boolean isSuccessfulAppStart(ConnectorRunStepDTO result, AppBasedUploadSettingsDTO appSettings) {
-        if (result == null) {
-            Log.warnf("App-based extractor '%s' returned no execution result", appSettings.getAppImage());
-            return false;
-        }
-
-        if (result.getLastError() != null && !result.getLastError().isBlank()) {
-            Log.errorf("App-based extractor failed: %s", result.getLastError());
-            return false;
-        }
-
-        return true;
-    }
-
-    private TableData resolveAppOutput(ConnectorRunExecutionResult finishedStep, AppBasedUploadSettingsDTO appSettings) {
-        if (finishedStep != null && finishedStep.outputData() != null) {
-            return finishedStep.outputData();
-        }
-
-        Log.warn("App-based extractor finished without uploaded tabular output");
-        return null;
+    private ConnectorExtractorStreamDTO streamOf(ExecutionRunDTO run) {
+        ConnectorExtractorStreamDTO stream = appExtractorMapper.runToStreamDTO(run);
+        stream.setCached(false);
+        return stream;
     }
 
     private boolean hasAppImage(AppBasedUploadSettingsDTO appSettings) {
         return appSettings != null
                 && appSettings.getAppImage() != null
                 && !appSettings.getAppImage().isBlank();
-    }
-
-    private void markStepError(ConnectorRunStepDTO step, String message) {
-        if (step == null) {
-            return;
-        }
-
-        stepBO.updateAndNotify(step.getId(), RunStatusTypes.ERROR, message);
-        step.setStatus(RunStatusTypes.ERROR);
-        step.setLastError(message);
-        step.setProgress(100f);
     }
 
     private TableData limit(TableData data, Integer maxRows) {
