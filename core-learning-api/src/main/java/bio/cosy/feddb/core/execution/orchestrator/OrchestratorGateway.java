@@ -21,7 +21,6 @@ import org.jboss.resteasy.reactive.ClientWebApplicationException;
 import java.io.File;
 import java.nio.file.Path;
 
-
 /**
  * OrchestratorGateway provides a foundation for orchestrating
  * operations related to container management, volume management, and project cleanup tasks.
@@ -70,16 +69,6 @@ public class OrchestratorGateway {
             throw new IllegalStateException("Failed to start container: " + e.getMessage(), e);
         }
         return requireContainerId(resp);
-    }
-
-    public String startApplication(
-            StartAppDTO request,
-            String callbackPath) {
-
-        var response = containers.startContainer(
-                request, true, true, callbackPath, callbackPort);
-
-        return requireContainerId(response);
     }
 
     public void uploadFile(
@@ -180,7 +169,6 @@ public class OrchestratorGateway {
         }
         return response.getId();
     }
-
 
     private void requireSuccess(Response response, String operation) {
         if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {

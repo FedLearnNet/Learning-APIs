@@ -80,23 +80,6 @@ public interface DataAnalysisRunService {
     Multi<DataAnalysisRunDTO> createDataAnalysisWorkflowRun(
             @PathParam("dataAnalysisId") Long dataAnalysisId, DataAnalysisCreatePredictionDTO data);
 
-    @POST
-    @Path("/{mode}/{runId}/upload/output")
-    @ToolAuthenticated({Scope.MODEL_PREDICTION_RUN, Scope.MODEL_WORKFLOW_RUN})
-    @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
-    @Operation(summary = "Create output")
-    @APIResponses({
-            @APIResponse(responseCode = "201", description = "created"),
-            @APIResponse(responseCode = "400", description = "Invalid data")
-    })
-    @Transactional
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response uploadOutput(
-            @PathParam("mode") DataAnalysisRunModesEnum mode,
-            @PathParam("runId") Long pathRunId,
-            @BeanParam AppRunUploadData req);
-
-
     @GET
     @Path("/{mode}/{containerId}/download")
     @Operation(summary = "Get output")

@@ -24,18 +24,11 @@ public class WorkflowExecutionBO extends BaseWorkflowExecutionBO<ExecutionRunEnt
 
     private static final BaseWorkflowEngine WORKFLOW_ENGINE = new BaseWorkflowEngine();
 
-
     @Inject
     WorkflowAO workflowAO;
 
     @Inject
-    WorkflowNodeAO workflowNodeAO;
-
-    @Inject
     WorkflowMapper workflowMapper;
-
-    @Inject
-    ExecutionRunMapper runMapper;
 
     public WorkflowExecutionBO() {
         super(ExecutionRunEntity::new, ExecutionRunStepEntity::new, ExecutionLocation.PLATFORM);
@@ -57,19 +50,5 @@ public class WorkflowExecutionBO extends BaseWorkflowExecutionBO<ExecutionRunEnt
             }
         });
         return executeTransactional(start, workflow.getNodes());
-    }
-
-    @Transactional
-    public ExecutionRunDTO executeWorkflowTransactional(Long workflowId, ExecutionStartDTO start) {
-        WorkflowEntity workflow = workflowAO.findByIdOptional(workflowId)
-                .orElseThrow(() -> new NotFoundException("Workflow " + workflowId + " not found"));
-        return runMapper.entityToDto(executeTransactional(start, workflow.getNodes()));
-    }
-
-    @Transactional
-    public ExecutionRunDTO executeNodeTransactional(Long workflowNodeId, ExecutionStartDTO start) {
-        WorkflowNodeEntity node = workflowNodeAO.findByIdOptional(workflowNodeId)
-                .orElseThrow(() -> new NotFoundException("Workflow node " + workflowNodeId + " not found"));
-        return runMapper.entityToDto(executeTransactional(start, List.of(node)));
     }
 }

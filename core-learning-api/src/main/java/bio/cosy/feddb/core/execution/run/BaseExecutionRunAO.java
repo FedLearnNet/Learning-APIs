@@ -11,17 +11,11 @@ import java.util.UUID;
 
 public abstract class BaseExecutionRunAO<R extends BaseExecutionRunEntity<?>> implements PanacheRepository<R> {
 
-
     public Optional<R> findByPublicIdOptional(UUID publicId) {
         return find("publicId", publicId).firstResultOptional();
     }
 
     public Optional<R> findByIdWrite(Long id) {
         return findByIdOptional(id, LockModeType.PESSIMISTIC_WRITE);
-    }
-
-    public List<R> listByLocation(ExecutionLocation location, Page page) {
-        return find("location = ?1 order by id desc", location)
-                .page(page).list();
     }
 }

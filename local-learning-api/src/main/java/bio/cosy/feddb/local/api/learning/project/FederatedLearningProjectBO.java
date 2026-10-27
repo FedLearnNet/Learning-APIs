@@ -119,16 +119,6 @@ public class FederatedLearningProjectBO extends BaseBo<ProjectDetailDTO, Federat
         return Set.of();
     }
 
-    @Transactional
-    public Optional<ProjectDetailDTO> findByGlobalUniqueExperimentIdOptionalTransactional(String id) {
-        return ao.findByRequestIdOptional(id).map(mapper::entityToDto);
-    }
-
-    @Transactional
-    public Optional<ProjectDetailDTO> updateProjectStatusTransactional(FederatedLearningRequestDTO requestLearning) {
-        return ao.findByRequestIdOptional(requestLearning.getGlobalFLExperimentUniqueId()).map(mapper::entityToDto);
-    }
-
     public FederatedLearningProjectEntity createForRequest(Long queryId, FederatedLearningRequestEntity request, ProjectDetailDTO projectVersion, WorkflowDTO workflow) {
         FederatedLearningProjectEntity entity = mapper.dtoToEntity(projectVersion);
         entity.setId(null);
@@ -139,14 +129,6 @@ public class FederatedLearningProjectBO extends BaseBo<ProjectDetailDTO, Federat
         return entity;
     }
 
-    @Transactional
-    public void setProjectAsCoordinatedTransactional(Long id) {
-        boolean updated = ao.updateCoordinatorTransactional(id, true);
-        if (!updated) {
-            throw new NotFoundException("Project with id " + id + " not found");
-        }
-    }
-
     public Path exportForLearning(Long projectId){
         FederatedLearningProjectEntity project = ao.findByIdOptional(projectId)
                 .orElseThrow(() -> new NotFoundException("Project with id " + projectId + " not found"));
@@ -154,5 +136,4 @@ public class FederatedLearningProjectBO extends BaseBo<ProjectDetailDTO, Federat
         Long queryId = project.getQuery().getId();
         return exportBO.exportDataForLearning(project.getExportConfig(), queryId, requestId);
     }
-
 }

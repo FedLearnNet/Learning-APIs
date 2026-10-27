@@ -70,10 +70,6 @@ public class RunMetricsRequestBO extends BaseBo<RunMetricsRequestDTO, RunMetrics
                 });
     }
 
-    public List<RunMetricsResponseDTO> listResponses(Long metricsRequestId) {
-        return runMetricsResponseBO.listForMetricsRequest(metricsRequestId);
-    }
-
     public void saveResponse(RunMetricsResponseClientDTO request) {
         ao.findByGlobalRequestId(request.getRequestId()).ifPresentOrElse(
                 metricsRequest -> runMetricsResponseBO.saveResponse(request, metricsRequest),

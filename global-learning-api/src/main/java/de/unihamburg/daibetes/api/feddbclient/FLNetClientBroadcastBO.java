@@ -37,7 +37,6 @@ public class FLNetClientBroadcastBO {
 
     private static final String ENDPOINT_ID = FLNetClientWebsocket.class.getName();
 
-
     private final Map<String, Set<String>> learningConnectionMap = new ConcurrentHashMap<>();
 
     /**
@@ -74,29 +73,6 @@ public class FLNetClientBroadcastBO {
         }
         learningConnectionMap.remove(connectionId);
         logger.infof("Removed learning connection for ConnectionId: %s", connectionId);
-    }
-
-    /**
-     * Removes a specific experiment association from a WebSocket connection.
-     * If this was the last experiment for the connection, the connection entry is removed entirely.
-     *
-     * @param connectionId The unique identifier of the WebSocket connection
-     * @param experimentId The identifier of the experiment to remove
-     */
-    public void removeLearningExperiment(String connectionId, String experimentId) {
-        if (connectionId == null || experimentId == null) {
-            logger.warnf("ConnectionId or ExperimentId is null. ConnectionId: %s, ExperimentId: %s", connectionId, experimentId);
-            return;
-        }
-        Set<String> experiments = learningConnectionMap.get(connectionId);
-        if (experiments != null) {
-            experiments.remove(experimentId);
-            logger.infof("Removed experiment %d from connection %s", experimentId, connectionId);
-            if (experiments.isEmpty()) {
-                learningConnectionMap.remove(connectionId);
-                logger.infof("Removed connection %s as no experiments remain", connectionId);
-            }
-        }
     }
 
     /**
@@ -261,9 +237,7 @@ public class FLNetClientBroadcastBO {
                     FedDBClientTypeEnum.UPDATE_LEARNING, startLearningClientRequestDTO);
             sendMessageToExperiment(fedDBClientDataDTO, globalUniqueExperimentId);
         }
-
     }
-
 
     /**
      * Stops the learning process for a federated experiment.
@@ -346,7 +320,6 @@ public class FLNetClientBroadcastBO {
                 });
     }
 
-
     /**
      * Retrieves a list of all active connection IDs.
      *
@@ -374,6 +347,4 @@ public class FLNetClientBroadcastBO {
                     }
                 });
     }
-
-
 }

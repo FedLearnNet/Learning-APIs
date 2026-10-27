@@ -31,9 +31,6 @@ import java.util.Optional;
 public class DataAnalysisLLMBO {
 
     @Inject
-    DataAnalysisBO bo;
-
-    @Inject
     ResultAnalyzer resultAnalyzer;
 
     @Inject
@@ -121,7 +118,6 @@ public class DataAnalysisLLMBO {
             }
             return new ResultAnalyzerHyperParam(h.getName(), value, h.getDescription());
         }).toList();
-
     }
 
     private List<ResultAnalyzerHyperParam> getInputs(FederatedAppDetailDTO app,
@@ -147,6 +143,5 @@ public class DataAnalysisLLMBO {
             }
             return new ResultAnalyzerHyperParam(h.getName(), value, h.getDescription());
         }).toList();
-
     }
 }

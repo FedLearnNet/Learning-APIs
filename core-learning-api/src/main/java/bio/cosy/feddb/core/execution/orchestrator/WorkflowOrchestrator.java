@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 @ApplicationScoped
 public class WorkflowOrchestrator {
 
@@ -23,12 +22,6 @@ public class WorkflowOrchestrator {
     OrchestratorGateway orchestrator;
 
     private final Set<String> startedContainers = new HashSet<>();
-
-    public String executeWorkflow(StartWorkflowNodeDTO workflow, String path) throws IllegalArgumentException {
-        String containerId = orchestrator.startWorkflow(workflow, path);
-        startedContainers.add(containerId);
-        return containerId;
-    }
 
     public void uploadFilesToVolume(Long workflowId, Long workflowNodeId, Path filePath, String name) {
         File file = filePath.toFile();

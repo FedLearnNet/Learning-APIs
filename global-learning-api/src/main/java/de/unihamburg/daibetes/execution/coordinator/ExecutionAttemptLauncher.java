@@ -1,7 +1,6 @@
 package de.unihamburg.daibetes.execution.coordinator;
 
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisRunModesEnum;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
 import bio.cosy.feddb.core.execution.ExecutionPurpose;
 import bio.cosy.feddb.core.execution.coordinator.BaseAttemptLauncher;
@@ -39,10 +38,8 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
     // The apps talk back through the existing BO and websocket of their purpose.
     public ExecutionAttemptLauncher() {
         super(Map.of(
-                ExecutionPurpose.ANALYSIS, new ExecutionCallback(Scope.MODEL_WORKFLOW_RUN,
-                        DataAnalysisRunModesEnum.WORKFLOW.socketPath()),
-                ExecutionPurpose.TRAINING, new ExecutionCallback(Scope.MODEL_WORKFLOW_RUN,
-                        DataAnalysisRunModesEnum.WORKFLOW.socketPath())));
+                ExecutionPurpose.ANALYSIS, new ExecutionCallback(Scope.MODEL_WORKFLOW_RUN, "workflow"),
+                ExecutionPurpose.TRAINING, new ExecutionCallback(Scope.MODEL_WORKFLOW_RUN, "workflow")));
     }
 
     @Override

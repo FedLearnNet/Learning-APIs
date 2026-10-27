@@ -15,15 +15,7 @@ public abstract class BaseExecutionRunStepAO<Entity extends BaseExecutionRunStep
         return find("publicId", publicId).firstResultOptional();
     }
 
-    public Optional<Entity> findByWorkflowNodeId(Long runId, Long workflowNodeId) {
-        return find("run.id = ?1 and workflowNode.id = ?2", runId, workflowNodeId).firstResultOptional();
-    }
-
     public Optional<Entity> findByIdWrite(Long id) {
         return findByIdOptional(id, LockModeType.PESSIMISTIC_WRITE);
-    }
-
-    public List<Entity> listByRun(Long runId, Page page) {
-        return find("run.id = ?1 order by id", runId).page(page).list();
     }
 }

@@ -18,10 +18,6 @@ public enum DataAnalysisRunModesEnum {
         }
     }
 
-    public String socketPath() {
-        return "model/run/" + name();
-    }
-
     public boolean isEqual(String value) {
         if (value == null) {
             return false;

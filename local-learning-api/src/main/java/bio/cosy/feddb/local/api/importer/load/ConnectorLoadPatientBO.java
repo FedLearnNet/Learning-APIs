@@ -29,8 +29,6 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ConnectorLoadPatientBO {
-    @Inject
-    CohortBO cohortBO;
 
     @Inject
     SchemaNodeAO schemaNodeAO;

@@ -23,7 +23,6 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Optional;
 
-
 @ApplicationScoped
 public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, ModelSubMapper> {
 
@@ -130,7 +129,6 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
         return mapper.entityToDto(entity);
     }
 
-
     public ModelSubDTO update(bio.cosy.feddb.core.api.model.ModelSubDataDTO dto, Long modelVersionId) {
         Optional<ModelSubEntity> entity = ao.findByModelVersionAndEx(modelVersionId, dto.getRunId());
         if (entity.isEmpty()) {
@@ -170,20 +168,6 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
         }
         throw new NotFoundException("ModelSub not found (no rights)");
     }
-
-    public ModelSubDTO findBySubIdOrModelVersionId(Long modelSubId, Long modelVersionId, String keycloakId) {
-        Optional<ModelSubEntity> entity;
-        if (modelSubId != null) {
-            entity = ao.findByIdOptional(modelSubId);
-        } else {
-            entity = ao.findByRunModelVersionId(modelVersionId);
-        }
-        if (entity.isEmpty()) {
-            throw new NotFoundException("ModelSub not found");
-        }
-        return mapper.entityToDto(entity.get());
-    }
-
 
     public ModelSubDTO selectModel(Long modelSubId, String keycloakId) {
         ModelSubDTO modelSubDTO = getByRunId(modelSubId, keycloakId);

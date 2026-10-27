@@ -38,10 +38,6 @@ import java.util.concurrent.ExecutorService;
 @ApplicationScoped
 public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttemptEntity, ExecutionAttemptAO> {
 
-    // Apps call back below these paths, see ExecutionAttemptWebsocketService and ExecutionAttemptService.
-    public static final String TOOL_PATH = "execution/tool";
-    public static final String LEARNING_PATH = "execution/learning";
-
     @Inject
     WorkflowNodeBO workflowNodeBO;
 
@@ -68,8 +64,8 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
     // Tools reading or writing patient data and connector apps alike process data; a training learns across clinics.
     public ExecutionAttemptLauncher() {
         super(Map.of(
-                ExecutionPurpose.PROCESSING, new ExecutionCallback(Scope.TOOL_RUN, TOOL_PATH),
-                ExecutionPurpose.TRAINING, new ExecutionCallback(Scope.LEARNING_RUN, LEARNING_PATH)));
+                ExecutionPurpose.PROCESSING, new ExecutionCallback(Scope.TOOL_RUN, "tool"),
+                ExecutionPurpose.TRAINING, new ExecutionCallback(Scope.LEARNING_RUN, "learning")));
     }
 
     // A single tool runs like a node of its own: an app of the store, or the image a connector names.

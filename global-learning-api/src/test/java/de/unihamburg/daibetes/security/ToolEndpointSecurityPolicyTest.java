@@ -22,11 +22,11 @@ class ToolEndpointSecurityPolicyTest {
 
     @Test
     void allowsOnlyToolCallbacks() {
-        assertGrant("POST", "/model/run/prediction/42/upload/output", null,
+        assertGrant("POST", "/execution/prediction/42/upload/output", null,
                 Scope.MODEL_PREDICTION_RUN, 42L);
-        assertGrant("POST", "/model/run/workflow/42/upload/output", null,
+        assertGrant("POST", "/execution/workflow/42/upload/output", null,
                 Scope.MODEL_WORKFLOW_RUN, 42L);
-        assertGrant("GET", "/model/run/workflow/42/app", "websocket",
+        assertGrant("GET", "/execution/workflow/42/app", "websocket",
                 Scope.MODEL_WORKFLOW_RUN, 42L);
         assertGrant("GET", "/pipeline/42/info", null, Scope.PIPELINE_RUN, 42L);
         assertGrant("GET", "/pipeline/42/zip", null, Scope.PIPELINE_RUN, 42L);

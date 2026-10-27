@@ -18,12 +18,4 @@ public abstract class BaseExecutionAttemptAO<Entity extends BaseExecutionAttempt
     public Optional<Entity> findByIdWrite(Long id) {
         return findByIdOptional(id, LockModeType.PESSIMISTIC_WRITE);
     }
-
-    public Optional<Entity> findLatestByStep(Long stepId) {
-        return find("step.id = ?1 order by trialIndex desc", stepId).firstResultOptional();
-    }
-
-    public List<Entity> listByStep(Long stepId, Page page) {
-        return find("step.id = ?1 order by trialIndex", stepId).page(page).list();
-    }
 }

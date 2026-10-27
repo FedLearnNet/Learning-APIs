@@ -70,13 +70,6 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
         return startAndFollow(dataAnalysisId, data);
     }
 
-    // runId is the attempt the app runs, single apps and workflows alike.
-    @Override
-    public Response uploadOutput(DataAnalysisRunModesEnum mode, Long runId, AppRunUploadData req) {
-        executionBO.uploadOutputTransactional(runId, req);
-        return Response.status(Response.Status.CREATED).entity(null).build();
-    }
-
     @Override
     @Transactional
     public Response downloadOutput(DataAnalysisRunModesEnum mode, String containerId) {
