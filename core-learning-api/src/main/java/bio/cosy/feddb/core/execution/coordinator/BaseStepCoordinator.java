@@ -1,5 +1,6 @@
 package bio.cosy.feddb.core.execution.coordinator;
 
+import bio.cosy.feddb.core.execution.BaseExecutionStatusEntity;
 import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.core.execution.attempt.BaseExecutionAttemptAO;
 import bio.cosy.feddb.core.execution.attempt.BaseExecutionAttemptDTO;
@@ -91,9 +92,22 @@ public abstract class BaseStepCoordinator<
             step.setSelectedAttempt(attemptOf(step, plan.getSelected()));
             finishStep(step, plan.getStatus(), null);
         } else if (plan.isDone()) {
-            ExecutionFailure failure = new ExecutionFailure(FailureCategory.TOOL, "No trial of the step finished");
-            finishStep(step, plan.getStatus(), failure);
+            finishStep(step, plan.getStatus(), trialFailure(step));
         }
+    }
+
+    // A step without a finished trial fails with the cause of its latest failed trial, not only that none finished.
+    private ExecutionFailure trialFailure(Step step) {
+        Optional<AttemptEntity> failed = step.getAttempts().stream()
+                .filter(attempt -> attempt.getFailure() != null && attempt.getFailure().getMessage() != null)
+                .max(Comparator.comparing(BaseExecutionStatusEntity::getFinishedAt, Comparator.nullsFirst(Comparator.naturalOrder())));
+        if (failed.isEmpty()) {
+            return new ExecutionFailure(FailureCategory.TOOL, "No trial of the step finished");
+        }
+        ExecutionFailure cause = failed.get().getFailure();
+        String trials = step.getAttempts().size() == 1 ? "" : "None of " + step.getAttempts().size() + " trials finished; ";
+        return new ExecutionFailure(cause.getType(), cause.getCategory() != null ? cause.getCategory() : FailureCategory.TOOL,
+                trials + "Trial " + failed.get().getTrialIndex() + " failed: " + cause.getMessage());
     }
 
     // A step without a search runs its node's hyper parameters, stored as JSON, as a single trial.

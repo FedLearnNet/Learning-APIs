@@ -55,6 +55,9 @@ public class ToolImportBuildBO {
     PipelineBO pipelineBO;
 
     @Inject
+    ToolSourceCheckBO sourceCheckBO;
+
+    @Inject
     @RestClient
     DockerServiceClient dockerClient;
 
@@ -297,12 +300,26 @@ public class ToolImportBuildBO {
             case ALWAYS -> true;
             case IF_NOT_EXISTS_IN_STORE -> !request.isExistsInStore();
             case IF_NOT_EXISTS_IN_REGISTRY -> {
+                if (!version.hasImage()) {
+                    Log.infof("Building imported tool version %d: it has no image yet", version.getId());
+                    yield true;
+                }
                 try {
-                    yield !version.hasImage() || !dockerClient.imageExistsInRegistry(version.getImageName());
+                    if (!dockerClient.imageExistsInRegistry(version.getImageName())) {
+                        Log.infof("Building imported tool version %d: image %s is missing in the registry",
+                                version.getId(), version.getImageName());
+                        yield true;
+                    }
                 } catch (Exception e) {
                     Log.warnf(e, "Failed to check registry image for imported tool version %d; proceeding with build", version.getId());
                     yield true;
                 }
+                if (sourceCheckBO.isOutdated(version)) {
+                    Log.infof("Building imported tool version %d: image %s is behind its source",
+                            version.getId(), version.getImageName());
+                    yield true;
+                }
+                yield false;
             }
             case NEVER -> false;
         };
