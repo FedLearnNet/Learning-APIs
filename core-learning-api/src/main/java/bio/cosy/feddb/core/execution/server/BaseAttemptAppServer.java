@@ -36,7 +36,7 @@ public abstract class BaseAttemptAppServer extends BaseAppServer {
         if (lifecycle().checkIfEndedTransactional(attemptId)) {
             return Uni.createFrom().voidItem();
         }
-        AppMessageWrapperDTO<StartRunDTO> start = startMessageOf(lifecycle().startupOf(attemptId));
+        AppMessageWrapperDTO<StartRunDTO> start = startMessageOf(lifecycle().startupOfTransactional(attemptId));
         if (start == null) {
             return Uni.createFrom().voidItem();
         }
@@ -51,7 +51,7 @@ public abstract class BaseAttemptAppServer extends BaseAppServer {
             UpdateRunDTO closed = new UpdateRunDTO();
             closed.setStatus(RunStatusTypes.ERROR);
             closed.setError("App closed its connection before it finished");
-            lifecycle().update(attemptId, closed);
+            lifecycle().updateTransactional(attemptId, closed);
         } catch (RuntimeException e) {
             Log.errorf(e, "Could not close attempt %d", attemptId);
         }
@@ -74,7 +74,7 @@ public abstract class BaseAttemptAppServer extends BaseAppServer {
     @Override
     protected <T> void handleAppMessages(AppMessageWrapperDTO<T> m, Long attemptId, AppRunTypeEnum runType) {
         switch (m.getType()) {
-            case LOG_METRIC -> lifecycle().metric(attemptId, decode(m.getMessage(), ExecutionMessageMetricDTO.class));
+            case LOG_METRIC -> lifecycle().metricTransactional(attemptId, decode(m.getMessage(), ExecutionMessageMetricDTO.class));
             case UPDATE_FEDERATED_RUN -> {
                 FederatedRunLifecycleDTO federated = decode(m.getMessage(), FederatedRunLifecycleDTO.class);
                 if (federated.toRunStatus() != null) {
@@ -97,12 +97,12 @@ public abstract class BaseAttemptAppServer extends BaseAppServer {
 
     @Override
     protected void startRun(Long attemptId, StartRunDTO startRun, AppRunTypeEnum runType) {
-        lifecycle().markRunning(attemptId);
+        lifecycle().markRunningTransactional(attemptId);
     }
 
     @Override
     protected void updateRun(Long attemptId, UpdateRunDTO update, AppRunTypeEnum runType) {
-        lifecycle().update(attemptId, update);
+        lifecycle().updateTransactional(attemptId, update);
     }
 
     @Override
@@ -120,7 +120,7 @@ public abstract class BaseAttemptAppServer extends BaseAppServer {
 
     @Override
     protected void logMessage(Long attemptId, ExecutionMessageLogDTO log, AppRunTypeEnum runType) {
-        lifecycle().log(attemptId, log);
+        lifecycle().logTransactional(attemptId, log);
     }
 
     // Console output is kept as a log of its own kind.
@@ -129,7 +129,7 @@ public abstract class BaseAttemptAppServer extends BaseAppServer {
         ExecutionMessageLogDTO log = new ExecutionMessageLogDTO();
         log.setSeverity("CONSOLE");
         log.setMessage(console.getMsg());
-        lifecycle().log(attemptId, log);
+        lifecycle().logTransactional(attemptId, log);
     }
 
     protected Long attemptId(WebSocketConnection connection) {

@@ -126,7 +126,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
                 throw new BadRequestException("SCAN_ONLY requires an existing image");
             }
         }
-        PipelineDTO created = setPipelineEntityCreated(pipeline);
+        PipelineDTO created = setPipelineEntityCreatedTransactional(pipeline);
         if (dto.getAutoStart()) {
             return start(created.getId());
         }
@@ -135,7 +135,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
 
     // For the initial creation of the entity before the pipeline is started
     @Transactional
-    public PipelineDTO setPipelineEntityCreated(PipelineDTO dto) {
+    public PipelineDTO setPipelineEntityCreatedTransactional(PipelineDTO dto) {
         return stepBO.createSteps(create(dto));
     }
 
@@ -179,11 +179,11 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         if (containerId == null) {
             throw new IllegalStateException("Failed to start container for pipeline " + id);
         }
-        return setPipelineEntityRunning(id, containerId);
+        return setPipelineEntityRunningTransactional(id, containerId);
     }
 
     @Transactional
-    public PipelineDTO setPipelineEntityRunning(Long id, String containerId) {
+    public PipelineDTO setPipelineEntityRunningTransactional(Long id, String containerId) {
         PipelineEntity entity = ao.findByIdOptional(id, LockModeType.PESSIMISTIC_WRITE)
                 .orElseThrow(() -> new NotFoundException(String.format("Pipeline with ID %s not found", id)));
         entity.setContainerId(containerId);
@@ -496,7 +496,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         return updated;
     }
 
-    public Optional<byte[]> getFilesForPipeline(Long id, String secret) {
+    public Optional<byte[]> loadFilesForPipeline(Long id, String secret) {
         Optional<PipelineEntity> entityOptional = ao.findByIdAndSecretOptional(id, secret, LockModeType.PESSIMISTIC_READ);
         if (entityOptional.isEmpty()) {
             throw new NotFoundException(String.format("Property with the ID %s not found", id));

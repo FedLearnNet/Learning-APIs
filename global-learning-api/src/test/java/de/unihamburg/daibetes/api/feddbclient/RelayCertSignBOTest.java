@@ -36,7 +36,7 @@ class RelayCertSignBOTest {
         bo.globalRelayService = mock(GlobalRelayService.class);
         bo.logger = Logger.getLogger(RelayCertSignBOTest.class);
         when(bo.broadcastBO.isConnectionInExperiment(CONNECTION, EXPERIMENT)).thenReturn(true);
-        when(bo.federatedTrainingBO.findRelayChannelForClient(EXPERIMENT, NODE, CLINIC, CLIENT)).thenReturn(Optional.of("channel-1"));
+        when(bo.federatedTrainingBO.findRelayChannelForClientTransactional(EXPERIMENT, NODE, CLINIC, CLIENT)).thenReturn(Optional.of("channel-1"));
         when(bo.globalRelayService.signCert(new RelaySignCertRequestDTO("channel-1", CLIENT, CSR)))
                 .thenReturn(new RelaySignCertResponseDTO("signed-cert"));
         return bo;
@@ -75,7 +75,7 @@ class RelayCertSignBOTest {
         RelayCertSignRequestDTO request = request();
         // e.g. the relay client id of another clinic, another step or an unknown clinic
         request.setClientId("ffffffffffffffff");
-        when(bo.federatedTrainingBO.findRelayChannelForClient(EXPERIMENT, NODE, CLINIC, "ffffffffffffffff")).thenReturn(Optional.empty());
+        when(bo.federatedTrainingBO.findRelayChannelForClientTransactional(EXPERIMENT, NODE, CLINIC, "ffffffffffffffff")).thenReturn(Optional.empty());
 
         RelayCertSignResponseDTO response = bo.sign(request, CONNECTION);
 

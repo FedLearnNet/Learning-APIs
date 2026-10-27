@@ -44,6 +44,11 @@ public abstract class BaseExecutionAttemptEntity<
     @JoinColumn(name = "score_message_id")
     private Message scoreMessage;
 
+    // Latest log the app reported, shown with the attempt without reading all its messages.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "last_log_message_id")
+    private Message lastLogMessage;
+
 
     @Column(name = "container_id")
     private String containerId;

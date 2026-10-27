@@ -26,7 +26,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public List<PermissionDTO> list() {
-        Set<Long> cohortIds = cohortMemberAuthBO.getMemberCohortIds(userIdentity.getKeycloakId());
+        Set<Long> cohortIds = cohortMemberAuthBO.memberCohortIdsOf(userIdentity.getKeycloakId());
         return bo.getAll().stream()
                 .filter(permission -> cohortIds.contains(permission.getCohortId()))
                 .toList();

@@ -49,7 +49,7 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
     @Override
     public DataAnalysisRunDTO retrieveWorkflowExperiment(Long id, Long experimentId) {
         String keycloakId = userIdentity.getKeycloakId();
-        return executionBO.getRun(id, experimentId, keycloakId);
+        return executionBO.findRunTransactional(id, experimentId, keycloakId);
     }
 
     @Override

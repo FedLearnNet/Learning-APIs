@@ -73,7 +73,7 @@ public class RelayCertBO {
      * refused or the controller cannot join.
      */
     @Transactional
-    public void handleSigned(RelayCertSignResponseDTO response) {
+    public void handleSignedTransactional(RelayCertSignResponseDTO response) {
         Optional<ExecutionRunStepEntity> found = projectAO.findByRequestIdOptional(response.getGlobalUniqueExperimentId())
                 .map(project -> project.getRun())
                 .filter(run -> run != null && run.getParticipantId().equals(response.getUniqueRandomClinicId()))
@@ -122,7 +122,7 @@ public class RelayCertBO {
 
     /** Sends a request again if its certificate did not arrive in time, and fails the step if it never does. */
     @Transactional
-    public void retryPending() {
+    public void retryPendingTransactional() {
         retryPending(Instant.now());
     }
 

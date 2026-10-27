@@ -313,7 +313,7 @@ class TabularFileReaderBOTest {
         SheetMergeResultDTO mergeConfig = new SheetMergeResultDTO(
                 "patient_id", Map.of("data", "patient_id", "ids", "pid"), "patient_id");
 
-        try (TableData data = bo.getTableData(tables, mergeConfig, null, null)) {
+        try (TableData data = bo.buildTableData(tables, mergeConfig, null, null)) {
             assertEquals(List.of("patient_id", "age", "clinic"), data.getColumns());
             assertEquals(2, data.longSize());
         }
@@ -335,7 +335,7 @@ class TabularFileReaderBOTest {
                 "patient_id"
         );
 
-        try (TableData data = bo.getMergedPreviewTableData(
+        try (TableData data = bo.readMergedPreviewTableData(
                 zipPath.toFile(), csvZipSettings(), 1, mergeConfig, null, null)) {
             assertEquals(1, data.longSize());
             Map<String, Object> row = data.getRows().getFirst();

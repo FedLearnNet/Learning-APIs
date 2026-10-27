@@ -19,12 +19,12 @@ public class ExecutionWorkflowCoordinator extends BaseWorkflowCoordinator<Execut
     @Incoming(ExecutionChannels.RUN_STARTED)
     @RunOnVirtualThread
     public void consumeRunStarted(RunStartedEvent event) {
-        onRunStarted(event);
+        onRunStartedTransactional(event);
     }
 
     @Incoming(ExecutionChannels.STEP_FINISHED)
     @RunOnVirtualThread
     public void consumeStepFinished(StepFinishedEvent event) {
-        onStepFinished(event);
+        onStepFinishedTransactional(event);
     }
 }

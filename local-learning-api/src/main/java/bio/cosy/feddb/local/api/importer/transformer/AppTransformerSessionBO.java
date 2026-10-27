@@ -146,7 +146,7 @@ public class AppTransformerSessionBO {
     }
 
     private Long start(ConnectorTransformerDTO transformer, Long connectorRunId, String keycloakId, Consumer<ExecutionRunDTO> onRunCreated) {
-        ExecutionRunDTO run = appRunBO.start(transformer, transformer.getHyperparams(), connectorRunId, null, keycloakId, true);
+        ExecutionRunDTO run = appRunBO.startTransactional(transformer, transformer.getHyperparams(), connectorRunId, null, keycloakId, true);
         onRunCreated.accept(run);
         // The import runs batch after batch, so it waits here; the app's connect ends the wait, not a poll.
         Long attemptId = appRunBO.connectedAttempt(run.getId())
@@ -181,7 +181,7 @@ public class AppTransformerSessionBO {
         AppTransformerSessionFailure timedOut = new AppTransformerSessionFailure("App transformer '" + transformer.getAppImage() + "' " + failure);
         return Uni.createFrom().<Long>item(() -> {
                     if (runId != null) {
-                        runBO.attemptOf(runId).ifPresent(attemptId -> appRunBO.fail(attemptId, timedOut.getMessage()));
+                        runBO.attemptOfTransactional(runId).ifPresent(attemptId -> appRunBO.fail(attemptId, timedOut.getMessage()));
                     }
                     return null;
                 })

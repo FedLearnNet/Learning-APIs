@@ -62,7 +62,7 @@ public class DataAnalysisRunResultBO {
     }
 
     @Transactional
-    public List<DataAnalysisRunDTO> findAnalysisRuns(Long dataAnalysisId) {
+    public List<DataAnalysisRunDTO> findAnalysisRunsTransactional(Long dataAnalysisId) {
         return dataAnalysisAO.findById(dataAnalysisId)
                 .getRuns().stream()
                 .map(run -> mapper.mapRunEntityToResultDTO(run, false))
@@ -86,13 +86,13 @@ public class DataAnalysisRunResultBO {
     }
 
     @Transactional
-    public DataAnalysisResultDTO getById(Long runId, String keycloakId) {
+    public DataAnalysisResultDTO findResultTransactional(Long runId, String keycloakId) {
         return mapper.mapRunEntityToAnalysisResultDTO(runAO.findByIdAndKeycloakId(runId, keycloakId));
     }
 
 
     @Transactional
-    public List<DataAnalysisResultDTO> resultsOfAnalysis(Long dataAnalysisId, boolean flat) {
+    public List<DataAnalysisResultDTO> resultsOfAnalysisTransactional(Long dataAnalysisId, boolean flat) {
         return dataAnalysisAO.findById(dataAnalysisId).getRuns().stream()
                 .flatMap(run -> flat
                         ? mapper.mapRunEntityToAnalysisResultDTOs(run).stream()
@@ -101,21 +101,21 @@ public class DataAnalysisRunResultBO {
     }
 
     @Transactional
-    public List<DataAnalysisPredictionDTO> listSingle(String keycloakId) {
+    public List<DataAnalysisPredictionDTO> listSingleTransactional(String keycloakId) {
         return stepAO.listSingle(ExecutionPurpose.ANALYSIS, keycloakId)
                 .stream().<DataAnalysisPredictionDTO>map(mapper::mapStepEntityToAnalysisResultDTO)
                 .toList();
     }
 
     @Transactional
-    public List<DataAnalysisPredictionDTO> listSingleForModel(String keycloakId, Long modelId) {
+    public List<DataAnalysisPredictionDTO> listSingleForModelTransactional(String keycloakId, Long modelId) {
         return stepAO.listSingleForModel(ExecutionPurpose.ANALYSIS, keycloakId, modelId).stream()
                 .<DataAnalysisPredictionDTO>map(mapper::mapStepEntityToAnalysisResultDTO)
                 .toList();
     }
 
     @Transactional
-    public Optional<DataAnalysisResultDTO> resultOfAttempt(Long attemptId) {
+    public Optional<DataAnalysisResultDTO> resultOfAttemptTransactional(Long attemptId) {
         return attemptAO.findByIdOptional(attemptId).map(attempt -> mapper.mapStepEntityToAnalysisResultDTO(attempt.getStep()));
     }
 
@@ -123,7 +123,7 @@ public class DataAnalysisRunResultBO {
      * Swaps file references in the app's input data for links it can download the files from.
      */
     @Transactional
-    public StartRunDTO withInputFileUrls(StartRunDTO start) {
+    public StartRunDTO withInputFileUrlsTransactional(StartRunDTO start) {
         if (start.getInputData() != null) {
             start.getInputData().replaceAll((name, value) -> mapper.mapReferenceToFileEntity(value)
                     .map(file -> (Object) fileMapper.entityToDto(file).getFile().getDownloadContentUrlSecret())

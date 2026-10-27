@@ -68,7 +68,7 @@ public abstract class BaseExecutionFileBO<
         return linkFiles(attempt, files, ExecutionFileDirection.OUTPUT);
     }
 
-    public LinkedHashMap<String, String> getInputFilePaths(Long attemptId) {
+    public LinkedHashMap<String, String> inputFilePathsOf(Long attemptId) {
         LinkedHashMap<String, String> paths = new LinkedHashMap<>();
         listForAttempt(attemptId, ExecutionFileDirection.INPUT)
                 .forEach(input -> paths.put(input.getName(), input.getFileNameWithExtension()));
@@ -78,7 +78,7 @@ public abstract class BaseExecutionFileBO<
     public List<DTO> addOutputs(Attempt attempt, List<FileUpload> uploads) {
         List<DTO> outputs = new ArrayList<>();
         for (FileUpload upload : uploads) {
-            String name = AppRunUploadData.getKey(upload);
+            String name = AppRunUploadData.keyOf(upload);
             try {
                 F storedFile = storeFile(attempt, upload);
                 DTO created = create(attempt, storedFile, name, ExecutionFileDirection.OUTPUT);

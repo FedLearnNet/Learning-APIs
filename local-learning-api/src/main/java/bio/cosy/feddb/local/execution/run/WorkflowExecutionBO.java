@@ -22,12 +22,12 @@ public class WorkflowExecutionBO extends BaseWorkflowExecutionBO<ExecutionRunEnt
     }
 
     @Transactional
-    public ExecutionRunEntity executeApp(String name, LinkedHashMap<String, Object> hyperParams, Consumer<ExecutionRunStepEntity> app) {
+    public ExecutionRunEntity executeAppTransactional(String name, LinkedHashMap<String, Object> hyperParams, Consumer<ExecutionRunStepEntity> app) {
         ExecutionStartDTO start = new ExecutionStartDTO();
         start.setPurpose(ExecutionPurpose.PROCESSING);
         start.setName(name);
         HyperParamSearchDTO search = HyperParamSearchDTO.fixed(hyperParams != null ? hyperParams : new LinkedHashMap<>());
-        return executeSingle(start, search, null, step -> {
+        return executeSingleTransactional(start, search, null, step -> {
             step.setAppName(name);
             app.accept(step);
         });

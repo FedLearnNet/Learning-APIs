@@ -71,7 +71,7 @@ public abstract class BaseAttemptLifecycle<
 
     /** What the app runs: its node's hyper parameters with the trial's on top. */
     @Transactional
-    public StartRunDTO startupOf(Long attemptId) {
+    public StartRunDTO startupOfTransactional(Long attemptId) {
         Attempt attempt = attemptAO.findByIdOptional(attemptId)
                 .orElseThrow(() -> new IllegalArgumentException("Attempt " + attemptId + " not found"));
         LinkedHashMap<String, Object> hyperParams = NodeHyperParams.of(objectMapper, attempt.getStep().getWorkflowNode());
@@ -102,12 +102,12 @@ public abstract class BaseAttemptLifecycle<
     }
 
     @Transactional
-    public void markRunning(Long attemptId) {
+    public void markRunningTransactional(Long attemptId) {
         withAttempt(attemptId, attempt -> moveTo(attempt, RunStatusTypes.RUNNING));
     }
 
     @Transactional
-    public void update(Long attemptId, UpdateRunDTO update) {
+    public void updateTransactional(Long attemptId, UpdateRunDTO update) {
         withAttempt(attemptId, attempt -> {
             if (update.getError() != null || update.getStatus() == RunStatusTypes.ERROR) {
                 end(attempt, RunStatusTypes.ERROR, appFailure(update.getError()));
@@ -124,8 +124,18 @@ public abstract class BaseAttemptLifecycle<
         });
     }
 
-    @Transactional
+    /** Ends the attempt as its app reported; what a purpose keeps of it comes first, outside a transaction. */
     public void finish(Long attemptId, FinishRunDTO finish) {
+        beforeFinish(attemptId, finish);
+        finishTransactional(attemptId, finish);
+    }
+
+    /** Keeps what the app left before its attempt counts as finished, e.g. outputs in its volume; nothing by default. */
+    protected void beforeFinish(Long attemptId, FinishRunDTO finish) {
+    }
+
+    @Transactional
+    public void finishTransactional(Long attemptId, FinishRunDTO finish) {
         withAttempt(attemptId, attempt -> {
             attempt.setMeta(finish.getMeta());
             if (finish.getError() != null || finish.getStatus() == RunStatusTypes.ERROR) {
@@ -137,12 +147,12 @@ public abstract class BaseAttemptLifecycle<
     }
 
     @Transactional
-    public void log(Long attemptId, ExecutionMessageLogDTO log) {
-        withAttempt(attemptId, attempt -> store(attempt, RunMessageTypes.LOG, log));
+    public void logTransactional(Long attemptId, ExecutionMessageLogDTO log) {
+        withAttempt(attemptId, attempt -> attempt.setLastLogMessage(store(attempt, RunMessageTypes.LOG, log)));
     }
 
     @Transactional
-    public void metric(Long attemptId, ExecutionMessageMetricDTO metric) {
+    public void metricTransactional(Long attemptId, ExecutionMessageMetricDTO metric) {
         withAttempt(attemptId, attempt -> {
             Message message = store(attempt, RunMessageTypes.METRIC, metric);
             HyperParamSearchDTO search = attempt.getStep().getSearch();
@@ -154,7 +164,7 @@ public abstract class BaseAttemptLifecycle<
     }
 
     @Transactional
-    public void round(Long attemptId, ExecutionMessageRoundDTO round) {
+    public void roundTransactional(Long attemptId, ExecutionMessageRoundDTO round) {
         withAttempt(attemptId, attempt -> store(attempt, RunMessageTypes.ROUND, round));
     }
 

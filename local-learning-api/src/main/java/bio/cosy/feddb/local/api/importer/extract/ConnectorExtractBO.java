@@ -275,7 +275,7 @@ public class ConnectorExtractBO {
         if (tables.isEmpty()) {
             return null;
         }
-        return fileHandlerBO.getTableData(
+        return fileHandlerBO.buildTableData(
                 tables, request.getMergeConfig(), request.getPivotConfig(), request.getUploadInfo());
     }
 
@@ -317,7 +317,7 @@ public class ConnectorExtractBO {
     private TableData loadFromFile(FileUploadSettingsDTO fileSettings, ExtractRequest request) {
         if (request.isPreview() && SheetMergePlan.requested(request.getMergeConfig())) {
             ResolvedFileInput input = self.get().loadFileTransactional(fileSettings, request.getCohortId());
-            return fileHandlerBO.getMergedPreviewTableData(
+            return fileHandlerBO.readMergedPreviewTableData(
                     input.file(),
                     input.parsingSettings(),
                     request.getLimit(),
@@ -376,7 +376,7 @@ public class ConnectorExtractBO {
         }
         Log.infof("Starting app-based extractor (image: %s, import: %s)", appSettings.getAppImage(), connectorRunId);
         try {
-            ExecutionRunDTO run = appRunBO.start(appSettings.getExtractor(), appSettings.getHyperParams(), connectorRunId,
+            ExecutionRunDTO run = appRunBO.startTransactional(appSettings.getExtractor(), appSettings.getHyperParams(), connectorRunId,
                     cohortId, keycloakId, false);
             // The import reads the table next, so it waits here; the timeout stops the run.
             ConnectorAppOutputDTO output = appRunBO.output(run.getId(), APP_OUTPUT_TIMEOUT).await().indefinitely();
@@ -457,7 +457,7 @@ public class ConnectorExtractBO {
             Log.warn("App-based extractor has no appImage configured");
             return Multi.createFrom().empty();
         }
-        ExecutionRunDTO run = appRunBO.start(appSettings.getExtractor(), appSettings.getHyperParams(), null, cohortId, keycloakId, false);
+        ExecutionRunDTO run = appRunBO.startTransactional(appSettings.getExtractor(), appSettings.getHyperParams(), null, cohortId, keycloakId, false);
         return Multi.createBy().concatenating().streams(
                 runBO.follow(run.getId()).map(this::streamOf),
                 Multi.createFrom().uni(previewOf(run, appSettings)));

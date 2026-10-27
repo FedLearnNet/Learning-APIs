@@ -49,12 +49,12 @@ public abstract class BaseWorkflowExecutionBO<
     }
 
     @Transactional
-    public Run execute(@NotNull @Valid ExecutionStartDTO start, @NotEmpty Collection<Node> nodes) {
-        return start(create(start, nodes));
+    public Run executeTransactional(@NotNull @Valid ExecutionStartDTO start, @NotEmpty Collection<Node> nodes) {
+        return start(createTransactional(start, nodes));
     }
 
     @Transactional
-    public Run create(@NotNull @Valid ExecutionStartDTO start, @NotEmpty Collection<Node> nodes) {
+    public Run createTransactional(@NotNull @Valid ExecutionStartDTO start, @NotEmpty Collection<Node> nodes) {
         Set<Long> nodeIds = new HashSet<>();
         nodes.forEach(node -> nodeIds.add(node.getId()));
         requireNodesOf(nodeIds, start.getSearches().keySet(), "Searches");
@@ -69,7 +69,7 @@ public abstract class BaseWorkflowExecutionBO<
     }
 
     @Transactional
-    public Run start(@NotNull Long runId) {
+    public Run startTransactional(@NotNull Long runId) {
         Run run = runAO.findByIdWrite(runId).orElseThrow(() -> new NotFoundException("Run " + runId + " not found"));
         if (run.getStatus() != RunStatusTypes.PENDING || run.getStartedAt() != null) {
             throw new IllegalStateException("Run " + runId + " was started already");
@@ -82,7 +82,7 @@ public abstract class BaseWorkflowExecutionBO<
      * step what it runs; hyper parameters come as the search, fixed or searched.
      */
     @Transactional
-    public Run executeSingle(@NotNull @Valid ExecutionStartDTO start, @Valid HyperParamSearchDTO search,
+    public Run executeSingleTransactional(@NotNull @Valid ExecutionStartDTO start, @Valid HyperParamSearchDTO search,
                              LinkedHashMap<String, Object> inputs, @NotNull Consumer<Step> target) {
         requireNodesOf(Set.of(), start.getSearches().keySet(), "Searches");
         requireNodesOf(Set.of(), start.getInputs().keySet(), "Inputs");
@@ -97,7 +97,7 @@ public abstract class BaseWorkflowExecutionBO<
      * revokes the keys of the stopped attempts. A run that already ended is left as it is.
      */
     @Transactional
-    public Run stop(@NotNull Long runId) {
+    public Run stopTransactional(@NotNull Long runId) {
         Run run = runAO.findByIdWrite(runId).orElseThrow(() -> new NotFoundException("Run " + runId + " not found"));
         if (run.hasEnded()) {
             return run;
@@ -121,8 +121,8 @@ public abstract class BaseWorkflowExecutionBO<
 
     /** Deletes a run with its steps and attempts, stopping it first if it still runs. */
     @Transactional
-    public void delete(@NotNull Long runId) {
-        Run run = stop(runId);
+    public void deleteTransactional(@NotNull Long runId) {
+        Run run = stopTransactional(runId);
         // A step points at its selected attempt, which would block deleting the attempts.
         run.getSteps().forEach(step -> step.setSelectedAttempt(null));
         runAO.flush();

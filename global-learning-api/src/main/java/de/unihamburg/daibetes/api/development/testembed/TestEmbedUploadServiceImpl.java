@@ -41,7 +41,7 @@ public class TestEmbedUploadServiceImpl implements TestEmbedUploadService {
         data.setOutputData(req.getFieldsNullsafe());
         req.getFilesNullsafe().forEach(fileUpload -> {
             try {
-                String key = AppRunUploadData.getKey(fileUpload);
+                String key = AppRunUploadData.keyOf(fileUpload);
                 String base64Encoded = FileHelper.formToBase64(fileUpload);
                 data.getOutputData().put(key, base64Encoded);
             } catch (IOException e) {

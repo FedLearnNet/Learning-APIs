@@ -55,7 +55,7 @@ public class DataAnalysisLLMBO {
 
         DataAnalysisPredictionDTO prediction = null;
         if (fileEntity.getAttempt() != null) {
-            prediction = runResultBO.resultOfAttempt(fileEntity.getAttempt().getId()).orElse(null);
+            prediction = runResultBO.resultOfAttemptTransactional(fileEntity.getAttempt().getId()).orElse(null);
         }
         if (prediction == null || prediction.getAppVersionId() == null) {
             Log.infof("No associated app found for file %d in data analysis %d, performing raw file analysis", fileId, id);

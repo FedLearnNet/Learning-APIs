@@ -36,73 +36,73 @@ public class ProjectExperimentServiceImpl implements ProjectExperimentService {
 
     @Override
     public List<ExecutionRunDetailDTO> listFederated(Long projectId) {
-        return federatedTrainingBO.list(projectId, userIdentity.getKeycloakId());
+        return federatedTrainingBO.listTransactional(projectId, userIdentity.getKeycloakId());
     }
 
     @Override
     public Response createFederated(Long projectId, CreateProjectFederatedExperimentDTO createDTO) {
-        ExecutionRunDetailDTO created = federatedTrainingBO.create(projectId, createDTO, userIdentity.getKeycloakId(), userIdentity.getRoles());
+        ExecutionRunDetailDTO created = federatedTrainingBO.createTransactional(projectId, createDTO, userIdentity.getKeycloakId(), userIdentity.getRoles());
         return Response.status(Response.Status.CREATED).entity(created).build();
     }
 
     @Override
     public Multi<ExecutionRunDetailDTO> retrieveFederated(Long projectId, Long runId) {
         String keycloakId = userIdentity.getKeycloakId();
-        return follow(Uni.createFrom().item(() -> federatedTrainingBO.get(projectId, runId, keycloakId)));
+        return follow(Uni.createFrom().item(() -> federatedTrainingBO.findRunTransactional(projectId, runId, keycloakId)));
     }
 
     @Override
     public ExecutionRunDetailDTO startFederated(Long projectId, Long runId) {
-        return federatedTrainingBO.start(projectId, runId, userIdentity.getKeycloakId());
+        return federatedTrainingBO.startTransactional(projectId, runId, userIdentity.getKeycloakId());
     }
 
     @Override
     public ExecutionRunDetailDTO stopFederated(Long projectId, Long runId) {
-        return federatedTrainingBO.stop(projectId, runId, userIdentity.getKeycloakId());
+        return federatedTrainingBO.stopTransactional(projectId, runId, userIdentity.getKeycloakId());
     }
 
     @Override
     public List<ExecutionRunDetailDTO> listLocal(Long projectId) {
-        return platformTrainingBO.list(projectId, userIdentity.getKeycloakId());
+        return platformTrainingBO.listTransactional(projectId, userIdentity.getKeycloakId());
     }
 
     @Override
     public Response createLocal(Long projectId, CreateProjectLocalExperimentDTO createDTO) {
-        ExecutionRunDetailDTO created = platformTrainingBO.create(projectId, createDTO, userIdentity.getKeycloakId());
+        ExecutionRunDetailDTO created = platformTrainingBO.createTransactional(projectId, createDTO, userIdentity.getKeycloakId());
         return Response.status(Response.Status.CREATED).entity(created).build();
     }
 
     @Override
     public Multi<ExecutionRunDetailDTO> retrieveLocal(Long projectId, Long runId) {
         String keycloakId = userIdentity.getKeycloakId();
-        return follow(Uni.createFrom().item(() -> platformTrainingBO.get(projectId, runId, keycloakId, false)));
+        return follow(Uni.createFrom().item(() -> platformTrainingBO.findRunTransactional(projectId, runId, keycloakId, false)));
     }
 
     @Override
     public ExecutionRunDetailDTO retrieveLocalDetail(Long projectId, Long runId) {
-        return platformTrainingBO.get(projectId, runId, userIdentity.getKeycloakId(), true);
+        return platformTrainingBO.findRunTransactional(projectId, runId, userIdentity.getKeycloakId(), true);
     }
 
     @Override
     public ExecutionRunDetailDTO startLocal(Long projectId, Long runId) {
-        return platformTrainingBO.start(projectId, runId, userIdentity.getKeycloakId());
+        return platformTrainingBO.startTransactional(projectId, runId, userIdentity.getKeycloakId());
     }
 
     @Override
     public ExecutionRunDetailDTO stopLocal(Long projectId, Long runId) {
-        return platformTrainingBO.stop(projectId, runId, userIdentity.getKeycloakId());
+        return platformTrainingBO.stopTransactional(projectId, runId, userIdentity.getKeycloakId());
     }
 
     @Override
     public Response createLocalTest(Long projectId) {
-        ExecutionRunDetailDTO created = platformTrainingBO.createTestAndStart(projectId, userIdentity.getKeycloakId());
+        ExecutionRunDetailDTO created = platformTrainingBO.createTestAndStartTransactional(projectId, userIdentity.getKeycloakId());
         return Response.status(Response.Status.CREATED).entity(created).build();
     }
 
     @Override
     public Multi<ExecutionRunDetailDTO> retrieveLocalTest(Long projectId) {
         String keycloakId = userIdentity.getKeycloakId();
-        return follow(Uni.createFrom().item(() -> platformTrainingBO.getTest(projectId, keycloakId)));
+        return follow(Uni.createFrom().item(() -> platformTrainingBO.findTestTransactional(projectId, keycloakId)));
     }
 
     // The training now, then every change of it; nothing for a project never tested.

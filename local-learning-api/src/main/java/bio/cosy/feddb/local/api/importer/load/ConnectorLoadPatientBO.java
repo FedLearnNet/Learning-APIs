@@ -229,7 +229,7 @@ public class ConnectorLoadPatientBO {
      * dry run reports how many patients would be created and how many updated.
      */
     @Transactional
-    public void dryRunPatient(
+    public void dryRunPatientTransactional(
             @Nonnull ConnectorLoadPatient patient,
             @Nonnull ConnectorRunDTO run) {
         updateStatistics(run, 1, BulkImportStatisticsTypeEnum.RECEIVED_ENTITIES);

@@ -42,7 +42,7 @@ public class WorkflowExecutionBO extends BaseWorkflowExecutionBO<ExecutionRunEnt
     }
 
     @Transactional
-    public ExecutionRunEntity startWorkflow(ExecutionStartDTO start, Long workflowId, LinkedHashMap<String, Object> inputs,
+    public ExecutionRunEntity startWorkflowTransactional(ExecutionStartDTO start, Long workflowId, LinkedHashMap<String, Object> inputs,
                                             String keycloakId) {
 
         WorkflowEntity workflow = workflowAO.findByUserIdAndWorkflowId(workflowId, keycloakId)
@@ -56,20 +56,20 @@ public class WorkflowExecutionBO extends BaseWorkflowExecutionBO<ExecutionRunEnt
                         .put(connection.getInputFileName(), value));
             }
         });
-        return execute(start, workflow.getNodes());
+        return executeTransactional(start, workflow.getNodes());
     }
 
     @Transactional
-    public ExecutionRunDTO executeWorkflow(Long workflowId, ExecutionStartDTO start) {
+    public ExecutionRunDTO executeWorkflowTransactional(Long workflowId, ExecutionStartDTO start) {
         WorkflowEntity workflow = workflowAO.findByIdOptional(workflowId)
                 .orElseThrow(() -> new NotFoundException("Workflow " + workflowId + " not found"));
-        return runMapper.entityToDto(execute(start, workflow.getNodes()));
+        return runMapper.entityToDto(executeTransactional(start, workflow.getNodes()));
     }
 
     @Transactional
-    public ExecutionRunDTO executeNode(Long workflowNodeId, ExecutionStartDTO start) {
+    public ExecutionRunDTO executeNodeTransactional(Long workflowNodeId, ExecutionStartDTO start) {
         WorkflowNodeEntity node = workflowNodeAO.findByIdOptional(workflowNodeId)
                 .orElseThrow(() -> new NotFoundException("Workflow node " + workflowNodeId + " not found"));
-        return runMapper.entityToDto(execute(start, List.of(node)));
+        return runMapper.entityToDto(executeTransactional(start, List.of(node)));
     }
 }

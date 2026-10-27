@@ -13,6 +13,6 @@ public class RelayCertificateScheduler {
 
     @Scheduled(every = "30s", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     void retryPendingCertificates() {
-        relayCertBO.retryPending();
+        relayCertBO.retryPendingTransactional();
     }
 }

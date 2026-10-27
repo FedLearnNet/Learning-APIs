@@ -98,14 +98,14 @@ public class ModelServiceImpl implements ModelService {
     public List<DataAnalysisPredictionDTO> listAllExperiment() {
         String keycloakId = userIdentity.getKeycloakId();
 
-        return runResultBO.listSingle(keycloakId);
+        return runResultBO.listSingleTransactional(keycloakId);
     }
 
     @Override
     public List<DataAnalysisPredictionDTO> listPredictions(Long id) {
         String keycloakId = userIdentity.getKeycloakId();
 
-        return runResultBO.listSingleForModel(keycloakId, id);
+        return runResultBO.listSingleForModelTransactional(keycloakId, id);
     }
 
     @Override
@@ -119,8 +119,8 @@ public class ModelServiceImpl implements ModelService {
             throw new BadRequestException("Execution id has to be set (Model or App id)");
         }
 
-        Long runId = executionBO.start(null, createDTO, keycloakId);
-        DataAnalysisPredictionDTO modelPredictionDTO = runResultBO.getById(runId, keycloakId);
+        Long runId = executionBO.startTransactional(null, createDTO, keycloakId);
+        DataAnalysisPredictionDTO modelPredictionDTO = runResultBO.findResultTransactional(runId, keycloakId);
         return Response.status(Response.Status.CREATED).entity(modelPredictionDTO).build();
     }
 

@@ -67,7 +67,7 @@ public class DataAnalysisExecutionBO {
     DataAnalysisRunResultMapper runResultMapper;
 
     @Transactional
-    public Long start(Long dataAnalysisId, DataAnalysisCreatePredictionDTO data, String keycloakId) {
+    public Long startTransactional(Long dataAnalysisId, DataAnalysisCreatePredictionDTO data, String keycloakId) {
         if (data == null) {
             throw new IllegalArgumentException("data is null");
         }
@@ -85,7 +85,7 @@ public class DataAnalysisExecutionBO {
         start.setPurpose(ExecutionPurpose.ANALYSIS);
         ExecutionRunEntity run;
         if (data.getWorkflowId() != null) {
-            run = workflowExecutionBO.startWorkflow(start, data.getWorkflowId(), inputs, keycloakId);
+            run = workflowExecutionBO.startWorkflowTransactional(start, data.getWorkflowId(), inputs, keycloakId);
         } else {
             run = executionBO.startSingle(start, data, inputs, keycloakId);
         }
@@ -100,7 +100,7 @@ public class DataAnalysisExecutionBO {
     }
 
     @Transactional
-    public void uploadOutput(Long attemptId, AppRunUploadData upload) {
+    public void uploadOutputTransactional(Long attemptId, AppRunUploadData upload) {
         ExecutionAttemptEntity attempt = attemptAO.findByIdOptional(attemptId)
                 .orElseThrow(() -> new NotFoundException("Attempt " + attemptId + " not found"));
         ExecutionRunEntity run = attempt.getStep().getRun();
@@ -115,33 +115,33 @@ public class DataAnalysisExecutionBO {
     }
 
     @Transactional
-    public DataAnalysisRunDTO getRun(Long dataAnalysisId, Long runId, String keycloakId) {
+    public DataAnalysisRunDTO findRunTransactional(Long dataAnalysisId, Long runId, String keycloakId) {
         requireOwnRun(dataAnalysisId, runId, keycloakId);
         return resultBO.findRunByIdTransactional(runId, keycloakId, true);
     }
 
     @Transactional
-    public DataAnalysisRunDTO stop(Long dataAnalysisId, Long runId, String keycloakId) {
+    public DataAnalysisRunDTO stopTransactional(Long dataAnalysisId, Long runId, String keycloakId) {
         requireOwnRun(dataAnalysisId, runId, keycloakId);
-        ExecutionRunEntity run = workflowExecutionBO.stop(runId);
+        ExecutionRunEntity run = workflowExecutionBO.stopTransactional(runId);
         return runResultMapper.mapRunEntityToResultDTO(run, false);
     }
 
     @Transactional
-    public void delete(Long dataAnalysisId, Long runId, String keycloakId) {
+    public void deleteTransactional(Long dataAnalysisId, Long runId, String keycloakId) {
         requireOwnRun(dataAnalysisId, runId, keycloakId);
         delete(runId);
     }
 
     @Transactional
-    public void deleteRunsOfSubModel(Long subModelId) {
+    public void deleteRunsOfSubModelTransactional(Long subModelId) {
         stepAO.listRunIdsForSubModel(subModelId).forEach(this::delete);
     }
 
     private void delete(Long runId) {
         runAO.findByIdOptional(runId).ifPresent(run ->
                 dataAnalysisAO.findByRunId(runId).ifPresent(analysis -> analysis.getRuns().remove(run)));
-        workflowExecutionBO.delete(runId);
+        workflowExecutionBO.deleteTransactional(runId);
     }
 
     private void requireOwnRun(Long dataAnalysisId, Long runId, String keycloakId) {

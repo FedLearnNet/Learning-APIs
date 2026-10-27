@@ -36,10 +36,10 @@ public class ExecutionAttemptService {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Operation(summary = "Uploads the outputs of an attempt")
     public Response uploadOutput(@PathParam("runId") Long attemptId, @BeanParam AppRunUploadData upload) {
-        ExecutionPurpose purpose = lifecycle.purposeOf(attemptId)
+        ExecutionPurpose purpose = lifecycle.purposeOfTransactional(attemptId)
                 .orElseThrow(() -> new NotFoundException("Attempt " + attemptId + " not found"));
         if (purpose == ExecutionPurpose.TRAINING) {
-            federatedLearningRunBO.keepOutputs(attemptId, upload.getFilesNullsafe());
+            federatedLearningRunBO.keepOutputsTransactional(attemptId, upload.getFilesNullsafe());
         } else {
             connectorAppRunBO.uploadOutput(attemptId, upload);
         }
@@ -53,7 +53,7 @@ public class ExecutionAttemptService {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Operation(summary = "Uploads the model an attempt of a training trained")
     public Response uploadModel(@PathParam("runId") Long attemptId, @BeanParam ModelSubDataDTO model) {
-        federatedLearningRunBO.uploadModel(attemptId, model);
+        federatedLearningRunBO.uploadModelTransactional(attemptId, model);
         return Response.status(Response.Status.CREATED).build();
     }
 }

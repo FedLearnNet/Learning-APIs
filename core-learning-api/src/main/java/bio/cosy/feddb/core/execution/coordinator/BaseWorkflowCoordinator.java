@@ -43,12 +43,12 @@ public abstract class BaseWorkflowCoordinator<
     public StepAO stepAO;
 
     @Transactional
-    public void onRunStarted(RunStartedEvent event) {
+    public void onRunStartedTransactional(RunStartedEvent event) {
         advance(event.getRunId());
     }
 
     @Transactional
-    public void onStepFinished(StepFinishedEvent event) {
+    public void onStepFinishedTransactional(StepFinishedEvent event) {
         stepAO.findByIdOptional(event.getStepId()).ifPresentOrElse(
                 step -> advance(step.getRun().getId()),
                 () -> Log.debugf("Ignoring finished step %d, it is gone", event.getStepId()));

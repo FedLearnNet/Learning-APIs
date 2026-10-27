@@ -73,7 +73,7 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
     // runId is the attempt the app runs, single apps and workflows alike.
     @Override
     public Response uploadOutput(DataAnalysisRunModesEnum mode, Long runId, AppRunUploadData req) {
-        executionBO.uploadOutput(runId, req);
+        executionBO.uploadOutputTransactional(runId, req);
         return Response.status(Response.Status.CREATED).entity(null).build();
     }
 
@@ -81,7 +81,7 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
     @Transactional
     public Response downloadOutput(DataAnalysisRunModesEnum mode, String containerId) {
         String keycloakId = userIdentity.getKeycloakId();
-        byte[] result = fileBO.downloadOutput(containerId, keycloakId);
+        byte[] result = fileBO.downloadOutputTransactional(containerId, keycloakId);
 
         String filename = "result-" + containerId + "-files.zip";
         return Response.ok(result, "application/zip")
@@ -107,7 +107,7 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
 
     private Multi<DataAnalysisRunDTO> startAndFollow(Long dataAnalysisId, DataAnalysisCreatePredictionDTO data) {
         String keycloakId = userIdentity.getKeycloakId();
-        return Uni.createFrom().item(() -> executionBO.start(dataAnalysisId, data, keycloakId))
+        return Uni.createFrom().item(() -> executionBO.startTransactional(dataAnalysisId, data, keycloakId))
                 .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
                 .onItem().transformToMulti(runId -> follow(runId, keycloakId));
     }

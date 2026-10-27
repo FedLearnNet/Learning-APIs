@@ -63,7 +63,7 @@ public class TestEmbedService {
             return null;
         }//TODO ELSE
         AppMessageWrapperDTO<String> dto = new AppMessageWrapperDTO<>(AppMessageTypeEnum.CLIENT_STARTED, "Type " + type + " connected");
-        getConnections(appId, AppConnectionTypesEnum.getOpposite(type)).forEach(c -> c.sendTextAndAwait(dto));
+        connectionsOf(appId, AppConnectionTypesEnum.oppositeOf(type)).forEach(c -> c.sendTextAndAwait(dto));
         handleClientConnected(appId, type);
         handleAppConnected(appId, type);
         return dto;
@@ -85,7 +85,7 @@ public class TestEmbedService {
         try {
             logger.debug("Received message Text: " + m.getMessage() + " for app " + appId + " and type " + type);
             if (!DONT_FORWARD_DIRECTLY.contains(m.getType())) {
-                getConnections(appId, AppConnectionTypesEnum.getOpposite(type)).forEach(c -> c.sendTextAndAwait(m));
+                connectionsOf(appId, AppConnectionTypesEnum.oppositeOf(type)).forEach(c -> c.sendTextAndAwait(m));
             }
             if (AppConnectionTypesEnum.APP.isEqual(type)) {
                 handleAppMessages(m, appId, type, runType);
@@ -109,7 +109,7 @@ public class TestEmbedService {
         AppMessageWrapperDTO<String> dto = new AppMessageWrapperDTO<>(AppMessageTypeEnum.CLIENT_STOPPED,
                 "Type " + type + " disconnected",
                 AppRunTypeEnum.NOT_DEFINED);
-        getConnections(appId, AppConnectionTypesEnum.getOpposite(type)).forEach(c -> c.sendTextAndAwait(dto));
+        connectionsOf(appId, AppConnectionTypesEnum.oppositeOf(type)).forEach(c -> c.sendTextAndAwait(dto));
         // The frontend learns about the ended test runs from the test run sender.
         if (AppConnectionTypesEnum.APP.isEqual(type)) {
             testEmbedBO.closeAllTest(appId);
@@ -120,7 +120,7 @@ public class TestEmbedService {
         if (!AppConnectionTypesEnum.CLIENT.isEqual(type)) {
             return;
         }
-        if (getConnections(appId, AppConnectionTypesEnum.APP).findAny().isPresent()) {
+        if (connectionsOf(appId, AppConnectionTypesEnum.APP).findAny().isPresent()) {
             AppMessageWrapperDTO<String> responseAppStarted = new AppMessageWrapperDTO<>(AppMessageTypeEnum.CLIENT_STARTED,
                     "app is connected");
             connection.sendTextAndAwait(responseAppStarted);
@@ -132,8 +132,8 @@ public class TestEmbedService {
             return;
         }
         testEmbedBO.launchPendingTestRuns(appId);
-        testEmbedBO.getAppConfig(appId).ifPresent(config -> {
-            getConnections(appId, AppConnectionTypesEnum.APP).forEach(c -> c.sendTextAndAwait(config));
+        testEmbedBO.findAppConfigTransactional(appId).ifPresent(config -> {
+            connectionsOf(appId, AppConnectionTypesEnum.APP).forEach(c -> c.sendTextAndAwait(config));
         });
     }
 
@@ -144,13 +144,13 @@ public class TestEmbedService {
             case CONFIG_CHANGED:
                 // handle pydantic class generation
                 FederatedAppDetailDTO config = objectMapper.convertValue(m.getMessage(), FederatedAppDetailDTO.class);
-                AppMessageWrapperDTO<FederatedAppDetailDTO> updatedConfig = testEmbedBO.saveAppConfig(config, appId, false);
+                AppMessageWrapperDTO<FederatedAppDetailDTO> updatedConfig = testEmbedBO.saveAppConfigTransactional(config, appId, false);
                 if (updatedConfig.getType().equals(AppMessageTypeEnum.DO_NOTHING)) {
                     return;
                 }
-                getConnections(appId, AppConnectionTypesEnum.APP).forEach(c -> c.sendTextAndAwait(updatedConfig));
-                AppMessageWrapperDTO<PydanticUpdateDTO> pydanticDto = testEmbedBO.getPydanticObj(updatedConfig.getMessage());
-                getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(pydanticDto));
+                connectionsOf(appId, AppConnectionTypesEnum.APP).forEach(c -> c.sendTextAndAwait(updatedConfig));
+                AppMessageWrapperDTO<PydanticUpdateDTO> pydanticDto = testEmbedBO.pydanticObjOf(updatedConfig.getMessage());
+                connectionsOf(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(pydanticDto));
                 break;
             case START_RUN:
                 // The test run launcher hands it to the app, the test run sender shows it to the frontend.
@@ -176,13 +176,13 @@ public class TestEmbedService {
             case CONFIG_CHANGED:
                 // handle pydantic class generation
                 FederatedAppDetailDTO config = objectMapper.convertValue(m.getMessage(), FederatedAppDetailDTO.class);
-                AppMessageWrapperDTO<FederatedAppDetailDTO> updatedConfig = testEmbedBO.saveAppConfig(config, appId, true);
+                AppMessageWrapperDTO<FederatedAppDetailDTO> updatedConfig = testEmbedBO.saveAppConfigTransactional(config, appId, true);
                 if (updatedConfig.getType().equals(AppMessageTypeEnum.DO_NOTHING)) {
                     return;
                 }
-                AppMessageWrapperDTO<PydanticUpdateDTO> pydanticDto = testEmbedBO.getPydanticObj(updatedConfig.getMessage());
-                getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(pydanticDto));
-                getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(updatedConfig));
+                AppMessageWrapperDTO<PydanticUpdateDTO> pydanticDto = testEmbedBO.pydanticObjOf(updatedConfig.getMessage());
+                connectionsOf(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(pydanticDto));
+                connectionsOf(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(updatedConfig));
                 break;
             case CLIENT_STARTED:
                 break;
@@ -191,22 +191,22 @@ public class TestEmbedService {
                 break;
             case UPDATE_RUN:
                 UpdateRunDTO updateTest = objectMapper.convertValue(m.getMessage(), UpdateRunDTO.class);
-                testEmbedBO.updateRun(updateTest, runType);
+                testEmbedBO.updateRunTransactional(updateTest, runType);
                 break;
             case FINISH_RUN:
                 FinishRunDTO finishTest = objectMapper.convertValue(m.getMessage(), FinishRunDTO.class);
                 // The next trial of an experiment is launched by its step coordinator.
-                testEmbedBO.finishRun(finishTest, runType);
+                testEmbedBO.finishRunTransactional(finishTest, runType);
                 break;
             case LOG_MESSAGE:
                 ExecutionMessageLogDTO runMessage = objectMapper.convertValue(m.getMessage(), ExecutionMessageLogDTO.class);
-                AppMessageWrapperDTO<ExecutionMessageLogDTO> savedLog = testEmbedBO.logTestMessage(runMessage.getRunId(), runMessage, runType);
-                getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(savedLog));
+                AppMessageWrapperDTO<ExecutionMessageLogDTO> savedLog = testEmbedBO.logTestMessageTransactional(runMessage.getRunId(), runMessage, runType);
+                connectionsOf(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(savedLog));
                 break;
             case LOG_METRIC:
                 ExecutionMessageMetricDTO runMetric = objectMapper.convertValue(m.getMessage(), ExecutionMessageMetricDTO.class);
-                AppMessageWrapperDTO<ExecutionMessageMetricDTO> savedMetric = testEmbedBO.logTestMetric(runMetric.getRunId(), runMetric, runType);
-                getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(savedMetric));
+                AppMessageWrapperDTO<ExecutionMessageMetricDTO> savedMetric = testEmbedBO.logTestMetricTransactional(runMetric.getRunId(), runMetric, runType);
+                connectionsOf(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(savedMetric));
                 break;
             case UPDATE_FEDERATED_RUN:
             case FINISH_FEDERATED_RUN:
@@ -221,7 +221,7 @@ public class TestEmbedService {
             case FEDERATED_ROUND_MESSAGE:
                 FederatedRoundMessageCreateDTO rmCreate = objectMapper.convertValue(m.getMessage(), FederatedRoundMessageCreateDTO.class);
                 AppMessageWrapperDTO<?> round = testEmbedBO.logFederatedRoundMessage(rmCreate);
-                getConnections(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(round));
+                connectionsOf(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(round));
                 break;
             default:
                 break;
@@ -230,21 +230,21 @@ public class TestEmbedService {
     }
 
 
-    private Stream<WebSocketConnection> getConnections(Long appId) {
+    private Stream<WebSocketConnection> connectionsOf(Long appId) {
         return connection.getOpenConnections().stream()
                 .filter(c -> c.endpointId().equals(this.getClass().getCanonicalName()))
                 .filter(c -> c.pathParam("appid").equalsIgnoreCase(appId.toString()));
     }
 
-    private Stream<WebSocketConnection> getConnections(Long appId, AppConnectionTypesEnum type) {
-        return getConnections(appId)
+    private Stream<WebSocketConnection> connectionsOf(Long appId, AppConnectionTypesEnum type) {
+        return connectionsOf(appId)
                 .filter(c -> type.isEqual(c.pathParam("type")));
     }
 
     public void sendPublishedUpdate(FederatedAppDetailDTO app) {
         AppMessageWrapperDTO<FederatedAppDetailDTO> updateTestEmbed = new AppMessageWrapperDTO<>(AppMessageTypeEnum.CONFIG_CHANGED, app);
 
-        getConnections(app.getId()).forEach(c -> c.sendTextAndAwait(updateTestEmbed));
+        connectionsOf(app.getId()).forEach(c -> c.sendTextAndAwait(updateTestEmbed));
     }
 
 }

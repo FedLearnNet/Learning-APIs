@@ -59,7 +59,7 @@ public class TestEmbedBO {
         return runType == AppRunTypeEnum.FEDERATED_RUN || runType == AppRunTypeEnum.FEDERATED_TEST_RUN;
     }
 
-    public AppMessageWrapperDTO<PydanticUpdateDTO> getPydanticObj(FederatedAppDetailDTO config) {
+    public AppMessageWrapperDTO<PydanticUpdateDTO> pydanticObjOf(FederatedAppDetailDTO config) {
         AppMessageWrapperDTO<PydanticUpdateDTO> dto = new AppMessageWrapperDTO<>(AppMessageTypeEnum.CONFIG_PYDANTIC_CHANGED,
                 PydanticClassGenerator.generatePydanticClasses(config));
         return dto;
@@ -68,33 +68,33 @@ public class TestEmbedBO {
 
     // The app engine gets the run once it is launched; the frontend follows it through the test run sender.
     public void startTest(Long appId, TestRunCreateDTO createDTO, String keycloakId) {
-        testRunBO.startTest(appId, createDTO, keycloakId);
+        testRunBO.startTestTransactional(appId, createDTO, keycloakId);
     }
 
     // A test run and an experiment trial are addressed by their attempt, a federated test run by its run.
     @Transactional
-    public void updateRun(UpdateRunDTO updateTest, AppRunTypeEnum runType) {
+    public void updateRunTransactional(UpdateRunDTO updateTest, AppRunTypeEnum runType) {
         if (isFederatedTestRun(runType)) {
             FederatedRunLifecycleDTO update = new FederatedRunLifecycleDTO();
             update.setId(updateTest.getRunId());
             update.setStatus(updateTest.getStatus() != null ? updateTest.getStatus().name() : null);
             update.setError(updateTest.getError());
-            testRunBO.updateFederatedRun(update);
+            testRunBO.updateFederatedRunTransactional(update);
         } else {
             testRunBO.update(updateTest);
         }
     }
 
     public AppMessageWrapperDTO<?> uploadData(Long appId, OutputRunDataDTO finishTest, AppRunTypeEnum runType, String keycloakId) {
-        ExecutionRunDetailDTO testDto = testRunBO.uploadOutput(finishTest, runType);
+        ExecutionRunDetailDTO testDto = testRunBO.uploadOutputTransactional(finishTest, runType);
         return new AppMessageWrapperDTO<>(AppMessageTypeEnum.FINISH_RUN, testDto, runType);
     }
 
     // The frontend downloads a test run by its run, a trial of an experiment by its attempt.
     public ByteArrayOutputStream downloadOutput(Long appId, Long runId, AppRunTypeEnum runType, String keycloakId) {
         LinkedHashMap<String, Object> map = runType == AppRunTypeEnum.EXPERIMENT_RUN
-                ? testRunBO.outputOfAttempt(appId, runId, keycloakId)
-                : testRunBO.outputOf(appId, runId, keycloakId);
+                ? testRunBO.outputOfAttemptTransactional(appId, runId, keycloakId)
+                : testRunBO.outputOfTransactional(appId, runId, keycloakId);
         try {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             FileHelper.createOutputZip(byteArrayOutputStream, map);
@@ -105,34 +105,34 @@ public class TestEmbedBO {
     }
 
     @Transactional
-    public void finishRun(FinishRunDTO finishTest, AppRunTypeEnum runType) {
+    public void finishRunTransactional(FinishRunDTO finishTest, AppRunTypeEnum runType) {
         if (isFederatedTestRun(runType)) {
-            testRunBO.finishFederated(finishTest);
+            testRunBO.finishFederatedTransactional(finishTest);
         } else {
             testRunBO.finish(finishTest);
         }
     }
 
     public void startFederatedTest(Long appId, FederatedTestRunCreateDTO createDTO, String keycloakId) {
-        testRunBO.startFederatedTest(appId, createDTO, keycloakId);
+        testRunBO.startFederatedTestTransactional(appId, createDTO, keycloakId);
     }
 
     public void updateFederatedRun(FederatedRunLifecycleDTO update) {
-        testRunBO.updateFederatedRun(update);
+        testRunBO.updateFederatedRunTransactional(update);
     }
 
     public void updateFederatedParticipant(FederatedParticipantUpdateDTO update) {
-        testRunBO.updateParticipant(update);
+        testRunBO.updateParticipantTransactional(update);
     }
 
     // Forwarded as it comes, the run sent to the frontend leaves round messages out.
     public AppMessageWrapperDTO<ExecutionMessageRoundDTO> logFederatedRoundMessage(FederatedRoundMessageCreateDTO create) {
-        ExecutionMessageRoundDTO dto = testRunBO.roundMessage(create);
+        ExecutionMessageRoundDTO dto = testRunBO.roundMessageTransactional(create);
         return new AppMessageWrapperDTO<>(AppMessageTypeEnum.FEDERATED_ROUND_MESSAGE, dto, AppRunTypeEnum.FEDERATED_TEST_RUN);
     }
 
     public void closeAllTest(Long appId) {
-        testRunBO.closeAllOnDisconnect(appId);
+        testRunBO.closeAllOnDisconnectTransactional(appId);
     }
 
     // Test runs and experiment trials queued while no app engine was connected.
@@ -141,7 +141,7 @@ public class TestEmbedBO {
     }
 
     @Transactional
-    public AppMessageWrapperDTO<FederatedAppDetailDTO> saveAppConfig(FederatedAppDetailDTO m, Long appId, boolean isTool) {
+    public AppMessageWrapperDTO<FederatedAppDetailDTO> saveAppConfigTransactional(FederatedAppDetailDTO m, Long appId, boolean isTool) {
         FederatedAppDetailDTO found = federatedAppBO.getById(appId);
         if (found == null) {
             Log.errorf("Try to update App with id %d via WS but not found", appId);
@@ -170,7 +170,7 @@ public class TestEmbedBO {
     }
 
     @Transactional
-    public Optional<AppMessageWrapperDTO<FederatedAppDetailDTO>> getAppConfig(Long appId) {
+    public Optional<AppMessageWrapperDTO<FederatedAppDetailDTO>> findAppConfigTransactional(Long appId) {
         try {
             FederatedAppDetailDTO found = federatedAppBO.getMyAppById(appId);
             return Optional.of(new AppMessageWrapperDTO<>(AppMessageTypeEnum.CONFIG_INITIAL_SEND, found));
@@ -181,20 +181,20 @@ public class TestEmbedBO {
 
     // Forwarded as stored, with the attempt it belongs to as its run.
     @Transactional
-    public AppMessageWrapperDTO<ExecutionMessageLogDTO> logTestMessage(Long runId, ExecutionMessageLogDTO log, AppRunTypeEnum runType) {
-        ExecutionMessageLogDTO dto = testRunBO.log(runId, log, runType);
+    public AppMessageWrapperDTO<ExecutionMessageLogDTO> logTestMessageTransactional(Long runId, ExecutionMessageLogDTO log, AppRunTypeEnum runType) {
+        ExecutionMessageLogDTO dto = testRunBO.logTransactional(runId, log, runType);
         return new AppMessageWrapperDTO<>(AppMessageTypeEnum.LOG_MESSAGE, dto, forwardedRunType(runType));
     }
 
     @Transactional
-    public AppMessageWrapperDTO<ExecutionMessageMetricDTO> logTestMetric(Long runId, ExecutionMessageMetricDTO log, AppRunTypeEnum runType) {
-        ExecutionMessageMetricDTO dto = testRunBO.metric(runId, log, runType);
+    public AppMessageWrapperDTO<ExecutionMessageMetricDTO> logTestMetricTransactional(Long runId, ExecutionMessageMetricDTO log, AppRunTypeEnum runType) {
+        ExecutionMessageMetricDTO dto = testRunBO.metricTransactional(runId, log, runType);
         return new AppMessageWrapperDTO<>(AppMessageTypeEnum.LOG_METRIC, dto, forwardedRunType(runType));
     }
 
     // The trial of an experiment that trained the model links it to the experiment.
     public AppMessageWrapperDTO<ModelDTO> saveModel(ModelSubDataDTO model, String keycloakId) {
-        ExecutionRunDetailDTO experiment = testRunBO.runOfAttempt(model.getRunId(), keycloakId);
+        ExecutionRunDetailDTO experiment = testRunBO.runOfAttemptTransactional(model.getRunId(), keycloakId);
         ModelDTO dto = modelBo.saveModel(experiment.getFederatedAppVersionId(),
                 experiment.getExperimentId(),
                 experiment.getFederatedAppId(),

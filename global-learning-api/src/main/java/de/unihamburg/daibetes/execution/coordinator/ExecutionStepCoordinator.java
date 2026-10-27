@@ -24,6 +24,6 @@ public class ExecutionStepCoordinator extends BaseStepCoordinator<ExecutionRunSt
     @Incoming(ExecutionChannels.STEP_CHANGED)
     @RunOnVirtualThread
     public void consume(StepChangedEvent event) {
-        onStepChanged(event);
+        onStepChangedTransactional(event);
     }
 }

@@ -295,13 +295,13 @@ class FederatedLearningRequestE2ETest {
         when(gateway.startWorkflow(any(), anyString())).thenReturn("container-123");
         when(exportBO.exportDataForLearning(any(), anyLong(), anyLong())).thenReturn(inputFile);
 
-        LearningClientSyncResponseDTO started = federatedLearningRunBO.handleStartLearningRequest(
+        LearningClientSyncResponseDTO started = federatedLearningRunBO.handleStartLearningRequestTransactional(
                 new StartLearningClientRequestDTO(globalExperimentId, null, true)).orElseThrow();
         assertEquals(ProjectStatus.INIT, started.getStepStatus());
 
         // The app of the first step starts with the clinic's data in its volume.
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> verify(gateway).startWorkflow(any(), anyString()));
-        Long attemptId = runBO.attemptOf(runId).orElseThrow();
+        Long attemptId = runBO.attemptOfTransactional(runId).orElseThrow();
         verify(exportBO, atLeastOnce()).exportDataForLearning(any(), anyLong(), anyLong());
         verify(workflowOrchestrator).uploadFilesToVolume(eq(runId), eq(attemptId), eq(inputFile), eq("training_data.csv"));
 
@@ -313,7 +313,7 @@ class FederatedLearningRequestE2ETest {
             assertEquals(FederatedLearningRequestStatus.COMPLETED, loadRequestStatus(globalExperimentId));
             assertEquals(RunStatusTypes.FINISHED, inTransaction(() -> runAO.findById(runId).getStatus()));
         });
-        verify(workflowOrchestrator).getFiles(runId, attemptId);
+        verify(workflowOrchestrator).filesOf(runId, attemptId);
         // The last step finishing must report the run itself as finished, not just the step
         verify(websocketSender).sendRunningUpdate(eq(nodeId), eq(globalExperimentId), eq(RunStatusTypes.FINISHED),
                 eq(ProjectStatus.FINISHED), eq(participantId));

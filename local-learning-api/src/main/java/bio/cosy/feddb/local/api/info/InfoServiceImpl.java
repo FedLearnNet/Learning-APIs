@@ -11,6 +11,6 @@ public class InfoServiceImpl implements InfoService {
 
     @Override
     public LocalInfoDTO getInfo() {
-        return infoBO.getInfo();
+        return infoBO.loadInfo();
     }
 }

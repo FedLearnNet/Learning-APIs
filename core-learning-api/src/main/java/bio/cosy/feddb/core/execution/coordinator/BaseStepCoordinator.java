@@ -65,7 +65,7 @@ public abstract class BaseStepCoordinator<
     }
 
     @Transactional
-    public void onStepChanged(StepChangedEvent event) {
+    public void onStepChangedTransactional(StepChangedEvent event) {
         Optional<Step> locked = stepAO.findByIdWrite(event.getStepId());
         if (locked.isEmpty() || RunStatusTypes.isFinalStatus(locked.get().getStatus())) {
             Log.debugf("Ignoring change of step %d, it is gone or already done", event.getStepId());

@@ -125,7 +125,7 @@ class RelayCertBOTest {
     void signedCertificateIsPassedToTheController() {
         RelayCertBO bo = relayCertBO();
 
-        bo.handleSigned(signed());
+        bo.handleSignedTransactional(signed());
 
         // The app key of the controller run is the relay client id.
         verify(bo.controllerService).startRelaying(new ControllerStartRelayingRequestDTO(CHANNEL, CLIENT, "signed-cert"));
@@ -138,8 +138,8 @@ class RelayCertBOTest {
         RelayCertBO bo = relayCertBO();
 
         // E.g. the answers to the first and to a retried request both arrive.
-        bo.handleSigned(signed());
-        bo.handleSigned(signed());
+        bo.handleSignedTransactional(signed());
+        bo.handleSignedTransactional(signed());
 
         verify(bo.controllerService, times(1)).startRelaying(any());
     }
@@ -150,21 +150,21 @@ class RelayCertBOTest {
 
         RelayCertSignResponseDTO otherClinic = signed();
         otherClinic.setUniqueRandomClinicId("clinic-b");
-        bo.handleSigned(otherClinic);
+        bo.handleSignedTransactional(otherClinic);
 
         RelayCertSignResponseDTO otherExperiment = signed();
         otherExperiment.setGlobalUniqueExperimentId("experiment-unknown");
         when(bo.projectAO.findByRequestIdOptional("experiment-unknown")).thenReturn(Optional.empty());
-        bo.handleSigned(otherExperiment);
+        bo.handleSignedTransactional(otherExperiment);
 
         RelayCertSignResponseDTO otherNode = signed();
         otherNode.setCurrentNodeId("node-2");
         when(bo.stepAO.findByNodeId(RUN_ID, "node-2")).thenReturn(Optional.empty());
-        bo.handleSigned(otherNode);
+        bo.handleSignedTransactional(otherNode);
 
         RelayCertSignResponseDTO otherClient = signed();
         otherClient.setClientId("ffffffffffffffff");
-        bo.handleSigned(otherClient);
+        bo.handleSignedTransactional(otherClient);
 
         verify(bo.controllerService, never()).startRelaying(any());
         verify(bo.federatedLearningRunBO, never()).fail(any(), anyString());
@@ -176,11 +176,11 @@ class RelayCertBOTest {
         RelayCertBO bo = relayCertBO();
 
         step.setStatus(RunStatusTypes.STOPPED);
-        bo.handleSigned(signed());
+        bo.handleSignedTransactional(signed());
 
         step.setStatus(RunStatusTypes.RUNNING);
         federation.setRelayStopped(true);
-        bo.handleSigned(signed());
+        bo.handleSignedTransactional(signed());
 
         verify(bo.controllerService, never()).startRelaying(any());
     }
@@ -191,7 +191,7 @@ class RelayCertBOTest {
         RelayCertSignResponseDTO refused = RelayCertSignResponseDTO.createErrorResponse(
                 new RelayCertSignRequestDTO(EXPERIMENT, CLINIC, NODE, CLIENT, CSR), "refused");
 
-        bo.handleSigned(refused);
+        bo.handleSignedTransactional(refused);
 
         verify(bo.controllerService, never()).startRelaying(any());
         verifyStepFailed(bo);
@@ -202,7 +202,7 @@ class RelayCertBOTest {
         RelayCertBO bo = relayCertBO();
         when(bo.controllerService.startRelaying(any())).thenReturn(Response.serverError().build());
 
-        bo.handleSigned(signed());
+        bo.handleSignedTransactional(signed());
 
         verifyStepFailed(bo);
     }
@@ -212,7 +212,7 @@ class RelayCertBOTest {
         RelayCertBO bo = relayCertBO();
         when(bo.controllerService.startRelaying(any())).thenThrow(new WebApplicationException(400));
 
-        bo.handleSigned(signed());
+        bo.handleSignedTransactional(signed());
 
         verifyStepFailed(bo);
     }

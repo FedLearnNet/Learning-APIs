@@ -19,7 +19,7 @@ public enum AppConnectionTypesEnum {
     CLIENT; // The frontend application that is used to connect to the Docker container. Only needed if you wanna forward async messages to the FE
 
 
-    public static AppConnectionTypesEnum getOpposite(String value) {
+    public static AppConnectionTypesEnum oppositeOf(String value) {
         return getAppConnectionTypesEnum(value, CLIENT, APP);
     }
 

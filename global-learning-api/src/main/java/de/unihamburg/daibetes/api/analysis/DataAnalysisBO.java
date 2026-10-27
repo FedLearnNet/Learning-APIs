@@ -43,7 +43,7 @@ public class DataAnalysisBO extends BaseBo<ModelWorkflowDTO, DataAnalysisEntity,
     public DataAnalysisDetailDTO findById(Long id, String keycloakId) {
         return ao.findById(keycloakId, id)
                 .map(mapper::entityToDetail)
-                .map(detail -> withTimeline(detail, runResultBO.findAnalysisRuns(detail.getId()).stream()
+                .map(detail -> withTimeline(detail, runResultBO.findAnalysisRunsTransactional(detail.getId()).stream()
                         .map(run -> wrap(run, ModelWorkflowChatMessageType.RUN))))
                 .orElseThrow(() -> new NotAllowedException("Workflow not found"));
     }
@@ -54,7 +54,7 @@ public class DataAnalysisBO extends BaseBo<ModelWorkflowDTO, DataAnalysisEntity,
     public DataAnalysisDetailDTO findForReport(Long id, String keycloakId, boolean flat) {
         return ao.findById(keycloakId, id)
                 .map(entity -> flat ? mapper.entityToDetailFlat(entity) : mapper.entityToDetail(entity))
-                .map(detail -> withTimeline(detail, runResultBO.resultsOfAnalysis(detail.getId(), flat).stream()
+                .map(detail -> withTimeline(detail, runResultBO.resultsOfAnalysisTransactional(detail.getId(), flat).stream()
                         .map(result -> wrap(result, result.getRunMode() == DataAnalysisRunModesEnum.WORKFLOW
                                 ? ModelWorkflowChatMessageType.WORKFLOW_PREDICTION
                                 : ModelWorkflowChatMessageType.PREDICTION))))
@@ -131,10 +131,10 @@ public class DataAnalysisBO extends BaseBo<ModelWorkflowDTO, DataAnalysisEntity,
     }
 
     public DataAnalysisRunDTO stopRun(Long dataAnalysisId, Long runId, String keycloakId) {
-        return executionBO.stop(dataAnalysisId, runId, keycloakId);
+        return executionBO.stopTransactional(dataAnalysisId, runId, keycloakId);
     }
 
     public void deleteRun(Long dataAnalysisId, Long id, Long workflowId, String keycloakId) {
-        executionBO.delete(dataAnalysisId, workflowId != null ? workflowId : id, keycloakId);
+        executionBO.deleteTransactional(dataAnalysisId, workflowId != null ? workflowId : id, keycloakId);
     }
 }

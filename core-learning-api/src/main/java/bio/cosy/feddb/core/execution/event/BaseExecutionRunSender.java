@@ -6,7 +6,6 @@ import bio.cosy.feddb.core.execution.run.BaseExecutionRunAO;
 import bio.cosy.feddb.core.execution.run.BaseExecutionRunEntity;
 import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepAO;
 import io.quarkus.logging.Log;
-import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.virtual.threads.VirtualThreads;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.operators.multi.processors.UnicastProcessor;
@@ -15,6 +14,7 @@ import jakarta.enterprise.event.Event;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.event.TransactionPhase;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import java.time.Duration;
 import java.util.*;
@@ -57,10 +57,8 @@ public abstract class BaseExecutionRunSender<
     void announceChangedRuns() {
         changes.group().intoLists().every(WINDOW)
                 .filter(window -> !window.isEmpty())
-                // Reading the runs needs a transaction of its own, which cannot begin on the committing thread.
                 .onItem().transformToUniAndConcatenate(window -> Uni.createFrom().item(() -> {
-                            QuarkusTransaction.requiringNew().run(() -> runsOf(window).forEach((purpose, runIds) ->
-                                    runsChanged.fire(new ExecutionRunsChangedEvent(purpose, runIds))));
+                            announceTransactional(window);
                             return window.size();
                         })
                         .runSubscriptionOn(virtualThreads)
@@ -70,6 +68,12 @@ public abstract class BaseExecutionRunSender<
                         }))
                 .subscribe().with(count -> {
                 }, failure -> Log.errorf(failure, "Changed runs are no longer announced"));
+    }
+
+    // Reading the runs needs a transaction of its own, which cannot begin on the committing thread.
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    protected void announceTransactional(List<ExecutionRunChange> window) {
+        runsOf(window).forEach((purpose, runIds) -> runsChanged.fire(new ExecutionRunsChangedEvent(purpose, runIds)));
     }
 
     // The runs behind the changes, by purpose; empty for what is gone.

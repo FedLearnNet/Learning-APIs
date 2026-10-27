@@ -23,7 +23,7 @@ public class InfoBO {
     @RestClient
     GlobalAPIInfoService platformAPIInfoService;
 
-    public LocalInfoDTO getInfo() {
+    public LocalInfoDTO loadInfo() {
         LocalInfoDTO dto = new LocalInfoDTO(version, globalWebUrl());
         setPlatformVersion(dto);
         return dto;

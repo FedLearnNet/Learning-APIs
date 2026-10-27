@@ -73,7 +73,7 @@ public class SearchBO {
         results.addAll(requestDataStatisticsBO.search(query, keycloakId));
         results.addAll(requestRunMetricsBO.search(query, keycloakId));
         results.addAll(federatedLearningProjectBO.search(query, keycloakId));
-        results.addAll(federatedLearningRunBO.searchLogs(query, keycloakId));
+        results.addAll(federatedLearningRunBO.searchLogsTransactional(query, keycloakId));
 
         return results.stream()
                 .sorted(Comparator.comparingInt(SearchResultDTO<?>::getScore).reversed()

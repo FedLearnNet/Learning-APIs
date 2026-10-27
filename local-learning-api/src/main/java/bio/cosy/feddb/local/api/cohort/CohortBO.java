@@ -272,7 +272,7 @@ public class CohortBO extends BaseBo<CohortDTO, CohortEntity, CohortAO, CohortMa
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void deletePatientToolRuns(Long cohortId) {
-        patientToolBO.deleteAllForCohort(cohortId);
+        patientToolBO.deleteAllForCohortTransactional(cohortId);
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)

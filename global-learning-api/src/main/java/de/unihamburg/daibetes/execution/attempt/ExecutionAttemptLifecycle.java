@@ -31,7 +31,7 @@ public class ExecutionAttemptLifecycle extends BaseAttemptLifecycle<ExecutionAtt
     protected void customizeStartup(ExecutionAttemptEntity attempt, StartRunDTO start) {
         super.customizeStartup(attempt, start);
         switch (attempt.getStep().getRun().getPurpose()) {
-            case ANALYSIS -> analysisResultBO.withInputFileUrls(start);
+            case ANALYSIS -> analysisResultBO.withInputFileUrlsTransactional(start);
             case TRAINING -> start.setInputFilePaths(platformTrainingBO.inputFilePathsOf(attempt));
             default -> {
             }

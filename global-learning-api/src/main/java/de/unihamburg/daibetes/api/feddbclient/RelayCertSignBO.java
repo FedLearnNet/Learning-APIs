@@ -53,7 +53,7 @@ public class RelayCertSignBO {
                     connectionId, request.getGlobalUniqueExperimentId());
             return RelayCertSignResponseDTO.createErrorResponse(request, ERROR_REFUSED);
         }
-        Optional<String> channel = federatedTrainingBO.findRelayChannelForClient(
+        Optional<String> channel = federatedTrainingBO.findRelayChannelForClientTransactional(
                 request.getGlobalUniqueExperimentId(),
                 request.getCurrentNodeId(),
                 request.getUniqueRandomClinicId(),

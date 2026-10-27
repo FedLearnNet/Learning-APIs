@@ -12,7 +12,6 @@ import de.unihamburg.daibetes.api.build.pipeline.steps.StepName;
 import de.unihamburg.daibetes.config.FLNetConfig;
 import de.unihamburg.daibetes.config.ToolImportBuildingOnStart;
 import io.quarkus.logging.Log;
-import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.smallrye.context.api.ManagedExecutorConfig;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.reactive.messaging.MutinyEmitter;
@@ -126,8 +125,7 @@ public class ToolImportBuildBO {
         if (run == null) {
             return Uni.createFrom().voidItem();
         }
-        return Uni.createFrom().item(() -> QuarkusTransaction.requiringNew()
-                        .call(() -> pipelineBO.start(run.getPipelineId())))
+        return Uni.createFrom().item(() -> startPipelineTransactional(run.getPipelineId()))
                 .runSubscriptionOn(executor)
                 .onItem().transformToUni(ignored -> awaitBuild(run))
                 .onFailure().call(e -> Uni.createFrom().voidItem()
@@ -136,38 +134,48 @@ public class ToolImportBuildBO {
                         .invoke(() -> finishBuild(run, request)).runSubscriptionOn(executor));
     }
 
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    PipelineDTO startPipelineTransactional(Long pipelineId) {
+        return pipelineBO.start(pipelineId);
+    }
+
     private CurrentPipelineRuns createBuild(PipelineRebuildDTO request) {
-        FederatedAppVersionEntity version = QuarkusTransaction.requiringNew()
-                .call(() -> versionAO.findById(request.getAppVersionId()));
+        FederatedAppVersionEntity version = findVersionTransactional(request.getAppVersionId());
         if (version == null || !shouldBuild(version, request)) {
             return null;
         }
-        return QuarkusTransaction.requiringNew().call(() -> {
-            FederatedAppVersionEntity current = versionAO.findById(request.getAppVersionId(), LockModeType.PESSIMISTIC_WRITE);
-            if (current == null || current.isRebuilding()
-                    || (request.getRunMode() != PipelineRunMode.SCAN_ONLY && StringUtils.isBlank(current.getFederatedApp().getSourceUrl()))
-                    || pipelineAO.existsActiveByAppVersionId(current.getId())) {
-                return null;
-            }
-            request.setAutoStart(false);
-            if (request.getRunMode() != PipelineRunMode.SCAN_ONLY) {
-                current.setImageName(null);
-                current.setPublishInfo(null);
-            }
-            PipelineDTO pipeline = pipelineBO.create(request);
-            current.setRebuilding(true);
-            CurrentPipelineRuns run = new CurrentPipelineRuns();
-            run.setPipelineId(pipeline.getId());
-            run.setToken(pipeline.getSecret());
-            return run;
-        });
+        return claimBuildTransactional(request);
+    }
+
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    FederatedAppVersionEntity findVersionTransactional(Long appVersionId) {
+        return versionAO.findById(appVersionId);
+    }
+
+    // Locks the version, so only one build of it runs.
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    CurrentPipelineRuns claimBuildTransactional(PipelineRebuildDTO request) {
+        FederatedAppVersionEntity current = versionAO.findById(request.getAppVersionId(), LockModeType.PESSIMISTIC_WRITE);
+        if (current == null || current.isRebuilding()
+                || (request.getRunMode() != PipelineRunMode.SCAN_ONLY && StringUtils.isBlank(current.getFederatedApp().getSourceUrl()))
+                || pipelineAO.existsActiveByAppVersionId(current.getId())) {
+            return null;
+        }
+        request.setAutoStart(false);
+        if (request.getRunMode() != PipelineRunMode.SCAN_ONLY) {
+            current.setImageName(null);
+            current.setPublishInfo(null);
+        }
+        PipelineDTO pipeline = pipelineBO.create(request);
+        current.setRebuilding(true);
+        CurrentPipelineRuns run = new CurrentPipelineRuns();
+        run.setPipelineId(pipeline.getId());
+        run.setToken(pipeline.getSecret());
+        return run;
     }
 
     private Uni<Void> awaitBuild(CurrentPipelineRuns run) {
-        return Uni.createFrom().item(() -> QuarkusTransaction.requiringNew()
-                        .call(() -> pipelineAO.findByIdAndSecretOptional(run.getPipelineId(), run.getToken(), LockModeType.PESSIMISTIC_READ)
-                                .orElseThrow(() -> new IllegalStateException("Imported tool build pipeline not found"))
-                                .getPipelineStatus()))
+        return Uni.createFrom().item(() -> pipelineStatusTransactional(run))
                 .runSubscriptionOn(executor)
                 .repeat().withDelay(Duration.ofSeconds(2)).indefinitely()
                 .select().where(status -> status != null && status != PipelineStatus.PENDING && status != PipelineStatus.RUNNING)
@@ -177,37 +185,51 @@ public class ToolImportBuildBO {
                 .replaceWithVoid();
     }
 
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    PipelineStatus pipelineStatusTransactional(CurrentPipelineRuns run) {
+        return pipelineAO.findByIdAndSecretOptional(run.getPipelineId(), run.getToken(), LockModeType.PESSIMISTIC_READ)
+                .orElseThrow(() -> new IllegalStateException("Imported tool build pipeline not found"))
+                .getPipelineStatus();
+    }
+
     private void failBuild(CurrentPipelineRuns run) {
         try {
-            QuarkusTransaction.requiringNew().run(() -> {
-                PipelineEntity pipeline = pipelineAO.findByIdAndSecretOptional(run.getPipelineId(), run.getToken(), LockModeType.PESSIMISTIC_WRITE)
-                        .orElseThrow(() -> new IllegalStateException("Imported tool build pipeline not found"));
-                PipelineStatusUpdateDTO failure = new PipelineStatusUpdateDTO();
-                failure.setStepName(pipeline.getSteps().stream()
-                        .filter(step -> step.getStepStatus() == PipelineStatus.RUNNING)
-                        .map(step -> step.getName()).findFirst().orElse(StepName.PREFLIGHT));
-                failure.setStatus(PipelineStatus.FAILED);
-                failure.setErrorCode("IMPORT_BUILD_FAILED");
-                failure.setErrorMessage("Imported tool build failed or exceeded the time limit");
-                pipelineBO.processStatusUpdate(run.getPipelineId(), run.getToken(), failure);
-            });
+            failBuildTransactional(run);
         } catch (Exception e) {
             Log.warnf(e, "Failed to mark imported tool build pipeline %d as failed", run.getPipelineId());
         }
     }
 
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    void failBuildTransactional(CurrentPipelineRuns run) {
+        PipelineEntity pipeline = pipelineAO.findByIdAndSecretOptional(run.getPipelineId(), run.getToken(), LockModeType.PESSIMISTIC_WRITE)
+                .orElseThrow(() -> new IllegalStateException("Imported tool build pipeline not found"));
+        PipelineStatusUpdateDTO failure = new PipelineStatusUpdateDTO();
+        failure.setStepName(pipeline.getSteps().stream()
+                .filter(step -> step.getStepStatus() == PipelineStatus.RUNNING)
+                .map(step -> step.getName()).findFirst().orElse(StepName.PREFLIGHT));
+        failure.setStatus(PipelineStatus.FAILED);
+        failure.setErrorCode("IMPORT_BUILD_FAILED");
+        failure.setErrorMessage("Imported tool build failed or exceeded the time limit");
+        pipelineBO.processStatusUpdate(run.getPipelineId(), run.getToken(), failure);
+    }
+
     // The pipeline container is auto-removed on exit, but its dedicated network is only removed by orch's cleanup
     private void cleanupContainer(CurrentPipelineRuns run) {
         try {
-            String containerId = QuarkusTransaction.requiringNew().call(() ->
-                    pipelineAO.findByIdAndSecretOptional(run.getPipelineId(), run.getToken(), LockModeType.PESSIMISTIC_READ)
-                            .map(PipelineEntity::getContainerId).orElse(null));
+            String containerId = containerIdTransactional(run);
             if (StringUtils.isNotBlank(containerId)) {
                 containerClient.cleanupWorkflow(containerId, true);
             }
         } catch (Exception e) {
             Log.warnf(e, "Failed to clean up imported tool build pipeline %d", run.getPipelineId());
         }
+    }
+
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    String containerIdTransactional(CurrentPipelineRuns run) {
+        return pipelineAO.findByIdAndSecretOptional(run.getPipelineId(), run.getToken(), LockModeType.PESSIMISTIC_READ)
+                .map(PipelineEntity::getContainerId).orElse(null);
     }
 
     private void finishBuild(CurrentPipelineRuns run, PipelineRebuildDTO request) {

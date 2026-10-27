@@ -63,14 +63,14 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
             return Optional.empty();
         }
 
-        ProjectDTO project = getProjectSnapshot(experiment);
+        ProjectDTO project = projectSnapshotOf(experiment);
         FederatedModelSubDetailDataDTO federatedData = new FederatedModelSubDetailDataDTO();
         federatedData.setProject(project);
         federatedData.setQuery(getRedactedQuerySnapshot(project, experiment).orElse(null));
         return Optional.of(federatedData);
     }
 
-    private ProjectDTO getProjectSnapshot(ExecutionExperimentEntity experiment) {
+    private ProjectDTO projectSnapshotOf(ExecutionExperimentEntity experiment) {
         ProjectDetailDTO snapshot = experiment.getProjectVersion();
         ProjectDTO project = snapshot != null ? snapshot : projectMapper.entityToSimpleDTO(experiment.getProject());
 
@@ -190,7 +190,7 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
         if (modelSubDTO.getStatus() != ModelSubStatus.TRAINED) {
             throw new NotFoundException("You can only select a trained model");
         }
-        dataAnalysisExecutionBO.deleteRunsOfSubModel(modelSubId);
+        dataAnalysisExecutionBO.deleteRunsOfSubModelTransactional(modelSubId);
         ao.deleteByRunId(modelSubDTO.getModelVersionId(), modelSubId);
         return modelSubDTO;
     }

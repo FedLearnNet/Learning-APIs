@@ -94,7 +94,7 @@ public class PatientDataExportServiceImpl implements PatientDataExportService {
     @Transactional
     @PermissionsAllowed(CohortPermissionChecker.READ)
     public List<ExecutionRunDTO> listAppExports(Long cohortId) {
-        return toolBO.list(cohortId, PatientToolRunType.EXPORT);
+        return toolBO.listTransactional(cohortId, PatientToolRunType.EXPORT);
     }
 
     // What the server does before the run exists, as a run without id.
@@ -111,7 +111,7 @@ public class PatientDataExportServiceImpl implements PatientDataExportService {
     @Override
     @PermissionsAllowed(CohortPermissionChecker.READ)
     public Response downloadAppExport(Long cohortId, Long runId) {
-        return zipResponse(toolBO.zipOutputs(cohortId, runId), "cohort_" + cohortId + "_export_" + runId + ".zip");
+        return zipResponse(toolBO.zipOutputsTransactional(cohortId, runId), "cohort_" + cohortId + "_export_" + runId + ".zip");
     }
 
     private Response zipResponse(byte[] zip, String filename) {

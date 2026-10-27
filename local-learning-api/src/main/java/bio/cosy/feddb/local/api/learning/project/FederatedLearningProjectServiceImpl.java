@@ -70,7 +70,7 @@ public class FederatedLearningProjectServiceImpl implements FederatedLearningPro
 
     @Override
     public ExecutionRunDTO retrieveRun(Long id) {
-        return runBO.get(runIdOf(id), true);
+        return runBO.findRunTransactional(runIdOf(id), true);
     }
 
     @Override

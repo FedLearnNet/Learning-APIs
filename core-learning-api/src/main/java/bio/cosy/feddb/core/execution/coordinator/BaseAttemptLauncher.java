@@ -19,8 +19,8 @@ import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import bio.cosy.feddb.core.services.orch.dto.WorkflowNodeInputActionDTO;
 import io.quarkus.logging.Log;
-import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -67,18 +67,19 @@ public abstract class BaseAttemptLauncher<
         Long attemptId = event.getAttemptId();
         try {
             // Callback path and start request of the claimed attempt.
-            Map.Entry<String, StartWorkflowNodeDTO> launch = QuarkusTransaction.requiringNew().call(() -> prepare(attemptId));
+            Map.Entry<String, StartWorkflowNodeDTO> launch = prepareTransactional(attemptId);
             if (launch == null) {
                 return;
             }
             // What the app reads is in its volume before it starts.
-            QuarkusTransaction.requiringNew().run(() -> attemptAO.findByIdOptional(attemptId).ifPresent(this::stageInputs));
+            stageInputsTransactional(attemptId);
             String containerId = orchestrator.startWorkflow(launch.getValue(), launch.getKey());
-            if (!QuarkusTransaction.requiringNew().call(() -> started(attemptId, containerId))) {
+            if (!startedTransactional(attemptId, containerId)) {
                 stop(attemptId, containerId);
             }
         } catch (RuntimeException e) {
-            fail(attemptId, e);
+            Log.errorf(e, "Could not launch attempt %d", attemptId);
+            failTransactional(attemptId, e);
         }
     }
 
@@ -92,7 +93,8 @@ public abstract class BaseAttemptLauncher<
     }
 
     // Claims the attempt, so a duplicated launch event cannot start a second container.
-    private Map.Entry<String, StartWorkflowNodeDTO> prepare(Long attemptId) {
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    protected Map.Entry<String, StartWorkflowNodeDTO> prepareTransactional(Long attemptId) {
         Optional<Attempt> locked = attemptAO.findByIdWrite(attemptId);
         if (locked.isEmpty() || locked.get().getStatus() != RunStatusTypes.PENDING) {
             Log.debugf("Ignoring launch of attempt %d, it is gone or already launched", attemptId);
@@ -154,11 +156,17 @@ public abstract class BaseAttemptLauncher<
                 .toList();
     }
 
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    protected void stageInputsTransactional(Long attemptId) {
+        attemptAO.findByIdOptional(attemptId).ifPresent(this::stageInputs);
+    }
+
     protected void stageInputs(Attempt attempt) {
     }
 
     // False when the attempt ended while its container was starting, so the container is not needed anymore.
-    private boolean started(Long attemptId, String containerId) {
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    protected boolean startedTransactional(Long attemptId, String containerId) {
         Attempt attempt = attemptAO.findByIdWrite(attemptId).orElse(null);
         if (attempt == null || attempt.hasEnded()) {
             return false;
@@ -173,15 +181,15 @@ public abstract class BaseAttemptLauncher<
         return true;
     }
 
-    private void fail(Long attemptId, RuntimeException e) {
-        Log.errorf(e, "Could not launch attempt %d", attemptId);
-        QuarkusTransaction.requiringNew().run(() -> attemptAO.findByIdWrite(attemptId)
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    protected void failTransactional(Long attemptId, RuntimeException e) {
+        attemptAO.findByIdWrite(attemptId)
                 .filter(attempt -> !attempt.hasEnded())
                 .ifPresent(attempt -> {
                     attempt.end(RunStatusTypes.ERROR, new ExecutionFailure(FailureCategory.INFRASTRUCTURE,
                             "Container could not be started: " + e.getMessage()));
                     events.attemptFinished(attempt);
-                }));
+                });
     }
 
     // Volumes stay, a later step may still read the attempt's outputs.

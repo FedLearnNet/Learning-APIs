@@ -41,7 +41,7 @@ public class ExecutionRunBO extends BaseExecutionRunBO<ExecutionRunDTO, Executio
         if (StringUtils.isEmpty(start.getName())) {
             start.setName(tool.getFederatedApp().getName());
         }
-        return executionBO.executeSingle(start, search, inputs,
+        return executionBO.executeSingleTransactional(start, search, inputs,
                 step -> step.setFederatedAppVersion(tool));
     }
 
@@ -51,7 +51,7 @@ public class ExecutionRunBO extends BaseExecutionRunBO<ExecutionRunDTO, Executio
         if (StringUtils.isEmpty(start.getName())) {
             start.setName(subModel.getModelName());
         }
-        return executionBO.executeSingle(start, search, inputs,
+        return executionBO.executeSingleTransactional(start, search, inputs,
                 step -> step.setSubModel(subModel));
 
     }

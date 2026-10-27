@@ -63,7 +63,7 @@ public class FederatedAppCreateImportBO {
     DockerServiceClient dockerClient;
 
     @Transactional
-    public void createExternal(FederatedAppDetailDTO external) {
+    public void createExternalTransactional(FederatedAppDetailDTO external) {
         if (!hasRequiredFields(external)) {
             return;
         }

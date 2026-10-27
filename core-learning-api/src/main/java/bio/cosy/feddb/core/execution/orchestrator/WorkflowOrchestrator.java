@@ -59,7 +59,7 @@ public class WorkflowOrchestrator {
         startedContainers.clear();
     }
 
-    public List<File> getFiles(Long workflowId, Long workflowNodeId) {
+    public List<File> filesOf(Long workflowId, Long workflowNodeId) {
         Log.infof("Downloading output volume: workflowId=%d workflowNodeId=%d", workflowId, workflowNodeId);
         try (Response r = orchestrator.getVolumeClient().downloadFilesIds(workflowId, workflowNodeId)) {
             if (r.getStatus() != 200) {

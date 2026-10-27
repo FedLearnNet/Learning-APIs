@@ -55,7 +55,7 @@ public class ToolExternalHandler {
         List<FederatedAppDetailDTO> tools = autoImportPathHandler.readAll(IMPORT_NAME, jsonSources, FederatedAppDetailDTO.class);
         for (FederatedAppDetailDTO tool : tools) {
             try {
-                federatedAppCreateImportBO.createExternal(tool);
+                federatedAppCreateImportBO.createExternalTransactional(tool);
             } catch (Exception e) {
                 Log.warnf(e, "Failed to import tool from source: %s", tool.getName());
             }
@@ -68,7 +68,7 @@ public class ToolExternalHandler {
                 continue;
             }
             try {
-                federatedAppCreateImportBO.createExternal(model.getFederatedApp());
+                federatedAppCreateImportBO.createExternalTransactional(model.getFederatedApp());
                 modelBO.createExternal(model);
             } catch (Exception e) {
                 Log.warnf(e, "Failed to import model from source: %s", model.getName());

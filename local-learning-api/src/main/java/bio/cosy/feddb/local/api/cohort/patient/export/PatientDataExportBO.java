@@ -58,7 +58,7 @@ public class PatientDataExportBO {
     @ActivateRequestContext
     public ExecutionRunDTO startAppExport(Long cohortId, PatientDataExportConfigDTO config) {
         Path input = writeAppExportInput(cohortId, config);
-        return patientToolBO.start(cohortId, config.getGlobalAppVersionId(), config.getHyperParams(),
+        return patientToolBO.startTransactional(cohortId, config.getGlobalAppVersionId(), config.getHyperParams(),
                 PatientToolRunType.EXPORT, input);
     }
 

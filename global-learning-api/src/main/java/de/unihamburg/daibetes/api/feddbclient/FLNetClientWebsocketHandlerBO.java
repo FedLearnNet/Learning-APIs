@@ -64,7 +64,7 @@ public class FLNetClientWebsocketHandlerBO {
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.LEARNING_QUERY)) {
             LearningQueryClientResponseDTO query = objectMapper.convertValue(m.getMessage(), LearningQueryClientResponseDTO.class);
-            federatedTrainingBO.accept(
+            federatedTrainingBO.acceptTransactional(
                     query.getGlobalFLExperimentUniqueId(),
                     query.getCount(),
                     query.getUniqueRandomClinicId(),
@@ -74,7 +74,7 @@ public class FLNetClientWebsocketHandlerBO {
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.UPDATE_LEARNING)) {
             LearningClientSyncResponseDTO response = objectMapper.convertValue(m.getMessage(), LearningClientSyncResponseDTO.class);
-            federatedTrainingBO.update(response);
+            federatedTrainingBO.updateTransactional(response);
         }
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.CURRENT_LEARNINGS)) {

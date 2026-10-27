@@ -42,7 +42,7 @@ public class DataAnalysisFileBO extends BaseBo<DataAnalysisFileDTO, DataAnalysis
     FileBO fileBo;
 
     public DataAnalysisFileDTO findById(Long id, String keycloakId) {
-        return ao.getById(id, keycloakId)
+        return ao.findByIdAndKeycloakId(id, keycloakId)
                 .map(f -> mapper.entityToDto(f))
                 .orElseThrow(() -> new NotFoundException("Workflow file not found"));
     }
@@ -113,7 +113,7 @@ public class DataAnalysisFileBO extends BaseBo<DataAnalysisFileDTO, DataAnalysis
     public void storeAttemptOutputs(ExecutionAttemptEntity attempt, DataAnalysisEntity dataAnalysis, String keycloakId,
                                     List<FileUpload> files) {
         for (FileUpload file : files) {
-            String key = AppRunUploadData.getKey(file);
+            String key = AppRunUploadData.keyOf(file);
             try {
                 DataAnalysisFileEntity datafileEntity = new DataAnalysisFileEntity();
                 FileEntity createdFile = fileBo.createEntity(new FileDTO(), keycloakId, file);
@@ -171,7 +171,7 @@ public class DataAnalysisFileBO extends BaseBo<DataAnalysisFileDTO, DataAnalysis
 
     public byte[] downloadOutputForRun(Long runId, String keycloakId) {
         Map<String, File> zipEntries = new LinkedHashMap<>();
-        for (DataAnalysisFileEntity dataAnalysisFile : ao.getAllForRun(runId, keycloakId)) {
+        for (DataAnalysisFileEntity dataAnalysisFile : ao.listForRun(runId, keycloakId)) {
             FileEntity fileEntity = dataAnalysisFile.getFile();
             File file = fileEntity == null ? null : fileBo.loadFile(fileEntity);
             if (file == null || !file.exists() || !file.isFile()) {
@@ -211,7 +211,7 @@ public class DataAnalysisFileBO extends BaseBo<DataAnalysisFileDTO, DataAnalysis
         inputs.forEach((name, value) -> {
             if (value instanceof String reference && reference.startsWith(FILE_PREFIX)) {
                 try {
-                    ao.getById(Long.parseLong(reference.substring(FILE_PREFIX.length())), keycloakId)
+                    ao.findByIdAndKeycloakId(Long.parseLong(reference.substring(FILE_PREFIX.length())), keycloakId)
                             .orElseThrow(() -> new NotFoundException("Workflow file not found: " + name));
                 } catch (NumberFormatException e) {
                     throw new NotFoundException("Invalid file reference for input: " + name);
@@ -221,8 +221,8 @@ public class DataAnalysisFileBO extends BaseBo<DataAnalysisFileDTO, DataAnalysis
     }
 
     @Transactional
-    public byte[] downloadOutput(String containerId, String keycloakId) {
-        var files = ao.getAllForContainer(containerId, keycloakId);
+    public byte[] downloadOutputTransactional(String containerId, String keycloakId) {
+        var files = ao.listForContainer(containerId, keycloakId);
         if (files.isEmpty()) {
             throw new NotFoundException("No outputs found for container ID: " + containerId);
         }

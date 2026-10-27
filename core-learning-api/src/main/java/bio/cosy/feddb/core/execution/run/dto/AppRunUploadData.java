@@ -45,11 +45,11 @@ public class AppRunUploadData {
         return Optional.ofNullable(files).orElseGet(List::of);
     }
 
-    public static String getKey(FileUpload file) {
+    public static String keyOf(FileUpload file) {
         return file.getHeaders().getFirst(FILE_CUSTOM_HEADER_KEY);
     }
 
-    public static String getName(FileUpload file) {
+    public static String nameOf(FileUpload file) {
         return file.getHeaders().getFirst(FILE_CUSTOM_HEADER_NAME);
     }
 }

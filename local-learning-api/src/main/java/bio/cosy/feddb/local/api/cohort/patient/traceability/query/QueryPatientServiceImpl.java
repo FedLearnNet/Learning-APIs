@@ -30,7 +30,7 @@ public class QueryPatientServiceImpl implements QueryPatientService {
             cohortMemberAuthBO.checkForMember(internalCohortId, keycloakId);
             cohortIds = Set.of(internalCohortId);
         } else {
-            cohortIds = cohortMemberAuthBO.getMemberCohortIds(keycloakId);
+            cohortIds = cohortMemberAuthBO.memberCohortIdsOf(keycloakId);
         }
         return bo.list(page, internalCohortId, internalPatientId, queryId, cohortIds);
     }

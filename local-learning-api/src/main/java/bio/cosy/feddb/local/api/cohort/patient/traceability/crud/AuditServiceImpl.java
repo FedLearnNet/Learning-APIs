@@ -84,6 +84,6 @@ public class AuditServiceImpl implements AuditService {
             cohortMemberAuthBO.checkForMember(cohortId, keycloakId);
             return Set.of(cohortId);
         }
-        return cohortMemberAuthBO.getMemberCohortIds(keycloakId);
+        return cohortMemberAuthBO.memberCohortIdsOf(keycloakId);
     }
 }
