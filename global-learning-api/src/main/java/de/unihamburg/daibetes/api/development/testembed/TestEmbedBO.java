@@ -81,7 +81,7 @@ public class TestEmbedBO {
             update.setError(updateTest.getError());
             testRunBO.updateFederatedRunTransactional(update);
         } else {
-            testRunBO.update(updateTest);
+            testRunBO.updateAttempt(updateTest);
         }
     }
 
@@ -109,7 +109,7 @@ public class TestEmbedBO {
         if (isFederatedTestRun(runType)) {
             testRunBO.finishFederatedTransactional(finishTest);
         } else {
-            testRunBO.finish(finishTest);
+            testRunBO.finishAttempt(finishTest);
         }
     }
 

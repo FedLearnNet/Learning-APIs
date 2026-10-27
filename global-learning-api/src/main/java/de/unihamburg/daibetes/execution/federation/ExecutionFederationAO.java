@@ -22,4 +22,10 @@ public class ExecutionFederationAO implements PanacheRepository<ExecutionFederat
                 .filter(federation -> clientId.equals(federation.getRelayClientIds().get(clinicId)))
                 .map(federation -> federation.getConfig().getChannel());
     }
+
+    public void updateCurrentRound(ExecutionFederationEntity federation, Integer currentRound) {
+        if (currentRound != null) {
+            federation.setCurrentRound(currentRound);
+        }
+    }
 }

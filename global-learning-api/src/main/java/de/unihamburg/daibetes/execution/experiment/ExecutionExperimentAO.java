@@ -27,7 +27,7 @@ public class ExecutionExperimentAO implements PanacheRepository<ExecutionExperim
         return list("project.id = ?1 and test = true", projectId);
     }
 
-    public Optional<ExecutionExperimentEntity> findOfAppOptional(Long experimentId, Long appId) {
-        return find("id = ?1 and federatedAppVersion.federatedApp.id = ?2", experimentId, appId).firstResultOptional();
+    public Optional<ExecutionExperimentEntity> findOfAppWithRunsOptional(Long experimentId, Long appId) {
+        return find("id = ?1 and federatedAppVersion.federatedApp.id = ?2 and runs is not empty", experimentId, appId).firstResultOptional();
     }
 }

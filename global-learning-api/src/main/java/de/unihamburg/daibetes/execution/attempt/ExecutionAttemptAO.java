@@ -3,9 +3,12 @@ package de.unihamburg.daibetes.execution.attempt;
 import bio.cosy.feddb.core.execution.ExecutionPurpose;
 import bio.cosy.feddb.core.execution.attempt.BaseExecutionAttemptAO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import de.unihamburg.daibetes.api.development.run.federated.FederatedParticipantUpdateDTO;
+import de.unihamburg.daibetes.execution.federation.ExecutionFederatedAttemptEntity;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,5 +27,13 @@ public class ExecutionAttemptAO extends BaseExecutionAttemptAO<ExecutionAttemptE
 
     public Optional<ExecutionAttemptEntity> findParticipantAttemptOptional(Long runId, String participantId) {
         return find("step.run.id = ?1 and federation.participant.participantId = ?2", runId, participantId).firstResultOptional();
+    }
+
+    public void applyParticipantUpdate(ExecutionAttemptEntity attempt, FederatedParticipantUpdateDTO update) {
+        ExecutionFederatedAttemptEntity federation = attempt.federationOrNew();
+        Optional.ofNullable(update.getCurrentRound()).ifPresent(federation::setCurrentRound);
+        Optional.ofNullable(update.getMessagesReceived()).ifPresent(federation::setMessagesReceived);
+        Optional.ofNullable(update.getMessagesSent()).ifPresent(federation::setMessagesSent);
+        Optional.ofNullable(update.getWaitingFor()).ifPresent(waitingFor -> federation.setWaitingFor(new ArrayList<>(waitingFor)));
     }
 }

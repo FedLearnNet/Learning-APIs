@@ -26,4 +26,9 @@ public class ExecutionRunAO extends BaseExecutionRunAO<ExecutionRunEntity> {
     public Optional<ExecutionRunEntity> findByIdAndCohortIdOptional(Long runId, Long cohortId) {
         return find("id = ?1 and cohort.id = ?2", runId, cohortId).firstResultOptional();
     }
+
+    public Optional<ExecutionRunEntity> findOfAttemptOptional(Long attemptId) {
+        return find("from ExecutionRunEntity r where exists (from ExecutionAttemptEntity a where a.id = ?1 and a.step.run = r)", attemptId)
+                .firstResultOptional();
+    }
 }

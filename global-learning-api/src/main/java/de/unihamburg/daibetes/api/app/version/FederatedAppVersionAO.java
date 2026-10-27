@@ -21,6 +21,13 @@ public class FederatedAppVersionAO implements PanacheRepository<FederatedAppVers
                 .orElseThrow(() -> new NotFoundException("App version " + appVersionId + " not found"));
     }
 
+    public Optional<FederatedAppVersionEntity> findOfAppAuthorCheckedOptional(Long appVersionId, Long appId, String keycloakId) {
+        return find("from FederatedAppVersionEntity v where v.id = ?1 and v.federatedApp.id = ?2 and exists ("
+                        + "select 1 from FederatedAppAuthorEntity a where a.federatedApp = v.federatedApp and a.keycloakId = ?3)",
+                appVersionId, appId, keycloakId)
+                .firstResultOptional();
+    }
+
     public List<FederatedAppVersionEntity> listForAudit(String keycloakId, long minAuditCount) {
         return find(
                 "from FederatedAppVersionEntity v " +
