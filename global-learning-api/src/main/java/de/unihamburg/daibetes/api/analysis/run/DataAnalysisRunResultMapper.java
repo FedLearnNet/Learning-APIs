@@ -27,8 +27,8 @@ import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
 import de.unihamburg.daibetes.execution.step.ExecutionRunStepMapper;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import io.quarkus.logging.Log;
+import de.unihamburg.daibetes.config.FLNetConfig;
 import jakarta.inject.Inject;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.mapstruct.*;
 
 import java.util.*;
@@ -44,10 +44,8 @@ import static de.unihamburg.daibetes.api.analysis.run.DataAnalysisRunResultBO.FI
 @Mapper(config = QuarkusMappingConfig.class, uses = ExecutionAttemptMapper.class)
 public abstract class DataAnalysisRunResultMapper {
 
-    // Single source of truth for the overhead flag; runtime is always exposed regardless.
     @Inject
-    @ConfigProperty(name = "posymed.runtime.overhead.enabled", defaultValue = "false")
-    boolean overheadEnabled;
+    FLNetConfig config;
 
     @Inject
     ObjectMapper objectMapper;
@@ -257,7 +255,7 @@ public abstract class DataAnalysisRunResultMapper {
     // A copy, stripping overhead from the stored meta would be written back.
     @Named("mapMetaToVisibleMetaDTO")
     protected RunMetaDTO mapMetaToVisibleMetaDTO(RunMetaDTO meta) {
-        return meta == null ? null : objectMapper.convertValue(meta, RunMetaDTO.class).withOverheadVisibility(overheadEnabled);
+        return meta == null ? null : objectMapper.convertValue(meta, RunMetaDTO.class).withOverheadVisibility(config.runtime().overheadEnabled());
     }
 
     @Named("mapAttemptIdToLastLog")

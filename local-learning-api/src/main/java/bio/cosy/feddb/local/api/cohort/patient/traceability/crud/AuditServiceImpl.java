@@ -45,7 +45,7 @@ public class AuditServiceImpl implements AuditService {
             SortDirectionEnum sortDirection,
             List<String> searchTerms,
             List<AuditFieldEnum> searchFields) {
-        Set<Long> cohortIds = visibleCohorts(cohortId);
+        Set<Long> cohortIds = visibleCohortIds(cohortId);
         try {
             Log.debug("Querying audit logs for cohort " + cohortId + " with page " + page + ", size " + size + ", sort " + sortField + ":" + sortDirection);
 
@@ -78,7 +78,7 @@ public class AuditServiceImpl implements AuditService {
         return auditBO.getPatientChangesDetail(patientId, revId);
     }
 
-    private Set<Long> visibleCohorts(Long cohortId) {
+    private Set<Long> visibleCohortIds(Long cohortId) {
         String keycloakId = userIdentity.getKeycloakId();
         if (cohortId != null) {
             cohortMemberAuthBO.checkForMember(cohortId, keycloakId);

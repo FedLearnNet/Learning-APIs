@@ -301,7 +301,7 @@ class FederatedLearningRequestE2ETest {
 
         // The app of the first step starts with the clinic's data in its volume.
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> verify(gateway).startWorkflow(any(), anyString()));
-        Long attemptId = runBO.attemptOfTransactional(runId).orElseThrow();
+        Long attemptId = runBO.findLatestAttemptIdTransactional(runId).orElseThrow();
         verify(exportBO, atLeastOnce()).exportDataForLearning(any(), anyLong(), anyLong());
         verify(workflowOrchestrator).uploadFilesToVolume(eq(runId), eq(attemptId), eq(inputFile), eq("training_data.csv"));
 

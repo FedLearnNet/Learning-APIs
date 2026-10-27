@@ -149,7 +149,7 @@ public class AppTransformerSessionBO {
         ExecutionRunDTO run = appRunBO.startTransactional(transformer, transformer.getHyperparams(), connectorRunId, null, keycloakId, true);
         onRunCreated.accept(run);
         // The import runs batch after batch, so it waits here; the app's connect ends the wait, not a poll.
-        Long attemptId = appRunBO.connectedAttempt(run.getId())
+        Long attemptId = appRunBO.connectedAttemptId(run.getId())
                 .onFailure(AppTransformerSessionFailure.class).transform(e -> new AppTransformerSessionFailure("App transformer '"
                         + transformer.getAppImage() + "' " + e.getMessage() + " before it could take any work", e))
                 .ifNoItem().after(CONNECT_TIMEOUT).recoverWithUni(() -> timedOut(transformer, run.getId(),
@@ -168,7 +168,7 @@ public class AppTransformerSessionBO {
         if (open.isPresent()) {
             return open.get();
         }
-        appRunBO.connectedAttempt(appRunBO.sessionRunOf(attemptId))
+        appRunBO.connectedAttemptId(appRunBO.sessionRunIdOf(attemptId))
                 .ifNoItem().after(RECONNECT_TIMEOUT).recoverWithUni(() -> timedOut(transformer, null,
                         "did not reconnect within " + RECONNECT_TIMEOUT.toSeconds() + "s"))
                 .await().indefinitely();
@@ -181,7 +181,7 @@ public class AppTransformerSessionBO {
         AppTransformerSessionFailure timedOut = new AppTransformerSessionFailure("App transformer '" + transformer.getAppImage() + "' " + failure);
         return Uni.createFrom().<Long>item(() -> {
                     if (runId != null) {
-                        runBO.attemptOfTransactional(runId).ifPresent(attemptId -> appRunBO.fail(attemptId, timedOut.getMessage()));
+                        runBO.findLatestAttemptIdTransactional(runId).ifPresent(attemptId -> appRunBO.fail(attemptId, timedOut.getMessage()));
                     }
                     return null;
                 })

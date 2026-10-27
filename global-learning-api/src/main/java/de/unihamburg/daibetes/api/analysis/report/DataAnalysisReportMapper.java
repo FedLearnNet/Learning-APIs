@@ -15,8 +15,8 @@ import de.unihamburg.daibetes.api.model.ModelBO;
 import de.unihamburg.daibetes.helper.HyperParamMapper;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import jakarta.enterprise.context.ApplicationScoped;
+import de.unihamburg.daibetes.config.FLNetConfig;
 import jakarta.inject.Inject;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.mapstruct.*;
 
 import java.util.LinkedHashMap;
@@ -40,10 +40,8 @@ public abstract class DataAnalysisReportMapper {
     @Inject
     FileBO fileBO;
 
-    // Single source of truth for the overhead flag; runtime aggregates are always computed.
     @Inject
-    @ConfigProperty(name = "posymed.runtime.overhead.enabled", defaultValue = "false")
-    boolean overheadEnabled;
+    FLNetConfig config;
 
     @Mappings({
             @Mapping(target = "allFiles", source = "files", qualifiedByName = "filesToCards"),
@@ -137,7 +135,7 @@ public abstract class DataAnalysisReportMapper {
         Long overheadTotalMs = timing(run, RunTimingMetric.OVERHEAD_TOTAL);
         view.setRuntimeMs(runtimeMs);
         view.setRuntimeLabel(formatDuration(runtimeMs));
-        boolean hasOverhead = overheadEnabled && overheadTotalMs != null;
+        boolean hasOverhead = config.runtime().overheadEnabled() && overheadTotalMs != null;
         view.setHasOverhead(hasOverhead);
         if (hasOverhead) {
             view.setStartupLabel(formatDuration(timing(run, RunTimingMetric.OVERHEAD_STARTUP)));
@@ -162,7 +160,7 @@ public abstract class DataAnalysisReportMapper {
                 .filter(Objects::nonNull)
                 .toList();
         if (runtimes.isEmpty()) {
-            return new ReportView.Performance(false, 0, "—", "—", overheadEnabled);
+            return new ReportView.Performance(false, 0, "—", "—", config.runtime().overheadEnabled());
         }
         double mean = runtimes.stream().mapToLong(Long::longValue).average().orElse(0);
         double sd = 0;
@@ -173,7 +171,7 @@ public abstract class DataAnalysisReportMapper {
             sd = Math.sqrt(variance);
         }
         return new ReportView.Performance(true, runtimes.size(),
-                formatDuration(Math.round(mean)), formatDuration(Math.round(sd)), overheadEnabled);
+                formatDuration(Math.round(mean)), formatDuration(Math.round(sd)), config.runtime().overheadEnabled());
     }
 
     /** Human-readable duration; "—" for null/negative. */

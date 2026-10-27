@@ -17,7 +17,7 @@ import java.util.Map;
  * <ul>
  *   <li>{@link #timings} — lifecycle durations (ms) keyed by {@link RunTimingMetric}. RUNTIME is
  *       always present when measured; the OVERHEAD_* entries are gated by
- *       {@code posymed.runtime.overhead.enabled}.</li>
+ *       {@code flnet.runtime.overhead.enabled}.</li>
  * </ul>
  *
  * <p>Reserved for follow-up work (declared so the shape is stable and reviewers can see the intent;

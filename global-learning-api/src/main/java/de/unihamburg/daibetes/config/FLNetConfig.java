@@ -47,6 +47,15 @@ public interface FLNetConfig {
 
     DataAnalysisConfig dataAnalysis();
 
+    RuntimeConfig runtime();
+
+    interface RuntimeConfig {
+        // Shows the platform's own share of a run's time next to the app's.
+        @WithName("overhead.enabled")
+        @WithDefault("false")
+        boolean overheadEnabled();
+    }
+
     interface DataAnalysisConfig {
 
         // Timeout for the app to connect to the platform

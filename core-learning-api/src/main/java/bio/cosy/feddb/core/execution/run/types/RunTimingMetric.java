@@ -9,7 +9,7 @@ import java.util.Map;
  * <p>Timings are carried as a {@code Map<RunTimingMetric, Long>} and stored as JSON (jsonb) so new
  * metrics can be added here without a schema change. {@link #RUNTIME} is the pure scientific compute
  * time and is always exposed; the {@code OVERHEAD_*} metrics are gated by the config flag
- * {@code posymed.runtime.overhead.enabled} (see {@link #applyOverheadVisibility}).
+ * {@code flnet.runtime.overhead.enabled} (see {@link #applyOverheadVisibility}).
  */
 public enum RunTimingMetric {
 
