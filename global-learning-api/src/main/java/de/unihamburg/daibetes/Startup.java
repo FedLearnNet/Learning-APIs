@@ -44,7 +44,7 @@ public class Startup {
                 Log.infof("Skipping vector extension creation on startup");
             }
             if (config.toolImports().enabled()) {
-                Log.infof("Starting tool imports");
+                Log.infof("Starting tool imports, building them on import: %s", config.toolImports().buildOnImport());
                 toolExternalHandler.importAllToolsTransactional();
             } else {
                 Log.infof("Tool imports have been disabled");
