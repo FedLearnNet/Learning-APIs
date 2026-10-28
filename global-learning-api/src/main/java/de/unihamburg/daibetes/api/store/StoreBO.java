@@ -125,7 +125,7 @@ public class StoreBO {
             return workflow.getNodes().stream().anyMatch(n -> {
                 FederatedAppDTO appNode = n.getAppDetail();
                 ModelDTO modelNode = n.getModelDetail();
-                return filterAppType(appNode, modelNode, null, appTypes);
+                return filterAppType(appNode, modelNode, null, filter);
             });
         }
         String appType = app.getType().toString().toLowerCase();
