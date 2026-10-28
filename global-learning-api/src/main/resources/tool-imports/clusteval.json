@@ -1,7 +1,7 @@
 {
-  "name": "tool-clusteval",
+  "name": "clusteval",
   "uniqueAppId": "dc7f8a8e-8cb8-49d8-b9c0-1f73f481e939",
-  "slug": "tool-clusteval",
+  "slug": "clusteval",
   "type": "EVALUATION",
   "supportsFederatedLearning": false,
   "sourceUrl": "https://github.com/FedLearnNet/tool-clusteval",
@@ -13,12 +13,12 @@
   "versions": [
     {
       "appVersion": "1.0.0",
-      "publishHash": "27fdb4d62ce09ef548a27ba040fc6c95e39625a9",
+      "publishHash": "2a2acf39d7615e25289a086ed6bc652e71215782",
       "versionPublishStatus": "PUBLISHED",
       "needsInternetAccess": false,
       "needsHostAccess": false,
       "shortDescription": "Evaluates clustering results with ClustEval and exports quality scores and visual reports.",
-      "longDescription": "# tool-clusteval\n\nEvaluates clustering results with ClustEval and exports quality scores and visual reports.\n\n## Runtime inputs\n\nSupply input files according to the schemas in `app.yml`.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `data` | CSV | Data in CSV format |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `cluster_scores` | IMAGE | Clustering evaluation scores plot. |\n| `silhouette_plot` | IMAGE | Silhouette analysis plot. |\n| `scatter_plot` | IMAGE | Scatter plot of clustered data. |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `clustering_algorithm` | `agglomerative` | Clustering algorithm to use. |\n| `evaluation_method` | `silhouette` | Evaluation method for clustering. |\n| `linkage` | `ward` | Linkage method for hierarchical clustering. |\n| `max_clusters` | `25` | Maximum number of clusters (-1 for no restriction). |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-clusteval .`.\n",
+      "longDescription": "# clusteval\n\nEvaluates clustering results with ClustEval and exports quality scores and visual reports.\n\n## Runtime inputs\n\nSupply input files according to the schemas in `app.yml`.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `data` | CSV | Data in CSV format |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `cluster_scores` | IMAGE | Clustering evaluation scores plot. |\n| `silhouette_plot` | IMAGE | Silhouette analysis plot. |\n| `scatter_plot` | IMAGE | Scatter plot of clustered data. |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `clustering_algorithm` | `agglomerative` | Clustering algorithm to use. |\n| `evaluation_method` | `silhouette` | Evaluation method for clustering. |\n| `linkage` | `ward` | Linkage method for hierarchical clustering. |\n| `max_clusters` | `25` | Maximum number of clusters (-1 for no restriction). |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-clusteval .`.\n",
       "appConfig": {
         "hyperparams": [
           {

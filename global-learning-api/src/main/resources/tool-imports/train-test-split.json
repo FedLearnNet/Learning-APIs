@@ -1,7 +1,7 @@
 {
-  "name": "tool-train-test-split",
+  "name": "train-test-split",
   "uniqueAppId": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
-  "slug": "tool-train-test-split",
+  "slug": "train-test-split",
   "type": "PRE_PROCESSING",
   "supportsFederatedLearning": false,
   "sourceUrl": "https://github.com/FedLearnNet/tool-train-test-split",
@@ -13,12 +13,12 @@
   "versions": [
     {
       "appVersion": "4.1.0",
-      "publishHash": "c1746d39a2a9e8ab4075906fb739e4506c7aa75c",
+      "publishHash": "6c1a92c5ac69c52d243bbf343e4580bc80b676ab",
       "versionPublishStatus": "PUBLISHED",
       "needsInternetAccess": false,
       "needsHostAccess": false,
       "shortDescription": "Splits a tabular dataset into training and test sets with configurable test size, shuffling, and random seed.",
-      "longDescription": "# tool-train-test-split\n\nSplits a tabular dataset into training and test sets with configurable test size, shuffling, and random seed.\n\n## Input and output\n\nProvide a CSV table as `input`. The tool returns CSV tables named `train` and `test`.\nAll input columns are preserved, and each input row belongs to exactly one subset.\n\n## Configuration\n\n- `test_size`: test-set proportion, strictly between 0 and 1; default `0.25`.\n- `shuffle`: shuffle rows before splitting; default `true`.\n- `random_state`: seed used when shuffling; default `42`.\n\nWith `shuffle=false`, the training set contains the leading rows and the test set\ncontains the remaining rows. The Python config also accepts an integer `test_size`\nfor an absolute row count; the platform exposes the proportional FLOAT setting.\n\nThe split uses scikit-learn's `train_test_split`.\n\n`data/example.csv` is a small, generated synthetic dataset for local examples.\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` contains only\nadditional runtime dependencies; `requirements-dev.txt` includes the API for local development.\n\nBuild with `docker build -t tool-train-test-split .`.\n",
+      "longDescription": "# train-test-split\n\nSplits a tabular dataset into training and test sets with configurable test size, shuffling, and random seed.\n\n## Input and output\n\nProvide a CSV table as `input`. The tool returns CSV tables named `train` and `test`.\nAll input columns are preserved, and each input row belongs to exactly one subset.\n\n## Configuration\n\n- `test_size`: test-set proportion, strictly between 0 and 1; default `0.25`.\n- `shuffle`: shuffle rows before splitting; default `true`.\n- `random_state`: seed used when shuffling; default `42`.\n\nWith `shuffle=false`, the training set contains the leading rows and the test set\ncontains the remaining rows. The Python config also accepts an integer `test_size`\nfor an absolute row count; the platform exposes the proportional FLOAT setting.\n\nThe split uses scikit-learn's `train_test_split`.\n\n`data/example.csv` is a small, generated synthetic dataset for local examples.\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` contains only\nadditional runtime dependencies; `requirements-dev.txt` includes the API for local development.\n\nBuild with `docker build -t tool-train-test-split .`.\n",
       "appConfig": {
         "hyperparams": [
           {

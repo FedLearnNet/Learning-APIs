@@ -1,7 +1,7 @@
 {
-  "name": "tool-mosbi",
+  "name": "mosbi",
   "uniqueAppId": "b9f2c5e8-6d3a-4f7e-8b5c-9e4a2d7f6c1b",
-  "slug": "tool-mosbi",
+  "slug": "mosbi",
   "type": "SELF_LEARNED",
   "supportsFederatedLearning": false,
   "sourceUrl": "https://github.com/FedLearnNet/tool-mosbi",
@@ -13,12 +13,12 @@
   "versions": [
     {
       "appVersion": "1.0.0",
-      "publishHash": "53414779e2aac2e10a300e8b14b91f7fbd4d7fb6",
+      "publishHash": "8fe3c252e95ee372d4e4d7b7becea6fc5b6a4b5b",
       "versionPublishStatus": "PUBLISHED",
       "needsInternetAccess": false,
       "needsHostAccess": false,
       "shortDescription": "Identifies molecular signatures with MoSBi ensemble biclustering and exports biclusters and reports.",
-      "longDescription": "# tool-mosbi\n\nIdentifies molecular signatures with MoSBi ensemble biclustering and exports biclusters and reports.\n\n## Runtime inputs\n\nThe Dockerfile installs R/Bioconductor packages required by the MoSBi bridge.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `data` | CSV | TSV file |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `adjacency_heatmap` | IMAGE |  |\n| `histograms` | IMAGE |  |\n| `network_by_algorithm` | IMAGE |  |\n| `network_plot` | IMAGE |  |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `n_randomizations` | `5` | Number of randomizations for cut-off estimation. |\n| `margin` | `both` | Margin for similarity computation |\n| `metric` | `Bray-Curtis` | Similarity metric |\n| `n_steps` | `100` | Number of points where the cut-off is evaluated |\n| `sn_ratio` | `true` | Compute signal-to-noise ratio if True, else use error_threshold |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-mosbi .`.\n",
+      "longDescription": "# mosbi\n\nIdentifies molecular signatures with MoSBi ensemble biclustering and exports biclusters and reports.\n\n## Runtime inputs\n\nThe Dockerfile installs R/Bioconductor packages required by the MoSBi bridge.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `data` | CSV | TSV file |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `adjacency_heatmap` | IMAGE |  |\n| `histograms` | IMAGE |  |\n| `network_by_algorithm` | IMAGE |  |\n| `network_plot` | IMAGE |  |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `n_randomizations` | `5` | Number of randomizations for cut-off estimation. |\n| `margin` | `both` | Margin for similarity computation |\n| `metric` | `Bray-Curtis` | Similarity metric |\n| `n_steps` | `100` | Number of points where the cut-off is evaluated |\n| `sn_ratio` | `true` | Compute signal-to-noise ratio if True, else use error_threshold |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-mosbi .`.\n",
       "appConfig": {
         "hyperparams": [
           {

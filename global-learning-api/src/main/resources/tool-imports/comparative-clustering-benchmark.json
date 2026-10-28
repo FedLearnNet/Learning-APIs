@@ -1,7 +1,7 @@
 {
-  "name": "tool-comparative-clustering-benchmark",
+  "name": "comparative-clustering-benchmark",
   "uniqueAppId": "9da0dc07-2e4a-4f2b-ab1e-caffdcafd19a",
-  "slug": "tool-comparative-clustering-benchmark",
+  "slug": "comparative-clustering-benchmark",
   "type": "EVALUATION",
   "supportsFederatedLearning": false,
   "sourceUrl": "https://github.com/FedLearnNet/tool-comparative-clustering-benchmark",
@@ -13,12 +13,12 @@
   "versions": [
     {
       "appVersion": "1.0.0",
-      "publishHash": "8d39d8bfc78847cefc0323fe9ea1232d82cc2f2e",
+      "publishHash": "42ddcfdb447aebcc0dab33f5edfe65c825aa15c1",
       "versionPublishStatus": "PUBLISHED",
       "needsInternetAccess": false,
       "needsHostAccess": false,
       "shortDescription": "Compares clustering outputs using internal quality scores and optional ground-truth labels.",
-      "longDescription": "# tool-comparative-clustering-benchmark\n\nCompares clustering outputs using internal quality scores and optional ground-truth labels.\n\n## Runtime inputs\n\nSupply input files according to the schemas in `app.yml`.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `features` | CSV | Feature table as CSV, including the sample identifier column. |\n| `predictions` | CSV | Prediction table as CSV, containing the sample identifier and one or more clustering result columns. |\n| `ground_truth` | CSV | Optional ground truth table as CSV, containing the sample identifier and true label column. |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `output` | CSV | Benchmark scores for all clustering prediction columns as CSV. |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `id_column` | `sample_id` | Column name used as unique sample identifier. |\n| `truth_label_column` | `cluster_label` | Default label column name for clustering predictions. |\n| `sort_by` | `silhouette` | Metric used to rank clustering models. |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-comparative-clustering-benchmark .`.\n",
+      "longDescription": "# comparative-clustering-benchmark\n\nCompares clustering outputs using internal quality scores and optional ground-truth labels.\n\n## Runtime inputs\n\nSupply input files according to the schemas in `app.yml`.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `features` | CSV | Feature table as CSV, including the sample identifier column. |\n| `predictions` | CSV | Prediction table as CSV, containing the sample identifier and one or more clustering result columns. |\n| `ground_truth` | CSV | Optional ground truth table as CSV, containing the sample identifier and true label column. |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `output` | CSV | Benchmark scores for all clustering prediction columns as CSV. |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `id_column` | `sample_id` | Column name used as unique sample identifier. |\n| `truth_label_column` | `cluster_label` | Default label column name for clustering predictions. |\n| `sort_by` | `silhouette` | Metric used to rank clustering models. |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-comparative-clustering-benchmark .`.\n",
       "appConfig": {
         "hyperparams": [
           {

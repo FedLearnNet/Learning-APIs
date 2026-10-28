@@ -1,7 +1,7 @@
 {
-  "name": "tool-agglomerative-clustering",
+  "name": "agglomerative-clustering",
   "uniqueAppId": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b",
-  "slug": "tool-agglomerative-clustering",
+  "slug": "agglomerative-clustering",
   "type": "SELF_LEARNED",
   "supportsFederatedLearning": false,
   "sourceUrl": "https://github.com/FedLearnNet/tool-agglomerative-clustering",
@@ -16,12 +16,12 @@
   "versions": [
     {
       "appVersion": "5.0.1",
-      "publishHash": "ac5f63cee67db3bbaed5127f8f18f9da76fa3460",
+      "publishHash": "733b937bf1d5ab5c25c6faf3f27f015736b83d8b",
       "versionPublishStatus": "PUBLISHED",
       "needsInternetAccess": false,
       "needsHostAccess": false,
       "shortDescription": "Runs hierarchical agglomerative clustering and generates a dendrogram image and summary report.",
-      "longDescription": "# tool-agglomerative-clustering\n\nRuns hierarchical agglomerative clustering and generates a dendrogram image and summary report.\n\n## Input and outputs\n\nProvide a numeric CSV table as `features`. The implementation fits Ward/Euclidean\nagglomerative clustering on the first four columns. Supply feature columns without\nan identifier column.\n\n- `dendrogram_png`: a PNG file containing the SciPy dendrogram.\n- `report`: a plain-text summary of the fitted cluster count.\n- Metrics: `samples` and `clusters`, calculated from the fitted result.\n\n`distance_threshold` controls the clustering cut; its default `0.0` builds the full\nhierarchy. `plot_title`, `dendrogram_truncate_mode`, and `dendrogram_p` control the\nplot. The existing `linkage`, `metric`, `standardize`, `compute_distances`,\n`use_distance_threshold`, and `n_clusters` fields are retained for compatibility;\nthe current fitting implementation does not apply those settings.\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` contains only\nadditional runtime dependencies; `requirements-dev.txt` includes the API for local development.\n\nBuild with `docker build -t tool-agglomerative-clustering .`.\nThe image runs as `nonroot` and uses Matplotlib's headless Agg backend.\n",
+      "longDescription": "# agglomerative-clustering\n\nRuns hierarchical agglomerative clustering and generates a dendrogram image and summary report.\n\n## Input and outputs\n\nProvide a numeric CSV table as `features`. The implementation fits Ward/Euclidean\nagglomerative clustering on the first four columns. Supply feature columns without\nan identifier column.\n\n- `dendrogram_png`: a PNG file containing the SciPy dendrogram.\n- `report`: a plain-text summary of the fitted cluster count.\n- Metrics: `samples` and `clusters`, calculated from the fitted result.\n\n`distance_threshold` controls the clustering cut; its default `0.0` builds the full\nhierarchy. `plot_title`, `dendrogram_truncate_mode`, and `dendrogram_p` control the\nplot. The existing `linkage`, `metric`, `standardize`, `compute_distances`,\n`use_distance_threshold`, and `n_clusters` fields are retained for compatibility;\nthe current fitting implementation does not apply those settings.\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` contains only\nadditional runtime dependencies; `requirements-dev.txt` includes the API for local development.\n\nBuild with `docker build -t tool-agglomerative-clustering .`.\nThe image runs as `nonroot` and uses Matplotlib's headless Agg backend.\n",
       "appConfig": {
         "hyperparams": [
           {

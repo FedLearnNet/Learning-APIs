@@ -1,0 +1,91 @@
+{
+  "name": "branch-merge-aggregator",
+  "uniqueAppId": "8b5a0816-df3a-441c-abba-8ee85375374f",
+  "slug": "branch-merge-aggregator",
+  "type": "POST_PROCESSING",
+  "supportsFederatedLearning": false,
+  "sourceUrl": "https://github.com/FedLearnNet/tool-branch-merge-aggregator",
+  "authors": [
+    {
+      "keycloakId": "admin"
+    }
+  ],
+  "versions": [
+    {
+      "appVersion": "1.0.0",
+      "publishHash": "7c1ee07ebf46950ff0873a608e3edfde1c092db8",
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "needsHostAccess": false,
+      "shortDescription": "Combines two workflow tables by concatenating rows or columns, or by joining on a shared key.",
+      "longDescription": "# branch-merge-aggregator\n\nCombines two workflow tables by concatenating rows or columns, or by joining on a shared key.\n\nThis app is a lightweight branch merge utility for workflow pipelines. It accepts two\ninput CSV files, loads them as pandas DataFrames, merges them according to the selected\nmode, and returns the merged result as a single output CSV.\n\n## Supported merge modes\n\n- `concat_columns`: concatenates both inputs column-wise after resetting their indices.\n- `concat_rows`: concatenates both inputs row-wise and reindexes the result.\n- `merge_on_key`: performs a pandas merge using a shared key column and a configurable join strategy.\n\n## Inputs\n\n- `left`: left input CSV, loaded as a pandas DataFrame.\n- `right`: right input CSV, loaded as a pandas DataFrame.\n\n## Hyperparameters\n\n- `mode`: merge mode to use. One of `concat_columns`, `concat_rows`, or `merge_on_key`.\n- `key`: optional merge key column. Required when `mode=merge_on_key`.\n- `how`: join strategy for `merge_on_key`. One of `inner`, `left`, `right`, or `outer`.\n\n## Output\n\n- `output`: merged pandas DataFrame written as CSV.\n\n## Behavior\n\nThe app validates that both inputs are present and are pandas DataFrames.\nThen it applies the selected merge strategy:\n\n- For `concat_rows`, it uses `pd.concat(..., axis=0, ignore_index=True)`.\n- For `concat_columns`, it resets both indices and concatenates with `axis=1`.\n- For `merge_on_key`, it validates the merge key and applies `pd.merge(..., on=key, how=how)`.\n\n## Example\n\n### Column-wise concatenation\n\n- `mode=concat_columns`\n- combines both tables side by side\n\n### Row-wise concatenation\n\n- `mode=concat_rows`\n- stacks both tables vertically\n\n### Key-based merge\n\n- `mode=merge_on_key`\n- `key=id`\n- `how=inner`\n- joins both tables using the shared `id` column\n\n## Column and row alignment\n\nColumn concatenation aligns row positions after resetting indices and adds `_left`\nand `_right` suffixes to all column names. Unequal input lengths are padded with\nmissing values. Row concatenation preserves the union of columns and resets the\noutput index. Key-based joins use pandas merge semantics.\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API and its pandas dependencies.\n`requirements.txt` contains only additional runtime dependencies;\n`requirements-dev.txt` includes the API for local development.\n\nThe example files are Iris flower tables. Regenerate the two input tables with\n`python generate_example_data.py` from the repository root.\n\nBuild with `docker build -t tool-branch-merge-aggregator .`.\n",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "default": "concat_columns",
+            "description": "Merge mode to use for combining the two input DataFrames.",
+            "name": "mode",
+            "options": [
+              "concat_rows",
+              "concat_columns",
+              "merge_on_key"
+            ],
+            "type": "CATEGORICAL",
+            "variableName": "mode",
+            "mode": "BOTH"
+          },
+          {
+            "default": "",
+            "description": "Column name used as merge key when mode is merge_on_key.",
+            "name": "key",
+            "options": [],
+            "type": "STRING",
+            "variableName": "key",
+            "mode": "BOTH"
+          },
+          {
+            "default": "inner",
+            "description": "Join strategy used when mode is merge_on_key.",
+            "name": "how",
+            "options": [
+              "inner",
+              "left",
+              "right",
+              "outer"
+            ],
+            "type": "CATEGORICAL",
+            "variableName": "how",
+            "mode": "BOTH"
+          }
+        ],
+        "input": [
+          {
+            "description": "Left input DataFrame as CSV.",
+            "name": "left",
+            "required": true,
+            "type": "CSV",
+            "variableName": "left",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Right input DataFrame as CSV.",
+            "name": "right",
+            "required": true,
+            "type": "CSV",
+            "variableName": "right",
+            "mode": "BOTH"
+          }
+        ],
+        "output": [
+          {
+            "description": "The merged output DataFrame as CSV.",
+            "name": "output",
+            "type": "CSV",
+            "variableName": "output",
+            "mode": "BOTH"
+          }
+        ]
+      }
+    }
+  ]
+}

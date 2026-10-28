@@ -1,7 +1,7 @@
 {
-  "name": "tool-transformer-combine-rows",
+  "name": "transformer-combine-rows",
   "uniqueAppId": "bdda8b73-bce0-4875-b464-52b778862999",
-  "slug": "tool-transformer-combine-rows",
+  "slug": "transformer-combine-rows",
   "type": "DATA_TRANSFORMATION",
   "supportsFederatedLearning": false,
   "sourceUrl": "https://github.com/FedLearnNet/tool-transformer-combine-rows",
@@ -13,12 +13,12 @@
   "versions": [
     {
       "appVersion": "1.0.0",
-      "publishHash": "b9413d2ec684fcfecbb70b295466b09bac4ab840",
+      "publishHash": "f7e92d6d914f9ae376c4adf8f4ff3064ef57a24a",
       "versionPublishStatus": "PUBLISHED",
       "needsInternetAccess": false,
       "needsHostAccess": false,
       "shortDescription": "Combines two fields from each input row into one value using a configurable separator.",
-      "longDescription": "# tool-transformer-combine-rows\n\nCombines two fields from each input row into one value using a configurable separator.\n\n## Behavior\n\nFor each mapped row, the transformer reads `a` and `b` and returns\n`{\"value\": \"<a><delimiter><b>\"}`. The `delimiter` hyperparameter defaults to `|`.\n\n- `{\"a\": \"hello\", \"b\": \"world\"}` becomes `{\"value\": \"hello|world\"}`.\n- Empty strings are retained, including the separator.\n- Values are converted to strings using Python's string formatting.\n- The number of input rows stays the same.\n\nConfigure row mappings with `input_mapping={\"a\": \"first_column\", \"b\": \"second_column\"}`\nand `return_mapping={\"value\": \"combined_column\"}`. Leave `column` unset to use\nrow transformation mode.\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` contains only\nadditional runtime dependencies; `requirements-dev.txt` includes the API for local development.\n\nBuild with `docker build -t tool-transformer-combine-rows .`.\n",
+      "longDescription": "# transformer-combine-rows\n\nCombines two fields from each input row into one value using a configurable separator.\n\n## Behavior\n\nFor each mapped row, the transformer reads `a` and `b` and returns\n`{\"value\": \"<a><delimiter><b>\"}`. The `delimiter` hyperparameter defaults to `|`.\n\n- `{\"a\": \"hello\", \"b\": \"world\"}` becomes `{\"value\": \"hello|world\"}`.\n- Empty strings are retained, including the separator.\n- Values are converted to strings using Python's string formatting.\n- The number of input rows stays the same.\n\nConfigure row mappings with `input_mapping={\"a\": \"first_column\", \"b\": \"second_column\"}`\nand `return_mapping={\"value\": \"combined_column\"}`. Leave `column` unset to use\nrow transformation mode.\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` contains only\nadditional runtime dependencies; `requirements-dev.txt` includes the API for local development.\n\nBuild with `docker build -t tool-transformer-combine-rows .`.\n",
       "appConfig": {
         "hyperparams": [
           {

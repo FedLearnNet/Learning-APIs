@@ -5,7 +5,9 @@ import bio.cosy.feddb.core.api.pipeline.PipelineRunMode;
 import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
 import bio.cosy.feddb.core.services.orch.clients.DockerServiceClient;
 import de.unihamburg.daibetes.api.app.FederatedAppAO;
+import de.unihamburg.daibetes.api.app.FederatedAppBO;
 import de.unihamburg.daibetes.api.app.FederatedAppEntity;
+import de.unihamburg.daibetes.api.app.ToolExternalHandler;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.build.pipeline.steps.StepName;
@@ -56,6 +58,12 @@ public class ToolImportBuildBO {
 
     @Inject
     ToolSourceCheckBO sourceCheckBO;
+
+    @Inject
+    FederatedAppBO appBO;
+
+    @Inject
+    ToolExternalHandler toolExternalHandler;
 
     @Inject
     @RestClient
@@ -240,6 +248,9 @@ public class ToolImportBuildBO {
         if (status != null) {
             cleanupContainer(run);
         }
+        if (status != null && status != PipelineStatus.FAILED && status != PipelineStatus.STOPPED) {
+            replaceBuildInfo(request);
+        }
         if (status != PipelineStatus.FAILED || request.isExistsInStore()) {
             return;
         }
@@ -263,6 +274,27 @@ public class ToolImportBuildBO {
             version.setRebuilding(false);
         }
         return pipeline.getPipelineStatus();
+    }
+
+    private void replaceBuildInfo(PipelineRebuildDTO request) {
+        if (!config.toolImports().replaceBuildInfo() || request.getRunMode() == PipelineRunMode.SCAN_ONLY) {
+            return;
+        }
+        try {
+            replaceBuildInfoTransactional(request.getAppVersionId());
+        } catch (Exception e) {
+            Log.warnf(e, "Failed to replace build information of imported tool version %d", request.getAppVersionId());
+        }
+    }
+
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    void replaceBuildInfoTransactional(Long appVersionId) {
+        FederatedAppVersionEntity version = versionAO.findById(appVersionId);
+        if (version == null || !version.hasImage()) {
+            return;
+        }
+        toolExternalHandler.replaceBuildInfoInJson(appBO.getMyAppById(version.getFederatedApp().getId()))
+                .ifPresent(path -> Log.infof("Replaced build information of imported tool version %d in %s", appVersionId, path));
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)

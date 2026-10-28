@@ -1,0 +1,297 @@
+{
+  "name" : "unpast",
+  "uniqueAppId" : "a3f5e8b2-4c1d-4e9a-8f2b-3d6a5c9e7b1f",
+  "slug" : "unpast",
+  "type" : "SELF_LEARNED",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://github.com/FedLearnNet/tool-unpast",
+  "authors" : [ {
+    "keycloakId" : "admin"
+  } ],
+  "versions" : [ {
+    "appVersion" : "1.0.0",
+    "publishHash" : "5b2bba844bc01f83c811fd6d03552f7b35c5a67a",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "shortDescription" : "Discovers expression biclusters with UnPaSt and exports sample groups, feature sets, and visualizations.",
+    "longDescription" : "# unpast\n\nDiscovers expression biclusters with UnPaSt and exports sample groups, feature sets, and visualizations.\n\n## Runtime inputs\n\nThe Dockerfile provisions the R/Bioconductor runtime used by UnPaSt.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `data` | TSV | Expression matrix by tsv file.   Rows = Features (e.g. genes) Columns = Samples  |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `outputFile` | CSV | A .tsv file containing the identified biclusters. |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `binarization_method` | `kmeans` | The method used for binarization. |\n| `deep_split` | `2` | The depth of splitting in the clustering process (used for 'WGCNA'). |\n| `dynamic_tree_cut` | `0.5` | Threshold value for dynamic tree cut (used for 'WGCNA'). Must be in [0, 1]. |\n| `ceiling` | `3` | Ceiling for z-scores to reduce outliers. Must be 0 or a positive integer. |\n| `bidirectional` | `true` | Whether to find biclusters that are both up- and down-regulated. |\n| `seed` | `42` | Random seed for reproducibility. |\n| `similarity_cutoff_mode` | `automatic` | Mode for similarity cutoff in 'Louvain' clustering. |\n| `similarity_cutoff_value` | `0.5` | Similarity cutoff value (used only if similarity_cutoff_mode is 'manual'). |\n| `p_value` | `0.05` | The p-value threshold for binarization. Must be in (0, 1]. |\n| `clustering_method` | `WGCNA` | The clustering method to use. |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-unpast .`.\n",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "default" : "kmeans",
+        "description" : "The method used for binarization.",
+        "name" : "binarization_method",
+        "options" : [ "kmeans", "Ward", "GMM" ],
+        "type" : "CATEGORICAL",
+        "variableName" : "binarization_method",
+        "mode" : "BOTH"
+      }, {
+        "default" : "2",
+        "description" : "The depth of splitting in the clustering process (used for 'WGCNA').",
+        "maxValue" : 4.0,
+        "minValue" : 0.0,
+        "name" : "deep_split",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "deep_split",
+        "mode" : "BOTH"
+      }, {
+        "default" : "0.5",
+        "description" : "Threshold value for dynamic tree cut (used for 'WGCNA'). Must be in [0, 1].",
+        "maxValue" : 1.0,
+        "minValue" : 0.0,
+        "name" : "dynamic_tree_cut",
+        "options" : [ ],
+        "type" : "FLOAT",
+        "variableName" : "dynamic_tree_cut",
+        "mode" : "BOTH"
+      }, {
+        "default" : "3",
+        "description" : "Ceiling for z-scores to reduce outliers. Must be 0 or a positive integer.",
+        "minValue" : 0.0,
+        "name" : "ceiling",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "ceiling",
+        "mode" : "BOTH"
+      }, {
+        "default" : "true",
+        "description" : "Whether to find biclusters that are both up- and down-regulated.",
+        "name" : "bidirectional",
+        "options" : [ ],
+        "type" : "BOOLEAN",
+        "variableName" : "bidirectional",
+        "mode" : "BOTH"
+      }, {
+        "default" : "42",
+        "description" : "Random seed for reproducibility.",
+        "name" : "seed",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "seed",
+        "mode" : "BOTH"
+      }, {
+        "default" : "automatic",
+        "description" : "Mode for similarity cutoff in 'Louvain' clustering.",
+        "name" : "similarity_cutoff_mode",
+        "options" : [ "automatic", "manual" ],
+        "type" : "CATEGORICAL",
+        "variableName" : "similarity_cutoff_mode",
+        "mode" : "BOTH"
+      }, {
+        "default" : "0.5",
+        "description" : "Similarity cutoff value (used only if similarity_cutoff_mode is 'manual').",
+        "maxValue" : 1.0,
+        "minValue" : 0.0,
+        "name" : "similarity_cutoff_value",
+        "options" : [ ],
+        "type" : "FLOAT",
+        "variableName" : "similarity_cutoff_value",
+        "mode" : "BOTH"
+      }, {
+        "default" : "0.05",
+        "description" : "The p-value threshold for binarization. Must be in (0, 1].",
+        "maxValue" : 1.0,
+        "minValue" : 0.0,
+        "name" : "p_value",
+        "options" : [ ],
+        "type" : "FLOAT",
+        "variableName" : "p_value",
+        "mode" : "BOTH"
+      }, {
+        "default" : "WGCNA",
+        "description" : "The clustering method to use.",
+        "name" : "clustering_method",
+        "options" : [ "WGCNA", "Louvain" ],
+        "type" : "CATEGORICAL",
+        "variableName" : "clustering_method",
+        "mode" : "BOTH"
+      } ],
+      "input" : [ {
+        "description" : "Expression matrix by tsv file.   Rows = Features (e.g. genes) Columns = Samples ",
+        "hasHeader" : true,
+        "indexCol" : 0,
+        "name" : "data",
+        "required" : true,
+        "type" : "TSV",
+        "variableName" : "data",
+        "mode" : "BOTH"
+      } ],
+      "output" : [ {
+        "description" : "A .tsv file containing the identified biclusters.",
+        "name" : "outputFile",
+        "required" : false,
+        "type" : "CSV",
+        "variableName" : "outputFile",
+        "mode" : "BOTH"
+      } ]
+    },
+    "publishInfo" : {
+      "commitHash" : "5b2bba844bc01f83c811fd6d03552f7b35c5a67a",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-unpast/blob/5b2bba844bc01f83c811fd6d03552f7b35c5a67a/data/README.md" ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "localhost:5001/flnet/tools/unpast:5b2bba844bc01f83c811fd6d03552f7b35c5a67a",
+        "success" : false,
+        "summary" : {
+          "critical" : 0,
+          "high" : 2,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 2
+        },
+        "rawReport" : {
+          "lang-pkgs-python-pkg" : [ {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:7f4269b6f697f22026d574f3546cfe9d3479ba7f714c0b6b7a671fd21e7a9ab1"
+            },
+            "PkgID" : "msgpack@1.2.1",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "msgpack",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-j586-36cw-2gc2" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:a610ac0f6c0f1288633b7ec18f02cc140753e6307064b74a3086e18a8ca7f104",
+            "FixedVersion" : "1.2.3",
+            "PkgIdentifier" : {
+              "UID" : "31fb384af0a0e9ca",
+              "PURL" : "pkg:pypi/msgpack@1.2.1",
+              "BOMRef" : "pkg:pypi/msgpack@1.2.1"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "1.2.1",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 8.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "ghsa" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              },
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:L"
+              },
+              "bitnami" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:7f4269b6f697f22026d574f3546cfe9d3479ba7f714c0b6b7a671fd21e7a9ab1"
+            },
+            "PkgID" : "setuptools@70.3.0",
+            "Title" : "setuptools: Path Traversal Vulnerability in setuptools PackageIndex",
+            "CweIDs" : [ "CWE-22" ],
+            "Status" : "fixed",
+            "PkgName" : "setuptools",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-5rjg-fvgr-3xxf" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:9940", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/10/ALSA-2025-9940.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
+            "Fingerprint" : "sha256:a4238cb592d33e59023aef762e69d50e8942a044c25ad6ba9c522f7c5874d82c",
+            "FixedVersion" : "78.1.1",
+            "PkgIdentifier" : {
+              "UID" : "c5eccaa7d8e0c308",
+              "PURL" : "pkg:pypi/setuptools@70.3.0",
+              "BOMRef" : "pkg:pypi/setuptools@70.3.0"
+            },
+            "PublishedDate" : "2025-05-17T16:15:19.11Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 2,
+              "ghsa" : 3,
+              "azure" : 3,
+              "rocky" : 2,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "bitnami" : 3,
+              "oracle-oval" : 2
+            },
+            "VulnerabilityID" : "CVE-2025-47273",
+            "InstalledVersion" : "70.3.0",
+            "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
+          } ]
+        },
+        "startedAt" : "2026-10-28T16:47:42.152+00:00",
+        "finishedAt" : "2026-10-28T16:49:04.273+00:00"
+      },
+      "sastScanResult" : {
+        "tool" : "opengrep",
+        "version" : "1.31.0",
+        "target" : "/app/repo",
+        "success" : true,
+        "complete" : true,
+        "scannedFiles" : 7,
+        "summary" : {
+          "error" : 0,
+          "warning" : 0,
+          "info" : 0,
+          "unknown" : 0
+        },
+        "findings" : [ ],
+        "errors" : [ ],
+        "rawReport" : {
+          "paths" : {
+            "scanned" : [ "/app/repo/__init__.py", "/app/repo/app.py", "/app/repo/config.py", "/app/repo/main.py", "/app/repo/run_example.py", "/app/repo/run_unpast.py", "/app/repo/viz.py" ]
+          },
+          "errors" : [ ],
+          "results" : [ ],
+          "version" : "1.31.0",
+          "skipped_rules" : [ ],
+          "interfile_languages_used" : [ ]
+        },
+        "startedAt" : "2026-10-28T16:45:33.979+00:00",
+        "finishedAt" : "2026-10-28T16:45:39.401+00:00"
+      },
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ],
+        "startedAt" : "2026-10-28T16:49:04.282+00:00",
+        "finishedAt" : "2026-10-28T16:49:10.617+00:00"
+      },
+      "imageName" : "unpast:5b2bba844bc01f83c811fd6d03552f7b35c5a67a"
+    },
+    "imageName" : "unpast:5b2bba844bc01f83c811fd6d03552f7b35c5a67a"
+  } ]
+}

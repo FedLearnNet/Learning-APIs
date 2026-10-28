@@ -1,7 +1,7 @@
 {
-  "name": "tool-splicedrift",
+  "name": "splicedrift",
   "uniqueAppId": "f1300dda-4602-4f5d-8105-adc54d7b6b99",
-  "slug": "tool-splicedrift",
+  "slug": "splicedrift",
   "type": "SELF_LEARNED",
   "supportsFederatedLearning": false,
   "sourceUrl": "https://github.com/FedLearnNet/tool-splicedrift",
@@ -13,12 +13,12 @@
   "versions": [
     {
       "appVersion": "1.0.1",
-      "publishHash": "249cb0d4417921baad39701ab0f6c618000e15da",
+      "publishHash": "fe3bc65b2a28992aacdc06697e9597c0a3c856f5",
       "versionPublishStatus": "PUBLISHED",
       "needsInternetAccess": false,
       "needsHostAccess": false,
       "shortDescription": "Fits Bayesian models of age-associated splicing changes with SpliceDrift and exports results and plots.",
-      "longDescription": "# tool-splicedrift\n\nFits Bayesian models of age-associated splicing changes with SpliceDrift and exports results and plots.\n\n## Runtime inputs\n\nSupply input files according to the schemas in `app.yml`.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `junction_counts` | TSV | TSV with columns: event_id, sample_id, k, N, age, group (optional) |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `results` | CSV | Summary table with alpha_prime and beta_prime per (event, group) |\n| `scatter_plot` | IMAGE | Scatter plot of alpha_prime vs beta_prime |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `draws` | `200` | Number of posterior draws per chain |\n| `tune` | `200` | Number of tuning (warm-up) steps per chain |\n| `chains` | `1` | Number of MCMC chains |\n| `max_refits` | `0` | Number of automatic refits on convergence failure |\n| `target_accept` | `0.9` | NUTS target acceptance probability |\n| `min_total` | `5` | Minimum total reads N per sample |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-splicedrift .`.\n",
+      "longDescription": "# splicedrift\n\nFits Bayesian models of age-associated splicing changes with SpliceDrift and exports results and plots.\n\n## Runtime inputs\n\nSupply input files according to the schemas in `app.yml`.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `junction_counts` | TSV | TSV with columns: event_id, sample_id, k, N, age, group (optional) |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `results` | CSV | Summary table with alpha_prime and beta_prime per (event, group) |\n| `scatter_plot` | IMAGE | Scatter plot of alpha_prime vs beta_prime |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `draws` | `200` | Number of posterior draws per chain |\n| `tune` | `200` | Number of tuning (warm-up) steps per chain |\n| `chains` | `1` | Number of MCMC chains |\n| `max_refits` | `0` | Number of automatic refits on convergence failure |\n| `target_accept` | `0.9` | NUTS target acceptance probability |\n| `min_total` | `5` | Minimum total reads N per sample |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-splicedrift .`.\n",
       "appConfig": {
         "hyperparams": [
           {

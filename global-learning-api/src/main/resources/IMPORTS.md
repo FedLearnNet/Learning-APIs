@@ -7,8 +7,10 @@ the migrated tools.
 
 ## Migrated catalog
 
-The 26 `tool-*.json` definitions use the public FedLearnNet repositories and their
-current `app.yml` configuration. Their version publish hashes identify the
+The 26 migrated JSON definitions use the public FedLearnNet repositories and
+their current `app.yml` configuration. Tool names, slugs and import filenames
+omit the `tool-` prefix (for example, `uci-fetch`). GitHub repository names and
+source URLs retain it (for example, `FedLearnNet/tool-uci-fetch`). Their version publish hashes identify the
 repository commits used to generate these definitions. They are import lookup
 keys; the normal build pipeline resolves the repository revision when it builds.
 The existing federated US-130 NN definition remains active as well.

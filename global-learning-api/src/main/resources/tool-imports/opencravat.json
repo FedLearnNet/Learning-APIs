@@ -1,7 +1,7 @@
 {
-  "name": "tool-opencravat",
+  "name": "opencravat",
   "uniqueAppId": "1a03a929-603b-5c4b-be40-437ef085fd4e",
-  "slug": "tool-opencravat",
+  "slug": "opencravat",
   "type": "SELF_LEARNED",
   "supportsFederatedLearning": false,
   "sourceUrl": "https://github.com/FedLearnNet/tool-opencravat",
@@ -16,12 +16,12 @@
   "versions": [
     {
       "appVersion": "1.0.0",
-      "publishHash": "77618c44ccfb4d43586213d17513b21257303a7a",
+      "publishHash": "f1a68f6ae4f0eac4ec2528fa303e8a93c4ef2df1",
       "versionPublishStatus": "PUBLISHED",
       "needsInternetAccess": true,
       "needsHostAccess": false,
       "shortDescription": "Annotates genomic variant files with OpenCRAVAT and exports run status, logs, and a summary report.",
-      "longDescription": "# tool-opencravat\n\nAnnotates genomic variant files with OpenCRAVAT and exports run status, logs, and a summary report.\n\n## Runtime inputs\n\nOpenCRAVAT requires installed mapper, annotator, converter, and reporter modules. Configure those resources before an annotation run.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `variant_file` | PATH | Path to the input variant file (for example VCF, TSV, or TXT) passed to OpenCRAVAT. |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `status_json` | JSON | OpenCRAVAT run status JSON file. |\n| `log_file` | TEXT | OpenCRAVAT log output file. |\n| `err_file` | TEXT | OpenCRAVAT error output file. |\n| `report_files` | JSON | List of generated OpenCRAVAT output files. |\n| `report` | HTML | HTML summary report of the OpenCRAVAT run. |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `assembly` | `hg38` | Reference genome assembly used by OpenCRAVAT. |\n| `annotators` | `clinvar` | Comma-separated OpenCRAVAT annotators to run. |\n| `reporters` | `text` | Comma-separated OpenCRAVAT reporters to generate. |\n| `preview_rows` | `100` | Number of rows to include in preview outputs if previews are added later. |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-opencravat .`.\n",
+      "longDescription": "# opencravat\n\nAnnotates genomic variant files with OpenCRAVAT and exports run status, logs, and a summary report.\n\n## Runtime inputs\n\nOpenCRAVAT requires installed mapper, annotator, converter, and reporter modules. Configure those resources before an annotation run.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `variant_file` | PATH | Path to the input variant file (for example VCF, TSV, or TXT) passed to OpenCRAVAT. |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `status_json` | JSON | OpenCRAVAT run status JSON file. |\n| `log_file` | TEXT | OpenCRAVAT log output file. |\n| `err_file` | TEXT | OpenCRAVAT error output file. |\n| `report_files` | JSON | List of generated OpenCRAVAT output files. |\n| `report` | HTML | HTML summary report of the OpenCRAVAT run. |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `assembly` | `hg38` | Reference genome assembly used by OpenCRAVAT. |\n| `annotators` | `clinvar` | Comma-separated OpenCRAVAT annotators to run. |\n| `reporters` | `text` | Comma-separated OpenCRAVAT reporters to generate. |\n| `preview_rows` | `100` | Number of rows to include in preview outputs if previews are added later. |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-opencravat .`.\n",
       "appConfig": {
         "hyperparams": [
           {
