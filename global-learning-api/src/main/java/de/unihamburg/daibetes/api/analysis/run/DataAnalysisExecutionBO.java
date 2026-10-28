@@ -101,7 +101,7 @@ public class DataAnalysisExecutionBO {
 
     @Transactional
     public void uploadOutputTransactional(Long attemptId, AppRunUploadData upload) {
-        ExecutionAttemptEntity attempt = attemptAO.findByIdOptional(attemptId)
+        ExecutionAttemptEntity attempt = attemptAO.findByIdWrite(attemptId)
                 .orElseThrow(() -> new NotFoundException("Attempt " + attemptId + " not found"));
         ExecutionRunEntity run = attempt.getStep().getRun();
         attempt.setResult(toJson(upload.getFieldsNullsafe()));

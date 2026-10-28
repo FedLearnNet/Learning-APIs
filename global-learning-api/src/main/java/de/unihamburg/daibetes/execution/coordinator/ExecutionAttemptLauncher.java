@@ -9,6 +9,7 @@ import bio.cosy.feddb.core.execution.event.AttemptFinishedEvent;
 import bio.cosy.feddb.core.execution.event.AttemptLaunchEvent;
 import bio.cosy.feddb.core.execution.event.ExecutionChannels;
 import bio.cosy.feddb.core.security.Scope;
+import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeMapper;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptAO;
@@ -68,6 +69,12 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
         if (attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TRAINING) {
             platformTrainingBO.stageInputs(attempt);
         }
+    }
+
+    // An analysis uploads its outputs, a training leaves them in its volume until its step keeps them.
+    @Override
+    protected void customizeStart(ExecutionAttemptEntity attempt, StartWorkflowNodeDTO start) {
+        start.setEnableRemoteResultSaving(attempt.getStep().getRun().getPurpose() == ExecutionPurpose.ANALYSIS);
     }
 
     @Incoming(ExecutionChannels.ATTEMPT_LAUNCH)

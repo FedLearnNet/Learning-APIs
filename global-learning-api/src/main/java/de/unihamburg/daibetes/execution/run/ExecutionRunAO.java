@@ -6,6 +6,7 @@ import bio.cosy.feddb.core.execution.ExecutionPurpose;
 import bio.cosy.feddb.core.execution.run.BaseExecutionRunAO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 
 import java.util.List;
@@ -35,6 +36,11 @@ public class ExecutionRunAO extends BaseExecutionRunAO<ExecutionRunEntity> {
         return list("from ExecutionRunEntity r where r.purpose = ?1 and r.status not in ?2 and exists ("
                         + "from ExecutionRunStepEntity s where s.run = r and s.federatedAppVersion.federatedApp.id = ?3)",
                 ExecutionPurpose.TEST, List.of(RunStatusTypes.FINISHED, RunStatusTypes.STOPPED, RunStatusTypes.ERROR), appId);
+    }
+
+    @Transactional
+    public boolean isAnalysisTransactional(Long runId) {
+        return count("id = ?1 and purpose = ?2", runId, ExecutionPurpose.ANALYSIS) > 0;
     }
 
     public List<ExecutionRunEntity> listByIds(List<Long> runIds) {
