@@ -80,6 +80,10 @@ public class WorkflowExportBO {
 
     @Transactional
     public void importWorkflowTransactional(WorkflowExportDTO workflow) {
+        if (workflowAO.findByNameAndOwner(workflow.getName(), workflow.getKeycloakId()).isPresent()) {
+            Log.infof("Workflow %s already exists for owner %s, preserving it", workflow.getName(), workflow.getKeycloakId());
+            return;
+        }
         WorkflowEntity entity = workflowExportMapper.dtoToEntity(workflow);
         workflowAO.persist(entity);
         Set<WorkflowNodeEntity> nodes = workflow.getNodes()

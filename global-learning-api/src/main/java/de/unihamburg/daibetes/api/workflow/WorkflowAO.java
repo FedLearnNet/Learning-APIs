@@ -10,6 +10,10 @@ import java.util.Optional;
 @ApplicationScoped
 public class WorkflowAO implements PanacheRepository<WorkflowEntity> {
 
+    public Optional<WorkflowEntity> findByNameAndOwner(String name, String keycloakId) {
+        return find("name = ?1 and keycloakId = ?2", name, keycloakId).firstResultOptional();
+    }
+
     public Optional<WorkflowEntity> findByUserIdAndWorkflowId(Long workflowId, String keycloakId) {
         return find("id = ?1 and keycloakId = ?2", workflowId, keycloakId).firstResultOptional();
     }

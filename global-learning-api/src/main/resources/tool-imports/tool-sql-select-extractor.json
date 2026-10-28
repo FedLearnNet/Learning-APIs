@@ -1,0 +1,108 @@
+{
+  "name": "tool-sql-select-extractor",
+  "uniqueAppId": "6dba94b7-805e-4845-96a7-60c80aa22a49",
+  "slug": "tool-sql-select-extractor",
+  "type": "EXTRACTOR",
+  "supportsFederatedLearning": false,
+  "sourceUrl": "https://github.com/FedLearnNet/tool-sql-select-extractor",
+  "authors": [
+    {
+      "keycloakId": "admin"
+    }
+  ],
+  "versions": [
+    {
+      "appVersion": "1.0.0",
+      "publishHash": "9e644c771b53dfd3851ddec2502618f26eac3388",
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": true,
+      "needsHostAccess": false,
+      "shortDescription": "Extracts SQL SELECT query results from PostgreSQL, MySQL, or SQLite databases as CSV.",
+      "longDescription": "# tool-sql-select-extractor\n\nExtracts SQL SELECT query results from PostgreSQL, MySQL, or SQLite databases as CSV.\n\nSqlSelectExtractor is a **Extractor** that connects to a configured SQL database and executes\na **single read-only SELECT** statement. The query result is exported as a CSV table.\n\n## What this tool does\n\n- Connects to a database (**postgres**, **mysql**, or **sqlite**).\n- Validates the query to allow **only** `SELECT` or `WITH ... SELECT`.\n- Blocks write/DDL statements and multi-statement execution.\n- Executes the query and exports the result as CSV.\n\n## Security model (SELECT-only)\n\nThe tool rejects queries that:\n\n- do not start with `SELECT` or `WITH`\n- contain write/DDL keywords (e.g., `INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`, `CREATE`,\n  `TRUNCATE`, …)\n- contain risky patterns like `SELECT ... INTO` or `FOR UPDATE`\n- contain multiple statements (only a single optional trailing `;` is allowed)\n\n> Note: This is a pragmatic guardrail, not a formal SQL parser. It is designed to block common\n> unsafe patterns in a simple, maintainable way.\n\n## Configuration (Hyperparameters)\n\n- `sql_distribution`: `postgres` | `mysql` | `sqlite`\n- `host`: database host (ignored for sqlite)\n- `port`: database port (ignored for sqlite)\n- `database`: database name (or sqlite file path / `:memory:`)\n- `username`: DB username\n- `password`: DB password\n- `sql_select`: single SELECT statement\n\n## Outputs\n\n- `dataset` (CSV): query result\n\n## Python dependencies\n\nThis tool uses **pandas** and **SQLAlchemy**. Database drivers depend on your `sql_distribution`:\n\n- Postgres: `psycopg2-binary`\n- MySQL: `pymysql`\n- SQLite: built-in (no extra driver)\n\nA minimal `requirements.txt` looks like:\n\n- pandas\n- sqlalchemy\n- psycopg2-binary\n- pymysql\n\n## Example SQL SELECT\n\nExample (Postgres) to fetch a small subset, can be started with `example-database-compose.yml`\n\n```sql\nSELECT id, patient_code, age, bmi, created_at\nFROM patients\nWHERE age >= 50\nORDER BY created_at DESC LIMIT 10;\n```\n\nExample with aggregation:\n\n```sql\nSELECT COUNT(*) AS n,\n       AVG(age) AS avg_age,\n       AVG(bmi) AS avg_bmi\nFROM patients;\n```\n\n### Suggested config values for the compose setup\n\nUse these hyperparameters against the compose database:\n\n- `sql_distribution`: `postgres`\n- `host`: `postgres` *(if running from another container in same compose network)* **or**\n  `localhost` *(if running locally on your host)*\n- `port`: `5432` within the Compose network, or `5732` from the host\n- `database`: `demo`\n- `username`: `demo`\n- `password`: `demo`\n- `sql_select`: (use one of the examples above)\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` contains only\nadditional runtime dependencies; `requirements-dev.txt` includes the API for local development.\n\nBuild with `docker build -t tool-sql-select-extractor .`.\nThe sample database in `initdb/001_seed.sql` generates synthetic demo records.\n",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "name": "sql_distribution",
+            "description": "SQL database distribution / dialect to connect to.",
+            "type": "CATEGORICAL",
+            "default": "postgres",
+            "options": [
+              "postgres",
+              "mysql",
+              "sqlite"
+            ],
+            "variableName": "sql_distribution",
+            "mode": "BOTH"
+          },
+          {
+            "name": "host",
+            "description": "Database host (ignored for sqlite).",
+            "type": "STRING",
+            "default": "host.docker.internal",
+            "options": [],
+            "variableName": "host",
+            "mode": "BOTH"
+          },
+          {
+            "name": "port",
+            "description": "Database port (ignored for sqlite).",
+            "type": "INTEGER",
+            "default": "5432",
+            "options": [],
+            "minValue": 1.0,
+            "maxValue": 65535.0,
+            "variableName": "port",
+            "mode": "BOTH"
+          },
+          {
+            "name": "database",
+            "description": "Database name (or sqlite file path / ':memory:' for sqlite).",
+            "type": "STRING",
+            "default": "demo",
+            "options": [],
+            "variableName": "database",
+            "mode": "BOTH"
+          },
+          {
+            "name": "username",
+            "description": "Database username (ignored for sqlite unless configured).",
+            "type": "STRING",
+            "default": "demo",
+            "options": [],
+            "variableName": "username",
+            "mode": "BOTH"
+          },
+          {
+            "name": "password",
+            "description": "Database password (ignored for sqlite unless configured).",
+            "type": "STRING",
+            "default": "demo",
+            "options": [],
+            "variableName": "password",
+            "mode": "BOTH"
+          },
+          {
+            "name": "sql_select",
+            "description": "Single SELECT (or WITH ... SELECT) statement. Write/DDL statements are blocked.",
+            "type": "STRING",
+            "default": "SELECT * FROM patients LIMIT 10",
+            "options": [],
+            "variableName": "sql_select",
+            "mode": "BOTH"
+          }
+        ],
+        "input": [],
+        "output": [
+          {
+            "name": "dataset",
+            "description": "Query result as a single CSV table.",
+            "type": "CSV",
+            "required": false,
+            "variableName": "dataset",
+            "mode": "BOTH"
+          }
+        ]
+      }
+    }
+  ]
+}

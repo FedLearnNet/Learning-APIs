@@ -1,0 +1,196 @@
+{
+  "name": "tool-patient-export-umap",
+  "uniqueAppId": "2da36c29-47c9-5f16-a58a-a21cd304b807",
+  "slug": "tool-patient-export-umap",
+  "type": "EXPORT",
+  "supportsFederatedLearning": false,
+  "sourceUrl": "https://github.com/FedLearnNet/tool-patient-export-umap",
+  "authors": [
+    {
+      "keycloakId": "admin"
+    }
+  ],
+  "versions": [
+    {
+      "appVersion": "1.0.0",
+      "publishHash": "15d0de70a4f8c22d57f975731ee4509b58008224",
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "needsHostAccess": false,
+      "shortDescription": "Embeds cohort patient exports with UMAP and produces an interactive plot, embedding coordinates, and a feature report.",
+      "longDescription": "# tool-patient-export-umap\n\nEmbeds cohort patient exports with UMAP and produces an interactive plot, embedding coordinates, and a feature report.\n\nPatient UMAP Export is an **Export app**. It receives the patient data export of a cohort,\nembeds every patient in two dimensions with [UMAP](https://umap-learn.readthedocs.io/) and\nrenders the result as an interactive scatter plot.\n\nIt is started from the cohort overview: **Export → App-based export**, pick this app, adjust\nthe hyperparameters and press **Export**. The plot and tables are shown in the dialog once the\nrun has finished and can be downloaded from there.\n\n## What this tool does\n\n1. **Pivot** – the export arrives in long format (one row per stored value). It is pivoted to\n   one row per patient and one column per feature. The feature label is the export feature\n   name, or `ontologyId:datatypeId` when no feature selection was configured.\n   When a patient holds several values for a feature (e.g. one per visit), `aggregation`\n   decides which one is used.\n2. **Type and encode** – a feature is numeric when at least 90 % of its values parse as\n   numbers (`true/false/yes/no` count as 1/0). Numeric features are median-imputed,\n   categorical features one-hot encoded. Features are dropped when they are too sparse\n   (`min_feature_coverage`), constant, or have more than `max_categories` values.\n3. **Scale** – optional standardisation to zero mean and unit variance.\n4. **Embed** – UMAP with the configured neighbourhood, distance and metric.\n5. **Plot** – a self-contained HTML page (inline SVG, no scripts or external assets). Hover a\n   point to see the patient id and colour value.\n\nA table that already has one row per patient (a native wide-format export) is accepted as well;\nits `patientId` column (or the first column) is used as the patient id.\n\n## Configuration (Hyperparameters)\n\n| Name | Default | Description |\n|---|---|---|\n| `n_neighbors` | 15 | Local neighbourhood size; capped at patients − 1 |\n| `min_dist` | 0.1 | Minimum distance between embedded points |\n| `metric` | euclidean | `euclidean`, `manhattan`, `cosine`, `correlation`, `chebyshev` |\n| `random_state` | 42 | Seed; negative for a faster, non-deterministic run |\n| `aggregation` | last | `last` / `first` (by visit timestamp) or `mean` |\n| `min_feature_coverage` | 0.5 | Share of patients that need a value for a feature |\n| `include_categorical` | true | One-hot encode non-numeric features |\n| `max_categories` | 20 | Drop categorical features with more values |\n| `scale` | true | Standardise features before embedding |\n| `color_by` | *(empty)* | Feature to colour the points by |\n| `exclude_color_feature` | true | Leave the `color_by` feature out of the embedding |\n\nWith `exclude_color_feature` enabled the plot answers *\"do the other features separate this\nlabel?\"*, e.g. colour by diagnosis without the diagnosis shaping the embedding.\n\n## Input\n\n- `input` (CSV, required): the patient data export.\n\n## Outputs\n\n- `plot` (HTML): interactive UMAP scatter plot.\n- `embedding` (CSV): `patientId`, `umap_1`, `umap_2` and the `color_by` feature if set.\n- `feature_report` (CSV): every feature with its kind, coverage, number of model columns and\n  the reason it was dropped.\n\nThe UMAP axes have no unit; only distances between points carry meaning.\n\n## Development\n\n```bash\npython -m venv .venv && .venv/bin/pip install -r requirements-dev.txt\n.venv/bin/pytest\n```\n\n`data/patient_export_sample.csv` is a small synthetic export in the format the local learning\nAPI produces.\n\n## Container and local runtime\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists the\nadditional runtime dependencies; `requirements-dev.txt` also installs the API\nand pytest for local development.\n\nCopy `.env.example` to `.env`, then set `APP_ID` and the platform URLs before\nstarting the tool with `python main.py`.\n\nBuild with `docker build -t tool-patient-export-umap .`.\nThe image runs as `nonroot` and keeps the Numba cache under `/tmp/numba_cache`.\n",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "name": "n_neighbors",
+            "description": "Size of the local neighbourhood UMAP looks at. Small values emphasise local structure, large values the global picture. Capped at the number of patients minus one.",
+            "type": "INTEGER",
+            "default": "15",
+            "options": [],
+            "minValue": 2.0,
+            "maxValue": 200.0,
+            "variableName": "n_neighbors",
+            "mode": "BOTH"
+          },
+          {
+            "name": "min_dist",
+            "description": "Minimum distance between embedded points. Small values give tighter clusters.",
+            "type": "FLOAT",
+            "default": "0.1",
+            "options": [],
+            "minValue": 0.0,
+            "maxValue": 1.0,
+            "variableName": "min_dist",
+            "mode": "BOTH"
+          },
+          {
+            "name": "metric",
+            "description": "Distance metric in feature space.",
+            "type": "CATEGORICAL",
+            "default": "euclidean",
+            "options": [
+              "euclidean",
+              "manhattan",
+              "cosine",
+              "correlation",
+              "chebyshev"
+            ],
+            "variableName": "metric",
+            "mode": "BOTH"
+          },
+          {
+            "name": "random_state",
+            "description": "Seed for a reproducible embedding. A negative value gives a faster, non-deterministic run.",
+            "type": "INTEGER",
+            "default": "42",
+            "options": [],
+            "minValue": -1.0,
+            "maxValue": 2147483647.0,
+            "variableName": "random_state",
+            "mode": "BOTH"
+          },
+          {
+            "name": "aggregation",
+            "description": "Value used when a patient has several values for one feature (e.g. one per visit). last/first go by visit timestamp; mean averages numeric values.",
+            "type": "CATEGORICAL",
+            "default": "last",
+            "options": [
+              "last",
+              "first",
+              "mean"
+            ],
+            "variableName": "aggregation",
+            "mode": "BOTH"
+          },
+          {
+            "name": "min_feature_coverage",
+            "description": "Share of patients that need a value for a feature to be used. Missing numeric values are imputed with the median.",
+            "type": "FLOAT",
+            "default": "0.5",
+            "options": [],
+            "minValue": 0.0,
+            "maxValue": 1.0,
+            "variableName": "min_feature_coverage",
+            "mode": "BOTH"
+          },
+          {
+            "name": "include_categorical",
+            "description": "One-hot encode non-numeric features instead of dropping them.",
+            "type": "BOOLEAN",
+            "default": "true",
+            "options": [],
+            "variableName": "include_categorical",
+            "mode": "BOTH"
+          },
+          {
+            "name": "max_categories",
+            "description": "Categorical features with more distinct values than this are dropped.",
+            "type": "INTEGER",
+            "default": "20",
+            "options": [],
+            "minValue": 2.0,
+            "maxValue": 500.0,
+            "variableName": "max_categories",
+            "mode": "BOTH"
+          },
+          {
+            "name": "scale",
+            "description": "Standardise every feature to zero mean and unit variance before embedding.",
+            "type": "BOOLEAN",
+            "default": "true",
+            "options": [],
+            "variableName": "scale",
+            "mode": "BOTH"
+          },
+          {
+            "name": "color_by",
+            "description": "Feature name to colour the points by (e.g. a diagnosis or age). Leave empty for no colouring.",
+            "type": "STRING",
+            "default": "",
+            "options": [],
+            "variableName": "color_by",
+            "mode": "BOTH"
+          },
+          {
+            "name": "exclude_color_feature",
+            "description": "Leave the color_by feature out of the embedding, so the plot shows whether the other features separate it.",
+            "type": "BOOLEAN",
+            "default": "true",
+            "options": [],
+            "variableName": "exclude_color_feature",
+            "mode": "BOTH"
+          }
+        ],
+        "input": [
+          {
+            "name": "input",
+            "description": "Patient data export in long format (patientId, name or ontologyId/datatypeId, value, visit columns). A table with one row per patient is accepted as well.",
+            "type": "CSV",
+            "required": true,
+            "delimiter": ",",
+            "hasHeader": true,
+            "mode": "BOTH",
+            "variableName": "input"
+          }
+        ],
+        "output": [
+          {
+            "name": "plot",
+            "description": "Interactive UMAP scatter plot, one point per patient.",
+            "type": "HTML",
+            "required": false,
+            "mode": "BOTH",
+            "variableName": "plot"
+          },
+          {
+            "name": "embedding",
+            "description": "UMAP coordinates per patient (patientId, umap_1, umap_2 and the color_by feature if set).",
+            "type": "CSV",
+            "required": false,
+            "delimiter": ",",
+            "hasHeader": true,
+            "mode": "BOTH",
+            "tabularSchema": {
+              "requiredColumns": [
+                "patientId",
+                "umap_1",
+                "umap_2"
+              ]
+            },
+            "variableName": "embedding"
+          },
+          {
+            "name": "feature_report",
+            "description": "Every exported feature with its type, coverage and whether it was used.",
+            "type": "CSV",
+            "required": false,
+            "delimiter": ",",
+            "hasHeader": true,
+            "mode": "BOTH",
+            "variableName": "feature_report"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "name": "tool-birch",
+  "uniqueAppId": "b7c4f2a1-1d3e-4b6a-9c2f-7a1e5d0c9b11",
+  "slug": "tool-birch",
+  "type": "SELF_LEARNED",
+  "supportsFederatedLearning": false,
+  "sourceUrl": "https://github.com/FedLearnNet/tool-birch",
+  "authors": [
+    {
+      "keycloakId": "admin"
+    }
+  ],
+  "versions": [
+    {
+      "appVersion": "1.0.0",
+      "publishHash": "6862e9058c21c8c9866728dc21595f2a19b746ba",
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "needsHostAccess": false,
+      "shortDescription": "Clusters numeric tabular data with BIRCH and exports sample labels, subcluster centers, and a summary report.",
+      "longDescription": "# tool-birch\n\nClusters numeric tabular data with BIRCH and exports sample labels, subcluster centers, and a summary report.\n\n## Input and outputs\n\nProvide a CSV table as `features`. When the first column is named `id`\n(case-insensitive), it is retained as an identifier and excluded from fitting.\nAll remaining feature columns must be numeric.\n\n- `labels`: CSV with `id,label`, or `index,label` when no ID column is supplied.\n  Returned when `compute_labels` is enabled.\n- `subcluster_centers`: CSV containing the CF-tree subcluster centers.\n- `report`: HTML summary of parameters, sample and feature counts, subclusters,\n  and the number of output clusters.\n- `cluster_size` metrics report the number of samples in each output cluster.\n\nWith `standardize` enabled, the centers use the standardized feature space.\n\n## Configuration\n\n- `threshold`: CF-tree radius threshold; default `0.5`.\n- `branching_factor`: maximum subclusters per CF-tree node; default `50`.\n- `use_global_clustering`: enable the final clustering step; default `true`.\n- `n_clusters`: target cluster count for the final step; default `3`.\n- `compute_labels`: generate labels and cluster-size metrics; default `true`.\n- `standardize`: scale features to zero mean and unit variance; default `true`.\n\nThe repository includes the original Iris example tables in `data/`.\nUse the numeric feature columns from those tables as inputs.\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` contains only\nadditional runtime dependencies; `requirements-dev.txt` includes the API for local development.\n\nBuild with `docker build -t tool-birch .`.\n",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "default": "0.5",
+            "description": "Radius threshold for merging subclusters (smaller => more clusters/subclusters).",
+            "minValue": 0.0,
+            "name": "threshold",
+            "options": [],
+            "type": "FLOAT",
+            "variableName": "threshold",
+            "mode": "BOTH"
+          },
+          {
+            "default": "50",
+            "description": "Maximum number of CF subclusters in each node of the CF tree.",
+            "maxValue": 1000.0,
+            "minValue": 2.0,
+            "name": "branching_factor",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "branching_factor",
+            "mode": "BOTH"
+          },
+          {
+            "default": "1",
+            "description": "If true, run a final global clustering step; if false, set n_clusters=None (no global clustering).",
+            "name": "use_global_clustering",
+            "options": [],
+            "type": "BOOLEAN",
+            "variableName": "use_global_clustering",
+            "mode": "BOTH"
+          },
+          {
+            "default": "3",
+            "description": "Number of clusters for the final global clustering step (used only if use_global_clustering=true).",
+            "maxValue": 200.0,
+            "minValue": 2.0,
+            "name": "n_clusters",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "n_clusters",
+            "mode": "BOTH"
+          },
+          {
+            "default": "1",
+            "description": "Whether to compute labels for each sample after fitting.",
+            "name": "compute_labels",
+            "options": [],
+            "type": "BOOLEAN",
+            "variableName": "compute_labels",
+            "mode": "BOTH"
+          },
+          {
+            "default": "1",
+            "description": "Standardize features to zero mean / unit variance before clustering (recommended).",
+            "name": "standardize",
+            "options": [],
+            "type": "BOOLEAN",
+            "variableName": "standardize",
+            "mode": "BOTH"
+          }
+        ],
+        "input": [
+          {
+            "description": "Tabular feature matrix. Rows = samples, columns = numeric features. If you have an ID column, place it as the first column named id; otherwise sample indices will be used.",
+            "hasHeader": true,
+            "name": "features",
+            "required": true,
+            "tabularSchema": {
+              "prohibitedNulls": false
+            },
+            "type": "CSV",
+            "variableName": "features",
+            "mode": "BOTH"
+          }
+        ],
+        "output": [
+          {
+            "description": "Centers of BIRCH subclusters (subcluster_centers_). Rows=subclusters, columns=features.",
+            "name": "subcluster_centers",
+            "required": false,
+            "type": "CSV",
+            "variableName": "subcluster_centers",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Lightweight HTML summary with params, number of subclusters, and cluster size statistics.",
+            "name": "report",
+            "required": false,
+            "type": "HTML",
+            "variableName": "report",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Cluster assignments per sample. Columns: [id?, label]. If no 'id' column was provided, 'index' is used.",
+            "name": "labels",
+            "required": false,
+            "type": "CSV",
+            "variableName": "labels",
+            "mode": "BOTH"
+          }
+        ]
+      }
+    }
+  ],
+  "icon": "https://scikit-learn.org/stable/_static/scikit-learn-logo-small.png"
+}

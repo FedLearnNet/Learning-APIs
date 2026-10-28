@@ -1,0 +1,54 @@
+{
+  "nodes": [
+    {
+      "nodeId": "a76b43fc-0ab1-409e-99c3-634c11ba57d5",
+      "appUniqueId": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
+      "position": {
+        "x": 350,
+        "y": 300
+      },
+      "hyperParams": {
+        "shuffle": true,
+        "test_size": 0.25,
+        "random_state": 42
+      },
+      "hasChildren": false,
+      "hasParent": true,
+      "executionOrder": 1,
+      "versionPublishHash": "c1746d39a2a9e8ab4075906fb739e4506c7aa75c"
+    },
+    {
+      "nodeId": "fcc1482a-0cca-4b53-9d87-334129e4c838",
+      "appUniqueId": "a71e2f25-1d3a-4b0c-9b85-7a2e6c1f4f0e",
+      "versionPublishHash": "8fb5bce7dced27d02b88601a46771dc91db229f3",
+      "position": {
+        "x": 350,
+        "y": 0
+      },
+      "hyperParams": {
+        "dataset_id": 17
+      },
+      "hasChildren": true,
+      "hasParent": false,
+      "executionOrder": 0
+    }
+  ],
+  "connections": [
+    {
+      "inputId": "app_a76b43fc-0ab1-409e-99c3-634c11ba57d5_input_input",
+      "outputId": "app_fcc1482a-0cca-4b53-9d87-334129e4c838_output_dataset",
+      "inputNodeId": "a76b43fc-0ab1-409e-99c3-634c11ba57d5",
+      "outputNodeId": "fcc1482a-0cca-4b53-9d87-334129e4c838",
+      "inputFileName": "input.csv",
+      "outputFileName": "dataset.csv",
+      "inputConfigName": "input",
+      "outputConfigName": "dataset",
+      "inputConnection": false
+    }
+  ],
+  "inputs": [],
+  "keycloakId": "admin",
+  "name": "Testt",
+  "description": "test",
+  "publishStatus": "PUBLISHED"
+}

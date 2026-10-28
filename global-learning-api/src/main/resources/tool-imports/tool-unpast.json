@@ -1,0 +1,159 @@
+{
+  "name": "tool-unpast",
+  "uniqueAppId": "a3f5e8b2-4c1d-4e9a-8f2b-3d6a5c9e7b1f",
+  "slug": "tool-unpast",
+  "type": "SELF_LEARNED",
+  "supportsFederatedLearning": false,
+  "sourceUrl": "https://github.com/FedLearnNet/tool-unpast",
+  "authors": [
+    {
+      "keycloakId": "admin"
+    }
+  ],
+  "versions": [
+    {
+      "appVersion": "1.0.0",
+      "publishHash": "1242c21c6dbae7862c7ebd8739a18389e3bbbc90",
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "needsHostAccess": false,
+      "shortDescription": "Discovers expression biclusters with UnPaSt and exports sample groups, feature sets, and visualizations.",
+      "longDescription": "# tool-unpast\n\nDiscovers expression biclusters with UnPaSt and exports sample groups, feature sets, and visualizations.\n\n## Runtime inputs\n\nThe Dockerfile provisions the R/Bioconductor runtime used by UnPaSt.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `data` | TSV | Expression matrix by tsv file.   Rows = Features (e.g. genes) Columns = Samples  |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `outputFile` | CSV | A .tsv file containing the identified biclusters. |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `binarization_method` | `kmeans` | The method used for binarization. |\n| `deep_split` | `2` | The depth of splitting in the clustering process (used for 'WGCNA'). |\n| `dynamic_tree_cut` | `0.5` | Threshold value for dynamic tree cut (used for 'WGCNA'). Must be in [0, 1]. |\n| `ceiling` | `3` | Ceiling for z-scores to reduce outliers. Must be 0 or a positive integer. |\n| `bidirectional` | `true` | Whether to find biclusters that are both up- and down-regulated. |\n| `seed` | `42` | Random seed for reproducibility. |\n| `similarity_cutoff_mode` | `automatic` | Mode for similarity cutoff in 'Louvain' clustering. |\n| `similarity_cutoff_value` | `0.5` | Similarity cutoff value (used only if similarity_cutoff_mode is 'manual'). |\n| `p_value` | `0.05` | The p-value threshold for binarization. Must be in (0, 1]. |\n| `clustering_method` | `WGCNA` | The clustering method to use. |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-unpast .`.\n",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "default": "kmeans",
+            "description": "The method used for binarization.",
+            "name": "binarization_method",
+            "options": [
+              "kmeans",
+              "Ward",
+              "GMM"
+            ],
+            "type": "CATEGORICAL",
+            "variableName": "binarization_method",
+            "mode": "BOTH"
+          },
+          {
+            "default": "2",
+            "description": "The depth of splitting in the clustering process (used for 'WGCNA').",
+            "maxValue": 4.0,
+            "minValue": 0.0,
+            "name": "deep_split",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "deep_split",
+            "mode": "BOTH"
+          },
+          {
+            "default": "0.5",
+            "description": "Threshold value for dynamic tree cut (used for 'WGCNA'). Must be in [0, 1].",
+            "maxValue": 1.0,
+            "minValue": 0.0,
+            "name": "dynamic_tree_cut",
+            "options": [],
+            "type": "FLOAT",
+            "variableName": "dynamic_tree_cut",
+            "mode": "BOTH"
+          },
+          {
+            "default": "3",
+            "description": "Ceiling for z-scores to reduce outliers. Must be 0 or a positive integer.",
+            "minValue": 0.0,
+            "name": "ceiling",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "ceiling",
+            "mode": "BOTH"
+          },
+          {
+            "default": "true",
+            "description": "Whether to find biclusters that are both up- and down-regulated.",
+            "name": "bidirectional",
+            "options": [],
+            "type": "BOOLEAN",
+            "variableName": "bidirectional",
+            "mode": "BOTH"
+          },
+          {
+            "default": "42",
+            "description": "Random seed for reproducibility.",
+            "name": "seed",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "seed",
+            "mode": "BOTH"
+          },
+          {
+            "default": "automatic",
+            "description": "Mode for similarity cutoff in 'Louvain' clustering.",
+            "name": "similarity_cutoff_mode",
+            "options": [
+              "automatic",
+              "manual"
+            ],
+            "type": "CATEGORICAL",
+            "variableName": "similarity_cutoff_mode",
+            "mode": "BOTH"
+          },
+          {
+            "default": "0.5",
+            "description": "Similarity cutoff value (used only if similarity_cutoff_mode is 'manual').",
+            "maxValue": 1.0,
+            "minValue": 0.0,
+            "name": "similarity_cutoff_value",
+            "options": [],
+            "type": "FLOAT",
+            "variableName": "similarity_cutoff_value",
+            "mode": "BOTH"
+          },
+          {
+            "default": "0.05",
+            "description": "The p-value threshold for binarization. Must be in (0, 1].",
+            "maxValue": 1.0,
+            "minValue": 0.0,
+            "name": "p_value",
+            "options": [],
+            "type": "FLOAT",
+            "variableName": "p_value",
+            "mode": "BOTH"
+          },
+          {
+            "default": "WGCNA",
+            "description": "The clustering method to use.",
+            "name": "clustering_method",
+            "options": [
+              "WGCNA",
+              "Louvain"
+            ],
+            "type": "CATEGORICAL",
+            "variableName": "clustering_method",
+            "mode": "BOTH"
+          }
+        ],
+        "input": [
+          {
+            "description": "Expression matrix by tsv file.   Rows = Features (e.g. genes) Columns = Samples ",
+            "hasHeader": true,
+            "indexCol": 0,
+            "name": "data",
+            "required": true,
+            "type": "TSV",
+            "variableName": "data",
+            "mode": "BOTH"
+          }
+        ],
+        "output": [
+          {
+            "description": "A .tsv file containing the identified biclusters.",
+            "name": "outputFile",
+            "required": false,
+            "type": "CSV",
+            "variableName": "outputFile",
+            "mode": "BOTH"
+          }
+        ]
+      }
+    }
+  ]
+}

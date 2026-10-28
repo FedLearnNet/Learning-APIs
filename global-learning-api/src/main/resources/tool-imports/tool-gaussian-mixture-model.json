@@ -1,0 +1,222 @@
+{
+  "name": "tool-gaussian-mixture-model",
+  "uniqueAppId": "911f4fbd-976b-4354-8479-eb885c5a1fc2",
+  "slug": "tool-gaussian-mixture-model",
+  "type": "SELF_LEARNED",
+  "supportsFederatedLearning": false,
+  "sourceUrl": "https://github.com/FedLearnNet/tool-gaussian-mixture-model",
+  "authors": [
+    {
+      "keycloakId": "test"
+    },
+    {
+      "keycloakId": "admin"
+    }
+  ],
+  "versions": [
+    {
+      "appVersion": "1.0.0",
+      "publishHash": "8a374e01b4710f1d3191422d51bf3eb5a6842be8",
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "needsHostAccess": false,
+      "shortDescription": "Fits Gaussian mixture models and exports cluster labels, membership probabilities, and model parameters.",
+      "longDescription": "# tool-gaussian-mixture-model\n\nFits Gaussian mixture models and exports cluster labels, membership probabilities, and model parameters.\n\n## Runtime inputs\n\nSupply input files according to the schemas in `app.yml`.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `features` | CSV | Tabular feature matrix. Rows = samples, columns = numeric features. Optional first column 'id'; otherwise indices are used. |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `labels` | CSV | Hard cluster assignments per sample. |\n| `responsibilities` | CSV | Soft assignments (responsibilities). Rows=samples, columns=components. (Only if output_responsibilities=true). |\n| `weights` | CSV | Mixture weights |\n| `means` | CSV | Component means (means_). Rows=components, columns=features. |\n| `covariances` | CSV | Covariance parameters (covariances_) serialized to CSV depending on covariance_type. |\n| `report` | HTML | HTML report with parameters, convergence, AIC/BIC, log-likelihood and cluster-size stats. |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `n_components` | `3` | Number of Gaussian components (clusters). |\n| `covariance_type` | `full` | Covariance type for each component. |\n| `tol` | `0.001` | Convergence threshold for EM (stop when improvement < tol). |\n| `reg_covar` | `0.000001` | Non-negative regularization added to the diagonal of covariance. |\n| `max_iter` | `100` | Maximum number of EM iterations per initialization. |\n| `n_init` | `1` | Number of initializations to perform (best log-likelihood kept). |\n| `init_params` | `kmeans` | Initialization strategy. |\n| `random_state` | `42` | Random seed for reproducibility. |\n| `warm_start` | `0` | If true, reuse the solution of the previous fit as initialization. |\n| `standardize` | `1` | Standardize features to zero mean / unit variance before fitting (recommended). |\n| `output_labels` | `1` | Output hard labels (argmax of responsibilities). |\n| `output_responsibilities` | `1` | Output responsibilities/probabilities per component. |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-gaussian-mixture-model .`.\n",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "default": "3",
+            "description": "Number of Gaussian components (clusters).",
+            "maxValue": 200.0,
+            "minValue": 1.0,
+            "name": "n_components",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "n_components",
+            "mode": "BOTH"
+          },
+          {
+            "default": "full",
+            "description": "Covariance type for each component.",
+            "name": "covariance_type",
+            "options": [
+              "full",
+              "tied",
+              "diag",
+              "spherical"
+            ],
+            "type": "CATEGORICAL",
+            "variableName": "covariance_type",
+            "mode": "BOTH"
+          },
+          {
+            "default": "0.001",
+            "description": "Convergence threshold for EM (stop when improvement < tol).",
+            "minValue": 0.0,
+            "name": "tol",
+            "options": [],
+            "type": "FLOAT",
+            "variableName": "tol",
+            "mode": "BOTH"
+          },
+          {
+            "default": "0.000001",
+            "description": "Non-negative regularization added to the diagonal of covariance.",
+            "minValue": 0.0,
+            "name": "reg_covar",
+            "options": [],
+            "type": "FLOAT",
+            "variableName": "reg_covar",
+            "mode": "BOTH"
+          },
+          {
+            "default": "100",
+            "description": "Maximum number of EM iterations per initialization.",
+            "maxValue": 2000.0,
+            "minValue": 1.0,
+            "name": "max_iter",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "max_iter",
+            "mode": "BOTH"
+          },
+          {
+            "default": "1",
+            "description": "Number of initializations to perform (best log-likelihood kept).",
+            "maxValue": 100.0,
+            "minValue": 1.0,
+            "name": "n_init",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "n_init",
+            "mode": "BOTH"
+          },
+          {
+            "default": "kmeans",
+            "description": "Initialization strategy.",
+            "name": "init_params",
+            "options": [
+              "kmeans",
+              "random"
+            ],
+            "type": "CATEGORICAL",
+            "variableName": "init_params",
+            "mode": "BOTH"
+          },
+          {
+            "default": "42",
+            "description": "Random seed for reproducibility.",
+            "maxValue": 2147483647.0,
+            "minValue": 0.0,
+            "name": "random_state",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "random_state",
+            "mode": "BOTH"
+          },
+          {
+            "default": "0",
+            "description": "If true, reuse the solution of the previous fit as initialization.",
+            "name": "warm_start",
+            "options": [],
+            "type": "BOOLEAN",
+            "variableName": "warm_start",
+            "mode": "BOTH"
+          },
+          {
+            "default": "1",
+            "description": "Standardize features to zero mean / unit variance before fitting (recommended).",
+            "name": "standardize",
+            "options": [],
+            "type": "BOOLEAN",
+            "variableName": "standardize",
+            "mode": "BOTH"
+          },
+          {
+            "default": "1",
+            "description": "Output hard labels (argmax of responsibilities).",
+            "name": "output_labels",
+            "options": [],
+            "type": "BOOLEAN",
+            "variableName": "output_labels",
+            "mode": "BOTH"
+          },
+          {
+            "default": "1",
+            "description": "Output responsibilities/probabilities per component.",
+            "name": "output_responsibilities",
+            "options": [],
+            "type": "BOOLEAN",
+            "variableName": "output_responsibilities",
+            "mode": "BOTH"
+          }
+        ],
+        "input": [
+          {
+            "description": "Tabular feature matrix. Rows = samples, columns = numeric features. Optional first column 'id'; otherwise indices are used.",
+            "hasHeader": true,
+            "name": "features",
+            "required": true,
+            "tabularSchema": {
+              "prohibitedNulls": true
+            },
+            "type": "CSV",
+            "variableName": "features",
+            "mode": "BOTH"
+          }
+        ],
+        "output": [
+          {
+            "description": "Hard cluster assignments per sample.",
+            "name": "labels",
+            "required": false,
+            "type": "CSV",
+            "variableName": "labels",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Soft assignments (responsibilities). Rows=samples, columns=components. (Only if output_responsibilities=true).",
+            "name": "responsibilities",
+            "required": false,
+            "type": "CSV",
+            "variableName": "responsibilities",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Mixture weights",
+            "name": "weights",
+            "required": false,
+            "type": "CSV",
+            "variableName": "weights",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Component means (means_). Rows=components, columns=features.",
+            "name": "means",
+            "required": false,
+            "type": "CSV",
+            "variableName": "means",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Covariance parameters (covariances_) serialized to CSV depending on covariance_type.",
+            "name": "covariances",
+            "required": false,
+            "type": "CSV",
+            "variableName": "covariances",
+            "mode": "BOTH"
+          },
+          {
+            "description": "HTML report with parameters, convergence, AIC/BIC, log-likelihood and cluster-size stats.",
+            "name": "report",
+            "required": false,
+            "type": "HTML",
+            "variableName": "report",
+            "mode": "BOTH"
+          }
+        ]
+      }
+    }
+  ],
+  "icon": "https://scikit-learn.org/stable/_static/scikit-learn-logo-small.png"
+}

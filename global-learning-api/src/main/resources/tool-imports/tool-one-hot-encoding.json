@@ -1,0 +1,120 @@
+{
+  "name": "tool-one-hot-encoding",
+  "uniqueAppId": "8c2e7e45-1b6a-4c6b-9b3e-1c8c2d6b7a10",
+  "slug": "tool-one-hot-encoding",
+  "type": "PRE_PROCESSING",
+  "supportsFederatedLearning": false,
+  "sourceUrl": "https://github.com/FedLearnNet/tool-one-hot-encoding",
+  "authors": [
+    {
+      "keycloakId": "admin"
+    }
+  ],
+  "versions": [
+    {
+      "appVersion": "1.0.0",
+      "publishHash": "b498f780e47c17b173421b919e95e2d1133f381a",
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "needsHostAccess": false,
+      "shortDescription": "Converts categorical table columns into one-hot encoded numeric features.",
+      "longDescription": "# tool-one-hot-encoding\n\nConverts categorical table columns into one-hot encoded numeric features.\n\n## Runtime inputs\n\nSupply input files according to the schemas in `app.yml`.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `features` | CSV | Input CSV table. Optional first column named 'id' (kept as identifier). Other columns can be numeric or categorical. |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `encoded` | CSV | One-hot encoded CSV (same rows; additional dummy columns). |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `columns` | `` | Comma-separated list of columns to one-hot encode. If empty, all object/category/bool columns are encoded. |\n| `drop_first` | `0` | If true, drop the first category per feature (k-1 dummies). |\n| `bool_to_number` | `1` | If true, convert boolean columns to numeric 0/1 instead of one-hot encoding them. |\n| `dummy_na` | `0` | If true, create a dedicated dummy column for NaN values in encoded columns. |\n| `handle_unknown` | `ignore` | How to handle unknown categories. Kept for consistency; pandas.get_dummies encodes categories present in the input. |\n| `prefix_sep` | `__` | Separator between column name and category in generated dummy column names. |\n| `keep_original` | `1` | If true, keep original categorical columns in addition to dummy columns. |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-one-hot-encoding .`.\n",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "default": "",
+            "description": "Comma-separated list of columns to one-hot encode. If empty, all object/category/bool columns are encoded.",
+            "name": "columns",
+            "options": [],
+            "type": "STRING",
+            "variableName": "columns",
+            "mode": "BOTH"
+          },
+          {
+            "default": "0",
+            "description": "If true, drop the first category per feature (k-1 dummies).",
+            "name": "drop_first",
+            "options": [],
+            "type": "BOOLEAN",
+            "variableName": "drop_first",
+            "mode": "BOTH"
+          },
+          {
+            "default": "1",
+            "description": "If true, convert boolean columns to numeric 0/1 instead of one-hot encoding them.",
+            "name": "bool_to_number",
+            "options": [],
+            "type": "BOOLEAN",
+            "variableName": "bool_to_number",
+            "mode": "BOTH"
+          },
+          {
+            "default": "0",
+            "description": "If true, create a dedicated dummy column for NaN values in encoded columns.",
+            "name": "dummy_na",
+            "options": [],
+            "type": "BOOLEAN",
+            "variableName": "dummy_na",
+            "mode": "BOTH"
+          },
+          {
+            "default": "ignore",
+            "description": "How to handle unknown categories. Kept for consistency; pandas.get_dummies encodes categories present in the input.",
+            "name": "handle_unknown",
+            "options": [
+              "ignore",
+              "error"
+            ],
+            "type": "CATEGORICAL",
+            "variableName": "handle_unknown",
+            "mode": "BOTH"
+          },
+          {
+            "default": "__",
+            "description": "Separator between column name and category in generated dummy column names.",
+            "name": "prefix_sep",
+            "options": [],
+            "type": "STRING",
+            "variableName": "prefix_sep",
+            "mode": "BOTH"
+          },
+          {
+            "default": "1",
+            "description": "If true, keep original categorical columns in addition to dummy columns.",
+            "name": "keep_original",
+            "options": [],
+            "type": "BOOLEAN",
+            "variableName": "keep_original",
+            "mode": "BOTH"
+          }
+        ],
+        "input": [
+          {
+            "description": "Input CSV table. Optional first column named 'id' (kept as identifier). Other columns can be numeric or categorical.",
+            "hasHeader": true,
+            "name": "features",
+            "required": true,
+            "tabularSchema": {
+              "allowOnlyNumbers": false,
+              "prohibitedNulls": false
+            },
+            "type": "CSV",
+            "variableName": "features",
+            "mode": "BOTH"
+          }
+        ],
+        "output": [
+          {
+            "description": "One-hot encoded CSV (same rows; additional dummy columns).",
+            "name": "encoded",
+            "required": false,
+            "type": "CSV",
+            "variableName": "encoded",
+            "mode": "BOTH"
+          }
+        ]
+      }
+    }
+  ],
+  "icon": "https://pandas.pydata.org/static/img/pandas_white.svg"
+}

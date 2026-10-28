@@ -1,0 +1,71 @@
+{
+  "name": "tool-transformer-date",
+  "uniqueAppId": "3309a3f7-8d53-41ad-a76f-96febe9919ea",
+  "slug": "tool-transformer-date",
+  "type": "DATA_TRANSFORMATION",
+  "supportsFederatedLearning": false,
+  "sourceUrl": "https://github.com/FedLearnNet/tool-transformer-date",
+  "authors": [
+    {
+      "keycloakId": "admin"
+    }
+  ],
+  "versions": [
+    {
+      "appVersion": "1.0.0",
+      "publishHash": "d3d01eaf60a1b61b477a5e75fbb334966d6cc9cc",
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "needsHostAccess": false,
+      "shortDescription": "Normalizes date strings and Unix timestamps to a consistent YYYY-MM-DD HH:MM:SS format.",
+      "longDescription": "# tool-transformer-date\n\nNormalizes date strings and Unix timestamps to a consistent YYYY-MM-DD HH:MM:SS format.\n\nDateTransformer is a data transformation tool that parses heterogeneous date/datetime strings and returns a normalized timestamp string in the fixed format:\n- Output format: \"%Y-%m-%d %H:%M:%S\" (e.g., 2026-03-03 14:05:00)\n\nIt is intended for cleaning and harmonizing date columns coming from mixed sources (UCI datasets, clinical exports, logs, manually entered CSVs, etc.).\n\n## What this tool does\n- Accepts an input value as a string and converts it into a standardized datetime string.\n- Supports multiple input styles, including:\n- Common explicit formats (examples):\n- YYYY-MM-DD / YYYY-MM-DD HH:MM / YYYY-MM-DD HH:MM:SS\n- YYYY/MM/DD variants\n- DD.MM.YYYY variants\n- DD/MM/YYYY variants\n- ISO-8601-like formats:\n- YYYY-MM-DDTHH:MM:SS\n- fractional seconds: YYYY-MM-DDTHH:MM:SS.sss\n- timezone suffixes: Z or ±HH:MM\n- also accepts a single space instead of T\n- Unix timestamps:\n- seconds (10 digits), e.g. 1700000000\n- milliseconds (13 digits), e.g. 1700000000000\n- float seconds, e.g. 1700000000.123\n\n## Parsing rules\n- Unix timestamps are interpreted as UTC.\n- Timezone-aware datetimes (e.g., ISO strings with Z / +02:00) are:\n\t1.\tconverted to UTC, then\n\t2.\tformatted without timezone information.\n- Naive datetimes (no timezone information) are treated as-is (no implicit timezone shift).\n- If the input contains only a date (no time), the time defaults to 00:00:00.\n- If the string cannot be parsed, the transformer raises a ValueError.\n\n## Configuration\n\nThis transformer currently has no hyperparameters (TransformerConfig is empty).\n\n## Output\n- Returns a string in the format: YYYY-MM-DD HH:MM:SS\n\nExample outputs:\n- 2026-03-03 00:00:00\n- 2026-03-03 14:05:23\n\n# Notes / assumptions\n- Empty strings are rejected (ValueError).\n- The transformer is strict about numeric conversion for Unix timestamps (only the supported digit-length patterns / float pattern are accepted).\n- When outputting timezone-aware inputs, timezone is normalized to UTC and then removed from the final formatted string.\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nBuild the container with `docker build -t tool-transformer-date .`.\n",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "default": "value",
+            "description": "input string representing a date/datetime.",
+            "name": "column",
+            "options": [],
+            "type": "STRING",
+            "variableName": "column",
+            "mode": "BOTH"
+          }
+        ],
+        "input": [
+          {
+            "delimiter": ",",
+            "description": "Input column schema. input string representing a date/datetime.",
+            "hasHeader": true,
+            "mode": "BOTH",
+            "name": "input",
+            "required": false,
+            "tabularSchema": {
+              "requiredColumns": [
+                "column"
+              ]
+            },
+            "type": "CSV",
+            "variableName": "input"
+          }
+        ],
+        "output": [
+          {
+            "delimiter": ",",
+            "description": "Output column schema. input string representing a date/datetime.",
+            "hasHeader": true,
+            "mode": "BOTH",
+            "name": "output",
+            "required": false,
+            "tabularSchema": {
+              "requiredColumns": [
+                "column"
+              ]
+            },
+            "type": "CSV",
+            "variableName": "output"
+          }
+        ]
+      }
+    }
+  ]
+}

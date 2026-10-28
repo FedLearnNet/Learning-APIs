@@ -1,0 +1,99 @@
+{
+  "name": "tool-bicon",
+  "uniqueAppId": "44b843bd-921c-4a75-a627-2cd6d99c6a93",
+  "slug": "tool-bicon",
+  "type": "SELF_LEARNED",
+  "supportsFederatedLearning": false,
+  "sourceUrl": "https://github.com/FedLearnNet/tool-bicon",
+  "authors": [
+    {
+      "keycloakId": "admin"
+    }
+  ],
+  "versions": [
+    {
+      "appVersion": "1.0.0",
+      "publishHash": "cb3de7c3750f5118bea236b05dca575859c092ae",
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "needsHostAccess": false,
+      "shortDescription": "Runs network-constrained biclustering with BiCoN and exports sample clusters and gene modules.",
+      "longDescription": "# tool-bicon\n\nRuns network-constrained biclustering with BiCoN and exports sample clusters and gene modules.\n\n## Runtime inputs\n\nSupply input files according to the schemas in `app.yml`.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `net` | TSV | Network data file (TSV format) containing gene interactions |\n| `expr` | CSV | Gene expression data file (CSV format) with genes as rows and samples as columns |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `cluster_map` | STRING | Cluster map visualization showing patient stratification |\n| `network` | STRING | Network visualization showing identified subnetworks |\n| `result` | CSV | Results file containing biclustering analysis results |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `l_g_min` | `10` | Minimum size of subnetwork for biclustering |\n| `l_g_max` | `15` | Maximum size of subnetwork for biclustering |\n| `max_iter` | `15` | Maximum number of iterations for the search algorithm |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-bicon .`.\n",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "default": "10",
+            "description": "Minimum size of subnetwork for biclustering",
+            "minValue": 1.0,
+            "name": "l_g_min",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "l_g_min",
+            "mode": "BOTH"
+          },
+          {
+            "default": "15",
+            "description": "Maximum size of subnetwork for biclustering",
+            "minValue": 1.0,
+            "name": "l_g_max",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "l_g_max",
+            "mode": "BOTH"
+          },
+          {
+            "default": "15",
+            "description": "Maximum number of iterations for the search algorithm",
+            "minValue": 1.0,
+            "name": "max_iter",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "max_iter",
+            "mode": "BOTH"
+          }
+        ],
+        "input": [
+          {
+            "description": "Network data file (TSV format) containing gene interactions",
+            "name": "net",
+            "required": true,
+            "type": "TSV",
+            "variableName": "net",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Gene expression data file (CSV format) with genes as rows and samples as columns",
+            "name": "expr",
+            "required": true,
+            "type": "CSV",
+            "variableName": "expr",
+            "mode": "BOTH"
+          }
+        ],
+        "output": [
+          {
+            "description": "Cluster map visualization showing patient stratification",
+            "name": "cluster_map",
+            "type": "STRING",
+            "variableName": "cluster_map",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Network visualization showing identified subnetworks",
+            "name": "network",
+            "type": "STRING",
+            "variableName": "network",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Results file containing biclustering analysis results",
+            "name": "result",
+            "type": "CSV",
+            "variableName": "result",
+            "mode": "BOTH"
+          }
+        ]
+      }
+    }
+  ]
+}

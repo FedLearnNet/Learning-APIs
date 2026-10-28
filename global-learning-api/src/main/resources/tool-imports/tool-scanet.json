@@ -1,0 +1,210 @@
+{
+  "name": "tool-scanet",
+  "uniqueAppId": "72a2e8d5-7ad2-4837-9fb7-e533818553ae",
+  "slug": "tool-scanet",
+  "type": "SELF_LEARNED",
+  "supportsFederatedLearning": false,
+  "sourceUrl": "https://github.com/FedLearnNet/tool-scanet",
+  "authors": [
+    {
+      "keycloakId": "admin"
+    }
+  ],
+  "versions": [
+    {
+      "appVersion": "0.0.0",
+      "publishHash": "3e94d739e4377131188e152c3669739f8b8d0d99",
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "needsHostAccess": false,
+      "shortDescription": "Preprocesses single-cell expression data with SCANet and exports cell clusters, embeddings, and QC plots.",
+      "longDescription": "# tool-scanet\n\nPreprocesses single-cell expression data with SCANet and exports cell clusters, embeddings, and QC plots.\n\n## Runtime inputs\n\nProvide an AnnData `.h5ad` file through the `data` input. SCANet preprocessing\nexpects a sparse expression matrix in `adata.X` (CSR format is supported).\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `data` | PATH | Path to h5ad file (e.g. ./data/test_data.h5ad) |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `reduced_data` | PATH | Reduced dimensionality data file |\n| `cell_annotation` | IMAGE | Cell annotation visualization |\n| `cluster` | IMAGE | Cluster visualization |\n| `highly_variable_genes` | IMAGE | Highly variable genes plot |\n| `violin_plot` | IMAGE | Violin plot of QC metrics (n_genes, total_counts, pct_mito) |\n| `processed_data` | PATH | Processed data file |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `min_cell` | `3` | Minimum number of cells for gene filtering |\n| `threshold` | `0.1` | Threshold for mitochondrial gene filtering |\n| `top_n_genes` | `500` | Number of top genes to select |\n| `cell_annotation` | `leiden` | Cell annotation method for clustering |\n| `num_rep_cells` | `50` | Number of representative cells per cluster |\n| `n_pcs` | `10` | Number of principal components |\n| `n_neighbors` | `5` | Number of neighbors for UMAP |\n| `method` | `UMAP` | Dimensionality reduction method |\n| `lowerbound` | `500` | Lower bound for cell filtering |\n| `upperbound` | `5000` | Upper bound for cell filtering (max genes per cell) |\n| `nbins` | `10` | Number of bins for histogram |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-scanet .`.\n",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "default": "3",
+            "description": "Minimum number of cells for gene filtering",
+            "maxValue": 100.0,
+            "minValue": 1.0,
+            "name": "min_cell",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "min_cell",
+            "mode": "BOTH"
+          },
+          {
+            "default": "0.1",
+            "description": "Threshold for mitochondrial gene filtering",
+            "maxValue": 1.0,
+            "minValue": 0.0,
+            "name": "threshold",
+            "options": [],
+            "type": "FLOAT",
+            "variableName": "threshold",
+            "mode": "BOTH"
+          },
+          {
+            "default": "500",
+            "description": "Number of top genes to select",
+            "maxValue": 5000.0,
+            "minValue": 10.0,
+            "name": "top_n_genes",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "top_n_genes",
+            "mode": "BOTH"
+          },
+          {
+            "default": "leiden",
+            "description": "Cell annotation method for clustering",
+            "name": "cell_annotation",
+            "options": [
+              "leiden"
+            ],
+            "type": "CATEGORICAL",
+            "variableName": "cell_annotation",
+            "mode": "BOTH"
+          },
+          {
+            "default": "50",
+            "description": "Number of representative cells per cluster",
+            "maxValue": 1000.0,
+            "minValue": 1.0,
+            "name": "num_rep_cells",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "num_rep_cells",
+            "mode": "BOTH"
+          },
+          {
+            "default": "10",
+            "description": "Number of principal components",
+            "maxValue": 100.0,
+            "minValue": 1.0,
+            "name": "n_pcs",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "n_pcs",
+            "mode": "BOTH"
+          },
+          {
+            "default": "5",
+            "description": "Number of neighbors for UMAP",
+            "maxValue": 50.0,
+            "minValue": 1.0,
+            "name": "n_neighbors",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "n_neighbors",
+            "mode": "BOTH"
+          },
+          {
+            "default": "UMAP",
+            "description": "Dimensionality reduction method",
+            "name": "method",
+            "options": [
+              "PCA",
+              "UMAP"
+            ],
+            "type": "CATEGORICAL",
+            "variableName": "method",
+            "mode": "BOTH"
+          },
+          {
+            "default": "500",
+            "description": "Lower bound for cell filtering",
+            "maxValue": 10000.0,
+            "minValue": 0.0,
+            "name": "lowerbound",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "lowerbound",
+            "mode": "BOTH"
+          },
+          {
+            "default": "5000",
+            "description": "Upper bound for cell filtering (max genes per cell)",
+            "maxValue": 10000.0,
+            "minValue": 0.0,
+            "name": "upperbound",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "upperbound",
+            "mode": "BOTH"
+          },
+          {
+            "default": "10",
+            "description": "Number of bins for histogram",
+            "maxValue": 100.0,
+            "minValue": 1.0,
+            "name": "nbins",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "nbins",
+            "mode": "BOTH"
+          }
+        ],
+        "input": [
+          {
+            "description": "Path to h5ad file (e.g. ./data/test_data.h5ad)",
+            "name": "data",
+            "required": true,
+            "type": "PATH",
+            "variableName": "data",
+            "mode": "BOTH"
+          }
+        ],
+        "output": [
+          {
+            "description": "Reduced dimensionality data file",
+            "name": "reduced_data",
+            "required": false,
+            "type": "PATH",
+            "variableName": "reduced_data",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Cell annotation visualization",
+            "name": "cell_annotation",
+            "required": false,
+            "type": "IMAGE",
+            "variableName": "cell_annotation",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Cluster visualization",
+            "name": "cluster",
+            "required": false,
+            "type": "IMAGE",
+            "variableName": "cluster",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Highly variable genes plot",
+            "name": "highly_variable_genes",
+            "required": false,
+            "type": "IMAGE",
+            "variableName": "highly_variable_genes",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Violin plot of QC metrics (n_genes, total_counts, pct_mito)",
+            "name": "violin_plot",
+            "required": false,
+            "type": "IMAGE",
+            "variableName": "violin_plot",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Processed data file",
+            "name": "processed_data",
+            "required": false,
+            "type": "PATH",
+            "variableName": "processed_data",
+            "mode": "BOTH"
+          }
+        ]
+      }
+    }
+  ]
+}

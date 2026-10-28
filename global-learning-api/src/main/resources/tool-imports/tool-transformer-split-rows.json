@@ -1,0 +1,72 @@
+{
+  "name": "tool-transformer-split-rows",
+  "uniqueAppId": "adc00c97-2b33-482c-ab8c-d036b24a3706",
+  "slug": "tool-transformer-split-rows",
+  "type": "DATA_TRANSFORMATION",
+  "supportsFederatedLearning": false,
+  "sourceUrl": "https://github.com/FedLearnNet/tool-transformer-split-rows",
+  "authors": [
+    {
+      "keycloakId": "admin"
+    }
+  ],
+  "versions": [
+    {
+      "appVersion": "1.0.0",
+      "publishHash": "675e02a9b5bae89ce4a21624ec305843e723dc56",
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "needsHostAccess": false,
+      "shortDescription": "Splits a delimited row value into two output fields using a configurable separator.",
+      "longDescription": "# tool-transformer-split-rows\n\nSplits a delimited row value into two output fields using a configurable separator.\n\n## Behavior\n\nThe transformer reads the string under `value` in each mapped row and returns\nfields `a` and `b`. The `delimiter` hyperparameter defaults to `|`.\n\n- `hello|world` becomes `{\"a\": \"hello\", \"b\": \"world\"}`.\n- A value without the separator produces an empty `b`.\n- If there are more than two parts, only the first two are returned.\n- The number of input rows stays the same.\n\nConfigure row mappings with `input_mapping={\"value\": \"source_column\"}` and\n`return_mapping={\"a\": \"first_column\", \"b\": \"second_column\"}`. Leave `column`\nunset to use row transformation mode.\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` contains only\nadditional runtime dependencies; `requirements-dev.txt` includes the API for local development.\n\nBuild the container with `docker build -t tool-transformer-split-rows .`.\n",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "default": "|",
+            "description": "Separator used to split the input value into fields a and b",
+            "name": "delimiter",
+            "options": [],
+            "type": "STRING",
+            "variableName": "delimiter",
+            "mode": "BOTH"
+          }
+        ],
+        "input": [
+          {
+            "delimiter": ",",
+            "description": "Input row schema. Input dictionary containing a 'value' key with the string to split",
+            "hasHeader": true,
+            "mode": "BOTH",
+            "name": "input",
+            "required": false,
+            "tabularSchema": {
+              "requiredColumns": [
+                "value"
+              ]
+            },
+            "type": "CSV",
+            "variableName": "input"
+          }
+        ],
+        "output": [
+          {
+            "delimiter": ",",
+            "description": "Output row schema. Input dictionary containing a 'value' key with the string to split",
+            "hasHeader": true,
+            "mode": "BOTH",
+            "name": "output",
+            "required": false,
+            "tabularSchema": {
+              "requiredColumns": [
+                "a",
+                "b"
+              ]
+            },
+            "type": "CSV",
+            "variableName": "output"
+          }
+        ]
+      }
+    }
+  ]
+}

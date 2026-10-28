@@ -1,0 +1,170 @@
+{
+  "name": "tool-dysregnet",
+  "uniqueAppId": "b7d9f3e4-6a2c-4f8e-9b5d-7e3a1c8f4b2d",
+  "slug": "tool-dysregnet",
+  "type": "SELF_LEARNED",
+  "supportsFederatedLearning": false,
+  "sourceUrl": "https://github.com/FedLearnNet/tool-dysregnet",
+  "authors": [
+    {
+      "keycloakId": "admin"
+    }
+  ],
+  "versions": [
+    {
+      "appVersion": "1.0.0",
+      "publishHash": "2cb27bf0a9bc3dac3c62bd1c73bb54942a9a78ef",
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "needsHostAccess": false,
+      "shortDescription": "Infers sample-specific dysregulated networks with DysRegNet and exports network results and plots.",
+      "longDescription": "# tool-dysregnet\n\nInfers sample-specific dysregulated networks with DysRegNet and exports network results and plots.\n\n## Runtime inputs\n\nSupply input files according to the schemas in `app.yml`.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `grn` | CSV | Gene Regulatory Network (GRN) with two columns in the following order ['TF', 'target']. |\n| `meta` | CSV | Gene expression matrix in the format patients as rows (first column - patients/samples ids), and genes as columns. |\n| `expr` | CSV | Gene expression matrix in the format - patients as rows (first column - patients/samples ids), and genes as columns. |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `adjacency_heatmap` | IMAGE | Distribution of non-zero values (representing interaction strengths) |\n| `pvalue_distribution` | IMAGE | Heatmap of results matrix (sample of top interactions) |\n| `top_interactions` | IMAGE | Top 20 Strongest Regulatory Interactions |\n| `results` | CSV | Results of the analysis in CSV format |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `zscoring` | `false` | Apply z-score normalization to expression values before analysis. |\n| `bonferroni_alpha` | `0.01` | Bonferroni-corrected significance level (alpha). |\n| `r2_threshold` | `0.2` | R² threshold for filtering; set to null to disable. |\n| `normaltest` | `false` | Perform D’Agostino-Pearson normality test on residuals. |\n| `normaltest_alpha` | `0.001` | Alpha level for the normality test. |\n| `direction_condition` | `false` | Enforce directionality condition when assessing dysregulation. |\n| `con_cov` | `birth_days_to` | List of continuous covariates. They should match the name of their columns in the meta Dataframe, separated by commas. |\n| `cat_cov` | `race,gender` | List of categorical variable names. They should match the name of their columns in the meta Dataframe, separated by commas. |\n| `con_col` | `sample_type` | Column name for the condition in the meta DataFrame. |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-dysregnet .`.\n",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "default": "false",
+            "description": "Apply z-score normalization to expression values before analysis.",
+            "minValue": "0",
+            "name": "zscoring",
+            "options": [],
+            "type": "BOOLEAN",
+            "variableName": "zscoring",
+            "mode": "BOTH"
+          },
+          {
+            "default": "0.01",
+            "description": "Bonferroni-corrected significance level (alpha).",
+            "minValue": "0",
+            "name": "bonferroni_alpha",
+            "options": [],
+            "type": "FLOAT",
+            "variableName": "bonferroni_alpha",
+            "mode": "BOTH"
+          },
+          {
+            "default": "0.2",
+            "description": "R² threshold for filtering; set to null to disable.",
+            "name": "r2_threshold",
+            "options": [],
+            "type": "FLOAT",
+            "variableName": "r2_threshold",
+            "mode": "BOTH"
+          },
+          {
+            "default": "false",
+            "description": "Perform D’Agostino-Pearson normality test on residuals.",
+            "name": "normaltest",
+            "options": [],
+            "type": "BOOLEAN",
+            "variableName": "normaltest",
+            "mode": "BOTH"
+          },
+          {
+            "default": "0.001",
+            "description": "Alpha level for the normality test.",
+            "name": "normaltest_alpha",
+            "options": [],
+            "type": "FLOAT",
+            "variableName": "normaltest_alpha",
+            "mode": "BOTH"
+          },
+          {
+            "default": "false",
+            "description": "Enforce directionality condition when assessing dysregulation.",
+            "name": "direction_condition",
+            "options": [],
+            "type": "BOOLEAN",
+            "variableName": "direction_condition",
+            "mode": "BOTH"
+          },
+          {
+            "description": "List of continuous covariates. They should match the name of their columns in the meta Dataframe, separated by commas.",
+            "default": "birth_days_to",
+            "name": "con_cov",
+            "options": [],
+            "type": "STRING",
+            "variableName": "con_cov",
+            "mode": "BOTH"
+          },
+          {
+            "description": "List of categorical variable names. They should match the name of their columns in the meta Dataframe, separated by commas.",
+            "default": "race,gender",
+            "name": "cat_cov",
+            "options": [],
+            "type": "STRING",
+            "variableName": "cat_cov",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Column name for the condition in the meta DataFrame.",
+            "default": "sample_type",
+            "name": "con_col",
+            "options": [],
+            "type": "STRING",
+            "variableName": "con_col",
+            "mode": "BOTH"
+          }
+        ],
+        "input": [
+          {
+            "description": "Gene Regulatory Network (GRN) with two columns in the following order ['TF', 'target'].",
+            "name": "grn",
+            "required": true,
+            "hasHeader": true,
+            "type": "CSV",
+            "variableName": "grn",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Gene expression matrix in the format patients as rows (first column - patients/samples ids), and genes as columns.",
+            "name": "meta",
+            "required": true,
+            "type": "CSV",
+            "hasHeader": true,
+            "variableName": "meta",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Gene expression matrix in the format - patients as rows (first column - patients/samples ids), and genes as columns.",
+            "name": "expr",
+            "required": true,
+            "hasHeader": true,
+            "type": "CSV",
+            "variableName": "expr",
+            "mode": "BOTH"
+          }
+        ],
+        "output": [
+          {
+            "description": "Distribution of non-zero values (representing interaction strengths)",
+            "name": "adjacency_heatmap",
+            "type": "IMAGE",
+            "variableName": "adjacency_heatmap",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Heatmap of results matrix (sample of top interactions)",
+            "name": "pvalue_distribution",
+            "type": "IMAGE",
+            "variableName": "pvalue_distribution",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Top 20 Strongest Regulatory Interactions",
+            "name": "top_interactions",
+            "type": "IMAGE",
+            "variableName": "top_interactions",
+            "mode": "BOTH"
+          },
+          {
+            "description": "Results of the analysis in CSV format",
+            "name": "results",
+            "type": "CSV",
+            "variableName": "results",
+            "mode": "BOTH"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "name": "tool-mofa2",
+  "uniqueAppId": "d0fa2a30-7cb5-4161-8c02-5aa556d1e96c",
+  "slug": "tool-mofa2",
+  "type": "SELF_LEARNED",
+  "supportsFederatedLearning": false,
+  "sourceUrl": "https://github.com/FedLearnNet/tool-mofa2",
+  "authors": [
+    {
+      "keycloakId": "admin"
+    }
+  ],
+  "versions": [
+    {
+      "appVersion": "1.0.0",
+      "publishHash": "ff6080af81c37875c4168cd3c2b30f1f34469329",
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "needsHostAccess": false,
+      "shortDescription": "Explores trained MOFA models and exports latent factors, feature weights, and ranked features.",
+      "longDescription": "# tool-mofa2\n\nExplores trained MOFA models and exports latent factors, feature weights, and ranked features.\n\n## Runtime inputs\n\nSupply the trained model at `data/models/pbmc10k.hdf5` before running the exporter.\n\n## Inputs and outputs\n\n### Inputs\n\nNo fields are declared.\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `factors` | CSV | Exported factor matrix (Z). |\n| `weights` | CSV | Exported weights/loadings matrix (W). |\n| `top_features` | CSV | Ranked top features per factor based on absolute weight. |\n| `report` | HTML | HTML summary report of the explored model. |\n| `weights_plot` | IMAGE | PNG heatmap of MOFA weights. |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `n_top_features` | `20` | Number of top absolute-weight features to export per factor. |\n| `export_weights` | `True` | Export the factor loadings matrix. |\n| `export_factors` | `True` | Export the factor values matrix. |\n| `export_top_features` | `True` | Export ranked top features per factor. |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-mofa2 .`.\n",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "name": "n_top_features",
+            "type": "INTEGER",
+            "required": false,
+            "default": "20",
+            "minValue": 1,
+            "description": "Number of top absolute-weight features to export per factor.",
+            "variableName": "n_top_features",
+            "mode": "BOTH"
+          },
+          {
+            "name": "export_weights",
+            "type": "BOOLEAN",
+            "required": false,
+            "default": "true",
+            "description": "Export the factor loadings matrix.",
+            "variableName": "export_weights",
+            "mode": "BOTH"
+          },
+          {
+            "name": "export_factors",
+            "type": "BOOLEAN",
+            "required": false,
+            "default": "true",
+            "description": "Export the factor values matrix.",
+            "variableName": "export_factors",
+            "mode": "BOTH"
+          },
+          {
+            "name": "export_top_features",
+            "type": "BOOLEAN",
+            "required": false,
+            "default": "true",
+            "description": "Export ranked top features per factor.",
+            "variableName": "export_top_features",
+            "mode": "BOTH"
+          }
+        ],
+        "input": [],
+        "output": [
+          {
+            "name": "factors",
+            "type": "CSV",
+            "description": "Exported factor matrix (Z).",
+            "variableName": "factors",
+            "mode": "BOTH"
+          },
+          {
+            "name": "weights",
+            "type": "CSV",
+            "description": "Exported weights/loadings matrix (W).",
+            "variableName": "weights",
+            "mode": "BOTH"
+          },
+          {
+            "name": "top_features",
+            "type": "CSV",
+            "description": "Ranked top features per factor based on absolute weight.",
+            "variableName": "top_features",
+            "mode": "BOTH"
+          },
+          {
+            "name": "report",
+            "type": "HTML",
+            "description": "HTML summary report of the explored model.",
+            "variableName": "report",
+            "mode": "BOTH"
+          },
+          {
+            "name": "weights_plot",
+            "type": "IMAGE",
+            "description": "PNG heatmap of MOFA weights.",
+            "variableName": "weights_plot",
+            "mode": "BOTH"
+          }
+        ]
+      }
+    }
+  ]
+}

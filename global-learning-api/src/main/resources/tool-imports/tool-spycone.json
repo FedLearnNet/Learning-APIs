@@ -1,0 +1,121 @@
+{
+  "name": "tool-spycone",
+  "uniqueAppId": "d3b8f6e2-9a4c-4f5d-8e7b-6c9a3f2d5e1b",
+  "slug": "tool-spycone",
+  "type": "SELF_LEARNED",
+  "supportsFederatedLearning": false,
+  "sourceUrl": "https://github.com/FedLearnNet/tool-spycone",
+  "authors": [
+    {
+      "keycloakId": "admin"
+    }
+  ],
+  "versions": [
+    {
+      "appVersion": "1.0.0",
+      "publishHash": "d4316cf1f7555f687befeae7a8194e4cc74b2298",
+      "versionPublishStatus": "PUBLISHED",
+      "needsInternetAccess": false,
+      "needsHostAccess": false,
+      "shortDescription": "Analyzes time-course expression and splicing patterns with Spycone and exports clusters and plots.",
+      "longDescription": "# tool-spycone\n\nAnalyzes time-course expression and splicing patterns with Spycone and exports clusters and plots.\n\n## Runtime inputs\n\nSupply input files according to the schemas in `app.yml`.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `data` | CSV | time series data values with columns as each sample e.g. the order of the columns should be sample1_rep1, sample1_rep2, sample2_rep1, sample2_rep2 and so on…. |\n| `gene_ids` | CSV | list of gene id (can be entrez gene id or ensembl gene id) |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `image` | IMAGE |  |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `data_num_species` | `9606` | specify the species ID |\n| `clustering_algorithm` | `hierarchical` | Type of clustering algorithm to use |\n| `reps1` | `5` | Number of replicates |\n| `timepts` | `9` | Number of time points |\n| `n_clusters` | `10` | Number of cluster |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-spycone .`.\n",
+      "appConfig": {
+        "hyperparams": [
+          {
+            "default": "9606",
+            "description": "specify the species ID",
+            "name": "data_num_species",
+            "options": [
+              "9606"
+            ],
+            "type": "CATEGORICAL",
+            "variableName": "data_num_species",
+            "mode": "BOTH"
+          },
+          {
+            "default": "hierarchical",
+            "description": "Type of clustering algorithm to use",
+            "name": "clustering_algorithm",
+            "options": [
+              "dbscan",
+              "optics",
+              "kmeans",
+              "kmedoids",
+              "hierarchical"
+            ],
+            "type": "CATEGORICAL",
+            "variableName": "clustering_algorithm",
+            "mode": "BOTH"
+          },
+          {
+            "default": "5",
+            "description": "Number of replicates",
+            "minValue": "1",
+            "name": "reps1",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "reps1",
+            "mode": "BOTH"
+          },
+          {
+            "default": "9",
+            "description": "Number of time points",
+            "minValue": "1",
+            "name": "timepts",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "timepts",
+            "mode": "BOTH"
+          },
+          {
+            "default": "10",
+            "description": "Number of cluster",
+            "minValue": "1",
+            "name": "n_clusters",
+            "options": [],
+            "type": "INTEGER",
+            "variableName": "n_clusters",
+            "mode": "BOTH"
+          }
+        ],
+        "input": [
+          {
+            "description": "time series data values with columns as each sample e.g. the order of the columns should be sample1_rep1, sample1_rep2, sample2_rep1, sample2_rep2 and so on….",
+            "name": "data",
+            "required": false,
+            "type": "CSV",
+            "tabularSchema": {
+              "minRows": 1,
+              "minColumns": 1,
+              "allowOnlyNumbers": true,
+              "prohibitedNulls": true
+            },
+            "variableName": "data",
+            "mode": "BOTH"
+          },
+          {
+            "description": "list of gene id (can be entrez gene id or ensembl gene id)",
+            "name": "gene_ids",
+            "required": false,
+            "type": "CSV",
+            "tabularSchema": {
+              "allowOnlyNumbers": false,
+              "prohibitedNulls": true
+            },
+            "variableName": "gene_ids",
+            "mode": "BOTH"
+          }
+        ],
+        "output": [
+          {
+            "description": "",
+            "name": "image",
+            "type": "IMAGE",
+            "variableName": "image",
+            "mode": "BOTH"
+          }
+        ]
+      }
+    }
+  ]
+}

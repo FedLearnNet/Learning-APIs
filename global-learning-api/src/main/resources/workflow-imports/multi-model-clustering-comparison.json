@@ -1,0 +1,182 @@
+{
+  "nodes": [
+    {
+      "nodeId": "b7a2beb7-38a3-4ec6-ab09-681e7207a6f8",
+      "appUniqueId": "911f4fbd-976b-4354-8479-eb885c5a1fc2",
+      "versionPublishHash": "8a374e01b4710f1d3191422d51bf3eb5a6842be8",
+      "position": {
+        "x": 100,
+        "y": 700
+      },
+      "hyperParams": {
+        "n_components": 3,
+        "covariance_type": "full",
+        "tol": 0.001,
+        "reg_covar": 1e-06,
+        "max_iter": 100,
+        "n_init": 1,
+        "init_params": "kmeans",
+        "random_state": 42,
+        "warm_start": false,
+        "standardize": true,
+        "output_labels": true,
+        "output_responsibilities": true
+      },
+      "hasChildren": true,
+      "hasParent": true,
+      "executionOrder": 2
+    },
+    {
+      "nodeId": "f0491217-d960-43fb-bc7f-a5967afba89d",
+      "appUniqueId": "911f4fbd-976b-4354-8479-eb885c5a1fc2",
+      "versionPublishHash": "8a374e01b4710f1d3191422d51bf3eb5a6842be8",
+      "position": {
+        "x": 700,
+        "y": 700
+      },
+      "hyperParams": {
+        "n_components": 3,
+        "covariance_type": "full",
+        "tol": 0.001,
+        "reg_covar": 1e-06,
+        "max_iter": 100,
+        "n_init": 1,
+        "init_params": "kmeans",
+        "random_state": 42,
+        "warm_start": false,
+        "standardize": true,
+        "output_labels": true,
+        "output_responsibilities": true
+      },
+      "hasChildren": true,
+      "hasParent": true,
+      "executionOrder": 3
+    },
+    {
+      "nodeId": "ff44a49e-6bd0-485f-ab88-9ed4074410f5",
+      "appUniqueId": "9da0dc07-2e4a-4f2b-ab1e-caffdcafd19a",
+      "versionPublishHash": "8d39d8bfc78847cefc0323fe9ea1232d82cc2f2e",
+      "position": {
+        "x": 450,
+        "y": 1000
+      },
+      "hyperParams": {
+        "id_column": "index",
+        "truth_label_column": "label",
+        "sort_by": "silhouette"
+      },
+      "hasChildren": false,
+      "hasParent": true,
+      "executionOrder": 4
+    },
+    {
+      "nodeId": "053c1a33-a722-4bdc-b192-c61b4f7d2a0b",
+      "appUniqueId": "a71e2f25-1d3a-4b0c-9b85-7a2e6c1f4f0e",
+      "versionPublishHash": "8fb5bce7dced27d02b88601a46771dc91db229f3",
+      "position": {
+        "x": 650,
+        "y": 100
+      },
+      "hyperParams": {
+        "dataset_id": 17
+      },
+      "hasChildren": true,
+      "hasParent": false,
+      "executionOrder": 0
+    },
+    {
+      "nodeId": "a3f351b6-9fa0-45fc-ab78-b361bc635811",
+      "appUniqueId": "8c2e7e45-1b6a-4c6b-9b3e-1c8c2d6b7a10",
+      "versionPublishHash": "b498f780e47c17b173421b919e95e2d1133f381a",
+      "position": {
+        "x": 700,
+        "y": 400
+      },
+      "hyperParams": {
+        "drop_first": false,
+        "keep_original": false,
+        "bool_to_number": true,
+        "columns": "",
+        "dummy_na": false,
+        "handle_unknown": "ignore",
+        "prefix_sep": "__"
+      },
+      "hasChildren": true,
+      "hasParent": true,
+      "executionOrder": 1
+    }
+  ],
+  "connections": [
+    {
+      "inputId": "app_b7a2beb7-38a3-4ec6-ab09-681e7207a6f8_input_features",
+      "outputId": "app_a3f351b6-9fa0-45fc-ab78-b361bc635811_output_encoded",
+      "inputNodeId": "b7a2beb7-38a3-4ec6-ab09-681e7207a6f8",
+      "inputFileName": "features.csv",
+      "inputConfigName": "features",
+      "inputConnection": false,
+      "outputNodeId": "a3f351b6-9fa0-45fc-ab78-b361bc635811",
+      "outputConfigName": "encoded",
+      "outputFileName": "encoded.csv"
+    },
+    {
+      "inputId": "app_f0491217-d960-43fb-bc7f-a5967afba89d_input_features",
+      "outputId": "app_a3f351b6-9fa0-45fc-ab78-b361bc635811_output_encoded",
+      "inputNodeId": "f0491217-d960-43fb-bc7f-a5967afba89d",
+      "outputNodeId": "a3f351b6-9fa0-45fc-ab78-b361bc635811",
+      "inputFileName": "features.csv",
+      "outputFileName": "encoded.csv",
+      "inputConfigName": "features",
+      "outputConfigName": "encoded",
+      "inputConnection": false
+    },
+    {
+      "inputId": "app_a3f351b6-9fa0-45fc-ab78-b361bc635811_input_features",
+      "outputId": "app_053c1a33-a722-4bdc-b192-c61b4f7d2a0b_output_dataset",
+      "inputNodeId": "a3f351b6-9fa0-45fc-ab78-b361bc635811",
+      "outputNodeId": "053c1a33-a722-4bdc-b192-c61b4f7d2a0b",
+      "inputFileName": "features.csv",
+      "outputFileName": "dataset.csv",
+      "inputConfigName": "features",
+      "outputConfigName": "dataset",
+      "inputConnection": false
+    },
+    {
+      "inputId": "app_ff44a49e-6bd0-485f-ab88-9ed4074410f5_input_predictions",
+      "outputId": "app_b7a2beb7-38a3-4ec6-ab09-681e7207a6f8_output_labels",
+      "inputNodeId": "ff44a49e-6bd0-485f-ab88-9ed4074410f5",
+      "outputNodeId": "b7a2beb7-38a3-4ec6-ab09-681e7207a6f8",
+      "inputFileName": "predictions.csv",
+      "outputFileName": "labels.csv",
+      "inputConfigName": "predictions",
+      "outputConfigName": "labels",
+      "inputConnection": false
+    },
+    {
+      "inputId": "app_ff44a49e-6bd0-485f-ab88-9ed4074410f5_input_ground_truth",
+      "outputId": "app_f0491217-d960-43fb-bc7f-a5967afba89d_output_labels",
+      "inputNodeId": "ff44a49e-6bd0-485f-ab88-9ed4074410f5",
+      "outputNodeId": "f0491217-d960-43fb-bc7f-a5967afba89d",
+      "inputFileName": "ground_truth.csv",
+      "outputFileName": "labels.csv",
+      "inputConfigName": "ground_truth",
+      "outputConfigName": "labels",
+      "inputConnection": false
+    },
+    {
+      "inputId": "app_ff44a49e-6bd0-485f-ab88-9ed4074410f5_input_features",
+      "outputId": "app_a3f351b6-9fa0-45fc-ab78-b361bc635811_output_encoded",
+      "inputNodeId": "ff44a49e-6bd0-485f-ab88-9ed4074410f5",
+      "inputFileName": "features.csv",
+      "inputConfigName": "features",
+      "inputConnection": false,
+      "outputNodeId": "a3f351b6-9fa0-45fc-ab78-b361bc635811",
+      "outputConfigName": "encoded",
+      "outputFileName": "encoded.csv"
+    }
+  ],
+  "inputs": [],
+  "keycloakId": "admin",
+  "name": "Multi-model clustering comparison",
+  "description": "Multi-model clustering comparison\n\n",
+  "publishStatus": "PUBLISHED"
+}
