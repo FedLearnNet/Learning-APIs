@@ -39,7 +39,7 @@ public class ProjectFederatedExperimentEntity extends BaseWorkflowExperimentEnti
     @Column(name = "clinic_is_coordinator", columnDefinition = "boolean default false")
     private boolean clinicIsCoordinator;
 
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH})
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "coordinator_id", nullable = true)
     private ProjectFederatedExperimentParticipantEntity coordinator;
 
@@ -55,11 +55,11 @@ public class ProjectFederatedExperimentEntity extends BaseWorkflowExperimentEnti
     @Column(name = "model_need_to_be_public", columnDefinition = "boolean default false")
     private Boolean modelNeedToBePublic;
 
-    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "project_id", nullable = false)
     private ProjectEntity project;
 
-    @ManyToOne(cascade = CascadeType.REFRESH)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
     @JoinColumn(name = "workflow_id")
     private WorkflowEntity workflow;
 

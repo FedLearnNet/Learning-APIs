@@ -42,7 +42,7 @@ public class ExperimentRunEntity extends BaseEntity {
     @Column(name = "meta", columnDefinition = "jsonb")
     private RunMetaDTO meta;
 
-    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "experiment_id", nullable = false)
     private ExperimentEntity experiment;
 

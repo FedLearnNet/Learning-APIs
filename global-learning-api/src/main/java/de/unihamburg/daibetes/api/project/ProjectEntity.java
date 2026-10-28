@@ -50,15 +50,15 @@ public class ProjectEntity extends BaseEntity {
     private Boolean platformIsCoordinator;
 
 
-    @ManyToOne(cascade = CascadeType.REFRESH)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
     @JoinColumn(name = "query_id")
     private QueryEntity query;
 
-    @ManyToOne(cascade = CascadeType.REFRESH)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
     @JoinColumn(name = "workflow_id")
     private WorkflowEntity workflow;
 
-    @ManyToOne(cascade = CascadeType.REFRESH)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
     @JoinColumn(name = "file_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private FileEntity file;
