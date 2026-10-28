@@ -7,6 +7,11 @@ import jakarta.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Run state is written with bulk JPQL updates, which bypass {@code @UpdateTimestamp}, so every
+ * update sets {@code updatedAt} explicitly. The final FINISHED/ERROR write therefore stores the
+ * run's end time, which the frontend uses to calculate the runtime.
+ */
 @ApplicationScoped
 public class ConnectorRunAO implements PanacheRepository<ConnectorRunEntity> {
 

@@ -131,7 +131,7 @@ public interface FLNetConfig {
         @WithName("participants.minamount")
         int participantsMinAmount();
 
-        @WithDefault("0")
+        @WithDefault("100")
         @WithName("participants.mindatacount")
         int participantsMinDataCount();
 
