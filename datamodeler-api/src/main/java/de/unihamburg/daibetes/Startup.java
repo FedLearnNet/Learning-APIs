@@ -1,5 +1,7 @@
 package de.unihamburg.daibetes;
 
+import bio.cosy.feddb.core.api.info.StartupImportState;
+import de.unihamburg.daibetes.api.info.StartupImportsBO;
 import de.unihamburg.daibetes.api.umls.importer.UmlsStartupHandler;
 import de.unihamburg.daibetes.autoimport.AutoImportHandler;
 import io.quarkus.logging.Log;
@@ -18,13 +20,22 @@ public class Startup {
     @Inject
     AutoImportHandler autoImportHandler;
 
+    @Inject
+    StartupImportsBO startupImportsBO;
+
     void onStartup(@Observes @Priority(Integer.MAX_VALUE) StartupEvent event) {
         umlsStartupHandler.importOnStartup()
                 .onFailure().recoverWithNull()
                 .chain(autoImportHandler::importAll)
                 .subscribe().with(
-                        ignored -> Log.info("Datamodeler startup imports completed"),
-                        error -> Log.errorf(error, "Datamodeler startup imports failed: %s", error.getMessage())
+                        ignored -> {
+                            startupImportsBO.setState(StartupImportState.READY);
+                            Log.info("Datamodeler startup imports completed");
+                        },
+                        error -> {
+                            startupImportsBO.setState(StartupImportState.FAILED);
+                            Log.errorf(error, "Datamodeler startup imports failed: %s", error.getMessage());
+                        }
                 );
     }
 }

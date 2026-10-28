@@ -1,6 +1,8 @@
 package de.unihamburg.daibetes;
 
+import bio.cosy.feddb.core.api.info.StartupImportState;
 import de.unihamburg.daibetes.agent.embedding.EmbeddingAO;
+import de.unihamburg.daibetes.api.info.StartupImportsBO;
 import de.unihamburg.daibetes.agent.store.StoreIngestor;
 import de.unihamburg.daibetes.api.app.ToolExternalHandler;
 import de.unihamburg.daibetes.api.workflow.export.WorkflowExportBO;
@@ -28,6 +30,9 @@ public class Startup {
 
     @Inject
     EmbeddingAO embeddingAO;
+
+    @Inject
+    StartupImportsBO startupImportsBO;
 
     public void onStartup(@Observes StartupEvent event) {
         try {
@@ -61,7 +66,9 @@ public class Startup {
             } else {
                 Log.infof("Ingestor has been disabled");
             }
+            startupImportsBO.setState(StartupImportState.READY);
         } catch (Exception e) {
+            startupImportsBO.setState(StartupImportState.FAILED);
             Log.errorf("\n====================\nError during startup:\n%s\n====================", e.getMessage(), e);
 
         }

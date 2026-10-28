@@ -6,4 +6,6 @@ import lombok.Data;
 public class InfoDTO {
     // X.Y.Z.dev, X.Y.Z.rcN or X.Y.Z
     private String version;
+
+    private StartupImportState startupImports;
 }

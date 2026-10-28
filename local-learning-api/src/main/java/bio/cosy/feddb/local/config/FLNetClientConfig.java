@@ -172,6 +172,14 @@ public interface FLNetClientConfig {
         @WithName("enabled")
         @WithDefault("false")
         Boolean enabled();
+
+        @WithName("platform-wait-timeout")
+        @WithDefault("PT30M")
+        Duration platformWaitTimeout();
+
+        @WithName("platform-poll-interval")
+        @WithDefault("PT10S")
+        Duration platformPollInterval();
     }
 
     interface AutoSubscribeGroupConfig {
