@@ -61,6 +61,11 @@ public class Lang2QueryNodeDTO {
         return connectingOperator != null && !connectingOperator.isBlank();
     }
 
+    /**
+     * Returns the leaf value as text.
+     *
+     * @return the value text, or {@code null} when no value is set
+     */
     @JsonIgnore
     public String valueAsString() {
         return value == null ? null : String.valueOf(value);

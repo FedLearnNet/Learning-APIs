@@ -15,13 +15,23 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Maps stored queries to API DTOs. The query tree is read from and written to {@code query_string}.
+ */
 @Mapper(config = QuarkusMappingConfig.class)
 public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
 
 
+    /**
+     * Maps a stored query to its API representation.
+     *
+     * @param entity stored query
+     * @return the API query
+     */
     @Mappings({
             @Mapping(target = "query", ignore = true),
             @Mapping(target = "projectIds", source = "projects", qualifiedByName = "projectEntityToIds"),
@@ -29,6 +39,12 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
     })
     QueryDTO entityToDto(QueryEntity entity);
 
+    /**
+     * Maps a stored query to its detailed API representation.
+     *
+     * @param entity stored query
+     * @return the detailed API query
+     */
     @Mappings({
             @Mapping(target = "query", ignore = true),
             @Mapping(target = "projectIds", source = "projects", qualifiedByName = "projectEntityToIds"),
@@ -38,12 +54,24 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
     })
     QueryDetailDTO entityToDetailDto(QueryEntity entity);
 
+    /**
+     * Maps one leaf to the enhanced shape used when ontology names are filled in later.
+     *
+     * @param queryItem leaf to enhance
+     * @return the enhanced leaf
+     */
     @Mappings({
             @Mapping(target = "ontologyName", ignore = true),
             @Mapping(target = "dataTypeName", ignore = true)
     })
     EnhancedQueryItemDTO queryToEnhanced(QueryItemDTO queryItem);
 
+    /**
+     * Maps an API query to a new stored row.
+     *
+     * @param dto query to store
+     * @return the entity
+     */
     @Mappings({
             @Mapping(target = "groupId", source = "groupId"),
             @Mapping(target = "queryString", source = ".", qualifiedByName = "dtoToQueryString"),
@@ -51,6 +79,12 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
     })
     QueryEntity dtoToEntity(QueryDTO dto);
 
+    /**
+     * Maps a create request to a new stored row.
+     *
+     * @param dto create request
+     * @return the entity
+     */
     @Mappings({
             @Mapping(target = "groupId", ignore = true),
             @Mapping(target = "globalUniqueId", ignore = true),
@@ -64,6 +98,12 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
     })
     QueryEntity createDtoToEntity(QueryCreateDTO dto);
 
+    /**
+     * Copies a stored query into a new unsaved version.
+     *
+     * @param source query to copy
+     * @return the new version
+     */
     @Mappings({
             @Mapping(target = "id", ignore = true),
             @Mapping(target = "version", ignore = true),
@@ -79,6 +119,13 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
     })
     QueryEntity createVersionFromEntity(QueryEntity source);
 
+    /**
+     * Copies a stored query and applies the fields from an update request.
+     *
+     * @param source query to copy
+     * @param request replacement name, description, and query tree
+     * @return the new version
+     */
     @Mappings({
             @Mapping(target = "id", ignore = true),
             @Mapping(target = "version", ignore = true),
@@ -100,23 +147,47 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
     })
     QueryEntity createVersionFromRequest(QueryEntity source, QueryDTO request);
 
+    /**
+     * Copies the stored query document onto the mapped DTO.
+     *
+     * @param entity source query row
+     * @param dto mapped query
+     */
     @AfterMapping
-    default void readQueryDocument(QueryEntity entity, @MappingTarget QueryDTO dto) {
+    default void readQueryDocument(final QueryEntity entity, @MappingTarget final QueryDTO dto) {
         Lang2QueryDocuments.readInto(entity.getQueryString(), dto);
     }
 
+    /**
+     * Copies the stored query document onto the mapped detail DTO.
+     *
+     * @param entity source query row
+     * @param dto mapped query detail
+     */
     @AfterMapping
-    default void readQueryDocument(QueryEntity entity, @MappingTarget QueryDetailDTO dto) {
+    default void readQueryDocument(final QueryEntity entity, @MappingTarget final QueryDetailDTO dto) {
         Lang2QueryDocuments.readInto(entity.getQueryString(), dto);
     }
 
+    /**
+     * Serializes the query tree for the {@code query_string} column.
+     *
+     * @param dto query to store
+     * @return the JSON document
+     */
     @Named("dtoToQueryString")
-    default String dtoToQueryString(QueryDTO dto) {
+    default String dtoToQueryString(final QueryDTO dto) {
         return Lang2QueryDocuments.toQueryString(dto);
     }
 
+    /**
+     * Turns project ids into entity references for the query mapping.
+     *
+     * @param projectIds related project ids
+     * @return project references, or {@code null} when none are set
+     */
     @Named("queryDTOToProjectEntity")
-    default Set<ProjectEntity> queryDTOToProjectEntity(Set<Long> projectIds) {
+    default Set<ProjectEntity> queryDTOToProjectEntity(final Set<Long> projectIds) {
         if (projectIds == null || projectIds.isEmpty()) {
             return null;
         }
@@ -129,8 +200,14 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * Reads project ids from the mapped project references.
+     *
+     * @param projects related projects
+     * @return project ids, or an empty set when none are set
+     */
     @Named("projectEntityToIds")
-    default Set<Long> projectEntityToIds(Set<ProjectEntity> projects) {
+    default Set<Long> projectEntityToIds(final Set<ProjectEntity> projects) {
         if (projects == null || projects.isEmpty()) {
             return new HashSet<>();
         }
