@@ -146,7 +146,7 @@ public interface FLNetClientConfig {
         Boolean isAllowedToQuery();
 
         @WithName("query-sample-threshold")
-        @WithDefault("1")
+        @WithDefault("100")
         Integer querySampleThreshold();
 
         @WithName("global-user-id")
