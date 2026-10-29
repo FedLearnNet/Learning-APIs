@@ -33,7 +33,7 @@ public class ExperimentEntity extends BaseEntity {
     @Column(columnDefinition="TEXT", name = "diagram_config")
     private String diagramConfig;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
+    @ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "federated_app_version_id", nullable = false)
     private FederatedAppVersionEntity federatedAppVersion;
 

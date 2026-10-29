@@ -24,7 +24,7 @@ import java.util.Set;
 @Table(name = "federated_app_versions")
 public class FederatedAppVersionEntity extends BaseStoreVersionEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
+    @ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "federated_app_id", nullable = false)
     private FederatedAppEntity federatedApp;
 
