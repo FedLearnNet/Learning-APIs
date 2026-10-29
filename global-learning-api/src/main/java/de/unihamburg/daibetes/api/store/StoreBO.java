@@ -128,6 +128,9 @@ public class StoreBO {
                 return filterAppType(appNode, modelNode, null, appTypes);
             });
         }
+        if (app.getType() == null) {
+            return false;
+        }
         String appType = app.getType().toString().toLowerCase();
         return filter.contains(appType);
     }
@@ -145,7 +148,7 @@ public class StoreBO {
         if (app == null) {
             return true;
         }
-        return app.getType().equals(FederatedAppType.ANALYSIS);
+        return FederatedAppType.ANALYSIS.equals(app.getType());
     }
 
     public boolean filterMinRating(FederatedAppDTO app, WorkflowDTO workflow, Integer minRating) {
