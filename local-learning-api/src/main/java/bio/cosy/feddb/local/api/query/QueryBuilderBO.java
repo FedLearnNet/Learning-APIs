@@ -15,7 +15,9 @@ import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -1502,10 +1504,7 @@ public class QueryBuilderBO {
     }
 
     private String requireNumericLiteral(String value) {
-        if (value == null || !NUMERIC_LITERAL.matcher(value.trim()).matches()) {
-            throw new QueryRejectedException("value_mode delta requires a numeric value");
-        }
-        return value.trim();
+        return encodeNumericLiteral(value);
     }
 
     private String gapPredicate(ValueMode valueMode) {
@@ -1786,13 +1785,75 @@ public class QueryBuilderBO {
         };
     }
 
+    /**
+     * Encodes an operator value using the schema node's actual type, not the client
+     * datatype hint. Numeric and boolean values are parsed and rewritten as literals
+     * so they cannot become SQL. Text values are quoted after escaping apostrophes.
+     */
     private String encodeValue(DataTypes dataType, String value) {
-        String sanitizedValue = sanitizeSqlLiteral(value);
+        if (dataType == null) {
+            throw new QueryRejectedException("Operator value is missing a data type");
+        }
         return switch (dataType) {
-            case STRING, CATEGORICAL, DATE, DATE_TIME, FILE -> "'" + sanitizedValue + "'";
-            case BOOLEAN -> sanitizedValue == null ? "null" : sanitizedValue.toLowerCase(Locale.ROOT);
-            default -> sanitizedValue;
+            case INT -> encodeIntegerLiteral(value);
+            case FLOAT -> encodeNumericLiteral(value);
+            case BOOLEAN -> encodeBooleanLiteral(value);
+            case DATE -> "'" + requireIsoDate(value) + "'";
+            case DATE_TIME -> "'" + requireIsoDateTime(value) + "'";
+            case STRING, CATEGORICAL, FILE -> "'" + sanitizeSqlLiteral(requireTextValue(value)) + "'";
         };
+    }
+
+    private String encodeIntegerLiteral(String value) {
+        String text = requireTextValue(value).trim();
+        try {
+            return Long.toString(Long.parseLong(text));
+        } catch (NumberFormatException e) {
+            throw new QueryRejectedException("Integer comparison requires a whole number");
+        }
+    }
+
+    private String encodeNumericLiteral(String value) {
+        String text = requireTextValue(value).trim();
+        if (!NUMERIC_LITERAL.matcher(text).matches()) {
+            throw new QueryRejectedException("Numeric comparison requires a number");
+        }
+        try {
+            return new BigDecimal(text).toPlainString();
+        } catch (NumberFormatException e) {
+            throw new QueryRejectedException("Numeric comparison requires a number");
+        }
+    }
+
+    private String encodeBooleanLiteral(String value) {
+        String text = requireTextValue(value).trim().toLowerCase(Locale.ROOT);
+        if ("true".equals(text) || "false".equals(text)) {
+            return text;
+        }
+        throw new QueryRejectedException("Boolean comparison requires true or false");
+    }
+
+    private String requireTextValue(String value) {
+        if (value == null || value.isBlank()) {
+            throw new QueryRejectedException("Operator is missing a value");
+        }
+        return value;
+    }
+
+    private String requireIsoDateTime(Object value) {
+        String text = String.valueOf(value).trim();
+        try {
+            OffsetDateTime.parse(text);
+            return text;
+        } catch (DateTimeParseException ignored) {
+            // Accept a date-only value as midnight UTC for DATE_TIME columns.
+        }
+        try {
+            LocalDate.parse(text);
+            return text;
+        } catch (DateTimeParseException e) {
+            throw new QueryRejectedException("DATE_TIME comparison requires an ISO date or date-time: " + text);
+        }
     }
 
     private String mapOperator(QueryOperatorTypes operator) {

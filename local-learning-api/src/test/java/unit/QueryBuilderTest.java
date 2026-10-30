@@ -888,6 +888,44 @@ public class QueryBuilderTest {
                 () -> queryBuilderBO.buildCountDistinctSql(queryTree(unknownDatatype)));
     }
 
+    @Test
+    @Order(34)
+    void testNumericAndBooleanValuesAreValidatedAsLiterals() {
+        Lang2QueryNodeDTO age = leaf("2002", "1002", "<", 28);
+        String ageSql = queryBuilderBO.buildCountDistinctSql(queryTree(age));
+        Assertions.assertTrue(ageSql.contains("value_int < 28"));
+        assertSqlExecutes(ageSql);
+        Assertions.assertEquals(
+                List.of(1L), matchedPatientIds(queryBO.runQuery(queryTree(age), List.of(1L, 5L))));
+
+        Lang2QueryNodeDTO injectedAge = leaf("2002", "1002", "<", "28 OR pg_sleep(1)");
+        Assertions.assertThrows(
+                QueryRejectedException.class,
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(injectedAge)));
+
+        Lang2QueryNodeDTO injectedList = leaf("2002", "1002", "in", "25, 1 OR 1=1");
+        Assertions.assertThrows(
+                QueryRejectedException.class,
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(injectedList)));
+
+        Lang2QueryNodeDTO injectedBoolean = leaf("2008", "1004", "=", "true OR pg_sleep(1)");
+        Assertions.assertThrows(
+                QueryRejectedException.class,
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(injectedBoolean)));
+
+        Lang2QueryNodeDTO booleanLeaf = leaf("2008", "1004", "=", "true");
+        String booleanSql = queryBuilderBO.buildCountDistinctSql(queryTree(booleanLeaf));
+        Assertions.assertTrue(booleanSql.contains("value_boolean = true"));
+        Assertions.assertFalse(booleanSql.contains("pg_sleep"));
+        assertSqlExecutes(booleanSql);
+
+        Lang2QueryNodeDTO firstInjected = leaf("2002", "1002", ">", "0; SELECT pg_sleep(1)");
+        firstInjected.setTimeAggregationMethod("first");
+        Assertions.assertThrows(
+                QueryRejectedException.class,
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(firstInjected)));
+    }
+
     private QueryDTO queryTree(Lang2QueryNodeDTO root) {
         QueryDTO queryDTO = new QueryDTO();
         queryDTO.setQuery(root);
