@@ -8,7 +8,7 @@
     <parent>
         <groupId>bio.cosy.feddb</groupId>
         <artifactId>learning-apis</artifactId>
-        <version>1.0.0.dev</version>
+        <version>1.0.0</version>
     </parent>
 
     <properties>

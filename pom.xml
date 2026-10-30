@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>bio.cosy.feddb</groupId>
     <artifactId>learning-apis</artifactId>
-    <version>1.0.0.dev</version>
+    <version>1.0.0</version>
 
     <properties>
         <compiler-plugin.version>3.14.1</compiler-plugin.version>
