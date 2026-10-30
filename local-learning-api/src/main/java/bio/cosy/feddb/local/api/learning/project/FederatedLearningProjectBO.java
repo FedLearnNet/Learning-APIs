@@ -147,6 +147,13 @@ public class FederatedLearningProjectBO extends BaseBo<ProjectDetailDTO, Federat
         }
     }
 
+    public void setProjectAsModelUploaderTransactional(Long id) {
+        boolean updated = ao.updateModelUploaderTransactional(id, true);
+        if (!updated) {
+            throw new NotFoundException("Project with id " + id + " not found");
+        }
+    }
+
     public Path exportForLearning(Long projectId){
         FederatedLearningProjectEntity project = ao.findByIdOptional(projectId)
                 .orElseThrow(() -> new NotFoundException("Project with id " + projectId + " not found"));

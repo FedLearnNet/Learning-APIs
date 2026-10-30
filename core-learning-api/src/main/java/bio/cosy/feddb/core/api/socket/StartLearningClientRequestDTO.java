@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class StartLearningClientRequestDTO {
     private String globalUniqueLearningExperimentId;
     private String coordinatorId; // uniqueRandomClinicId
+    private String modelUploaderId;
     private Boolean modelCanBePublic; // combined decision of all participating clinics
 }

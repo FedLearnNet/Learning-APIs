@@ -134,7 +134,7 @@ public class FederatedLearningExperimentStepDataBO extends BaseBo<FederatedLearn
                 step.getWorkflowNode().getFederatedAppVersionId(),
                 step.getExperiment().getUniqueRandomClinicId(),
                 step.getExperiment().getProject().getRequest().getGlobalFLExperimentUniqueId(),
-                Boolean.TRUE.equals(step.getExperiment().getProject().getIsCoordinator()),
+                Boolean.TRUE.equals(step.getExperiment().getProject().getIsModelUploader()),
                 Boolean.TRUE.equals(step.getExperiment().getProject().getRequest().getModelCanBePublic()),
                 null
         );
@@ -148,12 +148,9 @@ public class FederatedLearningExperimentStepDataBO extends BaseBo<FederatedLearn
             Log.errorf("Could not find step with id %s", stepId);
             return;
         }
-        Boolean isCoordinator = step.getExperiment().getProject().getIsCoordinator();
-        if (isCoordinator == null) {
-            isCoordinator = false;
-        }
-        if (!isCoordinator) {
-            Log.infof("Skipping upload of model result to global API, not a coordinator");
+        boolean isModelUploader = Boolean.TRUE.equals(step.getExperiment().getProject().getIsModelUploader());
+        if (!isModelUploader) {
+            Log.infof("Skipping upload of model result to global API, this clinic is not the model uploader");
             return;
         }
         StepResultContext context = new StepResultContext(
@@ -164,7 +161,7 @@ public class FederatedLearningExperimentStepDataBO extends BaseBo<FederatedLearn
                 step.getWorkflowNode().getFederatedAppVersionId(),
                 step.getExperiment().getUniqueRandomClinicId(),
                 step.getExperiment().getProject().getRequest().getGlobalFLExperimentUniqueId(),
-                isCoordinator,
+                isModelUploader,
                 Boolean.TRUE.equals(step.getExperiment().getProject().getRequest().getModelCanBePublic()),
                 null
         );
@@ -237,8 +234,8 @@ public class FederatedLearningExperimentStepDataBO extends BaseBo<FederatedLearn
     }
 
     public void uploadFiles(FileUpload file, StepResultContext context) {
-        if (!context.coordinator()) {
-            Log.infof("Skipping upload of model result to global API, not a coordinator");
+        if (!context.modelUploader()) {
+            Log.infof("Skipping upload of model result to global API, this clinic is not the model uploader");
             return;
         }
         if (!context.modelCanBePublic()) {
@@ -267,8 +264,8 @@ public class FederatedLearningExperimentStepDataBO extends BaseBo<FederatedLearn
     }
 
     public void uploadFiles(List<File> files, StepResultContext context, List<FileDTO> internalFiles) {
-        if (!context.coordinator()) {
-            Log.infof("Skipping upload of model result to global API, not a coordinator");
+        if (!context.modelUploader()) {
+            Log.infof("Skipping upload of model result to global API, this clinic is not the model uploader");
             return;
         }
         if (!context.modelCanBePublic()) {

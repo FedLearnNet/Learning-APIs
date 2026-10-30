@@ -26,5 +26,6 @@ public class StartRunDTO {
     private List<FederatedRunParticipantDTO> participants;
     private FederatedRunConfigDTO config;
     private Boolean startAggregator;
+    private Boolean aggregatorOnly;
     private Integer totalRounds;
 }

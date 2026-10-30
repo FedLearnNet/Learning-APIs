@@ -39,4 +39,22 @@ public class FederatedLearningProjectAO implements PanacheRepository<FederatedLe
         return updated == 1;
     }
 
+    @Transactional
+    public boolean updateModelUploaderTransactional(Long id, boolean isModelUploader) {
+        int updated = update(
+                """
+                        isModelUploader = ?1,
+                        updatedAt = ?2
+                        where id = ?3
+                        """,
+                isModelUploader,
+                new Date(),
+                id
+        );
+        if (updated > 1) {
+            throw new IllegalStateException("Multiple projects updated for id " + id);
+        }
+        return updated == 1;
+    }
+
 }
