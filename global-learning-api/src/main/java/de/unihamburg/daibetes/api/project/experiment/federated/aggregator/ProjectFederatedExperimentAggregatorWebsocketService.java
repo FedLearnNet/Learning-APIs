@@ -34,7 +34,7 @@ public class ProjectFederatedExperimentAggregatorWebsocketService extends Workfl
         Long stepId = Long.parseLong(connection.pathParam("stepId"));
         Log.info("Platform aggregator connection opened: " + connection.id() + " for step " + stepId);
         StartRunDTO startDTO = aggregatorBO.getStartup(stepId);
-        return new AppMessageWrapperDTO<>(AppMessageTypeEnum.START_RUN, startDTO, AppRunTypeEnum.FEDERATED_RUN);
+        return new AppMessageWrapperDTO<>(AppMessageTypeEnum.START_FEDERATED_RUN, startDTO, AppRunTypeEnum.FEDERATED_RUN);
     }
 
     @OnClose
