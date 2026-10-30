@@ -1,17 +1,15 @@
 package bio.cosy.feddb.local.api.importer.run;
 
+import bio.cosy.feddb.local.api.cohort.patient.PatientAO;
 import bio.cosy.feddb.local.api.cohort.patient.PatientBO;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.crud.AuditContext;
+import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorTriggerBO;
 import bio.cosy.feddb.local.api.importer.connector.input.FileUploadSettingsDTO;
 import bio.cosy.feddb.local.api.importer.extract.ConnectorExtractBO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFilesBO;
-import bio.cosy.feddb.local.api.importer.files.table.TableData;
-import bio.cosy.feddb.local.api.importer.files.table.TableDataGroup;
-import bio.cosy.feddb.local.api.importer.files.table.TableDataGroupCursor;
-import bio.cosy.feddb.local.api.importer.files.table.TableDataGroupingBO;
-import bio.cosy.feddb.local.api.importer.files.table.TableDataGroups;
+import bio.cosy.feddb.local.api.importer.files.table.*;
 import bio.cosy.feddb.local.api.importer.load.ConnectorLoadBO;
 import bio.cosy.feddb.local.api.importer.mapping.MappingBO;
 import bio.cosy.feddb.local.api.importer.mapping.MappingRowResultDTO;
@@ -19,16 +17,16 @@ import bio.cosy.feddb.local.api.importer.run.message.ConnectorRunMessageLevels;
 import bio.cosy.feddb.local.api.importer.run.message.ConnectorRunRunMessagesBO;
 import bio.cosy.feddb.local.api.importer.run.patientlog.ConnectorRunPatientLogBO;
 import bio.cosy.feddb.local.api.importer.run.patientlog.ConnectorRunPatientLogType;
+import bio.cosy.feddb.local.api.importer.run.preview.ConnectorPreviewBO;
 import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBO;
-import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
+import io.quarkus.logging.Log;
+import io.smallrye.context.api.ManagedExecutorConfig;
+import io.smallrye.context.api.NamedInstance;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
-import io.smallrye.context.api.ManagedExecutorConfig;
-import io.smallrye.context.api.NamedInstance;
-import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.enterprise.inject.Instance;
@@ -36,16 +34,15 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.context.ManagedExecutor;
 import org.eclipse.microprofile.context.ThreadContext;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @ApplicationScoped
 public class ConnectorRunETLBO {
 
-    /** How often the load phase reports progress to the log. */
+    /**
+     * How often the load phase reports progress to the log.
+     */
     private static final long DRAIN_LOG_INTERVAL_NANOS = TimeUnit.SECONDS.toNanos(30);
 
     @Inject
@@ -86,6 +83,12 @@ public class ConnectorRunETLBO {
 
     @Inject
     PatientBO patientBO;
+
+    @Inject
+    PatientAO patientAO;
+
+    @Inject
+    ConnectorPreviewBO previewBO;
 
     @Inject
     ConnectorTriggerBO triggerBO;
@@ -139,7 +142,7 @@ public class ConnectorRunETLBO {
             String sourceColumn = mappingBO.resolveExternalIdSourceColumn(connectorDTO.getSchemaMapping());
             if (sourceColumn == null) {
                 failRun(run, "No source column is mapped to the external patient id ("
-                        + config.connector().externalIdColumn() + "); cannot group rows by patient.",
+                                + config.connector().externalIdColumn() + "); cannot group rows by patient.",
                         ConnectorRunPatientLogType.MAPPING);
                 return;
             }
@@ -204,9 +207,16 @@ public class ConnectorRunETLBO {
             if (dryRun) {
                 runMessagesBO.createTransactional("Dry run mode: load phase will be skipped",
                         ConnectorRunMessageLevels.INFO, run.getId());
+                if (Boolean.TRUE.equals(run.getDeleteExistingPatients())) {
+                    run.setDeletedEntities(patientAO.countByCohortId(run.getCohortId()));
+                }
             } else {
                 runMessagesBO.createTransactional(String.format("Starting load (%d patients)", totalPatients),
                         ConnectorRunMessageLevels.INFO, run.getId());
+            }
+
+            if (hasAppBasedTransformers) {
+                warmPreviewCache(connectorDTO, run);
             }
 
             // --- PHASE 3: DRAIN (one patient group at a time) ---
@@ -373,8 +383,7 @@ public class ConnectorRunETLBO {
             // those per-patient deltas into the master run after the worker completes.
             workerRun.setCurrentStep(ConnectorRunStep.LOADING);
             if (dryRun) {
-                connectorLoadBO.validateSinglePatient(mapped);
-                workerRun.markPatientProcessed();
+                connectorLoadBO.dryRunPatient(workerRun, mapped);
             } else {
                 connectorLoadBO.loadPatient(connectorDTO, workerRun, mapped);
             }
@@ -417,6 +426,27 @@ public class ConnectorRunETLBO {
         return true;
     }
 
+
+    private void warmPreviewCache(ConnectorDTO connectorDTO, ConnectorRunDTO run) {
+        try {
+            ConnectorConfigDTO config = new ConnectorConfigDTO(
+                    connectorDTO.getId(),
+                    connectorDTO.getCohortId(),
+                    connectorDTO.getInputConfig(),
+                    connectorDTO.getUploadInfo(),
+                    connectorDTO.getTransformer(),
+                    connectorDTO.getSchemaMapping(),
+                    connectorDTO.getMergeConfig(),
+                    connectorDTO.getPivotConfig());
+            previewBO.warmFromRun(config,
+                    (transformer, rows) -> appTransformerSessionBO.transform(run.getId(), transformer, rows));
+            Log.infof("Preview cache of connector %d refreshed from run %d", connectorDTO.getId(), run.getId());
+        } catch (Exception e) {
+            Log.warnf("Could not refresh the preview cache of connector %d from run %d: %s",
+                    connectorDTO.getId(), run.getId(), e.getMessage());
+        }
+    }
+
     private long drainProgress(long elementNr, long totalPatients) {
         if (totalPatients <= 0) {
             return 99L;
@@ -448,10 +478,11 @@ public class ConnectorRunETLBO {
      * in a single atomic update, then notifies SSE subscribers.
      */
     private void persistRunStatistics(ConnectorRunDTO run, long progress, ImportStatusEnum status,
-            ConnectorRunStep currentStep) {
+                                      ConnectorRunStep currentStep) {
         run.setProgress(progress);
         run.setStatus(status);
         run.setCurrentStep(currentStep);
+        run.setUpdatedAt(new Date());
         runAO.updateRunStatistics(
                 run.getId(),
                 status,
@@ -475,12 +506,15 @@ public class ConnectorRunETLBO {
         resultSender.sendUpdate(run);
     }
 
-    /** Persists the bounded streaming progress (no entity counters) and notifies SSE subscribers. */
+    /**
+     * Persists the bounded streaming progress (no entity counters) and notifies SSE subscribers.
+     */
     private void persistStreamingProgress(ConnectorRunDTO run, long progress, ImportStatusEnum status,
-            ConnectorRunStep currentStep) {
+                                          ConnectorRunStep currentStep) {
         run.setProgress(progress);
         run.setStatus(status);
         run.setCurrentStep(currentStep);
+        run.setUpdatedAt(new Date());
         runAO.updateStreamingProgress(
                 run.getId(),
                 progress,
@@ -494,8 +528,9 @@ public class ConnectorRunETLBO {
     }
 
     private void sendProgress(ConnectorRunDTO run, long progress, ImportStatusEnum status,
-            ConnectorRunStep currentStep) {
+                              ConnectorRunStep currentStep) {
         runAO.updateProgressAndStatus(run.getId(), progress, status, currentStep);
+        run.setUpdatedAt(new Date());
         run.setProgress(progress);
         run.setStatus(status);
         run.setCurrentStep(currentStep);

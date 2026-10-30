@@ -145,7 +145,9 @@ public class TableDataUploadInfoBO {
                 .filter(entry -> tableKey(entry.getKey()).equals(wanted))
                 .map(Map.Entry::getValue)
                 .findFirst()
-                .orElseGet(() -> uploadInfo.size() == 1 ? firstUploadInfo(uploadInfo) : null);
+                .orElseGet(() -> uploadInfo.size() == 1 && !uploadInfo.containsKey(SheetMergePlan.MERGED_TABLE_NAME)
+                        ? firstUploadInfo(uploadInfo)
+                        : null);
     }
 
     private static String tableKey(String tableName) {

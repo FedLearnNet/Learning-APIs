@@ -42,6 +42,10 @@ public class ConnectorLoadBO {
         requireSinglePatient(patientRows);
     }
 
+    public void dryRunPatient(ConnectorRunDTO run, List<MappingRowResultDTO> patientRows) {
+        connectorLoadPatientBO.dryRunPatient(requireSinglePatient(patientRows), run);
+    }
+
     private ConnectorLoadPatient requireSinglePatient(List<MappingRowResultDTO> patientRows) {
         if (patientRows == null || patientRows.isEmpty()) {
             throw new IllegalArgumentException("A patient group must contain at least one mapped row");

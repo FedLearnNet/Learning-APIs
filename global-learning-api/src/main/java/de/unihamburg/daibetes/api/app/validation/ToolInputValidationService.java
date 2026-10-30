@@ -2,7 +2,6 @@ package de.unihamburg.daibetes.api.app.validation;
 
 import bio.cosy.feddb.core.api.app.config.ToolConfigDTO;
 import bio.cosy.feddb.core.base.BaseValidationResultDTO;
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -16,7 +15,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Path("/apps/validation")
 @Produces("application/json")
 @Consumes("application/json")
-//@RolesAllowed("admin")
 @Tag(name = "Tool Validation", description = "Service for managing tool input validation")
 public interface ToolInputValidationService {
 
@@ -27,7 +25,6 @@ public interface ToolInputValidationService {
     @APIResponses({
             @APIResponse(responseCode = "200", description = "Validated")
     })
-    @Authenticated
     BaseValidationResultDTO validateHyperParamValues(@RequestBody @Valid ToolHyperParamConfigValidateRequestDTO config);
 
 
@@ -37,7 +34,6 @@ public interface ToolInputValidationService {
     @APIResponses({
             @APIResponse(responseCode = "200", description = "Validated")
     })
-    @Authenticated
     @Transactional
     BaseValidationResultDTO validateFile(@PathParam("fileId") Long fileId, @RequestBody @Valid ToolConfigDTO config);
 

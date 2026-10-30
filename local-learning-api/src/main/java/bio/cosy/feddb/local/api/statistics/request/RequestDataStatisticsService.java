@@ -2,9 +2,7 @@ package bio.cosy.feddb.local.api.statistics.request;
 
 import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.local.api.cohort.permission.PermissionDTO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestDTO;
 import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestStatus;
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -19,8 +17,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Path("/datastatistics/requests")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "DataStatistics", description = "Service for managing RequestDataStatistics")
 public interface RequestDataStatisticsService {
 

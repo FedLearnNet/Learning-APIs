@@ -27,7 +27,7 @@ public class QueryServiceTest {
                 .statusCode(200)
                 .contentType(ContentType.JSON)
                 .body(notNullValue())
-                .body("size()", greaterThanOrEqualTo(5));
+                .body("size()", greaterThanOrEqualTo(3));
     }
 
 

@@ -1,15 +1,15 @@
 package de.unihamburg.daibetes.config;
 
+import bio.cosy.feddb.core.autoimport.FLNetConfigPaths;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 import io.smallrye.config.WithName;
 
-import java.nio.file.Path;
 import java.time.Duration;
-import java.util.List;
 import java.util.Optional;
 
-//@StaticInitSafe
+//Intended for all custom properties with a "flnet" prefix
+//BFF is here: bio.cosy.feddb.core.security.bff.BffConfig
 @ConfigMapping(prefix = "flnet")
 public interface FLNetConfig {
 
@@ -32,16 +32,14 @@ public interface FLNetConfig {
 
     Ingestor ingestor();
 
-    GitLabConfig gitlab();
-
     @WithName("federated-learning")
     FederatedLearningConfig federatedLearning();
 
-    @WithName("feddb-client")
-    FedDBClientConfig feddbClient();
-
     @WithName("pipeline.builder.image")
     Optional<String> pipelineBuilderImage();
+
+    @WithName("pipeline.rescan.cron")
+    String pipelineRescanCron();
 
     @WithName("audit.min-acceptance-amount")
     @WithDefault("1")
@@ -100,21 +98,21 @@ public interface FLNetConfig {
         int limit();
     }
 
-    interface FLNetConfigPaths {
-
-        @WithDefault("false")
-        boolean enabled();
-
-        Optional<List<Path>> paths();
-    }
 
     interface ToolImportConfig extends FLNetConfigPaths {
+
+        @WithDefault("admin")
+        String owner();
 
         @WithDefault("false")
         boolean createUnpublishedVersion();
 
         @WithDefault("true")
         boolean overrideExisting();
+
+        @WithDefault("IF_NOT_EXISTS_IN_REGISTRY")
+        ToolImportBuildingOnStart buildOnImport();
+
     }
 
     interface Ingestor {
@@ -127,41 +125,22 @@ public interface FLNetConfig {
 
     }
 
-    interface GitLabConfig {
-        @WithName("issue.token")
-        String issueToken();
-
-        @WithName("issue.project-id")
-        @WithDefault("9")
-        int issueProjectId();
-    }
-
     interface FederatedLearningConfig {
 
         @WithDefault("3")
         @WithName("participants.minamount")
         int participantsMinAmount();
 
-        @WithDefault("0")
+        @WithDefault("100")
         @WithName("participants.mindatacount")
         int participantsMinDataCount();
     }
 
-    interface FedDBClientConfig {
-
-        AuthConfig auth();
-    }
-
-    interface AuthConfig {
-
-        @WithName("enable")
-        @WithDefault("true")
-        boolean enabled();
-    }
 
     ObserverConfig observer();
 
     interface ObserverConfig {
         @WithDefault("false")
         boolean enabled();
-    }}
+    }
+}

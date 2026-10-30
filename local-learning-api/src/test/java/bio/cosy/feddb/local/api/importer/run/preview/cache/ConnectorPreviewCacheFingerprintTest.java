@@ -5,7 +5,9 @@ import bio.cosy.feddb.local.api.importer.connector.input.FileUploadSettingsDTO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import org.junit.jupiter.api.Test;
 
+import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -77,6 +79,31 @@ class ConnectorPreviewCacheFingerprintTest {
         assertNotEquals(
                 cache.stageFingerprint(cache.sourceFingerprint(config(1L, 7L)), only),
                 cache.stageFingerprint(cache.sourceFingerprint(config(2L, 7L)), only));
+    }
+
+    @Test
+    void theSameSampleFingerprintsTheSameAndADifferentOneDoesNot() {
+        List<String> columns = List.of("id", "race");
+        List<Map<String, Object>> rows = List.of(Map.of("id", "1", "race", "?"));
+
+        assertEquals(cache.sampleFingerprint(rows, columns), cache.sampleFingerprint(List.copyOf(rows), columns));
+        assertNotEquals(cache.sampleFingerprint(rows, columns),
+                cache.sampleFingerprint(List.of(Map.of("id", "1", "race", "Other")), columns));
+    }
+
+    @Test
+    void savedTransformerKeysLikeTheOneTheWizardSends() {
+        ConnectorTransformerDTO fromWizard = transformer("Replace Value", Map.of("search", "?"));
+        ConnectorTransformerDTO saved = transformer("Replace Value", Map.of("search", "?"));
+        saved.setId(12L);
+        saved.setPosition(3);
+        saved.setConnectorId(4L);
+        saved.setCreatedAt(new Date());
+        saved.setUpdatedAt(new Date());
+
+        String source = cache.sourceFingerprint(config(1L, 7L));
+        assertEquals(cache.stageFingerprint(source, fromWizard), cache.stageFingerprint(source, saved),
+                "A run keys stages from the saved connector, so ids and timestamps must not take part");
     }
 
     @Test

@@ -26,6 +26,7 @@ import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.LockModeType;
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.NotAllowedException;
 import jakarta.ws.rs.NotFoundException;
@@ -86,6 +87,15 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
         return mapper.entitiesToDtos(ao.findByProjectId(id));
     }
 
+    /**
+     * Loads one federated experiment for a project member.
+     *
+     * @param projectId  the project ID
+     * @param id         the experiment ID
+     * @param keycloakId the keycloak ID
+     * @return the experiment detail
+     */
+    @Transactional
     public ProjectFederatedExperimentDetailDTO getById(Long projectId, Long id, String keycloakId) {
         projectMembershipAO.checkProjectAndUser(projectId, keycloakId);
 
@@ -165,15 +175,20 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
 
         Optional<ProjectFederatedExperimentEntity> entityOptional = ao.findByIdOptional(experimentId, LockModeType.PESSIMISTIC_WRITE);
         if (entityOptional.isEmpty() || !entityOptional.get().getExperimentStatus().equals(ProjectStatus.READY)) {
+            Log.warnf("Experiment %d is not ready to start learning. Current status: %s", experimentId,
+                    entityOptional.map(ProjectFederatedExperimentEntity::getExperimentStatus).orElse(null));
             throw new NotAllowedException("Experiment is not ready");
         }
         ProjectFederatedExperimentEntity entity = entityOptional.get();
 
         List<ProjectFederatedExperimentParticipantEntity> participants = projectFederatedExperimentParticipantAO.getAllByExperiment(experimentId);
         if (participants.size() < config.federatedLearning().participantsMinAmount()) {
+            Log.warnf("Experiment %d does not have enough participants to start learning. Current count: %d, required: %d",
+                    experimentId, participants.size(), config.federatedLearning().participantsMinAmount());
             throw new NotAllowedException("Not enough participants");
         }
         if (entity.getWorkflow() == null || entity.getWorkflow().getNodes().isEmpty()) {
+            Log.warnf("Experiment %d does not have a valid workflow to start learning. Workflow is null or has no nodes.", experimentId);
             throw new NotAllowedException("Experiment workflow is missing");
         }
         int randomIndex = new Random().nextInt(participants.size());
@@ -224,6 +239,7 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
         if (currentStepId != null) {
             projectFederatedExperimentStepBO.persistStep(currentStepId, RunStatusTypes.STOPPED);
         }
+        projectFederatedExperimentStepBO.stopRelayRuns(experimentId);
         projectFederatedExperimentParticipantAO.updateProjectAndStepStatusForExperimentTransactional(
                 experimentId,
                 RunStatusTypes.STOPPED,
@@ -473,6 +489,7 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
         Long experimentId = experiment.getId();
         Long currentStepId = experiment.getCurrentWorkflowNode().getId();
         projectFederatedExperimentStepBO.persistStep(currentStepId, RunStatusTypes.FINISHED);
+        projectFederatedExperimentStepBO.stopRelayRun(currentStepId);
         if (nextNode == null) {
             //FINISHED LEARNING
             projectFederatedExperimentParticipantAO.updateProjectAndStepStatusForExperimentTransactional(

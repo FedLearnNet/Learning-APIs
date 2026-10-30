@@ -2,6 +2,8 @@ package bio.cosy.feddb.local.api.cohort.queryability;
 
 import bio.cosy.feddb.local.api.auth.UserIdentity;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
+import bio.cosy.feddb.local.api.cohort.member.CohortPermissionChecker;
+import io.quarkus.security.PermissionsAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -21,11 +23,13 @@ public class CohortQueryAbilityServiceImpl implements CohortQueryAbilityService 
     CohortMemberAuthBO cohortMemberAuthBO;
 
     @Override
+    @PermissionsAllowed(CohortPermissionChecker.READ)
     public List<CohortQueryAbilityDTO> list(Long cohortId) {
         return cohortQueryAbilityBO.list(cohortId);
     }
 
     @Override
+    @PermissionsAllowed(CohortPermissionChecker.READ)
     public CohortQueryAbilityDTO retrieve(Long cohortId, Long id) {
         return cohortQueryAbilityBO.findByIds(cohortId, id);
     }

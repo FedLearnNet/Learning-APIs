@@ -5,6 +5,7 @@ import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,28 @@ public class PatientLearningAO implements PanacheRepository<PatientLearningEntit
         return find("request.id", requestId).list();
     }
 
+    /**
+     * Cohort ids that have at least one patient linked to these requests.
+     * Does not load patient rows.
+     *
+     * @param requestIds training request ids
+     * @return distinct cohort ids
+     */
+    public Set<Long> findCohortIdsForRequests(final List<Long> requestIds) {
+        if (requestIds == null || requestIds.isEmpty()) {
+            return Set.of();
+        }
+        List<Long> cohortIds = getEntityManager()
+                .createQuery("""
+                        select distinct p.patient.cohort.id
+                        from PatientLearningEntity p
+                        where p.request.id in :requestIds
+                        """, Long.class)
+                .setParameter("requestIds", requestIds)
+                .getResultList();
+        return new HashSet<>(cohortIds);
+    }
+
     public List<PatientLearningEntity> getAllForRequestAndCohorts(Long requestId,
                                                                   Set<Long> cohortIds) {
         if (cohortIds == null || cohortIds.isEmpty()) {
@@ -43,6 +66,35 @@ public class PatientLearningAO implements PanacheRepository<PatientLearningEntit
             return 0;
         }
         return count("request.id = ?1 and patient.cohort.id in ?2", requestId, cohortIds);
+    }
+
+    /**
+     * Counts requested patients per cohort without loading patient rows.
+     *
+     * @param requestId training request id
+     * @param cohortIds cohorts to include
+     * @return cohort id to patient count
+     */
+    public Map<Long, Long> countByCohortForRequest(final Long requestId, final Set<Long> cohortIds) {
+        if (cohortIds == null || cohortIds.isEmpty()) {
+            return Map.of();
+        }
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = getEntityManager()
+                .createQuery("""
+                        select p.patient.cohort.id, count(p)
+                        from PatientLearningEntity p
+                        where p.request.id = :requestId and p.patient.cohort.id in :cohortIds
+                        group by p.patient.cohort.id
+                        """)
+                .setParameter("requestId", requestId)
+                .setParameter("cohortIds", cohortIds)
+                .getResultList();
+        Map<Long, Long> counts = new HashMap<>();
+        for (Object[] row : rows) {
+            counts.put((Long) row[0], (Long) row[1]);
+        }
+        return Map.copyOf(counts);
     }
 
     public long deleteForRequestAndCohortsExcept(Long requestId, Set<Long> cohortIds,

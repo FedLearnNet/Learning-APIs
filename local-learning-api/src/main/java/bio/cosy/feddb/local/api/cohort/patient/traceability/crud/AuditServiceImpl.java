@@ -2,13 +2,19 @@ package bio.cosy.feddb.local.api.cohort.patient.traceability.crud;
 
 import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.core.base.sort.SortDirectionEnum;
+import bio.cosy.feddb.local.api.auth.UserIdentity;
+import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
+import bio.cosy.feddb.local.api.cohort.patient.PatientAO;
+import bio.cosy.feddb.local.api.cohort.patient.PatientEntity;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Implementation of the AuditService interface.
@@ -20,6 +26,15 @@ public class AuditServiceImpl implements AuditService {
     @Inject
     AuditBO auditBO;
 
+    @Inject
+    PatientAO patientAO;
+
+    @Inject
+    UserIdentity userIdentity;
+
+    @Inject
+    CohortMemberAuthBO cohortMemberAuthBO;
+
     @Override
     @Transactional
     public PagedResponse<PatientDataTraceabilityLogDto> list(
@@ -30,7 +45,7 @@ public class AuditServiceImpl implements AuditService {
             SortDirectionEnum sortDirection,
             List<String> searchTerms,
             List<AuditFieldEnum> searchFields) {
-
+        Set<Long> cohortIds = visibleCohorts(cohortId);
         try {
             Log.debug("Querying audit logs for cohort " + cohortId + " with page " + page + ", size " + size + ", sort " + sortField + ":" + sortDirection);
 
@@ -41,7 +56,8 @@ public class AuditServiceImpl implements AuditService {
                     sortField,
                     sortDirection,
                     searchTerms,
-                    searchFields
+                    searchFields,
+                    cohortIds
             );
         } catch (IllegalArgumentException e) {
             Log.warn("Bad request for audit logs query: " + e.getMessage());
@@ -55,6 +71,19 @@ public class AuditServiceImpl implements AuditService {
     @Override
     @Transactional
     public PatientDataTraceabilityDetailLogDto getPatientChangesDetail(Long patientId, Integer revId) {
+        PatientEntity patient = patientAO.findByIdOptional(patientId)
+                .orElseThrow(() -> new NotFoundException("No patient with id " + patientId + " found"));
+        Long cohortId = patient.getCohort() == null ? null : patient.getCohort().getId();
+        cohortMemberAuthBO.checkForMember(cohortId, userIdentity.getKeycloakId());
         return auditBO.getPatientChangesDetail(patientId, revId);
+    }
+
+    private Set<Long> visibleCohorts(Long cohortId) {
+        String keycloakId = userIdentity.getKeycloakId();
+        if (cohortId != null) {
+            cohortMemberAuthBO.checkForMember(cohortId, keycloakId);
+            return Set.of(cohortId);
+        }
+        return cohortMemberAuthBO.getMemberCohortIds(keycloakId);
     }
 }

@@ -41,7 +41,7 @@
     "inputConnection" : false
   } ],
   "inputs" : [ ],
-  "keycloakId" : "test",
+  "keycloakId" : "admin",
   "name" : "Testt",
   "description" : "test",
   "publishStatus" : "PUBLISHED"

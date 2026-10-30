@@ -3,13 +3,13 @@ package de.unihamburg.daibetes.api.umls.search;
 import bio.cosy.feddb.core.base.PagedResponse;
 import de.unihamburg.daibetes.api.ontology.OntologyBO;
 import de.unihamburg.daibetes.api.umls.UMLSSources;
+import de.unihamburg.daibetes.config.UMLSConfig;
 import de.unihamburg.daibetes.service.UMLSSearchService;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.ArrayList;
@@ -29,12 +29,12 @@ public class UMLSSearchBO {
     @Inject
     OntologyBO ontologyBO;
 
-    @ConfigProperty(name = "umls.sab.filter", defaultValue = "SNOMEDCT_US,RXNORM,LNC,ICD10,NCBI")
-    List<String> sabFilter;
+    @Inject
+    UMLSConfig umlsConfig;
 
     public Uni<PagedResponse<UMLSSearchResultDTO>> search(String searchString, int page, int pageSize, UMLSSources sources) {
-        String sourcesParam = String.join(",", sabFilter);
-        if(sources != null) {
+        String sourcesParam = String.join(",", umlsConfig.sab().filter());
+        if (sources != null) {
             sourcesParam = sources.name();
         }
         return umlsSearchClient.searchConcepts(searchString, "code", sourcesParam, pageSize, page)

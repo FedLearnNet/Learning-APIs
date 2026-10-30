@@ -46,7 +46,7 @@
     "inputConnection" : false
   } ],
   "inputs" : [ ],
-  "keycloakId" : "test",
+  "keycloakId" : "admin",
   "name" : "Fetch-To-Onehot",
   "description" : "One hot encoding for uciFetch",
   "publishStatus" : "PUBLISHED"

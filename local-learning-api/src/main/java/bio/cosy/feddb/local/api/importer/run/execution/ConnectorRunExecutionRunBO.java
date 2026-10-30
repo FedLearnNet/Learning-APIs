@@ -6,18 +6,18 @@ import bio.cosy.feddb.core.api.model.prediction.DataAnalysisCreatePredictionDTO;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisOrchestrator;
 import bio.cosy.feddb.core.api.run.AppRunUploadData;
 import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.security.Scope;
+import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
 import bio.cosy.feddb.core.services.orch.clients.DockerServiceClient;
 import bio.cosy.feddb.core.services.orch.clients.VolumeServiceClient;
 import bio.cosy.feddb.core.services.orch.clients.WorkflowServiceClient;
 import bio.cosy.feddb.core.services.orch.dto.CreateContainerResponseDTO;
 import bio.cosy.feddb.core.services.orch.dto.StartAppDTO;
-import bio.cosy.feddb.core.security.ToolApiKeyService;
-import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFilesDTO;
 import bio.cosy.feddb.local.api.importer.files.read.TabularFileReaderBO;
-import bio.cosy.feddb.local.api.importer.files.upload.ConnectorFileUploadBO;
 import bio.cosy.feddb.local.api.importer.files.table.TableData;
+import bio.cosy.feddb.local.api.importer.files.upload.ConnectorFileUploadBO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepBO;
 import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepDTO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
@@ -28,6 +28,9 @@ import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
+import jakarta.transaction.Status;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 import jakarta.transaction.Transactional;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.resteasy.reactive.ClientWebApplicationException;
@@ -67,6 +70,9 @@ public class ConnectorRunExecutionRunBO extends DataAnalysisOrchestrator {
 
     @Inject
     ConnectorFileUploadBO uploadBO;
+
+    @Inject
+    TransactionSynchronizationRegistry txRegistry;
     //@Inject
     //DataAnalysisResultSender resultSender;
 
@@ -125,7 +131,21 @@ public class ConnectorRunExecutionRunBO extends DataAnalysisOrchestrator {
         }
         LinkedHashMap<String, Object> storedOutputs = storeUploadedOutputs(runId, req, keycloakId);
         ConnectorRunStepDTO prediction = stepBo.finishEntityById(runId);
-        outputAwaiter.complete(runId, prediction, outputData, storedOutputs);
+        txRegistry.registerInterposedSynchronization(new Synchronization() {
+            @Override
+            public void beforeCompletion() {
+            }
+
+            @Override
+            public void afterCompletion(int status) {
+                if (status == Status.STATUS_COMMITTED) {
+                    outputAwaiter.complete(runId, prediction, outputData, storedOutputs);
+                } else {
+                    outputAwaiter.fail(runId, new IllegalStateException(
+                            "Storing the output of step " + runId + " was rolled back"));
+                }
+            }
+        });
         return prediction.getContainerId();
     }
 

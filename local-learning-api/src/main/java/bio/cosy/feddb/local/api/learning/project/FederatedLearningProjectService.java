@@ -4,7 +4,6 @@ import bio.cosy.feddb.core.api.run.message.RunMessageLogDTO;
 import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.local.api.cohort.permission.PermissionDTO;
 import bio.cosy.feddb.local.api.learning.project.run.step.FederatedLearningExperimentStepDetailDTO;
-import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -21,8 +20,6 @@ import org.jboss.resteasy.reactive.RestStreamElementType;
 @Path("/learning/projects")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "FederatedLearningProjects", description = "Service for managing FederatedLearningProjects")
 public interface FederatedLearningProjectService {
 

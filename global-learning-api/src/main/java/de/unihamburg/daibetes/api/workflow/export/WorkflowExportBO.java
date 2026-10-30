@@ -1,7 +1,7 @@
 package de.unihamburg.daibetes.api.workflow.export;
 
 import bio.cosy.feddb.core.api.app.PublishStatus;
-import de.unihamburg.daibetes.api.app.ToolExternalHandler;
+import bio.cosy.feddb.core.autoimport.AutoImportPathHandler;
 import de.unihamburg.daibetes.api.workflow.WorkflowAO;
 import de.unihamburg.daibetes.api.workflow.WorkflowEntity;
 import de.unihamburg.daibetes.api.workflow.connection.WorkflowConnectionBO;
@@ -9,7 +9,6 @@ import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeBO;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
 import de.unihamburg.daibetes.config.FLNetConfig;
 import de.unihamburg.daibetes.dto.URLDTO;
-import de.unihamburg.daibetes.helper.PathOrUrl;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -17,7 +16,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -27,6 +25,8 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class WorkflowExportBO {
 
+    private static final String IMPORT_NAME = "Workflow";
+
     @Inject
     WorkflowAO workflowAO;
 
@@ -34,7 +34,7 @@ public class WorkflowExportBO {
     WorkflowExportMapper workflowExportMapper;
 
     @Inject
-    ToolExternalHandler toolExternalHandler;
+    AutoImportPathHandler autoImportPathHandler;
 
     @Inject
     FLNetConfig flnet;
@@ -56,7 +56,7 @@ public class WorkflowExportBO {
         }
         WorkflowExportDTO exportDTO = workflowExportMapper.entityToDto(entityOpt.get());
         String fileName = nameToFileName(exportDTO.getName());
-        Optional<Path> path = toolExternalHandler.saveWorkflowAsJson(exportDTO, fileName);
+        Optional<Path> path = autoImportPathHandler.writeJson(IMPORT_NAME, flnet.workflowImports(), fileName, exportDTO);
         if (path.isEmpty()) {
             throw new NotFoundException("Failed to save workflow as json");
         }
@@ -73,7 +73,7 @@ public class WorkflowExportBO {
             try {
                 importWorkflowTransactional(export);
             } catch (Exception e) {
-                Log.errorf(e, "Failed to import workflow %s", export.getName());
+                Log.warnf("Failed to import workflow %s: %s", export.getName(), e.getMessage());
             }
         }
     }
@@ -97,27 +97,7 @@ public class WorkflowExportBO {
 
 
     public List<WorkflowExportDTO> readWorkflows() {
-        if (!flnet.workflowImports().enabled()) {
-            return List.of();
-        }
-
-        if (flnet.workflowImports().paths().isEmpty()) {
-            Log.warnf("Workflow import enabled but no paths configured");
-            return List.of();
-        }
-
-        List<Path> roots = flnet.workflowImports().paths().get();
-        if (roots.isEmpty()) {
-            Log.warnf("Workflow import enabled but no paths configured");
-            return List.of();
-        }
-
-        List<PathOrUrl> jsonSources = roots.stream()
-                .flatMap(toolExternalHandler::resolveJsonSources)
-                .sorted(Comparator.comparing(PathOrUrl::sortKey))
-                .toList();
-
-        return toolExternalHandler.loadAllWorkflows(jsonSources);
+        return autoImportPathHandler.loadAll(IMPORT_NAME, flnet.workflowImports(), WorkflowExportDTO.class);
     }
 
     private String nameToFileName(String name) {

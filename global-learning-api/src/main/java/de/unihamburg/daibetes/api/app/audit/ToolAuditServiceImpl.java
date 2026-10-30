@@ -30,7 +30,6 @@ public class ToolAuditServiceImpl implements ToolAuditService {
     @Override
     public List<ToolAuditPendingDTO> listPending() {
         String keycloakId = userIdentity.getKeycloakId();
-        keycloakId = "asfasdf";
         return federatedAppVersionBO.listForAudit(keycloakId);
     }
 
@@ -43,7 +42,7 @@ public class ToolAuditServiceImpl implements ToolAuditService {
     public ToolAuditCombinationDTO getByVersion(Long id) {
         String keycloakId = userIdentity.getKeycloakId();
 
-        return bo.getByVersion(id,keycloakId);
+        return bo.getByVersion(id, keycloakId);
     }
 
     @Override

@@ -2,6 +2,7 @@ package de.unihamburg.daibetes.api.build.pipeline;
 
 import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
 import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
+import bio.cosy.feddb.core.api.pipeline.PipelineRunMode;
 import bio.cosy.feddb.core.base.BaseEntity;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.build.pipeline.steps.PipelineStepEntity;
@@ -30,9 +31,13 @@ public class PipelineEntity extends BaseEntity {
     @Column(name = "pipeline_type")
     private PipelineType pipelineType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "run_mode", length = 32, nullable = false)
+    private PipelineRunMode runMode = PipelineRunMode.ALL;
+
     private String secret;
 
-    @Column(length = 8, name = "docker_tag")
+    @Column(length = 64, name = "docker_tag")
     private String dockerTag;
 
     @Column(name = "container_id", nullable = true)

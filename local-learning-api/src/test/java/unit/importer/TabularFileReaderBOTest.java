@@ -136,6 +136,37 @@ class TabularFileReaderBOTest {
     }
 
     @Test
+    void mergedTableRenamesApplyToTheMergeResultOnly() throws Exception {
+        TabularFileReaderBO bo = createBo();
+        Map<String, TableSample> previewData = new LinkedHashMap<>();
+        previewData.put("Demographics", new TableSample(
+                List.of("patient_id", "age"),
+                List.of(Map.of("patient_id", "p1", "age", "31")),
+                List.of()));
+        previewData.put("Labs", new TableSample(
+                List.of("lab_patient_id", "value"),
+                List.of(Map.of("lab_patient_id", "p1", "value", "5.6")),
+                List.of()));
+        SheetMergeResultDTO mergeConfig = new SheetMergeResultDTO(
+                "patient_uid",
+                Map.of("Demographics", "patient_id", "Labs", "lab_patient_id"),
+                "patient_uid"
+        );
+        // Renames and deletions picked on the merged table, as "Specify headers" saves them.
+        UploadInfoDTO merged = new UploadInfoDTO(
+                List.of("patient_uid", "age_years", "value"),
+                List.of(false, false, true),
+                List.of("patient_uid", "age", "value"),
+                null);
+
+        TableData data = bo.getFirstPreviewTableData(previewData, excelSettings(false), 10, mergeConfig, null,
+                Map.of("Merged", merged));
+
+        assertEquals(List.of("patient_uid", "age_years"), data.getColumns());
+        assertEquals("31", data.getRows().getFirst().get("age_years"));
+    }
+
+    @Test
     void previewLimitStillScansLaterRowsForAlreadySelectedUid() throws Exception {
         TabularFileReaderBO bo = createBo();
         Map<String, TableSample> previewData = new LinkedHashMap<>();
@@ -267,6 +298,51 @@ class TabularFileReaderBOTest {
         assertEquals("31", rows.getFirst().get("age"));
         assertNull(rows.getFirst().get("lab_name"));
         assertEquals("glucose", rows.get(2).get("lab_name"));
+    }
+
+    @Test
+    void tablesOfSeveralFilesMergeLikeTheTablesOfOneFile() {
+        TabularFileReaderBO bo = createBo();
+        Map<String, TableData> tables = new LinkedHashMap<>();
+        tables.put("data", new TableData(List.of("patient_id", "age"),
+                new java.util.ArrayList<>(List.of(Map.of("patient_id", "p1", "age", "31"))),
+                new java.util.ArrayList<>()));
+        tables.put("ids", new TableData(List.of("pid", "clinic"),
+                new java.util.ArrayList<>(List.of(Map.of("pid", "p1", "clinic", "c7"))),
+                new java.util.ArrayList<>()));
+        SheetMergeResultDTO mergeConfig = new SheetMergeResultDTO(
+                "patient_id", Map.of("data", "patient_id", "ids", "pid"), "patient_id");
+
+        try (TableData data = bo.getTableData(tables, mergeConfig, null, null)) {
+            assertEquals(List.of("patient_id", "age", "clinic"), data.getColumns());
+            assertEquals(2, data.longSize());
+        }
+    }
+
+    @Test
+    void mergedPreviewCarriesEveryTablesValuesOfItsPatients() throws Exception {
+        TabularFileReaderBO bo = createBo();
+        Path zipPath = Files.createTempFile("merged-preview", ".zip");
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(zipPath))) {
+            writeZipEntry(zip, "SUR_demographics.csv", "patient_id,age\np1,31\np2,42\n");
+            // p1's lab is not among the first lab rows, which is all a stored sample would hold.
+            writeZipEntry(zip, "SUR_labs.csv",
+                    "patient_id,lab_name,lab_value\np3,ldl,2.1\np4,hdl,1.2\np1,glucose,5.6\n");
+        }
+        SheetMergeResultDTO mergeConfig = new SheetMergeResultDTO(
+                "patient_id",
+                Map.of("SUR_demographics", "patient_id", "SUR_labs", "patient_id"),
+                "patient_id"
+        );
+
+        try (TableData data = bo.getMergedPreviewTableData(
+                zipPath.toFile(), csvZipSettings(), 1, mergeConfig, null, null)) {
+            assertEquals(1, data.longSize());
+            Map<String, Object> row = data.getRows().getFirst();
+            assertEquals("p1", row.get("patient_id"));
+            assertEquals("31", row.get("age"));
+            assertEquals("glucose", row.get("lab_name"));
+        }
     }
 
     @Test

@@ -9,8 +9,10 @@ import io.smallrye.config.WithName;
 import io.smallrye.config.WithParentName;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
+//BFF is here: bio.cosy.feddb.core.security.bff.BffConfig
 
 @ConfigMapping(prefix = "flnet")
 public interface FLNetClientConfig {
@@ -31,6 +33,35 @@ public interface FLNetClientConfig {
     ConnectorConfig connector();
 
     CohortConfig cohort();
+
+    /**
+     * Settings for the relay server connection of the controller.
+     */
+    RelayConfig relay();
+
+    /**
+     * Settings for the relay server connection of the controller.
+     */
+    interface RelayConfig {
+
+        @WithName("cert-sign")
+        CertSignConfig certSign();
+    }
+
+    /**
+     * Signing of the controller's relay certificate via the global server.
+     */
+    interface CertSignConfig {
+
+        // how long to wait for the signed certificate before the request is sent again
+        @WithDefault("PT5M")
+        Duration timeout();
+
+        // how often the request is sent before the step fails
+        @WithName("max-attempts")
+        @WithDefault("3")
+        int maxAttempts();
+    }
 
     interface CohortConfig {
 
@@ -141,6 +172,12 @@ public interface FLNetClientConfig {
         @WithName("enabled")
         @WithDefault("false")
         Boolean enabled();
+
+        // wait this long after startup before subscribing, e.g. while a platform started together
+        // with this client is still importing its schemas
+        @WithName("delay")
+        @WithDefault("PT0S")
+        Duration delay();
     }
 
     interface AutoSubscribeGroupConfig {
@@ -269,10 +306,6 @@ public interface FLNetClientConfig {
     }
 
     interface AuthConfig {
-
-        @WithName("enable")
-        @WithDefault("true")
-        boolean enabled();
 
         Optional<String> username();
 

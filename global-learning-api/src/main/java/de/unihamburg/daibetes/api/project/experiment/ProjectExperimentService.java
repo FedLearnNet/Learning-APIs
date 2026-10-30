@@ -8,7 +8,6 @@ import de.unihamburg.daibetes.api.project.experiment.federated.step.ProjectFeder
 import de.unihamburg.daibetes.api.project.experiment.local.CreateProjectLocalExperimentDTO;
 import de.unihamburg.daibetes.api.project.experiment.local.ProjectLocalExperimentDTO;
 import de.unihamburg.daibetes.api.project.experiment.local.step.ProjectLocalExperimentStepDetailDTO;
-import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -29,8 +28,6 @@ import java.util.List;
 @Path("/project/{id}/experiment")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "Project", description = "Service for managing project operations")
 public interface ProjectExperimentService {
 
@@ -59,7 +56,6 @@ public interface ProjectExperimentService {
     @Operation(summary = "Retrieves a single project experiment.")
     @APIResponse(responseCode = "200", description = "Project experiment found")
     @APIResponse(responseCode = "404", description = "Project experiment not found")
-    @Transactional
     @RestStreamElementType(MediaType.APPLICATION_JSON)
     Multi<ProjectFederatedExperimentDetailDTO> retrieveFederated(@PathParam("id") Long id, @PathParam("eId") Long eId);
 

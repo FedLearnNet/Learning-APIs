@@ -68,7 +68,7 @@ public class StoreBO {
                     if (!filterOnlyTrainedAnalysis(app, model, workflow, onlyTrainedAnalysis)) return false;
                     if (!filterSearch(app, model, workflow, search)) return false;
                     if (!filterAppType(app, model, workflow, appTypes)) return false;
-                    if (!filterAppTags(app, workflow, tags)) return false;
+                    if (!filterPrivacyTechniques(app, model, workflow, tags)) return false;
                     if (!filterMinRating(app, workflow, minRating)) return false;
                     return filterUncertification(app, workflow, showUncertified);
                 })
@@ -128,6 +128,9 @@ public class StoreBO {
                 return filterAppType(appNode, modelNode, null, appTypes);
             });
         }
+        if (app.getType() == null) {
+            return false;
+        }
         String appType = app.getType().toString().toLowerCase();
         return filter.contains(appType);
     }
@@ -145,7 +148,7 @@ public class StoreBO {
         if (app == null) {
             return true;
         }
-        return app.getType().equals(FederatedAppType.ANALYSIS);
+        return FederatedAppType.ANALYSIS.equals(app.getType());
     }
 
     public boolean filterMinRating(FederatedAppDTO app, WorkflowDTO workflow, Integer minRating) {
@@ -174,6 +177,23 @@ public class StoreBO {
         return app.getCertificationLevel() != null && app.getCertificationLevel() > 0;
     }
 
+
+    public boolean filterPrivacyTechniques(FederatedAppDTO app, ModelDTO model, WorkflowDTO workflowDTO, List<String> techniques) {
+        if (techniques == null || techniques.isEmpty()) {
+            return true;
+        }
+        if (workflowDTO != null) {
+            return workflowDTO.getNodes().stream().anyMatch(n -> filterPrivacyTechniques(n.getAppDetail(), n.getModelDetail(), null, techniques));
+        }
+        if (techniques.stream().anyMatch("fc"::equalsIgnoreCase)
+                && model == null
+                && FederatedAppType.ANALYSIS.equals(app.getType())
+                && Boolean.TRUE.equals(app.getSupportsFederatedLearning())) {
+            return true;
+        }
+        List<String> tagTechniques = techniques.stream().filter(t -> !"fc".equalsIgnoreCase(t)).toList();
+        return !tagTechniques.isEmpty() && filterAppTags(app, null, tagTechniques);
+    }
 
     public boolean filterAppTags(FederatedAppDTO app, WorkflowDTO workflowDTO, List<String> searchTags) {
         if (searchTags == null || searchTags.isEmpty()) {

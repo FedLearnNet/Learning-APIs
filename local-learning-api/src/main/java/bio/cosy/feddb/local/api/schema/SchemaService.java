@@ -1,6 +1,5 @@
 package bio.cosy.feddb.local.api.schema;
 
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -18,7 +17,6 @@ import java.util.UUID;
 @Path(SchemaService.PATH)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
 @Tag(name = "SchemaService", description = "Service for reading the global schema")
 public interface SchemaService {
     public static final String PATH = "/schema";

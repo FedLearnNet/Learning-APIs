@@ -22,7 +22,7 @@ public class ModelVersionEntity extends BaseStoreVersionEntity {
     @Enumerated(EnumType.STRING)
     private ModelPublishStatus publishStatus = ModelPublishStatus.PRIVATE;
 
-    @ManyToOne(cascade = CascadeType.REFRESH)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
     @JoinColumn(name = "model_id", nullable = false)
     private ModelEntity model;
 
@@ -37,11 +37,11 @@ public class ModelVersionEntity extends BaseStoreVersionEntity {
     @JoinColumn(name = "federated_training_id")
     private ExperimentEntity federatedExperiment; */
 
-    @ManyToOne(cascade = CascadeType.REFRESH)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
     @JoinColumn(name = "experiment_id")
     private ExperimentEntity experiment;
 
-    @ManyToOne(cascade = CascadeType.REFRESH)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
     @JoinColumn(name = "federated_experiment_id")
     private ProjectFederatedExperimentEntity federatedExperiment;
 

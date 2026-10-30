@@ -2,11 +2,14 @@ package bio.cosy.feddb.local.api.importer.files;
 
 import bio.cosy.feddb.core.api.file.FileResult;
 import bio.cosy.feddb.local.api.auth.UserIdentity;
+import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
+import bio.cosy.feddb.local.api.cohort.member.CohortPermissionChecker;
 import bio.cosy.feddb.local.api.importer.files.progress.ImportEventDTO;
 import bio.cosy.feddb.local.api.importer.files.progress.ImportProgressDTO;
 import bio.cosy.feddb.local.api.importer.files.progress.ImportProgressTracker;
 import bio.cosy.feddb.local.api.importer.files.upload.ConnectorFileImportRunner;
 import bio.cosy.feddb.local.api.importer.files.upload.DetachedUpload;
+import io.quarkus.security.PermissionsAllowed;
 import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
@@ -47,8 +50,12 @@ public class ConnectorFilesServiceImpl implements ConnectorFilesService {
     @Inject
     UserIdentity userIdentity;
 
+    @Inject
+    CohortMemberAuthBO cohortMemberAuthBO;
+
 
     @Override
+    @PermissionsAllowed(CohortPermissionChecker.EDIT_PATIENTS)
     public Multi<ImportEventDTO> importFilesStreaming(
             Long cohortId,
             ConnectorFileUploadRequestDTO request,
@@ -75,11 +82,14 @@ public class ConnectorFilesServiceImpl implements ConnectorFilesService {
         if (current == null) {
             throw new NotFoundException("No import found with id: " + importId);
         }
+        cohortMemberAuthBO.checkForMember(current.getCohortId(), userIdentity.getKeycloakId());
         ImportEventDTO terminal = progress.terminalEvent(importId);
         return terminal == null ? eventsFor(importId) : Multi.createFrom().item(terminal);
     }
 
-    /** The named import's live channel, closed by its terminal event. */
+    /**
+     * The named import's live channel, closed by its terminal event.
+     */
     private Multi<ImportEventDTO> eventsFor(String importId) {
         return Multi.createFrom().emitter(emitter -> {
             Cancellable subscription = progressEvents
@@ -100,22 +110,26 @@ public class ConnectorFilesServiceImpl implements ConnectorFilesService {
         if (found == null) {
             throw new NotFoundException("No import found with id: " + importId);
         }
+        cohortMemberAuthBO.checkForMember(found.getCohortId(), userIdentity.getKeycloakId());
         return found;
     }
 
     @Override
+    @PermissionsAllowed(CohortPermissionChecker.READ)
     public List<ImportProgressDTO> getImports(Long cohortId, Long connectorId) {
         return progress.forCohort(cohortId, connectorId);
     }
 
     @Override
     @Transactional
+    @PermissionsAllowed(CohortPermissionChecker.READ)
     public List<ConnectorFilesDTO> getFiles(Long cohortId) {
         return bo.getFiles(cohortId);
     }
 
     @Override
     @Transactional
+    @PermissionsAllowed(CohortPermissionChecker.DELETE)
     public Response deleteFile(Long cohortId, Long fileId) {
         if (!bo.deleteFile(cohortId, fileId)) {
             throw new NotFoundException("No file " + fileId + " in cohort " + cohortId);
@@ -125,18 +139,21 @@ public class ConnectorFilesServiceImpl implements ConnectorFilesService {
 
     @Override
     @Transactional
+    @PermissionsAllowed(CohortPermissionChecker.READ)
     public ConnectorFilesDetailDTO getFileInfo(Long cohortId, Long fileId) {
         return bo.getById(cohortId, fileId);
     }
 
     @Override
     @Transactional
+    @PermissionsAllowed(CohortPermissionChecker.READ)
     public ConnectorFilesDetailDTO getFileInfo(Long cohortId) {
         return bo.getFileInfo(cohortId);
     }
 
     @Override
     @Transactional
+    @PermissionsAllowed(CohortPermissionChecker.READ)
     public Response downloadConnectorFile(Long cohortId, Long fileId) {
         FileResult fileResult = bo.downloadConnectorFile(cohortId, fileId);
         File file = fileResult.file();

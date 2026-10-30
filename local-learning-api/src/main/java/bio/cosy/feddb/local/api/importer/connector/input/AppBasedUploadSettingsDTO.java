@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -19,8 +20,5 @@ public class AppBasedUploadSettingsDTO extends ConnectorInputConfigDTO {
     private String appTitle;
 
     private LinkedHashMap<String, Object> outputParams;
-
-    public AppBasedUploadSettingsDTO(String mode) {
-        super(mode);
-    }
+    private List<String> selectedOutputs;
 }

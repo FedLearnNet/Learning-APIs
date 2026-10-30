@@ -1,9 +1,11 @@
 package de.unihamburg.daibetes.api.umls;
 
 import bio.cosy.feddb.core.base.PagedResponse;
+import de.unihamburg.daibetes.api.feature.FeatureAvailableBO;
+import de.unihamburg.daibetes.api.feature.FeatureAvailableMessages;
 import de.unihamburg.daibetes.api.ontology.OntologyRAG;
-import de.unihamburg.daibetes.api.umls.importer.UmlsImportBO;
 import de.unihamburg.daibetes.api.umls.importer.ImportStatus;
+import de.unihamburg.daibetes.api.umls.importer.UmlsImportBO;
 import de.unihamburg.daibetes.api.umls.search.*;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Uni;
@@ -11,6 +13,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotAllowedException;
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
@@ -26,10 +29,16 @@ public class UmlsServiceImpl implements UmlsService {
     @Inject
     OntologyRAG ontologyRAG;
 
+    @Inject
+    FeatureAvailableBO featureAvailableBO;
+
     @Override
-    public Uni<Response> create() {
+    public Uni<Response> create(boolean createAlsoEmbedding) {
         try {
-            umlsImportBO.startImport();
+            if (!featureAvailableBO.isEmbeddingEnabled()) {
+                createAlsoEmbedding = false;
+            }
+            umlsImportBO.startImport(createAlsoEmbedding);
             return Uni.createFrom().item(Response.ok().build());
         } catch (BadRequestException e) {
             return Uni.createFrom().item(Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build());
@@ -40,6 +49,11 @@ public class UmlsServiceImpl implements UmlsService {
 
     @Override
     public Uni<Response> createAllEmbedding() {
+        if (!featureAvailableBO.isEmbeddingEnabled()) {
+            return Uni.createFrom().item(Response.status(Response.Status.BAD_REQUEST)
+                    .entity(FeatureAvailableMessages.EMBEDDING_DISABLED)
+                    .build());
+        }
         return ontologyRAG.ingestAllNodes()
                 .onItem().transform(v -> Response.ok().build())
                 .onFailure().recoverWithItem(e -> {
@@ -56,6 +70,9 @@ public class UmlsServiceImpl implements UmlsService {
 
     @Override
     public Uni<PagedResponse<UMLSSearchResultDTO>> search(String searchString, int page, int pageSize, UMLSSources sources) {
+        if (!featureAvailableBO.isUmlsSearchEnabled()) {
+            throw new NotAllowedException(FeatureAvailableMessages.UMLS_SEARCH_DISABLED);
+        }
         if (searchString == null || searchString.isEmpty()) {
             return Uni.createFrom().item(new PagedResponse<>(List.of(), page, pageSize, 0));
         }
@@ -69,6 +86,9 @@ public class UmlsServiceImpl implements UmlsService {
 
     @Override
     public Uni<List<UMLSCytoscapeGraphElementDTO>> createCytoscapeGraph(String id, UMLSSources source) {
+        if (!featureAvailableBO.isUmlsSearchEnabled()) {
+            throw new NotAllowedException(FeatureAvailableMessages.UMLS_SEARCH_DISABLED);
+        }
         return umlsSearchBO.createCytoscapeGraph(id, source);
     }
 

@@ -14,6 +14,7 @@ import bio.cosy.feddb.local.api.importer.files.ConnectorFilesBO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFilesDTO;
 import bio.cosy.feddb.local.api.importer.files.read.TabularFileReaderBO;
 import bio.cosy.feddb.local.api.importer.files.read.TableReadSpec;
+import bio.cosy.feddb.local.api.importer.files.table.SheetMergePlan;
 import bio.cosy.feddb.local.api.importer.files.table.TableData;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
 import bio.cosy.feddb.local.api.importer.run.execution.ConnectorRunExecutionOutputAwaiter;
@@ -37,6 +38,8 @@ import jakarta.ws.rs.NotFoundException;
 
 import java.io.File;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -85,7 +88,7 @@ public class ConnectorExtractBO {
                 connector.getCohortId(),
                 connector.getMergeConfig(),
                 connector.getPivotConfig(),
-                null,
+                connector.getUploadInfo(),
                 null,
                 false,
                 run == null ? null : run.getId(),
@@ -180,7 +183,7 @@ public class ConnectorExtractBO {
                 return limit(stored, request.getLimit());
             }
             return loadFromApp(appSettings, request.getCohortId(), request.getConnectorId(),
-                    request.getConnectorRunId(), request.getKeycloakId());
+                    request.getConnectorRunId(), request.getKeycloakId(), request);
         }
 
         Log.warnf("Unsupported connector input config type: %s", request.getConfig().getClass().getName());
@@ -204,9 +207,13 @@ public class ConnectorExtractBO {
         if (outputParams == null || outputParams.isEmpty()) {
             return null;
         }
+        Set<String> selected = selectedOutputKeys(appSettings);
 
         Map<String, TableSample> tables = new LinkedHashMap<>();
         for (Map.Entry<String, Object> output : outputParams.entrySet()) {
+            if (!selected.isEmpty() && !selected.contains(output.getKey())) {
+                continue;
+            }
             Long fileId = toFileId(output.getValue());
             if (fileId == null) {
                 continue;
@@ -248,6 +255,42 @@ public class ConnectorExtractBO {
         return sheetsInFile <= 1 ? outputKey : outputKey + "/" + sheet;
     }
 
+    private static Set<String> selectedOutputKeys(AppBasedUploadSettingsDTO appSettings) {
+        Map<String, Object> outputParams = appSettings.getOutputParams();
+        List<String> selected = appSettings.getSelectedOutputs();
+        if (outputParams == null || selected == null) {
+            return Set.of();
+        }
+        Set<String> keys = new LinkedHashSet<>();
+        outputParams.keySet().stream().filter(selected::contains).forEach(keys::add);
+        return keys;
+    }
+
+
+    private TableData loadSelectedStoredOutputs(AppBasedUploadSettingsDTO appSettings, Long cohortId,
+                                                ExtractRequest request) {
+        Map<String, TableData> tables = new LinkedHashMap<>();
+        for (String output : selectedOutputKeys(appSettings)) {
+            Long fileId = toFileId(appSettings.getOutputParams().get(output));
+            if (fileId == null) {
+                continue;
+            }
+            FileUploadSettingsDTO storedFile = new FileUploadSettingsDTO();
+            storedFile.setFileId(fileId);
+            ResolvedFileInput input = self.get().loadFileTransactional(storedFile, cohortId);
+            Map<String, TableData> read = fileHandlerBO
+                    .getByFile(input.file(), TableReadSpec.whole(input.parsingSettings()), null)
+                    .tables();
+            int sheets = read.size();
+            read.forEach((sheet, table) -> tables.put(tableName(output, sheet, sheets), table));
+        }
+        if (tables.isEmpty()) {
+            return null;
+        }
+        return fileHandlerBO.getTableData(
+                tables, request.getMergeConfig(), request.getPivotConfig(), request.getUploadInfo());
+    }
+
     private static Long toFileId(Object value) {
         if (value instanceof Number number) {
             return number.longValue();
@@ -284,6 +327,17 @@ public class ConnectorExtractBO {
     }
 
     private TableData loadFromFile(FileUploadSettingsDTO fileSettings, ExtractRequest request) {
+        if (request.isPreview() && SheetMergePlan.requested(request.getMergeConfig())) {
+            ResolvedFileInput input = self.get().loadFileTransactional(fileSettings, request.getCohortId());
+            return fileHandlerBO.getMergedPreviewTableData(
+                    input.file(),
+                    input.parsingSettings(),
+                    request.getLimit(),
+                    request.getMergeConfig(),
+                    request.getPivotConfig(),
+                    request.getUploadInfo()
+            );
+        }
         if (request.isPreview()) {
             Map<String, TableSample> sourceTables = self.get().loadStoredPreviewTransactional(
                     fileSettings, request.getCohortId());
@@ -326,7 +380,8 @@ public class ConnectorExtractBO {
                                  Long cohortId,
                                  Long connectorId,
                                  Long connectorRunId,
-                                 String keycloakId) {
+                                 String keycloakId,
+                                 ExtractRequest request) {
         if (!hasAppImage(appSettings)) {
             Log.warn("App-based extractor has no appImage configured");
             throw new BadRequestException("App-based extractor has no app image configured");
@@ -353,7 +408,14 @@ public class ConnectorExtractBO {
             ConnectorRunExecutionResult finishedStep = outputAwaiter.awaitOutput(result.getId())
                     .await().atMost(APP_OUTPUT_TIMEOUT);
             recordStoredOutputs(appSettings, connectorId, finishedStep, keycloakId);
-            TableData outputData = resolveAppOutput(finishedStep, appSettings);
+            TableData outputData = loadSelectedStoredOutputs(appSettings, cohortId, request);
+            if (outputData != null) {
+                if (finishedStep != null && finishedStep.outputData() != null) {
+                    finishedStep.outputData().close();
+                }
+            } else {
+                outputData = resolveAppOutput(finishedStep, appSettings);
+            }
             if (outputData == null) {
                 String error = "App-based extractor '" + appSettings.getAppImage()
                         + "' finished without tabular output";

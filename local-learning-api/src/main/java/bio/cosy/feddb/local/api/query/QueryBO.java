@@ -117,7 +117,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
 
     private boolean hasCohortSearchAccess(Set<Long> cohortIds, String keycloakId) {
         return cohortIds != null && !cohortIds.isEmpty() && cohortIds.stream()
-                .allMatch(cohortId -> cohortMemberAuthBO.isMember(cohortId, keycloakId));
+                .anyMatch(cohortId -> cohortMemberAuthBO.isMember(cohortId, keycloakId));
     }
 
     private LocalQueryDTO enhanceQuery(LocalQueryDTO query) {
