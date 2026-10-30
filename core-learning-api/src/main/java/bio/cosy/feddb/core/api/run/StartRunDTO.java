@@ -26,5 +26,8 @@ public class StartRunDTO {
     private List<FederatedRunParticipantDTO> participants;
     private FederatedRunConfigDTO config;
     private Boolean startAggregator;
+    // True when startAggregator is set and this participant has no input data of its own (e.g. the
+    // platform running as aggregator) - tells pyfedappwrap not to build a training app for it.
+    private Boolean aggregatorOnly;
     private Integer totalRounds;
 }

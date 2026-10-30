@@ -13,6 +13,7 @@ import de.unihamburg.daibetes.api.project.membership.ProjectMembershipBO;
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipDTO;
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipEntity;
 import de.unihamburg.daibetes.api.workflow.WorkflowEntity;
+import de.unihamburg.daibetes.config.FLNetConfig;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ClientErrorException;
@@ -39,6 +40,19 @@ public class ProjectBO extends BaseBo<ProjectDetailDTO, ProjectEntity, ProjectAO
 
     @Inject
     ExportConfigUtilsBO exportConfigUtilsBO;
+
+    @Inject
+    FLNetConfig config;
+
+    public boolean isPlatformAggregatorSupported() {
+        return config.federatedLearning().platformAggregatorEnabled();
+    }
+
+    public void checkPlatformIsCoordinatorAllowed(boolean platformIsCoordinator) {
+        if (platformIsCoordinator && !isPlatformAggregatorSupported()) {
+            throw new NotAllowedException("This platform deployment does not support running the aggregator on the platform");
+        }
+    }
 
     public ProjectDTO create(ProjectCreateDTO dto, String keycloakId) {
         ProjectDTO created = create(mapper.createToDTO(dto));
