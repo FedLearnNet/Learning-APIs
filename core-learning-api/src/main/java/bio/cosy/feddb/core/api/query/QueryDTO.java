@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,8 +19,7 @@ public class QueryDTO extends BaseAuthDTO {
     private String groupId;
     private String globalUniqueId;
 
-    // Array of QueryItem
-    private List<QueryItemDTO> query;
+    private Lang2QueryNodeDTO query;
 
     private String description;
     private String name;
