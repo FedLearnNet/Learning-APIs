@@ -32,6 +32,7 @@ public interface StoreService {
             @QueryParam("showUncertified") @DefaultValue("true") boolean showUncertified,
             @QueryParam("hideWorkflow") @DefaultValue("false") boolean hideWorkflow,
             @QueryParam("onlyTrainedAnalysis") @DefaultValue("false") boolean onlyTrainedAnalysis,
+            @QueryParam("onlyWithImage") @DefaultValue("false") boolean onlyWithImage,
 
             @QueryParam("sort") @DefaultValue("name:asc") String sort,
 

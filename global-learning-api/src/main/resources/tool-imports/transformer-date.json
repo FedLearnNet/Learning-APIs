@@ -1,71 +1,224 @@
 {
-  "name": "transformer-date",
-  "uniqueAppId": "3309a3f7-8d53-41ad-a76f-96febe9919ea",
-  "slug": "transformer-date",
-  "type": "DATA_TRANSFORMATION",
-  "supportsFederatedLearning": false,
-  "sourceUrl": "https://github.com/FedLearnNet/tool-transformer-date",
-  "authors": [
-    {
-      "keycloakId": "admin"
-    }
-  ],
-  "versions": [
-    {
-      "appVersion": "1.0.0",
-      "publishHash": "beea303e1f8e9dedd84b2eb656180155a6806ccb",
-      "versionPublishStatus": "PUBLISHED",
-      "needsInternetAccess": false,
-      "needsHostAccess": false,
-      "shortDescription": "Normalizes date strings and Unix timestamps to a consistent YYYY-MM-DD HH:MM:SS format.",
-      "longDescription": "# transformer-date\n\nNormalizes date strings and Unix timestamps to a consistent YYYY-MM-DD HH:MM:SS format.\n\nDateTransformer is a data transformation tool that parses heterogeneous date/datetime strings and returns a normalized timestamp string in the fixed format:\n- Output format: \"%Y-%m-%d %H:%M:%S\" (e.g., 2026-03-03 14:05:00)\n\nIt is intended for cleaning and harmonizing date columns coming from mixed sources (UCI datasets, clinical exports, logs, manually entered CSVs, etc.).\n\n## What this tool does\n- Accepts an input value as a string and converts it into a standardized datetime string.\n- Supports multiple input styles, including:\n- Common explicit formats (examples):\n- YYYY-MM-DD / YYYY-MM-DD HH:MM / YYYY-MM-DD HH:MM:SS\n- YYYY/MM/DD variants\n- DD.MM.YYYY variants\n- DD/MM/YYYY variants\n- ISO-8601-like formats:\n- YYYY-MM-DDTHH:MM:SS\n- fractional seconds: YYYY-MM-DDTHH:MM:SS.sss\n- timezone suffixes: Z or ±HH:MM\n- also accepts a single space instead of T\n- Unix timestamps:\n- seconds (10 digits), e.g. 1700000000\n- milliseconds (13 digits), e.g. 1700000000000\n- float seconds, e.g. 1700000000.123\n\n## Parsing rules\n- Unix timestamps are interpreted as UTC.\n- Timezone-aware datetimes (e.g., ISO strings with Z / +02:00) are:\n\t1.\tconverted to UTC, then\n\t2.\tformatted without timezone information.\n- Naive datetimes (no timezone information) are treated as-is (no implicit timezone shift).\n- If the input contains only a date (no time), the time defaults to 00:00:00.\n- If the string cannot be parsed, the transformer raises a ValueError.\n\n## Configuration\n\nThis transformer currently has no hyperparameters (TransformerConfig is empty).\n\n## Output\n- Returns a string in the format: YYYY-MM-DD HH:MM:SS\n\nExample outputs:\n- 2026-03-03 00:00:00\n- 2026-03-03 14:05:23\n\n# Notes / assumptions\n- Empty strings are rejected (ValueError).\n- The transformer is strict about numeric conversion for Unix timestamps (only the supported digit-length patterns / float pattern are accepted).\n- When outputting timezone-aware inputs, timezone is normalized to UTC and then removed from the final formatted string.\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nBuild the container with `docker build -t tool-transformer-date .`.\n",
-      "appConfig": {
-        "hyperparams": [
-          {
-            "default": "value",
-            "description": "input string representing a date/datetime.",
-            "name": "column",
-            "options": [],
-            "type": "STRING",
-            "variableName": "column",
-            "mode": "BOTH"
-          }
-        ],
-        "input": [
-          {
-            "delimiter": ",",
-            "description": "Input column schema. input string representing a date/datetime.",
-            "hasHeader": true,
-            "mode": "BOTH",
-            "name": "input",
-            "required": false,
-            "tabularSchema": {
-              "requiredColumns": [
-                "column"
-              ]
+  "name" : "transformer-date",
+  "uniqueAppId" : "3309a3f7-8d53-41ad-a76f-96febe9919ea",
+  "slug" : "transformer-date",
+  "type" : "DATA_TRANSFORMATION",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://github.com/FedLearnNet/tool-transformer-date",
+  "authors" : [ {
+    "keycloakId" : "admin"
+  } ],
+  "versions" : [ {
+    "appVersion" : "1.0.0",
+    "publishHash" : "beea303e1f8e9dedd84b2eb656180155a6806ccb",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "shortDescription" : "Normalizes date strings and Unix timestamps to a consistent YYYY-MM-DD HH:MM:SS format.",
+    "longDescription" : "# transformer-date\n\nNormalizes date strings and Unix timestamps to a consistent YYYY-MM-DD HH:MM:SS format.\n\nDateTransformer is a data transformation tool that parses heterogeneous date/datetime strings and returns a normalized timestamp string in the fixed format:\n- Output format: \"%Y-%m-%d %H:%M:%S\" (e.g., 2026-03-03 14:05:00)\n\nIt is intended for cleaning and harmonizing date columns coming from mixed sources (UCI datasets, clinical exports, logs, manually entered CSVs, etc.).\n\n## What this tool does\n- Accepts an input value as a string and converts it into a standardized datetime string.\n- Supports multiple input styles, including:\n- Common explicit formats (examples):\n- YYYY-MM-DD / YYYY-MM-DD HH:MM / YYYY-MM-DD HH:MM:SS\n- YYYY/MM/DD variants\n- DD.MM.YYYY variants\n- DD/MM/YYYY variants\n- ISO-8601-like formats:\n- YYYY-MM-DDTHH:MM:SS\n- fractional seconds: YYYY-MM-DDTHH:MM:SS.sss\n- timezone suffixes: Z or ±HH:MM\n- also accepts a single space instead of T\n- Unix timestamps:\n- seconds (10 digits), e.g. 1700000000\n- milliseconds (13 digits), e.g. 1700000000000\n- float seconds, e.g. 1700000000.123\n\n## Parsing rules\n- Unix timestamps are interpreted as UTC.\n- Timezone-aware datetimes (e.g., ISO strings with Z / +02:00) are:\n\t1.\tconverted to UTC, then\n\t2.\tformatted without timezone information.\n- Naive datetimes (no timezone information) are treated as-is (no implicit timezone shift).\n- If the input contains only a date (no time), the time defaults to 00:00:00.\n- If the string cannot be parsed, the transformer raises a ValueError.\n\n## Configuration\n\nThis transformer currently has no hyperparameters (TransformerConfig is empty).\n\n## Output\n- Returns a string in the format: YYYY-MM-DD HH:MM:SS\n\nExample outputs:\n- 2026-03-03 00:00:00\n- 2026-03-03 14:05:23\n\n# Notes / assumptions\n- Empty strings are rejected (ValueError).\n- The transformer is strict about numeric conversion for Unix timestamps (only the supported digit-length patterns / float pattern are accepted).\n- When outputting timezone-aware inputs, timezone is normalized to UTC and then removed from the final formatted string.\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nBuild the container with `docker build -t tool-transformer-date .`.\n",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "default" : "value",
+        "description" : "input string representing a date/datetime.",
+        "name" : "column",
+        "options" : [ ],
+        "type" : "STRING",
+        "variableName" : "column",
+        "mode" : "BOTH"
+      } ],
+      "input" : [ {
+        "delimiter" : ",",
+        "description" : "Input column schema. input string representing a date/datetime.",
+        "hasHeader" : true,
+        "mode" : "BOTH",
+        "name" : "input",
+        "required" : false,
+        "tabularSchema" : {
+          "requiredColumns" : [ "column" ]
+        },
+        "type" : "CSV",
+        "variableName" : "input"
+      } ],
+      "output" : [ {
+        "delimiter" : ",",
+        "description" : "Output column schema. input string representing a date/datetime.",
+        "hasHeader" : true,
+        "mode" : "BOTH",
+        "name" : "output",
+        "required" : false,
+        "tabularSchema" : {
+          "requiredColumns" : [ "column" ]
+        },
+        "type" : "CSV",
+        "variableName" : "output"
+      } ]
+    },
+    "publishInfo" : {
+      "commitHash" : "beea303e1f8e9dedd84b2eb656180155a6806ccb",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-transformer-date/blob/beea303e1f8e9dedd84b2eb656180155a6806ccb/data/test_datetimes.csv" ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "localhost:5001/flnet/tools/transformer-date:beea303e1f8e9dedd84b2eb656180155a6806ccb",
+        "success" : false,
+        "summary" : {
+          "critical" : 0,
+          "high" : 2,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 2
+        },
+        "rawReport" : {
+          "lang-pkgs-python-pkg" : [ {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
             },
-            "type": "CSV",
-            "variableName": "input"
-          }
-        ],
-        "output": [
-          {
-            "delimiter": ",",
-            "description": "Output column schema. input string representing a date/datetime.",
-            "hasHeader": true,
-            "mode": "BOTH",
-            "name": "output",
-            "required": false,
-            "tabularSchema": {
-              "requiredColumns": [
-                "column"
-              ]
+            "Layer" : {
+              "DiffID" : "sha256:7f4269b6f697f22026d574f3546cfe9d3479ba7f714c0b6b7a671fd21e7a9ab1"
             },
-            "type": "CSV",
-            "variableName": "output"
-          }
-        ]
-      }
-    }
-  ]
+            "PkgID" : "msgpack@1.2.1",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "msgpack",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-j586-36cw-2gc2" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:1c3094e5b2d4c729a557c7349d4cb88a37817c793db4507aca38028105c438b1",
+            "FixedVersion" : "1.2.3",
+            "PkgIdentifier" : {
+              "UID" : "31fb384af0a0e9ca",
+              "PURL" : "pkg:pypi/msgpack@1.2.1",
+              "BOMRef" : "pkg:pypi/msgpack@1.2.1"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "1.2.1",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 8.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "ghsa" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              },
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:L"
+              },
+              "bitnami" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:7f4269b6f697f22026d574f3546cfe9d3479ba7f714c0b6b7a671fd21e7a9ab1"
+            },
+            "PkgID" : "setuptools@70.3.0",
+            "Title" : "setuptools: Path Traversal Vulnerability in setuptools PackageIndex",
+            "CweIDs" : [ "CWE-22" ],
+            "Status" : "fixed",
+            "PkgName" : "setuptools",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-5rjg-fvgr-3xxf" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:9940", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/10/ALSA-2025-9940.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
+            "Fingerprint" : "sha256:55feecd5f0e8290cbaf732ffeb75d624feec52c42c9db9ae3abf2e5903909bb4",
+            "FixedVersion" : "78.1.1",
+            "PkgIdentifier" : {
+              "UID" : "c5eccaa7d8e0c308",
+              "PURL" : "pkg:pypi/setuptools@70.3.0",
+              "BOMRef" : "pkg:pypi/setuptools@70.3.0"
+            },
+            "PublishedDate" : "2025-05-17T16:15:19.11Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 2,
+              "ghsa" : 3,
+              "azure" : 3,
+              "rocky" : 2,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "bitnami" : 3,
+              "oracle-oval" : 2
+            },
+            "VulnerabilityID" : "CVE-2025-47273",
+            "InstalledVersion" : "70.3.0",
+            "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
+          } ]
+        },
+        "startedAt" : "2026-10-28T17:51:15.634+00:00",
+        "finishedAt" : "2026-10-28T18:52:13.202+00:00"
+      },
+      "sastScanResult" : {
+        "tool" : "opengrep",
+        "version" : "1.31.0",
+        "target" : "/app/repo",
+        "success" : true,
+        "complete" : true,
+        "scannedFiles" : 2,
+        "summary" : {
+          "error" : 0,
+          "warning" : 0,
+          "info" : 0,
+          "unknown" : 0
+        },
+        "findings" : [ ],
+        "errors" : [ ],
+        "rawReport" : {
+          "paths" : {
+            "scanned" : [ "/app/repo/app.py", "/app/repo/main.py" ]
+          },
+          "errors" : [ ],
+          "results" : [ ],
+          "version" : "1.31.0",
+          "skipped_rules" : [ ],
+          "interfile_languages_used" : [ ]
+        },
+        "startedAt" : "2026-10-28T17:46:57.062+00:00",
+        "finishedAt" : "2026-10-28T17:46:59.860+00:00"
+      },
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ],
+        "startedAt" : "2026-10-28T18:52:13.220+00:00",
+        "finishedAt" : "2026-10-28T19:07:20.880+00:00"
+      },
+      "imageName" : "transformer-date:beea303e1f8e9dedd84b2eb656180155a6806ccb"
+    },
+    "imageName" : "transformer-date:beea303e1f8e9dedd84b2eb656180155a6806ccb"
+  } ]
 }

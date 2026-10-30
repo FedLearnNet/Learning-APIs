@@ -33,6 +33,7 @@ public interface FederatedAppMapper extends BaseMapper<FederatedAppDTO, Federate
             @Mapping(target = "needsInternetAccess", ignore = true),
             @Mapping(target = "needsHostAccess", ignore = true),
             @Mapping(target = "publishInfo", ignore = true), // set in after mapping
+            @Mapping(target = "buildStatus", ignore = true),
     })
     FederatedAppDTO entityToDto(FederatedAppEntity entity);
 

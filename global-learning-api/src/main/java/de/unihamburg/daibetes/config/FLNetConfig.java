@@ -126,6 +126,11 @@ public interface FLNetConfig {
         @WithName("remove-image-on-build-failure")
         boolean removeImageOnBuildFailure();
 
+        // Imported tool builds running at the same time
+        @WithDefault("3")
+        @WithName("build-parallelism")
+        int buildParallelism();
+
         // Writes the build information of a successful import build back into the tool JSON
         @WithDefault("false")
         @WithName("replace-build-info")

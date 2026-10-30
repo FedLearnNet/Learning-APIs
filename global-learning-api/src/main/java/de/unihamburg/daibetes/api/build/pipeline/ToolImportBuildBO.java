@@ -17,6 +17,7 @@ import io.quarkus.logging.Log;
 import io.smallrye.context.api.ManagedExecutorConfig;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.reactive.messaging.MutinyEmitter;
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.event.Observes;
@@ -35,6 +36,7 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 @ApplicationScoped
 public class ToolImportBuildBO {
@@ -87,6 +89,13 @@ public class ToolImportBuildBO {
 
     private final Set<Long> queuedVersions = ConcurrentHashMap.newKeySet();
 
+    private Semaphore buildSlots;
+
+    @PostConstruct
+    void init() {
+        buildSlots = new Semaphore(Math.max(1, config.toolImports().buildParallelism()));
+    }
+
     public void enqueue(FederatedAppVersionEntity version, boolean existsInStore) {
         if (version.isRebuilding() || config.toolImports().buildOnImport() == ToolImportBuildingOnStart.NEVER) {
             return;
@@ -96,6 +105,10 @@ public class ToolImportBuildBO {
         request.setAppVersionId(version.getId());
         request.setExistsInStore(existsInStore);
         buildRequests.fire(request);
+    }
+
+    public boolean isQueued(Long appVersionId) {
+        return queuedVersions.contains(appVersionId);
     }
 
     public void enqueueRescan(FederatedAppVersionEntity version) {
@@ -123,11 +136,36 @@ public class ToolImportBuildBO {
 
     @Incoming(TOOL_IMPORT_BUILD_CHANNEL)
     public Uni<Void> build(PipelineRebuildDTO request) {
-        // The ordered channel waits for completion before starting the next build.
+        // The ordered channel only waits for a free build slot, so up to build-parallelism builds run at once.
+        return Uni.createFrom().voidItem()
+                .invoke(this::acquireBuildSlot)
+                .runSubscriptionOn(executor)
+                .invoke(() -> runBuild(request).subscribe().with(ignored -> {
+                }))
+                .onFailure().invoke(e -> {
+                    queuedVersions.remove(request.getAppVersionId());
+                    Log.warnf(e, "Failed to start build of imported tool version %d", request.getAppVersionId());
+                })
+                .onFailure().recoverWithNull();
+    }
+
+    private void acquireBuildSlot() {
+        try {
+            buildSlots.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while waiting for a build slot", e);
+        }
+    }
+
+    private Uni<Void> runBuild(PipelineRebuildDTO request) {
         return Uni.createFrom().item(() -> createBuild(request))
                 .runSubscriptionOn(executor)
                 .onItem().transformToUni(run -> startBuild(run, request))
-                .onTermination().invoke(() -> queuedVersions.remove(request.getAppVersionId()))
+                .onTermination().invoke(() -> {
+                    queuedVersions.remove(request.getAppVersionId());
+                    buildSlots.release();
+                })
                 .onFailure().invoke(e -> Log.warnf(e, "Failed to build imported tool version %d", request.getAppVersionId()))
                 .onFailure().recoverWithNull();
     }

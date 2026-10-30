@@ -1,72 +1,224 @@
 {
-  "name": "transformer-combine-rows",
-  "uniqueAppId": "bdda8b73-bce0-4875-b464-52b778862999",
-  "slug": "transformer-combine-rows",
-  "type": "DATA_TRANSFORMATION",
-  "supportsFederatedLearning": false,
-  "sourceUrl": "https://github.com/FedLearnNet/tool-transformer-combine-rows",
-  "authors": [
-    {
-      "keycloakId": "admin"
-    }
-  ],
-  "versions": [
-    {
-      "appVersion": "1.0.0",
-      "publishHash": "f7e92d6d914f9ae376c4adf8f4ff3064ef57a24a",
-      "versionPublishStatus": "PUBLISHED",
-      "needsInternetAccess": false,
-      "needsHostAccess": false,
-      "shortDescription": "Combines two fields from each input row into one value using a configurable separator.",
-      "longDescription": "# transformer-combine-rows\n\nCombines two fields from each input row into one value using a configurable separator.\n\n## Behavior\n\nFor each mapped row, the transformer reads `a` and `b` and returns\n`{\"value\": \"<a><delimiter><b>\"}`. The `delimiter` hyperparameter defaults to `|`.\n\n- `{\"a\": \"hello\", \"b\": \"world\"}` becomes `{\"value\": \"hello|world\"}`.\n- Empty strings are retained, including the separator.\n- Values are converted to strings using Python's string formatting.\n- The number of input rows stays the same.\n\nConfigure row mappings with `input_mapping={\"a\": \"first_column\", \"b\": \"second_column\"}`\nand `return_mapping={\"value\": \"combined_column\"}`. Leave `column` unset to use\nrow transformation mode.\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` contains only\nadditional runtime dependencies; `requirements-dev.txt` includes the API for local development.\n\nBuild with `docker build -t tool-transformer-combine-rows .`.\n",
-      "appConfig": {
-        "hyperparams": [
-          {
-            "default": "|",
-            "description": "Separator used to join fields a and b",
-            "name": "delimiter",
-            "options": [],
-            "type": "STRING",
-            "variableName": "delimiter",
-            "mode": "BOTH"
-          }
-        ],
-        "input": [
-          {
-            "delimiter": ",",
-            "description": "Input row schema. Input dictionary containing 'a' and 'b' keys with values to combine",
-            "hasHeader": true,
-            "mode": "BOTH",
-            "name": "input",
-            "required": false,
-            "tabularSchema": {
-              "requiredColumns": [
-                "a",
-                "b"
-              ]
+  "name" : "transformer-combine-rows",
+  "uniqueAppId" : "bdda8b73-bce0-4875-b464-52b778862999",
+  "slug" : "transformer-combine-rows",
+  "type" : "DATA_TRANSFORMATION",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://github.com/FedLearnNet/tool-transformer-combine-rows",
+  "authors" : [ {
+    "keycloakId" : "admin"
+  } ],
+  "versions" : [ {
+    "appVersion" : "1.0.0",
+    "publishHash" : "f7e92d6d914f9ae376c4adf8f4ff3064ef57a24a",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "shortDescription" : "Combines two fields from each input row into one value using a configurable separator.",
+    "longDescription" : "# transformer-combine-rows\n\nCombines two fields from each input row into one value using a configurable separator.\n\n## Behavior\n\nFor each mapped row, the transformer reads `a` and `b` and returns\n`{\"value\": \"<a><delimiter><b>\"}`. The `delimiter` hyperparameter defaults to `|`.\n\n- `{\"a\": \"hello\", \"b\": \"world\"}` becomes `{\"value\": \"hello|world\"}`.\n- Empty strings are retained, including the separator.\n- Values are converted to strings using Python's string formatting.\n- The number of input rows stays the same.\n\nConfigure row mappings with `input_mapping={\"a\": \"first_column\", \"b\": \"second_column\"}`\nand `return_mapping={\"value\": \"combined_column\"}`. Leave `column` unset to use\nrow transformation mode.\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` contains only\nadditional runtime dependencies; `requirements-dev.txt` includes the API for local development.\n\nBuild with `docker build -t tool-transformer-combine-rows .`.\n",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "default" : "|",
+        "description" : "Separator used to join fields a and b",
+        "name" : "delimiter",
+        "options" : [ ],
+        "type" : "STRING",
+        "variableName" : "delimiter",
+        "mode" : "BOTH"
+      } ],
+      "input" : [ {
+        "delimiter" : ",",
+        "description" : "Input row schema. Input dictionary containing 'a' and 'b' keys with values to combine",
+        "hasHeader" : true,
+        "mode" : "BOTH",
+        "name" : "input",
+        "required" : false,
+        "tabularSchema" : {
+          "requiredColumns" : [ "a", "b" ]
+        },
+        "type" : "CSV",
+        "variableName" : "input"
+      } ],
+      "output" : [ {
+        "delimiter" : ",",
+        "description" : "Output row schema. Input dictionary containing 'a' and 'b' keys with values to combine",
+        "hasHeader" : true,
+        "mode" : "BOTH",
+        "name" : "output",
+        "required" : false,
+        "tabularSchema" : {
+          "requiredColumns" : [ "value" ]
+        },
+        "type" : "CSV",
+        "variableName" : "output"
+      } ]
+    },
+    "publishInfo" : {
+      "commitHash" : "f7e92d6d914f9ae376c4adf8f4ff3064ef57a24a",
+      "filePaths" : [ ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "localhost:5001/flnet/tools/transformer-combine-rows:f7e92d6d914f9ae376c4adf8f4ff3064ef57a24a",
+        "success" : false,
+        "summary" : {
+          "critical" : 0,
+          "high" : 2,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 2
+        },
+        "rawReport" : {
+          "lang-pkgs-python-pkg" : [ {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
             },
-            "type": "CSV",
-            "variableName": "input"
-          }
-        ],
-        "output": [
-          {
-            "delimiter": ",",
-            "description": "Output row schema. Input dictionary containing 'a' and 'b' keys with values to combine",
-            "hasHeader": true,
-            "mode": "BOTH",
-            "name": "output",
-            "required": false,
-            "tabularSchema": {
-              "requiredColumns": [
-                "value"
-              ]
+            "Layer" : {
+              "DiffID" : "sha256:7f4269b6f697f22026d574f3546cfe9d3479ba7f714c0b6b7a671fd21e7a9ab1"
             },
-            "type": "CSV",
-            "variableName": "output"
-          }
-        ]
-      }
-    }
-  ]
+            "PkgID" : "msgpack@1.2.1",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "msgpack",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-j586-36cw-2gc2" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:d50c8d362aad67f71c44af93b62265734d5291270e7001a2c96b2309b52e5ca0",
+            "FixedVersion" : "1.2.3",
+            "PkgIdentifier" : {
+              "UID" : "31fb384af0a0e9ca",
+              "PURL" : "pkg:pypi/msgpack@1.2.1",
+              "BOMRef" : "pkg:pypi/msgpack@1.2.1"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "1.2.1",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 8.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "ghsa" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              },
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:L"
+              },
+              "bitnami" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:7f4269b6f697f22026d574f3546cfe9d3479ba7f714c0b6b7a671fd21e7a9ab1"
+            },
+            "PkgID" : "setuptools@70.3.0",
+            "Title" : "setuptools: Path Traversal Vulnerability in setuptools PackageIndex",
+            "CweIDs" : [ "CWE-22" ],
+            "Status" : "fixed",
+            "PkgName" : "setuptools",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-5rjg-fvgr-3xxf" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:13578", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/9/ALSA-2025-13578.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
+            "Fingerprint" : "sha256:1da8b1e7fb2098d2163925cbbb40caf1340060260552feddfcf6e796b1aa0608",
+            "FixedVersion" : "78.1.1",
+            "PkgIdentifier" : {
+              "UID" : "c5eccaa7d8e0c308",
+              "PURL" : "pkg:pypi/setuptools@70.3.0",
+              "BOMRef" : "pkg:pypi/setuptools@70.3.0"
+            },
+            "PublishedDate" : "2025-05-17T16:15:19.11Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 2,
+              "ghsa" : 3,
+              "azure" : 3,
+              "rocky" : 2,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "bitnami" : 3,
+              "oracle-oval" : 2
+            },
+            "VulnerabilityID" : "CVE-2025-47273",
+            "InstalledVersion" : "70.3.0",
+            "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
+          } ]
+        },
+        "startedAt" : "2026-10-28T19:40:27.853+00:00",
+        "finishedAt" : "2026-10-28T19:53:44.551+00:00"
+      },
+      "sastScanResult" : {
+        "tool" : "opengrep",
+        "version" : "1.31.0",
+        "target" : "/app/repo",
+        "success" : true,
+        "complete" : true,
+        "scannedFiles" : 2,
+        "summary" : {
+          "error" : 0,
+          "warning" : 0,
+          "info" : 0,
+          "unknown" : 0
+        },
+        "findings" : [ ],
+        "errors" : [ ],
+        "rawReport" : {
+          "paths" : {
+            "scanned" : [ "/app/repo/app.py", "/app/repo/main.py" ]
+          },
+          "errors" : [ ],
+          "results" : [ ],
+          "version" : "1.31.0",
+          "skipped_rules" : [ ],
+          "interfile_languages_used" : [ ]
+        },
+        "startedAt" : "2026-10-28T19:40:24.547+00:00",
+        "finishedAt" : "2026-10-28T19:40:27.498+00:00"
+      },
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ],
+        "startedAt" : "2026-10-28T19:53:44.570+00:00",
+        "finishedAt" : "2026-10-28T19:54:10.426+00:00"
+      },
+      "imageName" : "transformer-combine-rows:f7e92d6d914f9ae376c4adf8f4ff3064ef57a24a"
+    },
+    "imageName" : "transformer-combine-rows:f7e92d6d914f9ae376c4adf8f4ff3064ef57a24a"
+  } ]
 }

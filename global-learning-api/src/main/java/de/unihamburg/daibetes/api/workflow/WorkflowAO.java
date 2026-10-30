@@ -18,6 +18,11 @@ public class WorkflowAO implements PanacheRepository<WorkflowEntity> {
         return find("id = ?1 and keycloakId = ?2", workflowId, keycloakId).firstResultOptional();
     }
 
+    public Optional<WorkflowEntity> findAccessibleById(Long workflowId, String keycloakId) {
+        return find("id = ?1 and (publishStatus = ?2 or keycloakId = ?3)",
+                workflowId, PublishStatus.PUBLISHED, keycloakId).firstResultOptional();
+    }
+
     public Optional<WorkflowEntity> findEmptyByUserId(String keycloakId) {
         return find(
                 "keycloakId = ?1 " +

@@ -48,6 +48,11 @@ public class WorkflowBO extends BaseBo<WorkflowDTO, WorkflowEntity, WorkflowAO, 
         return entityToDto(entityOpt.get());
     }
 
+    public WorkflowDTO getAccessible(Long id, String keycloakId) {
+        return entityToDto(ao.findAccessibleById(id, keycloakId)
+                .orElseThrow(() -> new NotFoundException("Workflow not found")));
+    }
+
     public WorkflowDTO entityToDto(WorkflowEntity entity) {
         WorkflowDTO dto = mapper.entityToDto(entity);
         if (dto.getNodes() == null) {

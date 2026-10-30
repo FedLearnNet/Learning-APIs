@@ -36,7 +36,7 @@ public class WorkflowExecutionBO extends BaseWorkflowExecutionBO<ExecutionRunEnt
     public ExecutionRunEntity startWorkflowTransactional(ExecutionStartDTO start, Long workflowId, LinkedHashMap<String, Object> inputs,
                                             String keycloakId) {
 
-        WorkflowEntity workflow = workflowAO.findByUserIdAndWorkflowId(workflowId, keycloakId)
+        WorkflowEntity workflow = workflowAO.findAccessibleById(workflowId, keycloakId)
                 .orElseThrow(() -> new NotFoundException("Workflow " + workflowId + " not found"));
         start.setName(workflow.getName());
         WORKFLOW_ENGINE.getInputNodes(workflowMapper.entityToDto(workflow)).forEach((input, connections) -> {

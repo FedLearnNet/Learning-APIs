@@ -47,12 +47,13 @@ public class StoreServiceImpl implements StoreService {
                                         boolean showUncertified,
                                         boolean hideWorkflow,
                                         boolean onlyTrainedAnalysis,
+                                        boolean onlyWithImage,
                                         String sort,
                                         int page,
                                         int size) {
         String keycloakId = userIdentity.getKeycloakId();
         return storeBO.list(keycloakId, search, appTypes, privacyTechniques, minRating,
-                showUncertified, hideWorkflow, onlyTrainedAnalysis, sort,
+                showUncertified, hideWorkflow, onlyTrainedAnalysis, onlyWithImage, sort,
                 Page.of(page, size));
     }
 
@@ -113,7 +114,7 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public WorkflowDTO getWorkflow(Long id) {
         String keycloakId = userIdentity.getKeycloakId();
-        return workflowBO.get(id, keycloakId);
+        return workflowBO.getAccessible(id, keycloakId);
     }
 
     @Override

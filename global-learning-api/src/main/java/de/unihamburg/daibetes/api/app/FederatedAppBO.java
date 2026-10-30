@@ -2,6 +2,7 @@ package de.unihamburg.daibetes.api.app;
 
 import bio.cosy.feddb.core.api.app.*;
 import bio.cosy.feddb.core.api.app.config.ToolConfigsDTO;
+import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
 import bio.cosy.feddb.core.api.store.StoreDTO;
 import bio.cosy.feddb.core.base.BaseBo;
 import de.unihamburg.daibetes.agent.store.StoreIngestor;
@@ -14,6 +15,8 @@ import de.unihamburg.daibetes.api.app.version.FederatedAppPublishDTO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionBO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
+import de.unihamburg.daibetes.api.build.pipeline.PipelineAO;
+import de.unihamburg.daibetes.api.build.pipeline.ToolImportBuildBO;
 import de.unihamburg.daibetes.dto.URLDTO;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -52,6 +55,12 @@ public class FederatedAppBO extends BaseBo<FederatedAppDTO, FederatedAppEntity, 
 
     @Inject
     ToolExternalHandler toolExternalHandler;
+
+    @Inject
+    PipelineAO pipelineAO;
+
+    @Inject
+    ToolImportBuildBO toolImportBuildBO;
 
     public FederatedAppDetailDTO getById(Object idOrSlug) {
         return getById(ao.findApp(idOrSlug));
@@ -215,8 +224,17 @@ public class FederatedAppBO extends BaseBo<FederatedAppDTO, FederatedAppEntity, 
                 .distinct()
                 .map(mapper::entityToDto)
                 .map(this::dtoToDetail)
+                .peek(this::setBuildStatus)
                 .sorted(Comparator.comparing(FederatedAppDetailDTO::getId))
                 .collect(Collectors.toList());
+    }
+
+    private void setBuildStatus(FederatedAppDTO dto) {
+        if (dto.getPublishStatus() != PublishStatus.PUBLISHED || dto.hasImage() || dto.getLatestVersionId() == null) {
+            return;
+        }
+        dto.setBuildStatus(pipelineAO.findActiveStatusByAppVersionId(dto.getLatestVersionId())
+                .orElse(toolImportBuildBO.isQueued(dto.getLatestVersionId()) ? PipelineStatus.PENDING : null));
     }
 
     public FederatedAppDetailDTO create(AppCreateDTO data, String keycloakId) {

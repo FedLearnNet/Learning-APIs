@@ -16,6 +16,15 @@ public class PipelineAO implements PanacheRepository<PipelineEntity> {
                 List.of(PipelineStatus.PENDING, PipelineStatus.RUNNING)) > 0;
     }
 
+    public Optional<PipelineStatus> findActiveStatusByAppVersionId(Long appVersionId) {
+        List<PipelineStatus> statuses = find("select pipelineStatus from PipelineEntity where appVersion.id = ?1 and pipelineStatus in ?2",
+                appVersionId, List.of(PipelineStatus.PENDING, PipelineStatus.RUNNING)).project(PipelineStatus.class).list();
+        if (statuses.contains(PipelineStatus.RUNNING)) {
+            return Optional.of(PipelineStatus.RUNNING);
+        }
+        return statuses.stream().findFirst();
+    }
+
     public long detachAppVersion(Long appVersionId) {
         return update("appVersion = null where appVersion.id = ?1", appVersionId);
     }
