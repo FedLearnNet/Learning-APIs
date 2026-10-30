@@ -62,13 +62,140 @@
         "success" : false,
         "summary" : {
           "critical" : 0,
-          "high" : 2,
+          "high" : 5,
           "medium" : 0,
           "low" : 0,
           "unknown" : 0,
-          "num" : 2
+          "num" : 5
         },
         "rawReport" : {
+          "os-pkgs-wolfi" : [ {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3-pip-wheel@26.2.2-r0",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "py3-pip-wheel",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:252e6c60a5acea87e61d74c41ccb598403aff2b6b9b1871091f147dfd9801c6d",
+            "FixedVersion" : "26.2.2-r1",
+            "PkgIdentifier" : {
+              "UID" : "e312a630b5feffa5",
+              "PURL" : "pkg:apk/wolfi/py3-pip-wheel@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3.11-pip@26.2.2-r0",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "py3.11-pip",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:c5af0b4bd8d0ce6d2eaaeaa1176d79b212529eaad42d03ce1f3bfc0e0ae63f6b",
+            "FixedVersion" : "26.2.2-r1",
+            "PkgIdentifier" : {
+              "UID" : "13c556fe77452e6c",
+              "PURL" : "pkg:apk/wolfi/py3.11-pip@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3.11-pip-base@26.2.2-r0",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "py3.11-pip-base",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:ed409b87190680c10dbd9d9243438a4f12002ecda00a9266259afedd944b1884",
+            "FixedVersion" : "26.2.2-r1",
+            "PkgIdentifier" : {
+              "UID" : "7c76833665079f6",
+              "PURL" : "pkg:apk/wolfi/py3.11-pip-base@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          } ],
           "lang-pkgs-python-pkg" : [ {
             "CVSS" : {
               "ghsa" : {
@@ -178,8 +305,8 @@
             "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
           } ]
         },
-        "startedAt" : "2026-10-28T19:40:27.853+00:00",
-        "finishedAt" : "2026-10-28T19:53:44.551+00:00"
+        "startedAt" : "2026-10-30T15:37:42.288+00:00",
+        "finishedAt" : "2026-10-30T15:38:20.067+00:00"
       },
       "sastScanResult" : {
         "tool" : "opengrep",
@@ -206,16 +333,16 @@
           "skipped_rules" : [ ],
           "interfile_languages_used" : [ ]
         },
-        "startedAt" : "2026-10-28T19:40:24.547+00:00",
-        "finishedAt" : "2026-10-28T19:40:27.498+00:00"
+        "startedAt" : "2026-10-30T15:37:39.180+00:00",
+        "finishedAt" : "2026-10-30T15:37:41.842+00:00"
       },
       "malwareScanResult" : {
         "tool" : "clamav",
         "success" : true,
         "infectedCount" : 0,
         "findings" : [ ],
-        "startedAt" : "2026-10-28T19:53:44.570+00:00",
-        "finishedAt" : "2026-10-28T19:54:10.426+00:00"
+        "startedAt" : "2026-10-30T15:38:20.079+00:00",
+        "finishedAt" : "2026-10-30T15:38:26.653+00:00"
       },
       "imageName" : "transformer-combine-rows:f7e92d6d914f9ae376c4adf8f4ff3064ef57a24a"
     },

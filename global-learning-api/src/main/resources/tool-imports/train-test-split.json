@@ -197,8 +197,8 @@
             "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
           } ]
         },
-        "startedAt" : "2026-10-28T19:54:23.770+00:00",
-        "finishedAt" : "2026-10-28T19:55:54.276+00:00"
+        "startedAt" : "2026-10-30T15:37:55.341+00:00",
+        "finishedAt" : "2026-10-30T15:38:46.809+00:00"
       },
       "sastScanResult" : {
         "tool" : "opengrep",
@@ -225,16 +225,16 @@
           "skipped_rules" : [ ],
           "interfile_languages_used" : [ ]
         },
-        "startedAt" : "2026-10-28T19:54:20.368+00:00",
-        "finishedAt" : "2026-10-28T19:54:23.401+00:00"
+        "startedAt" : "2026-10-30T15:37:53.092+00:00",
+        "finishedAt" : "2026-10-30T15:37:55.172+00:00"
       },
       "malwareScanResult" : {
         "tool" : "clamav",
         "success" : true,
         "infectedCount" : 0,
         "findings" : [ ],
-        "startedAt" : "2026-10-28T19:55:54.293+00:00",
-        "finishedAt" : "2026-10-28T19:56:06.736+00:00"
+        "startedAt" : "2026-10-30T15:38:46.823+00:00",
+        "finishedAt" : "2026-10-30T15:38:55.577+00:00"
       },
       "imageName" : "train-test-split:6c1a92c5ac69c52d243bbf343e4580bc80b676ab"
     },
