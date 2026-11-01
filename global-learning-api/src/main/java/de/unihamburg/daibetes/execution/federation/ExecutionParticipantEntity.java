@@ -10,6 +10,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.LinkedHashMap;
 
@@ -21,6 +23,7 @@ public class ExecutionParticipantEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "run_id", nullable = false, updatable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private ExecutionRunEntity run;
 
     // Relay client id of the participant, for a clinic its random clinic id.

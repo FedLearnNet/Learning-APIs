@@ -6,7 +6,9 @@ import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
 import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
 import bio.cosy.feddb.core.execution.run.dto.OutputRunDataDTO;
 import bio.cosy.feddb.core.helper.FileHelper;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
+import de.unihamburg.daibetes.api.development.engine.TestEngineBO;
 import bio.cosy.feddb.core.api.model.ModelSubDataDTO;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -25,17 +27,20 @@ public class TestEmbedUploadServiceImpl implements TestEmbedUploadService {
     @Inject
     TestEmbedBO testEmbedBO;
 
+    @Inject
+    TestEngineBO testEngineBO;
+
     @Override
     @Transactional
     public AppMessageWrapperDTO<ModelDTO> uploadModel(Long appId, ModelSubDataDTO modelData) {
-        String keycloakId = userIdentity.getKeycloakId();
+        String keycloakId = uploaderOf(appId);
         return testEmbedBO.saveModel(modelData, keycloakId);
     }
 
     @Override
     @Transactional
     public Response uploadOutput(Long appId, AppRunTypeEnum runType, AppRunUploadData req) {
-        String keycloakId = userIdentity.getKeycloakId();
+        String keycloakId = uploaderOf(appId);
         OutputRunDataDTO data = new OutputRunDataDTO();
         data.setRunId(req.getRunId());
         data.setOutputData(req.getFieldsNullsafe());
@@ -52,6 +57,14 @@ public class TestEmbedUploadServiceImpl implements TestEmbedUploadService {
         return Response.status(Response.Status.CREATED).entity(finishedTest).build();
     }
 
+
+    // A test engine container uploads with its key, its results belong to the developer who started it
+    private String uploaderOf(Long appId) {
+        if (userIdentity.getRoles().contains(ToolApiKeyAuthenticationMechanism.ROLE)) {
+            return testEngineBO.findOwnerOfConnectingEngineTransactional(appId);
+        }
+        return userIdentity.getKeycloakId();
+    }
 
     @Override
     @Transactional

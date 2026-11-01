@@ -66,17 +66,26 @@ public class TestRunSetupBO {
     ExecutionFederationMapper federationMapper;
 
     public ExecutionRunEntity startTest(FederatedAppVersionEntity version, TestRunCreateDTO create, String keycloakId) {
-        LinkedHashMap<String, Object> inputs = create.getProjectId() != null
-                ? projectBO.dummyTrainingInputsOf(create.getProjectId(), create.getFederatedAppVersionId())
-                : new LinkedHashMap<>();
-        LinkedHashMap<String, String> inputFilePaths = create.getProjectId() != null ? null : create.getInputFilePaths();
+        boolean fromProject = create.getProjectId() != null;
+        LinkedHashMap<String, Object> inputs = new LinkedHashMap<>();
+        if (fromProject) {
+            inputs = projectBO.dummyTrainingInputsOf(create.getProjectId(), create.getFederatedAppVersionId());
+        } else if (create.getInputs() != null) {
+            inputs = create.getInputs();
+        }
+        LinkedHashMap<String, Object> hyperParams = new LinkedHashMap<>();
+        if (create.getHyperParams() != null) {
+            hyperParams = create.getHyperParams();
+        }
         ExecutionRunEntity run = workflowExecutionBO.executeSingleTransactional(
                 new ExecutionStartDTO(ExecutionPurpose.TEST, ExecutionMode.SINGLE, version.getFederatedApp().getName()),
-                HyperParamSearchDTO.fixed(create.getHyperParams() != null ? create.getHyperParams() : new LinkedHashMap<>()),
+                HyperParamSearchDTO.fixed(hyperParams),
                 inputs,
                 step -> {
                     step.setFederatedAppVersion(version);
-                    step.setInputFilePaths(inputFilePaths);
+                    if (!fromProject) {
+                        step.setInputFilePaths(create.getInputFilePaths());
+                    }
                 });
         run.setKeycloakId(keycloakId);
         return run;

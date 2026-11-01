@@ -460,6 +460,11 @@ public class AppBasedAutoSubscribeE2ETest {
         }
 
         @Override
+        public ContainerRunDTO getRunOfContainer(String containerId) {
+            return null;
+        }
+
+        @Override
         public List<ContainerLogDTO> getRunLogs(Long id) {
             return List.of();
         }

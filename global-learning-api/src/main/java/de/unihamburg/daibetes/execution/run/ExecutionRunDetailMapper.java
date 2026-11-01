@@ -51,6 +51,8 @@ public abstract class ExecutionRunDetailMapper {
     @Mappings({
             @Mapping(target = "steps", source = "steps", qualifiedByName = "mapStepEntitiesToDetailDTOs"),
             @Mapping(target = "experimentId", source = "experiment.id"),
+            @Mapping(target = "testEngineId", source = "testEngine.id"),
+            @Mapping(target = "testEngineMode", source = "testEngine.engineMode"),
             @Mapping(target = "federatedAppId", ignore = true),
             @Mapping(target = "federatedAppVersionId", ignore = true),
             @Mapping(target = "federatedAppVersionName", ignore = true)

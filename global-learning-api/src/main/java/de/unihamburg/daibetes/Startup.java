@@ -12,6 +12,7 @@ import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
+import org.eclipse.microprofile.context.ManagedExecutor;
 
 @ApplicationScoped
 public class Startup {
@@ -34,10 +35,22 @@ public class Startup {
     @Inject
     StartupImportsBO startupImportsBO;
 
-    public void onStartup(@Observes StartupEvent event) {
-        try {
-            Log.infof("Starting Quarkus");
+    @Inject
+    ManagedExecutor executor;
 
+    public void onStartup(@Observes StartupEvent event) {
+        Log.infof("Starting Quarkus");
+        if (config.backgroundStartupImports()) {
+            // The state stays IMPORTING in /info until the imports ended
+            executor.runAsync(this::runImports);
+            Log.infof("Startup imports run in the background");
+        } else {
+            runImports();
+        }
+    }
+
+    void runImports() {
+        try {
             if (config.createVectorExtensionOnStartup()) {
                 Log.infof("Ensuring vector extension exists");
                 if (embeddingAO.prepareVectorExtensionTransactional()) {
@@ -50,7 +63,7 @@ public class Startup {
             }
             if (config.toolImports().enabled()) {
                 Log.infof("Starting tool imports, building them on import: %s", config.toolImports().buildOnImport());
-                toolExternalHandler.importAllToolsTransactional();
+                toolExternalHandler.importAllTools();
             } else {
                 Log.infof("Tool imports have been disabled");
             }

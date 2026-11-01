@@ -39,9 +39,19 @@ class ToolEndpointSecurityPolicyTest {
         assertFalse(ToolEndpointSecurityPolicy.match("PUT", "/pipeline/42/stop", null).isPresent());
         assertFalse(ToolEndpointSecurityPolicy.match("GET", "/model/run/workflow/42/download", null).isPresent());
         assertFalse(ToolEndpointSecurityPolicy.match("GET", "/project", null).isPresent());
-        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/testembed/42/app", "websocket").isPresent());
+        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/testembed/42/client", "websocket").isPresent());
         assertFalse(ToolEndpointSecurityPolicy.match("GET", "/query/clients", "websocket").isPresent());
 
+    }
+
+    @Test
+    void testEngineEndpointsAlsoAllowUsers() {
+        assertGrant("GET", "/testembed/42/app", "websocket", Scope.TEST_ENGINE, 42L);
+        assertGrant("POST", "/testembed/42/upload/output", null, Scope.TEST_ENGINE, 42L);
+        assertGrant("POST", "/testembed/42/upload/model", null, Scope.TEST_ENGINE, 42L);
+        assertTrue(ToolEndpointSecurityPolicy.match("GET", "/testembed/42/app", "websocket").orElseThrow().usersAllowed());
+        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/execution/workflow/42/app", "websocket").orElseThrow().usersAllowed());
+        assertFalse(ToolEndpointSecurityPolicy.match("GET", "/testembed/42/upload/output/7", null).isPresent());
     }
 
     @Test

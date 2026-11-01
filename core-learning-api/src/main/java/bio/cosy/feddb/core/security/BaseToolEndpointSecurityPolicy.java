@@ -31,6 +31,9 @@ public abstract class BaseToolEndpointSecurityPolicy implements HttpSecurityPoli
             Optional<RequestGrant> requestedGrant = match(rules(), context.request().method().name(),
                     context.normalizedPath(), context.request().getHeader("Upgrade"));
             if (requestedGrant.isPresent()) {
+                if (requestedGrant.get().usersAllowed() && !currentIdentity.hasRole(ToolApiKeyAuthenticationMechanism.ROLE)) {
+                    return CheckResult.PERMIT;
+                }
                 return matchesToolIdentity(currentIdentity, requestedGrant.get())
                         ? CheckResult.PERMIT
                         : CheckResult.DENY;
@@ -64,23 +67,33 @@ public abstract class BaseToolEndpointSecurityPolicy implements HttpSecurityPoli
     }
 
     protected static Rule post(Scope scope, String path) {
-        return new Rule("POST", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), false, scope);
+        return new Rule("POST", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), false, scope, false);
     }
 
     protected static Rule put(Scope scope, String path) {
-        return new Rule("PUT", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), false, scope);
+        return new Rule("PUT", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), false, scope, false);
     }
 
     protected static Rule get(Scope scope, String path) {
-        return new Rule("GET", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), false, scope);
+        return new Rule("GET", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), false, scope, false);
     }
 
     protected static Rule websocket(Scope scope, String path) {
-        return new Rule("GET", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), true, scope);
+        return new Rule("GET", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), true, scope, false);
     }
 
-    /** The scope and run id an API key must have to call the matched endpoint. */
-    public record RequestGrant(Scope scope, Long runId) {
+    /** Like {@link #post} on an endpoint users call as well; only an API key must match the scope and run id. */
+    protected static Rule postAlsoForUsers(Scope scope, String path) {
+        return new Rule("POST", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), false, scope, true);
+    }
+
+    /** Like {@link #websocket} on an endpoint users call as well; only an API key must match the scope and run id. */
+    protected static Rule websocketAlsoForUsers(Scope scope, String path) {
+        return new Rule("GET", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), true, scope, true);
+    }
+
+    /** The scope and run id an API key must have to call the matched endpoint, and whether users may call it too. */
+    public record RequestGrant(Scope scope, Long runId, boolean usersAllowed) {
     }
 
     /*
@@ -92,7 +105,7 @@ public abstract class BaseToolEndpointSecurityPolicy implements HttpSecurityPoli
      * - if both match, extract the runId from the path and return a RequestGrant
      * That can then be checked against the API key's scope and runId in matchesToolIdentity
      */
-    protected record Rule(String method, Pattern path, boolean websocket, Scope scope) {
+    protected record Rule(String method, Pattern path, boolean websocket, Scope scope, boolean usersAllowed) {
         private Optional<RequestGrant> match(String requestMethod, String requestPath, String upgradeHeader) {
             if (!method.equalsIgnoreCase(requestMethod)
                     || (websocket && !"websocket".equalsIgnoreCase(upgradeHeader))) {
@@ -103,7 +116,7 @@ public abstract class BaseToolEndpointSecurityPolicy implements HttpSecurityPoli
                 return Optional.empty();
             }
             try {
-                return Optional.of(new RequestGrant(scope, Long.valueOf(matcher.group(1))));
+                return Optional.of(new RequestGrant(scope, Long.valueOf(matcher.group(1)), usersAllowed));
             } catch (NumberFormatException e) {
                 return Optional.empty();
             }

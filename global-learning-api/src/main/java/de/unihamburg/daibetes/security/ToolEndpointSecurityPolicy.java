@@ -18,6 +18,10 @@ public class ToolEndpointSecurityPolicy extends BaseToolEndpointSecurityPolicy {
             websocket(Scope.MODEL_PREDICTION_RUN, "/execution/prediction/([^/]+)/app"),
             post(Scope.MODEL_WORKFLOW_RUN, "/execution/workflow/([^/]+)/upload/output"),
             websocket(Scope.MODEL_WORKFLOW_RUN, "/execution/workflow/([^/]+)/app"),
+            // A test engine container talks like a developer's local engine, which logs in as a user
+            websocketAlsoForUsers(Scope.TEST_ENGINE, "/testembed/([^/]+)/app"),
+            postAlsoForUsers(Scope.TEST_ENGINE, "/testembed/([^/]+)/upload/output"),
+            postAlsoForUsers(Scope.TEST_ENGINE, "/testembed/([^/]+)/upload/model"),
             // callbacks of the build pipeline container
             get(Scope.PIPELINE_RUN, "/pipeline/([^/]+)/info"),
             get(Scope.PIPELINE_RUN, "/pipeline/([^/]+)/zip"),

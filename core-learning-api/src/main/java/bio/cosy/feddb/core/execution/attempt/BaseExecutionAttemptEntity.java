@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.LinkedHashMap;
 import java.util.UUID;
@@ -30,6 +32,7 @@ public abstract class BaseExecutionAttemptEntity<
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "step_id", nullable = false, updatable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Step step;
 
     @Column(name = "trial_index", nullable = false, updatable = false)
@@ -52,6 +55,10 @@ public abstract class BaseExecutionAttemptEntity<
 
     @Column(name = "container_id")
     private String containerId;
+
+    // Set once its container exited
+    @Column(name = "exit_code")
+    private Integer exitCode;
 
     // Percentage in the range 0..100, not a fraction.
     private Float progress;

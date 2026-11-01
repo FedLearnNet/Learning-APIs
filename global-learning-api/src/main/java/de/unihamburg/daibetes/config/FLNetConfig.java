@@ -6,6 +6,7 @@ import io.smallrye.config.WithDefault;
 import io.smallrye.config.WithName;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 //Intended for all custom properties with a "flnet" prefix
@@ -25,6 +26,11 @@ public interface FLNetConfig {
 
     @WithName("workflow-imports")
     ToolImportConfig workflowImports();
+
+    // Tool, workflow and store imports run after startup instead of delaying it
+    @WithName("startup.background-imports")
+    @WithDefault("true")
+    boolean backgroundStartupImports();
 
     @WithName("create-vector-extension-on-startup")
     @WithDefault("true")
@@ -46,6 +52,35 @@ public interface FLNetConfig {
     Long auditMinAcceptanceAmount();
 
     DataAnalysisConfig dataAnalysis();
+
+    @WithName("test-engine")
+    TestEngineConfig testEngine();
+
+    interface TestEngineConfig {
+        // A connected container without test runs is stopped after this time
+        @WithDefault("30M")
+        Duration idleTimeout();
+
+        @WithDefault("10M")
+        Duration startTimeout();
+
+        FederatedTestConfig federated();
+    }
+
+    interface FederatedTestConfig {
+        // Federated test runs use the platform's relay and controller instead of simulating them in the engine
+        @WithDefault("true")
+        boolean useDockerizedController();
+
+        @WithDefault("http://relay:9140/")
+        String relayUrl();
+
+        @WithDefault("http://controller:8000/")
+        String controllerOrchUrl();
+
+        @WithDefault("http://controller:8001/")
+        String controllerCommUrl();
+    }
 
     RuntimeConfig runtime();
 
@@ -125,6 +160,10 @@ public interface FLNetConfig {
         @WithDefault("true")
         @WithName("remove-image-on-build-failure")
         boolean removeImageOnBuildFailure();
+
+        // Only tools with these names or slugs are built on import, all others are imported without a build
+        @WithName("build-only")
+        Optional<List<String>> buildOnly();
 
         // Imported tool builds running at the same time
         @WithDefault("3")

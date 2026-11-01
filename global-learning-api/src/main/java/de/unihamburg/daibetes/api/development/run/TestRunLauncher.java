@@ -7,6 +7,7 @@ import bio.cosy.feddb.core.execution.run.types.AppMessageTypeEnum;
 import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import de.unihamburg.daibetes.api.development.testembed.TestEmbedConnections;
+import de.unihamburg.daibetes.execution.run.ExecutionRunAO;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptAO;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import de.unihamburg.daibetes.execution.step.ExecutionRunStepAO;
@@ -32,6 +33,9 @@ public class TestRunLauncher {
 
     @Inject
     TestEmbedConnections connections;
+
+    @Inject
+    ExecutionRunAO runAO;
 
     public void launchPending(Long appId) {
         listPendingAttemptIdsTransactional(appId).forEach(this::launch);
@@ -80,6 +84,10 @@ public class TestRunLauncher {
         }
         ExecutionRunStepEntity step = attempt.getStep();
         Long appId = step.getFederatedAppVersion().getFederatedApp().getId();
+        // While a test engine container runs it is the app's only engine, so it serves this run
+        runAO.findConnectingEngineOfApp(appId)
+                .filter(engine -> step.getRun().getTestEngine() == null)
+                .ifPresent(engine -> step.getRun().setTestEngine(engine));
         if (step.getRun().getMode() == ExecutionMode.FEDERATED) {
             ExecutionRunStepEntity locked = stepAO.findByIdWrite(step.getId()).orElseThrow();
             List<ExecutionAttemptEntity> pending = locked.getAttempts().stream()

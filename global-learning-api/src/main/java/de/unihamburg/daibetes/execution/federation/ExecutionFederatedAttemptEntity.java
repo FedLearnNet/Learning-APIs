@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +21,7 @@ public class ExecutionFederatedAttemptEntity extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "attempt_id", nullable = false, unique = true, updatable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private ExecutionAttemptEntity attempt;
 
     @ManyToOne(fetch = FetchType.LAZY)

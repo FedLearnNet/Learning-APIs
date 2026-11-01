@@ -149,22 +149,9 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         return start(id);
     }
 
+    // Orch may pull the builder image first, so its call stays outside any transaction
     public PipelineDTO start(Long id) {
-        if (config.pipelineBuilderImage().isEmpty()) {
-            throw new IllegalStateException("Pipeline builder image is not configured");
-        }
-        String builderImage = config.pipelineBuilderImage().get();
-        Optional<PipelineEntity> entityOptional = ao.findByIdOptional(id);
-        if (entityOptional.isEmpty()) {
-            throw new NotFoundException(String.format("Property with the ID %s not found", id));
-        }
-        PipelineEntity entity = entityOptional.get();
-        String apiKey = toolApiKeyService.issue(Scope.PIPELINE_RUN, id);
-        StartPipelineDTO startApp = new StartPipelineDTO();
-        startApp.setPipelineId(id);
-        startApp.setAppImage(builderImage);
-        startApp.setRunMode(entity.getRunMode());
-        startApp.addEnvironment(apiKey, id, entity.getSecret());
+        StartPipelineDTO startApp = loadStartRequestTransactional(id);
         Log.info("Starting container for pipeline " + id);
         CreateContainerResponseDTO resp;
         try {
@@ -180,6 +167,21 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
             throw new IllegalStateException("Failed to start container for pipeline " + id);
         }
         return setPipelineEntityRunningTransactional(id, containerId);
+    }
+
+    @Transactional
+    public StartPipelineDTO loadStartRequestTransactional(Long id) {
+        if (config.pipelineBuilderImage().isEmpty()) {
+            throw new IllegalStateException("Pipeline builder image is not configured");
+        }
+        PipelineEntity entity = ao.findByIdOptional(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Property with the ID %s not found", id)));
+        StartPipelineDTO startApp = new StartPipelineDTO();
+        startApp.setPipelineId(id);
+        startApp.setAppImage(config.pipelineBuilderImage().get());
+        startApp.setRunMode(entity.getRunMode());
+        startApp.addEnvironment(toolApiKeyService.issue(Scope.PIPELINE_RUN, id), id, entity.getSecret());
+        return startApp;
     }
 
     @Transactional

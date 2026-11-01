@@ -11,6 +11,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.type.SqlTypes;
 
 import java.util.List;
@@ -51,6 +53,7 @@ public class DataAnalysisChatMessageEntity extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "workflow_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private DataAnalysisEntity dataAnalysis;
 
     @OneToMany(mappedBy = "message")

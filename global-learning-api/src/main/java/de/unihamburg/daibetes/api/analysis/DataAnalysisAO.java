@@ -16,8 +16,9 @@ public class DataAnalysisAO implements PanacheRepository<DataAnalysisEntity> {
         return list("keycloakId = ?1", keycloakId);
     }
 
+
     public void deleteById(String keycloakId, Long id) {
-        delete("keycloakId = ?1 and id != ?2", keycloakId, id);
+        delete("keycloakId = ?1 and id = ?2", keycloakId, id);
     }
 
     public Optional<DataAnalysisEntity> findById(String keycloakId, Long id) {

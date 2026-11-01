@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @ApplicationScoped
@@ -45,14 +46,26 @@ public class ToolExternalHandler {
     @Inject
     ModelBO modelBO;
 
-    @Transactional
-    public void importAllToolsTransactional() {
+    public void importAllTools() {
         List<PathOrUrl> jsonSources = autoImportPathHandler.resolveSources(IMPORT_NAME, flnet.toolImports());
         if (jsonSources.isEmpty()) {
             return;
         }
 
         List<FederatedAppDetailDTO> tools = autoImportPathHandler.readAll(IMPORT_NAME, jsonSources, FederatedAppDetailDTO.class);
+        List<ModelDetailDTO> models = autoImportPathHandler.readAll(IMPORT_NAME, jsonSources, ModelDetailDTO.class, OnParseError.FAIL);
+        // Registry checks wait on orch, so they run in parallel and before the transaction
+        federatedAppCreateImportBO.prefetchRegistryImages(Stream.concat(tools.stream(),
+                models.stream().map(ModelDetailDTO::getFederatedApp).filter(Objects::nonNull)).toList());
+        try {
+            importTransactional(tools, models);
+        } finally {
+            federatedAppCreateImportBO.clearRegistryImages();
+        }
+    }
+
+    @Transactional
+    void importTransactional(List<FederatedAppDetailDTO> tools, List<ModelDetailDTO> models) {
         for (FederatedAppDetailDTO tool : tools) {
             try {
                 federatedAppCreateImportBO.createExternalTransactional(tool);
@@ -61,7 +74,6 @@ public class ToolExternalHandler {
             }
         }
 
-        List<ModelDetailDTO> models = autoImportPathHandler.readAll(IMPORT_NAME, jsonSources, ModelDetailDTO.class, OnParseError.FAIL);
         for (ModelDetailDTO model : models) {
             if (model.getFederatedApp() == null) {
                 // is Tool not an app;

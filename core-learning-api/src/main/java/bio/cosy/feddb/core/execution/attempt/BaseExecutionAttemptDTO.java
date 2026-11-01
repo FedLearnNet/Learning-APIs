@@ -22,6 +22,7 @@ public class BaseExecutionAttemptDTO extends BaseExecutionStatusDTO {
     // Payload of the attempt's score message; its value ranks the trial.
     private ExecutionMessageMetricDTO scoreMetric;
     private String containerId;
+    private Integer exitCode;
     private Float progress;
     private RunMetaDTO meta;
 }

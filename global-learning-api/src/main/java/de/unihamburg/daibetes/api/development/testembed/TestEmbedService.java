@@ -10,9 +10,12 @@ import bio.cosy.feddb.core.execution.run.dto.UpdateRunDTO;
 import bio.cosy.feddb.core.execution.run.types.AppConnectionTypesEnum;
 import bio.cosy.feddb.core.execution.run.types.AppMessageTypeEnum;
 import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
+import de.unihamburg.daibetes.api.development.engine.TestEngineBO;
+import de.unihamburg.daibetes.api.development.engine.TestEngineEventsBO;
 import de.unihamburg.daibetes.api.development.run.federated.FederatedParticipantUpdateDTO;
 import de.unihamburg.daibetes.api.development.run.federated.FederatedRoundMessageCreateDTO;
 import de.unihamburg.daibetes.api.development.run.federated.FederatedTestRunCreateDTO;
@@ -49,6 +52,12 @@ public class TestEmbedService {
     @Inject
     FederatedAppAuthorBO federatedAppAuthorBO;
 
+    @Inject
+    TestEngineBO testEngineBO;
+
+    @Inject
+    TestEngineEventsBO testEngineEventsBO;
+
     @OnOpen
     public AppMessageWrapperDTO<String> onOpen() {
         String keycloakId = userIdentity.getKeycloakId();
@@ -62,6 +71,9 @@ public class TestEmbedService {
             connection.close(new CloseReason(403, "User is not author of app"));
             return null;
         }//TODO ELSE
+        if (AppConnectionTypesEnum.APP.isEqual(type) && !acceptEngine(appId)) {
+            return null;
+        }
         AppMessageWrapperDTO<String> dto = new AppMessageWrapperDTO<>(AppMessageTypeEnum.CLIENT_STARTED, "Type " + type + " connected");
         connectionsOf(appId, AppConnectionTypesEnum.oppositeOf(type)).forEach(c -> c.sendTextAndAwait(dto));
         handleClientConnected(appId, type);
@@ -114,6 +126,25 @@ public class TestEmbedService {
         if (AppConnectionTypesEnum.APP.isEqual(type)) {
             testEmbedBO.closeAllTest(appId);
         }
+    }
+
+    // A test engine container may only connect while it is started; a local engine not while one runs
+    private boolean acceptEngine(Long appId) {
+        boolean container = userIdentity.getRoles().contains(ToolApiKeyAuthenticationMechanism.ROLE);
+        boolean containerStarted = testEngineBO.hasConnectingEngineTransactional(appId);
+        if (container && !containerStarted) {
+            connection.close(new CloseReason(403, "No test engine is started for this app"));
+            return false;
+        }
+        if (!container && containerStarted) {
+            logger.warnf("Refused local engine of app %d while a test engine container runs", appId);
+            connection.close(new CloseReason(409, "A test engine container runs for this app, stop it first"));
+            return false;
+        }
+        if (container) {
+            testEngineEventsBO.markConnectedTransactional(appId);
+        }
+        return true;
     }
 
     private void handleClientConnected(Long appId, String type) {

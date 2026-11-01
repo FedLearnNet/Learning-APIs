@@ -40,4 +40,7 @@ public class ContainerRunDTO extends BaseDTO {
 
     private ContainerRunStatus status;
 
+    // Set once the container stopped
+    private Integer exitCode;
+
 }

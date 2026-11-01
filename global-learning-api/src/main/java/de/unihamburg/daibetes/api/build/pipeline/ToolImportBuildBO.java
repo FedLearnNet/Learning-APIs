@@ -34,6 +34,8 @@ import org.eclipse.microprofile.reactive.messaging.OnOverflow;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -97,7 +99,8 @@ public class ToolImportBuildBO {
     }
 
     public void enqueue(FederatedAppVersionEntity version, boolean existsInStore) {
-        if (version.isRebuilding() || config.toolImports().buildOnImport() == ToolImportBuildingOnStart.NEVER) {
+        if (version.isRebuilding() || config.toolImports().buildOnImport() == ToolImportBuildingOnStart.NEVER
+                || !isBuildAllowed(version)) {
             return;
         }
         PipelineRebuildDTO request = new PipelineRebuildDTO();
@@ -105,6 +108,20 @@ public class ToolImportBuildBO {
         request.setAppVersionId(version.getId());
         request.setExistsInStore(existsInStore);
         buildRequests.fire(request);
+    }
+
+    private boolean isBuildAllowed(FederatedAppVersionEntity version) {
+        Optional<List<String>> buildOnly = config.toolImports().buildOnly();
+        if (buildOnly.isEmpty()) {
+            return true;
+        }
+        FederatedAppEntity app = version.getFederatedApp();
+        boolean allowed = buildOnly.get().stream().map(String::trim)
+                .anyMatch(name -> name.equalsIgnoreCase(app.getName()) || name.equalsIgnoreCase(app.getSlug()));
+        if (!allowed) {
+            Log.infof("Not building imported tool %s: it is not in flnet.tool-imports.build-only", app.getName());
+        }
+        return allowed;
     }
 
     public boolean isQueued(Long appVersionId) {
@@ -174,18 +191,13 @@ public class ToolImportBuildBO {
         if (run == null) {
             return Uni.createFrom().voidItem();
         }
-        return Uni.createFrom().item(() -> startPipelineTransactional(run.getPipelineId()))
+        return Uni.createFrom().item(() -> pipelineBO.start(run.getPipelineId()))
                 .runSubscriptionOn(executor)
                 .onItem().transformToUni(ignored -> awaitBuild(run))
                 .onFailure().call(e -> Uni.createFrom().voidItem()
                         .invoke(() -> failBuild(run)).runSubscriptionOn(executor))
                 .onTermination().call(() -> Uni.createFrom().voidItem()
                         .invoke(() -> finishBuild(run, request)).runSubscriptionOn(executor));
-    }
-
-    @Transactional(Transactional.TxType.REQUIRES_NEW)
-    PipelineDTO startPipelineTransactional(Long pipelineId) {
-        return pipelineBO.start(pipelineId);
     }
 
     private CurrentPipelineRuns createBuild(PipelineRebuildDTO request) {

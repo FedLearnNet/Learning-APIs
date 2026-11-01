@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -20,6 +22,7 @@ public class ExecutionFederationEntity extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "step_id", nullable = false, unique = true, updatable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private ExecutionRunStepEntity step;
 
     @Column(name = "total_rounds")

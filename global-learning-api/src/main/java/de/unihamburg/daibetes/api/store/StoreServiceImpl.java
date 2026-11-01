@@ -114,7 +114,7 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public WorkflowDTO getWorkflow(Long id) {
         String keycloakId = userIdentity.getKeycloakId();
-        return workflowBO.getAccessible(id, keycloakId);
+        return workflowBO.findAccessible(id, keycloakId);
     }
 
     @Override

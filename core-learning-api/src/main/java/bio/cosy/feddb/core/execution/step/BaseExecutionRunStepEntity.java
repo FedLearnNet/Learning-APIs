@@ -10,6 +10,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.*;
 
@@ -31,6 +33,7 @@ public abstract class BaseExecutionRunStepEntity<
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "run_id", nullable = false, updatable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Run run;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -57,6 +60,7 @@ public abstract class BaseExecutionRunStepEntity<
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "selected_attempt_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Attempt selectedAttempt;
 
     @OneToMany(mappedBy = "step", fetch = FetchType.LAZY,

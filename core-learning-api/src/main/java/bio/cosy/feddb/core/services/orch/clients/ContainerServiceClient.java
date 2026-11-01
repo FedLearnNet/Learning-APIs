@@ -37,6 +37,10 @@ public interface ContainerServiceClient {
     List<ContainerRunDTO> listRuns();
 
     @GET
+    @Path("run/container/{containerId}")
+    ContainerRunDTO getRunOfContainer(@PathParam("containerId") String containerId);
+
+    @GET
     @Path("run/{id}")
     ContainerRunDTO getRun(@PathParam("id") Long id);
 

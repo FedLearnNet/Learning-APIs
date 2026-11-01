@@ -243,7 +243,7 @@ public class TestRunBO {
                 .orElseThrow(() -> new NotFoundException("Test run attempt " + attemptId + " not found"));
     }
 
-    private void requireAuthor(Long appId, String keycloakId) {
+    public void requireAuthor(Long appId, String keycloakId) {
         if (!authorBO.isUserAuthor(keycloakId, appId)) {
             throw new ForbiddenException();
         }

@@ -85,6 +85,7 @@ public class DataAnalysisBO extends BaseBo<ModelWorkflowDTO, DataAnalysisEntity,
                 .orElseThrow(() -> new NotFoundException("DataAnalysis not found"));
     }
 
+    // Its files, chat and runs go with it in the database
     public void delete(Long id, String keycloakId) {
         ao.deleteById(keycloakId, id);
     }
