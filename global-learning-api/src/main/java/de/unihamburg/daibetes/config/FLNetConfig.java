@@ -57,10 +57,7 @@ public interface FLNetConfig {
     TestEngineConfig testEngine();
 
     interface TestEngineConfig {
-        // A connected container without test runs is stopped after this time
-        @WithDefault("30M")
-        Duration idleTimeout();
-
+        // A container that neither connected nor, as a self-test, exited by then fails
         @WithDefault("10M")
         Duration startTimeout();
 

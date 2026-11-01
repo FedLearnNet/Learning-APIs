@@ -17,6 +17,9 @@ public class TestEngineServiceImpl implements TestEngineService {
     public static final String TEST_ENGINE_CHANNEL = "test-engine-runs";
 
     @Inject
+    TestEngineRunBO runBO;
+
+    @Inject
     TestEngineBO bo;
 
     @Inject
@@ -28,24 +31,24 @@ public class TestEngineServiceImpl implements TestEngineService {
 
     @Override
     public List<ExecutionRunDetailDTO> list(Long appId) {
-        return bo.listTransactional(appId, userIdentity.getKeycloakId());
+        return runBO.listTransactional(appId, userIdentity.getKeycloakId());
     }
 
     @Override
     public ExecutionRunDetailDTO start(Long appId, TestEngineCreateDTO create) {
-        return bo.startTransactional(appId, create, userIdentity.getKeycloakId());
+        return runBO.startTransactional(appId, create, userIdentity.getKeycloakId());
     }
 
     @Override
     public ExecutionRunDetailDTO stop(Long appId, Long id) {
-        return bo.stopTransactional(appId, id, userIdentity.getKeycloakId());
+        return runBO.stopTransactional(appId, id, userIdentity.getKeycloakId());
     }
 
     @Override
     public Multi<ExecutionRunDetailDTO> stream(Long appId) {
         String keycloakId = userIdentity.getKeycloakId();
         return Uni.createFrom().voidItem()
-                .invoke(() -> bo.requireAuthorTransactional(appId, keycloakId))
+                .invoke(() -> runBO.requireAuthorTransactional(appId, keycloakId))
                 .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
                 .onItem().transformToMulti(ignored -> engineChanges.filter(run -> appId.equals(run.getFederatedAppId())));
     }

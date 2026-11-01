@@ -10,6 +10,7 @@ import bio.cosy.feddb.core.execution.event.AttemptLaunchEvent;
 import bio.cosy.feddb.core.execution.event.ExecutionChannels;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
+import de.unihamburg.daibetes.api.development.engine.TestEngineBO;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeMapper;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptAO;
@@ -36,11 +37,15 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
     @Inject
     PlatformTrainingBO platformTrainingBO;
 
-    // The apps talk back through the existing BO and websocket of their purpose.
+    @Inject
+    TestEngineBO testEngineBO;
+
+    // The apps talk back through the existing BO and websocket of their purpose, an engine like a local one.
     public ExecutionAttemptLauncher() {
         super(Map.of(
-                ExecutionPurpose.ANALYSIS, new ExecutionCallback(Scope.MODEL_WORKFLOW_RUN, "workflow"),
-                ExecutionPurpose.TRAINING, new ExecutionCallback(Scope.MODEL_WORKFLOW_RUN, "workflow")));
+                ExecutionPurpose.ANALYSIS, new ExecutionCallback(Scope.MODEL_WORKFLOW_RUN, "execution/workflow"),
+                ExecutionPurpose.TRAINING, new ExecutionCallback(Scope.MODEL_WORKFLOW_RUN, "execution/workflow"),
+                ExecutionPurpose.ENGINE, new ExecutionCallback(Scope.TEST_ENGINE, "testembed")));
     }
 
     @Override
@@ -75,6 +80,9 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
     @Override
     protected void customizeStart(ExecutionAttemptEntity attempt, StartWorkflowNodeDTO start) {
         start.setEnableRemoteResultSaving(attempt.getStep().getRun().getPurpose() == ExecutionPurpose.ANALYSIS);
+        if (attempt.getStep().getRun().getPurpose() == ExecutionPurpose.ENGINE) {
+            testEngineBO.customizeStart(attempt, start);
+        }
     }
 
     @Incoming(ExecutionChannels.ATTEMPT_LAUNCH)

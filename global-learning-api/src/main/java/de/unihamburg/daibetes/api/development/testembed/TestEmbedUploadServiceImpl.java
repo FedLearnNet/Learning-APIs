@@ -8,7 +8,7 @@ import bio.cosy.feddb.core.execution.run.dto.OutputRunDataDTO;
 import bio.cosy.feddb.core.helper.FileHelper;
 import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
-import de.unihamburg.daibetes.api.development.engine.TestEngineBO;
+import de.unihamburg.daibetes.api.development.engine.TestEngineRunBO;
 import bio.cosy.feddb.core.api.model.ModelSubDataDTO;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -28,7 +28,7 @@ public class TestEmbedUploadServiceImpl implements TestEmbedUploadService {
     TestEmbedBO testEmbedBO;
 
     @Inject
-    TestEngineBO testEngineBO;
+    TestEngineRunBO testEngineRunBO;
 
     @Override
     @Transactional
@@ -61,7 +61,7 @@ public class TestEmbedUploadServiceImpl implements TestEmbedUploadService {
     // A test engine container uploads with its key, its results belong to the developer who started it
     private String uploaderOf(Long appId) {
         if (userIdentity.getRoles().contains(ToolApiKeyAuthenticationMechanism.ROLE)) {
-            return testEngineBO.findOwnerOfConnectingEngineTransactional(appId);
+            return testEngineRunBO.findOwnerOfConnectingEngineTransactional(appId);
         }
         return userIdentity.getKeycloakId();
     }

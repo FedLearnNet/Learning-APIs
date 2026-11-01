@@ -14,8 +14,7 @@ import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
-import de.unihamburg.daibetes.api.development.engine.TestEngineBO;
-import de.unihamburg.daibetes.api.development.engine.TestEngineEventsBO;
+import de.unihamburg.daibetes.api.development.engine.TestEngineRunBO;
 import de.unihamburg.daibetes.api.development.run.federated.FederatedParticipantUpdateDTO;
 import de.unihamburg.daibetes.api.development.run.federated.FederatedRoundMessageCreateDTO;
 import de.unihamburg.daibetes.api.development.run.federated.FederatedTestRunCreateDTO;
@@ -53,10 +52,7 @@ public class TestEmbedService {
     FederatedAppAuthorBO federatedAppAuthorBO;
 
     @Inject
-    TestEngineBO testEngineBO;
-
-    @Inject
-    TestEngineEventsBO testEngineEventsBO;
+    TestEngineRunBO testEngineRunBO;
 
     @OnOpen
     public AppMessageWrapperDTO<String> onOpen() {
@@ -126,12 +122,15 @@ public class TestEmbedService {
         if (AppConnectionTypesEnum.APP.isEqual(type)) {
             testEmbedBO.closeAllTest(appId);
         }
+        if (AppConnectionTypesEnum.APP.isEqual(type) && isEngineContainer()) {
+            testEngineRunBO.markDisconnectedTransactional(appId);
+        }
     }
 
     // A test engine container may only connect while it is started; a local engine not while one runs
     private boolean acceptEngine(Long appId) {
-        boolean container = userIdentity.getRoles().contains(ToolApiKeyAuthenticationMechanism.ROLE);
-        boolean containerStarted = testEngineBO.hasConnectingEngineTransactional(appId);
+        boolean container = isEngineContainer();
+        boolean containerStarted = testEngineRunBO.hasConnectingEngineTransactional(appId);
         if (container && !containerStarted) {
             connection.close(new CloseReason(403, "No test engine is started for this app"));
             return false;
@@ -142,9 +141,13 @@ public class TestEmbedService {
             return false;
         }
         if (container) {
-            testEngineEventsBO.markConnectedTransactional(appId);
+            testEngineRunBO.markConnectedTransactional(appId);
         }
         return true;
+    }
+
+    private boolean isEngineContainer() {
+        return userIdentity.getRoles().contains(ToolApiKeyAuthenticationMechanism.ROLE);
     }
 
     private void handleClientConnected(Long appId, String type) {
