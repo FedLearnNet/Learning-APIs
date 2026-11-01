@@ -26,14 +26,55 @@
         "success" : false,
         "summary" : {
           "critical" : 0,
-          "high" : 5,
+          "high" : 8,
           "medium" : 0,
           "low" : 0,
           "unknown" : 0,
-          "num" : 5
+          "num" : 8
         },
         "rawReport" : {
           "os-pkgs-wolfi" : [ {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 6.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3-pip-wheel@26.2.2-r0",
+            "Title" : "crypto/x509: golang: crypto/x509: Man-in-the-middle attacks via untrusted intermediate certificates",
+            "CweIDs" : [ "CWE-299" ],
+            "Status" : "fixed",
+            "PkgName" : "py3-pip-wheel",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-111943",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/10/20/29", "https://access.redhat.com/errata/RHSA-2026:91719", "https://access.redhat.com/errata/RHSA-2026:91720", "https://access.redhat.com/security/cve/CVE-2026-111943", "https://bugzilla.redhat.com/2556068", "https://bugzilla.redhat.com/show_bug.cgi?id=2556068", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-111943", "https://errata.almalinux.org/9/ALSA-2026-91719.html", "https://errata.rockylinux.org/RLSA-2026:91720", "https://github.com/golang/go/issues/82345", "https://go.dev/cl/851047", "https://go.dev/issue/82345", "https://groups.google.com/g/golang-announce/c/66pojueaQek", "https://groups.google.com/g/golang-nuts/c/K22sG2AYnKU", "https://linux.oracle.com/cve/CVE-2026-111943.html", "https://linux.oracle.com/errata/ELSA-2026-91720.html", "https://nvd.nist.gov/vuln/detail/CVE-2026-111943", "https://pkg.go.dev/vuln/GO-2026-6809", "https://www.cve.org/CVERecord?id=CVE-2026-111943" ],
+            "Description" : "On most platforms, Go uses the given system root certificates. However, in some narrower cases, the system trust stores may not be updated without further action. To defend against the narrower set of cases that may remain affected, a denylist was added in crypto/x509 to return an error when calling Verify with any of the known intermediate certificates that are no longer considered to be trustworthy.",
+            "Fingerprint" : "sha256:cdaf8d5b5a3b36592d5c188625c7be0bcc3ba8908a476c5ffcbe6597726a8c01",
+            "FixedVersion" : "26.2.2-r2",
+            "PkgIdentifier" : {
+              "UID" : "e312a630b5feffa5",
+              "PURL" : "pkg:apk/wolfi/py3-pip-wheel@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-21T01:17:20.797Z",
+            "VendorSeverity" : {
+              "alma" : 3,
+              "rocky" : 3,
+              "amazon" : 2,
+              "redhat" : 3,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-111943",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-30T13:18:28.74Z"
+          }, {
             "CVSS" : {
               "ghsa" : {
                 "V3Score" : 7.5,
@@ -61,7 +102,7 @@
             "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
             "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
             "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
-            "Fingerprint" : "sha256:05c0df5fcdde60ec40d329c872604dce249aa0dca877449efd02a17bf8d834e6",
+            "Fingerprint" : "sha256:a1c4fd213584fdfa8aa20cf2363c0e08df70c84994910612e7371bac9c843b07",
             "FixedVersion" : "26.2.2-r1",
             "PkgIdentifier" : {
               "UID" : "e312a630b5feffa5",
@@ -75,6 +116,47 @@
             "VulnerabilityID" : "CVE-2026-114613",
             "InstalledVersion" : "26.2.2-r0",
             "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 6.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3.11-pip@26.2.2-r0",
+            "Title" : "crypto/x509: golang: crypto/x509: Man-in-the-middle attacks via untrusted intermediate certificates",
+            "CweIDs" : [ "CWE-299" ],
+            "Status" : "fixed",
+            "PkgName" : "py3.11-pip",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-111943",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/10/20/29", "https://access.redhat.com/errata/RHSA-2026:91719", "https://access.redhat.com/errata/RHSA-2026:91720", "https://access.redhat.com/security/cve/CVE-2026-111943", "https://bugzilla.redhat.com/2556068", "https://bugzilla.redhat.com/show_bug.cgi?id=2556068", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-111943", "https://errata.almalinux.org/9/ALSA-2026-91719.html", "https://errata.rockylinux.org/RLSA-2026:91720", "https://github.com/golang/go/issues/82345", "https://go.dev/cl/851047", "https://go.dev/issue/82345", "https://groups.google.com/g/golang-announce/c/66pojueaQek", "https://groups.google.com/g/golang-nuts/c/K22sG2AYnKU", "https://linux.oracle.com/cve/CVE-2026-111943.html", "https://linux.oracle.com/errata/ELSA-2026-91720.html", "https://nvd.nist.gov/vuln/detail/CVE-2026-111943", "https://pkg.go.dev/vuln/GO-2026-6809", "https://www.cve.org/CVERecord?id=CVE-2026-111943" ],
+            "Description" : "On most platforms, Go uses the given system root certificates. However, in some narrower cases, the system trust stores may not be updated without further action. To defend against the narrower set of cases that may remain affected, a denylist was added in crypto/x509 to return an error when calling Verify with any of the known intermediate certificates that are no longer considered to be trustworthy.",
+            "Fingerprint" : "sha256:65b17222210509e680472b35166f39501c3659d06078b5161aeb919b1de6245e",
+            "FixedVersion" : "26.2.2-r2",
+            "PkgIdentifier" : {
+              "UID" : "13c556fe77452e6c",
+              "PURL" : "pkg:apk/wolfi/py3.11-pip@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-21T01:17:20.797Z",
+            "VendorSeverity" : {
+              "alma" : 3,
+              "rocky" : 3,
+              "amazon" : 2,
+              "redhat" : 3,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-111943",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-30T13:18:28.74Z"
           }, {
             "CVSS" : {
               "ghsa" : {
@@ -103,7 +185,7 @@
             "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
             "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
             "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
-            "Fingerprint" : "sha256:72241be71c43f2f43bf0804c436bf55694ad6c76dbcfc7cda05a13eaf297829b",
+            "Fingerprint" : "sha256:1d72b5d9578606fa8d4ed78fdebb8c2732cf7eb1eab5c784e68c4dca9b031d3c",
             "FixedVersion" : "26.2.2-r1",
             "PkgIdentifier" : {
               "UID" : "13c556fe77452e6c",
@@ -117,6 +199,47 @@
             "VulnerabilityID" : "CVE-2026-114613",
             "InstalledVersion" : "26.2.2-r0",
             "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 6.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3.11-pip-base@26.2.2-r0",
+            "Title" : "crypto/x509: golang: crypto/x509: Man-in-the-middle attacks via untrusted intermediate certificates",
+            "CweIDs" : [ "CWE-299" ],
+            "Status" : "fixed",
+            "PkgName" : "py3.11-pip-base",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-111943",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/10/20/29", "https://access.redhat.com/errata/RHSA-2026:91719", "https://access.redhat.com/errata/RHSA-2026:91720", "https://access.redhat.com/security/cve/CVE-2026-111943", "https://bugzilla.redhat.com/2556068", "https://bugzilla.redhat.com/show_bug.cgi?id=2556068", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-111943", "https://errata.almalinux.org/9/ALSA-2026-91719.html", "https://errata.rockylinux.org/RLSA-2026:91720", "https://github.com/golang/go/issues/82345", "https://go.dev/cl/851047", "https://go.dev/issue/82345", "https://groups.google.com/g/golang-announce/c/66pojueaQek", "https://groups.google.com/g/golang-nuts/c/K22sG2AYnKU", "https://linux.oracle.com/cve/CVE-2026-111943.html", "https://linux.oracle.com/errata/ELSA-2026-91720.html", "https://nvd.nist.gov/vuln/detail/CVE-2026-111943", "https://pkg.go.dev/vuln/GO-2026-6809", "https://www.cve.org/CVERecord?id=CVE-2026-111943" ],
+            "Description" : "On most platforms, Go uses the given system root certificates. However, in some narrower cases, the system trust stores may not be updated without further action. To defend against the narrower set of cases that may remain affected, a denylist was added in crypto/x509 to return an error when calling Verify with any of the known intermediate certificates that are no longer considered to be trustworthy.",
+            "Fingerprint" : "sha256:d57bbe653f68aede814fd24d05c968bce4beceed114cd5fbdb1f239444005638",
+            "FixedVersion" : "26.2.2-r2",
+            "PkgIdentifier" : {
+              "UID" : "7c76833665079f6",
+              "PURL" : "pkg:apk/wolfi/py3.11-pip-base@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-21T01:17:20.797Z",
+            "VendorSeverity" : {
+              "alma" : 3,
+              "rocky" : 3,
+              "amazon" : 2,
+              "redhat" : 3,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-111943",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-30T13:18:28.74Z"
           }, {
             "CVSS" : {
               "ghsa" : {
@@ -145,7 +268,7 @@
             "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
             "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
             "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
-            "Fingerprint" : "sha256:ed1a850895c77c680ff9bdfb9545de00f658d48d7209104cc4b8670878f08d8b",
+            "Fingerprint" : "sha256:df1c6e2ba9bd80b5170ab896651a67e9229cb031fea989946e392761098d01bb",
             "FixedVersion" : "26.2.2-r1",
             "PkgIdentifier" : {
               "UID" : "7c76833665079f6",
@@ -189,7 +312,7 @@
             "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
             "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
             "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
-            "Fingerprint" : "sha256:b88db5951d49719d2f97fdbc3f8dac1ed446429b1a7975897d3b86560cbf81ce",
+            "Fingerprint" : "sha256:721a90ae660502734a5a93b84cd9415f9c260b7bd0809774087ca2880bd918b2",
             "FixedVersion" : "1.2.3",
             "PkgIdentifier" : {
               "UID" : "31fb384af0a0e9ca",
@@ -240,9 +363,9 @@
               "Name" : "GitHub Security Advisory pip"
             },
             "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
-            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:13578", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/9/ALSA-2025-13578.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:13578", "https://access.redhat.com/errata/RHSA-2025:9940", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/9/ALSA-2025-13578.html", "https://errata.rockylinux.org/RLSA-2025:9940", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
             "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
-            "Fingerprint" : "sha256:a6ffeb548ce9fa731f0f78d2c636459e2825dadec6ba0c7862e6d8b10056f72d",
+            "Fingerprint" : "sha256:319bd631969b8533eaa4e5ab1d1d80705430f738d6f725399528b5ed108d9356",
             "FixedVersion" : "78.1.1",
             "PkgIdentifier" : {
               "UID" : "c5eccaa7d8e0c308",
@@ -269,12 +392,12 @@
             "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
           } ]
         },
-        "startedAt" : "2026-10-30T15:34:43.506+00:00",
-        "finishedAt" : "2026-10-30T15:35:56.052+00:00"
+        "startedAt" : "2026-10-31T21:59:50.294+00:00",
+        "finishedAt" : "2026-10-31T22:01:54.337+00:00"
       },
       "sastScanResult" : {
         "tool" : "opengrep",
-        "version" : "1.31.0",
+        "version" : "1.33.1",
         "target" : "/app/repo",
         "success" : true,
         "complete" : true,
@@ -293,20 +416,20 @@
           },
           "errors" : [ ],
           "results" : [ ],
-          "version" : "1.31.0",
+          "version" : "1.33.1",
           "skipped_rules" : [ ],
           "interfile_languages_used" : [ ]
         },
-        "startedAt" : "2026-10-30T15:34:41.188+00:00",
-        "finishedAt" : "2026-10-30T15:34:43.262+00:00"
+        "startedAt" : "2026-10-31T21:59:43.551+00:00",
+        "finishedAt" : "2026-10-31T21:59:48.165+00:00"
       },
       "malwareScanResult" : {
         "tool" : "clamav",
         "success" : true,
         "infectedCount" : 0,
         "findings" : [ ],
-        "startedAt" : "2026-10-30T15:35:56.063+00:00",
-        "finishedAt" : "2026-10-30T15:36:04.302+00:00"
+        "startedAt" : "2026-10-31T22:01:54.354+00:00",
+        "finishedAt" : "2026-10-31T22:02:03.648+00:00"
       },
       "imageName" : "uci-fetch:72b4338600d66fcc4d9978293d6fc6f288330d92"
     },

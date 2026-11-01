@@ -1,210 +1,524 @@
 {
-  "name": "scanet",
-  "uniqueAppId": "72a2e8d5-7ad2-4837-9fb7-e533818553ae",
-  "slug": "scanet",
-  "type": "SELF_LEARNED",
-  "supportsFederatedLearning": false,
-  "sourceUrl": "https://github.com/FedLearnNet/tool-scanet",
-  "authors": [
-    {
-      "keycloakId": "admin"
-    }
-  ],
-  "versions": [
-    {
-      "appVersion": "0.0.0",
-      "publishHash": "2068b8a44709c9261dd6b9e2832cca4d639f224e",
-      "versionPublishStatus": "PUBLISHED",
-      "needsInternetAccess": false,
-      "needsHostAccess": false,
-      "shortDescription": "Preprocesses single-cell expression data with SCANet and exports cell clusters, embeddings, and QC plots.",
-      "longDescription": "# scanet\n\nPreprocesses single-cell expression data with SCANet and exports cell clusters, embeddings, and QC plots.\n\n## Runtime inputs\n\nProvide an AnnData `.h5ad` file through the `data` input. SCANet preprocessing\nexpects a sparse expression matrix in `adata.X` (CSR format is supported).\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `data` | PATH | Path to h5ad file (e.g. ./data/test_data.h5ad) |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `reduced_data` | PATH | Reduced dimensionality data file |\n| `cell_annotation` | IMAGE | Cell annotation visualization |\n| `cluster` | IMAGE | Cluster visualization |\n| `highly_variable_genes` | IMAGE | Highly variable genes plot |\n| `violin_plot` | IMAGE | Violin plot of QC metrics (n_genes, total_counts, pct_mito) |\n| `processed_data` | PATH | Processed data file |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `min_cell` | `3` | Minimum number of cells for gene filtering |\n| `threshold` | `0.1` | Threshold for mitochondrial gene filtering |\n| `top_n_genes` | `500` | Number of top genes to select |\n| `cell_annotation` | `leiden` | Cell annotation method for clustering |\n| `num_rep_cells` | `50` | Number of representative cells per cluster |\n| `n_pcs` | `10` | Number of principal components |\n| `n_neighbors` | `5` | Number of neighbors for UMAP |\n| `method` | `UMAP` | Dimensionality reduction method |\n| `lowerbound` | `500` | Lower bound for cell filtering |\n| `upperbound` | `5000` | Upper bound for cell filtering (max genes per cell) |\n| `nbins` | `10` | Number of bins for histogram |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-scanet .`.\n",
-      "appConfig": {
-        "hyperparams": [
-          {
-            "default": "3",
-            "description": "Minimum number of cells for gene filtering",
-            "maxValue": 100.0,
-            "minValue": 1.0,
-            "name": "min_cell",
-            "options": [],
-            "type": "INTEGER",
-            "variableName": "min_cell",
-            "mode": "BOTH"
+  "name" : "scanet",
+  "uniqueAppId" : "72a2e8d5-7ad2-4837-9fb7-e533818553ae",
+  "slug" : "scanet",
+  "type" : "SELF_LEARNED",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://github.com/FedLearnNet/tool-scanet",
+  "authors" : [ {
+    "keycloakId" : "admin"
+  } ],
+  "versions" : [ {
+    "appVersion" : "0.0.0",
+    "publishHash" : "2068b8a44709c9261dd6b9e2832cca4d639f224e",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "shortDescription" : "Preprocesses single-cell expression data with SCANet and exports cell clusters, embeddings, and QC plots.",
+    "longDescription" : "# scanet\n\nPreprocesses single-cell expression data with SCANet and exports cell clusters, embeddings, and QC plots.\n\n## Runtime inputs\n\nProvide an AnnData `.h5ad` file through the `data` input. SCANet preprocessing\nexpects a sparse expression matrix in `adata.X` (CSR format is supported).\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `data` | PATH | Path to h5ad file (e.g. ./data/test_data.h5ad) |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `reduced_data` | PATH | Reduced dimensionality data file |\n| `cell_annotation` | IMAGE | Cell annotation visualization |\n| `cluster` | IMAGE | Cluster visualization |\n| `highly_variable_genes` | IMAGE | Highly variable genes plot |\n| `violin_plot` | IMAGE | Violin plot of QC metrics (n_genes, total_counts, pct_mito) |\n| `processed_data` | PATH | Processed data file |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `min_cell` | `3` | Minimum number of cells for gene filtering |\n| `threshold` | `0.1` | Threshold for mitochondrial gene filtering |\n| `top_n_genes` | `500` | Number of top genes to select |\n| `cell_annotation` | `leiden` | Cell annotation method for clustering |\n| `num_rep_cells` | `50` | Number of representative cells per cluster |\n| `n_pcs` | `10` | Number of principal components |\n| `n_neighbors` | `5` | Number of neighbors for UMAP |\n| `method` | `UMAP` | Dimensionality reduction method |\n| `lowerbound` | `500` | Lower bound for cell filtering |\n| `upperbound` | `5000` | Upper bound for cell filtering (max genes per cell) |\n| `nbins` | `10` | Number of bins for histogram |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-scanet .`.\n",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "default" : "3",
+        "description" : "Minimum number of cells for gene filtering",
+        "maxValue" : 100.0,
+        "minValue" : 1.0,
+        "name" : "min_cell",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "min_cell",
+        "mode" : "BOTH"
+      }, {
+        "default" : "0.1",
+        "description" : "Threshold for mitochondrial gene filtering",
+        "maxValue" : 1.0,
+        "minValue" : 0.0,
+        "name" : "threshold",
+        "options" : [ ],
+        "type" : "FLOAT",
+        "variableName" : "threshold",
+        "mode" : "BOTH"
+      }, {
+        "default" : "500",
+        "description" : "Number of top genes to select",
+        "maxValue" : 5000.0,
+        "minValue" : 10.0,
+        "name" : "top_n_genes",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "top_n_genes",
+        "mode" : "BOTH"
+      }, {
+        "default" : "leiden",
+        "description" : "Cell annotation method for clustering",
+        "name" : "cell_annotation",
+        "options" : [ "leiden" ],
+        "type" : "CATEGORICAL",
+        "variableName" : "cell_annotation",
+        "mode" : "BOTH"
+      }, {
+        "default" : "50",
+        "description" : "Number of representative cells per cluster",
+        "maxValue" : 1000.0,
+        "minValue" : 1.0,
+        "name" : "num_rep_cells",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "num_rep_cells",
+        "mode" : "BOTH"
+      }, {
+        "default" : "10",
+        "description" : "Number of principal components",
+        "maxValue" : 100.0,
+        "minValue" : 1.0,
+        "name" : "n_pcs",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "n_pcs",
+        "mode" : "BOTH"
+      }, {
+        "default" : "5",
+        "description" : "Number of neighbors for UMAP",
+        "maxValue" : 50.0,
+        "minValue" : 1.0,
+        "name" : "n_neighbors",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "n_neighbors",
+        "mode" : "BOTH"
+      }, {
+        "default" : "UMAP",
+        "description" : "Dimensionality reduction method",
+        "name" : "method",
+        "options" : [ "PCA", "UMAP" ],
+        "type" : "CATEGORICAL",
+        "variableName" : "method",
+        "mode" : "BOTH"
+      }, {
+        "default" : "500",
+        "description" : "Lower bound for cell filtering",
+        "maxValue" : 10000.0,
+        "minValue" : 0.0,
+        "name" : "lowerbound",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "lowerbound",
+        "mode" : "BOTH"
+      }, {
+        "default" : "5000",
+        "description" : "Upper bound for cell filtering (max genes per cell)",
+        "maxValue" : 10000.0,
+        "minValue" : 0.0,
+        "name" : "upperbound",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "upperbound",
+        "mode" : "BOTH"
+      }, {
+        "default" : "10",
+        "description" : "Number of bins for histogram",
+        "maxValue" : 100.0,
+        "minValue" : 1.0,
+        "name" : "nbins",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "nbins",
+        "mode" : "BOTH"
+      } ],
+      "input" : [ {
+        "description" : "Path to h5ad file (e.g. ./data/test_data.h5ad)",
+        "name" : "data",
+        "required" : true,
+        "type" : "PATH",
+        "variableName" : "data",
+        "mode" : "BOTH"
+      } ],
+      "output" : [ {
+        "description" : "Reduced dimensionality data file",
+        "name" : "reduced_data",
+        "required" : false,
+        "type" : "PATH",
+        "variableName" : "reduced_data",
+        "mode" : "BOTH"
+      }, {
+        "description" : "Cell annotation visualization",
+        "name" : "cell_annotation",
+        "required" : false,
+        "type" : "IMAGE",
+        "variableName" : "cell_annotation",
+        "mode" : "BOTH"
+      }, {
+        "description" : "Cluster visualization",
+        "name" : "cluster",
+        "required" : false,
+        "type" : "IMAGE",
+        "variableName" : "cluster",
+        "mode" : "BOTH"
+      }, {
+        "description" : "Highly variable genes plot",
+        "name" : "highly_variable_genes",
+        "required" : false,
+        "type" : "IMAGE",
+        "variableName" : "highly_variable_genes",
+        "mode" : "BOTH"
+      }, {
+        "description" : "Violin plot of QC metrics (n_genes, total_counts, pct_mito)",
+        "name" : "violin_plot",
+        "required" : false,
+        "type" : "IMAGE",
+        "variableName" : "violin_plot",
+        "mode" : "BOTH"
+      }, {
+        "description" : "Processed data file",
+        "name" : "processed_data",
+        "required" : false,
+        "type" : "PATH",
+        "variableName" : "processed_data",
+        "mode" : "BOTH"
+      } ]
+    },
+    "publishInfo" : {
+      "commitHash" : "2068b8a44709c9261dd6b9e2832cca4d639f224e",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-scanet/blob/2068b8a44709c9261dd6b9e2832cca4d639f224e/data/README.md" ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "localhost:5001/flnet/tools/scanet:2068b8a44709c9261dd6b9e2832cca4d639f224e",
+        "success" : false,
+        "summary" : {
+          "critical" : 0,
+          "high" : 6,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 6
+        },
+        "rawReport" : {
+          "os-pkgs-wolfi" : [ {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3-pip-wheel@26.2.2-r0",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "py3-pip-wheel",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:963bb6bf9752eecd9e005ba73034b3de24ec1c1b707f46b5c3c9cab3f6e55fd5",
+            "FixedVersion" : "26.2.2-r1",
+            "PkgIdentifier" : {
+              "UID" : "e312a630b5feffa5",
+              "PURL" : "pkg:apk/wolfi/py3-pip-wheel@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3.11-pip@26.2.2-r0",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "py3.11-pip",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:45ad17565f022557604e9b24d2a2ca6d1f39fd413bad1999aadce0c40089b524",
+            "FixedVersion" : "26.2.2-r1",
+            "PkgIdentifier" : {
+              "UID" : "13c556fe77452e6c",
+              "PURL" : "pkg:apk/wolfi/py3.11-pip@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3.11-pip-base@26.2.2-r0",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "py3.11-pip-base",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:eb968ae3d9df5ba1de5e44995fccbdd84dc55447881658aa7fd17ea11032887b",
+            "FixedVersion" : "26.2.2-r1",
+            "PkgIdentifier" : {
+              "UID" : "7c76833665079f6",
+              "PURL" : "pkg:apk/wolfi/py3.11-pip-base@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          } ],
+          "lang-pkgs-python-pkg" : [ {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:7f4269b6f697f22026d574f3546cfe9d3479ba7f714c0b6b7a671fd21e7a9ab1"
+            },
+            "PkgID" : "msgpack@1.2.1",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "msgpack",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-j586-36cw-2gc2" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:a3a245a3f6576dcc5fecaf7286afbfd823ebe3449de6e09ed7b8b11b3959251d",
+            "FixedVersion" : "1.2.3",
+            "PkgIdentifier" : {
+              "UID" : "31fb384af0a0e9ca",
+              "PURL" : "pkg:pypi/msgpack@1.2.1",
+              "BOMRef" : "pkg:pypi/msgpack@1.2.1"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "1.2.1",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:H"
+              },
+              "julia" : {
+                "V3Score" : 7,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 5.3,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:838798af00595472246148e0641dac3510b95207b86042b7255801b4cecb2314"
+            },
+            "Title" : "apache-arrow: Apache Arrow C++: Denial of Service via Use After Free vulnerability when reading IPC files",
+            "CweIDs" : [ "CWE-416" ],
+            "Status" : "fixed",
+            "PkgName" : "pyarrow",
+            "PkgPath" : "opt/venv/lib/python3.11/site-packages/pyarrow-19.0.1.dist-info/METADATA",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-rgxp-2hwp-jwgg" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-25087",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/02/17/4", "https://access.redhat.com/security/cve/CVE-2026-25087", "https://advisory.echohq.com/cve/CVE-2026-25087", "https://github.com/advisories/GHSA-rgxp-2hwp-jwgg", "https://github.com/apache/arrow", "https://github.com/apache/arrow/pull/48925", "https://github.com/pypa/advisory-database/tree/main/vulns/pyarrow/PYSEC-2026-113.yaml", "https://lists.apache.org/thread/mpm4ld1qony30tchfpjtk5b11tcyvmwh", "https://nvd.nist.gov/vuln/detail/CVE-2026-25087", "https://www.cve.org/CVERecord?id=CVE-2026-25087" ],
+            "Description" : "Use After Free vulnerability in Apache Arrow C++.\n\nThis issue affects Apache Arrow C++ from 15.0.0 through 23.0.0. It can be triggered when reading an Arrow IPC file (but not an IPC stream) with pre-buffering enabled, if the IPC file contains data with variadic buffers (such as Binary View and String View data). Depending on the number of variadic buffers in a record batch column and on the temporal sequence of multi-threaded IO, a write to a dangling pointer could occur. The value (a `std::shared_ptr<Buffer>` object) that is written to the dangling pointer is not under direct control of the attacker.\n\nPre-buffering is disabled by default but can be enabled using a specific C++ API call (`RecordBatchFileReader::PreBufferMetadata`). The functionality is not exposed in language bindings (Python, Ruby, C GLib), so these bindings are not vulnerable.\n\nThe most likely consequence of this issue would be random crashes or memory corruption when reading specific kinds of IPC files. If the application allows ingesting IPC files from untrusted sources, this could plausibly be exploited for denial of service. Inducing more targeted kinds of misbehavior (such as confidential data extraction from the running process) depends on memory allocation and multi-threaded IO temporal patterns that are unlikely to be easily controlled by an attacker.\n\nAdvice for users of Arrow C++:\n\n1. check whether you enable pre-buffering on the IPC file reader (using `RecordBatchFileReader::PreBufferMetadata`)\n\n2. if so, either disable pre-buffering (which may have adverse performance consequences), or switch to Arrow 23.0.1 which is not vulnerable",
+            "Fingerprint" : "sha256:6d75d1c6f4a6aae7b819ead0d4052a6ff0332d41a3dbc83970be1dd464b281c2",
+            "FixedVersion" : "23.0.1",
+            "PkgIdentifier" : {
+              "UID" : "887e564b517c3bfd",
+              "PURL" : "pkg:pypi/pyarrow@19.0.1"
+            },
+            "PublishedDate" : "2026-02-17T14:16:01.947Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "azure" : 2,
+              "julia" : 3,
+              "redhat" : 2
+            },
+            "VulnerabilityID" : "CVE-2026-25087",
+            "InstalledVersion" : "19.0.1",
+            "LastModifiedDate" : "2026-06-17T10:24:05.973Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 8.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "ghsa" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              },
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:L"
+              },
+              "bitnami" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:7f4269b6f697f22026d574f3546cfe9d3479ba7f714c0b6b7a671fd21e7a9ab1"
+            },
+            "PkgID" : "setuptools@70.3.0",
+            "Title" : "setuptools: Path Traversal Vulnerability in setuptools PackageIndex",
+            "CweIDs" : [ "CWE-22" ],
+            "Status" : "fixed",
+            "PkgName" : "setuptools",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-5rjg-fvgr-3xxf" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:13578", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/9/ALSA-2025-13578.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
+            "Fingerprint" : "sha256:e7926673ab09aff4e3264422672d1abdf16a3838704516adada194421f1d795f",
+            "FixedVersion" : "78.1.1",
+            "PkgIdentifier" : {
+              "UID" : "c5eccaa7d8e0c308",
+              "PURL" : "pkg:pypi/setuptools@70.3.0",
+              "BOMRef" : "pkg:pypi/setuptools@70.3.0"
+            },
+            "PublishedDate" : "2025-05-17T16:15:19.11Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 2,
+              "ghsa" : 3,
+              "azure" : 3,
+              "rocky" : 2,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "bitnami" : 3,
+              "oracle-oval" : 2
+            },
+            "VulnerabilityID" : "CVE-2025-47273",
+            "InstalledVersion" : "70.3.0",
+            "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
+          } ]
+        },
+        "startedAt" : "2026-10-30T16:49:45.297+00:00",
+        "finishedAt" : "2026-10-30T17:07:38.211+00:00"
+      },
+      "sastScanResult" : {
+        "tool" : "opengrep",
+        "version" : "1.33.1",
+        "target" : "/app/repo",
+        "success" : true,
+        "complete" : true,
+        "scannedFiles" : 4,
+        "summary" : {
+          "error" : 0,
+          "warning" : 0,
+          "info" : 0,
+          "unknown" : 0
+        },
+        "findings" : [ ],
+        "errors" : [ ],
+        "rawReport" : {
+          "paths" : {
+            "scanned" : [ "/app/repo/app.py", "/app/repo/config.py", "/app/repo/main.py", "/app/repo/setup_docker.py" ]
           },
-          {
-            "default": "0.1",
-            "description": "Threshold for mitochondrial gene filtering",
-            "maxValue": 1.0,
-            "minValue": 0.0,
-            "name": "threshold",
-            "options": [],
-            "type": "FLOAT",
-            "variableName": "threshold",
-            "mode": "BOTH"
-          },
-          {
-            "default": "500",
-            "description": "Number of top genes to select",
-            "maxValue": 5000.0,
-            "minValue": 10.0,
-            "name": "top_n_genes",
-            "options": [],
-            "type": "INTEGER",
-            "variableName": "top_n_genes",
-            "mode": "BOTH"
-          },
-          {
-            "default": "leiden",
-            "description": "Cell annotation method for clustering",
-            "name": "cell_annotation",
-            "options": [
-              "leiden"
-            ],
-            "type": "CATEGORICAL",
-            "variableName": "cell_annotation",
-            "mode": "BOTH"
-          },
-          {
-            "default": "50",
-            "description": "Number of representative cells per cluster",
-            "maxValue": 1000.0,
-            "minValue": 1.0,
-            "name": "num_rep_cells",
-            "options": [],
-            "type": "INTEGER",
-            "variableName": "num_rep_cells",
-            "mode": "BOTH"
-          },
-          {
-            "default": "10",
-            "description": "Number of principal components",
-            "maxValue": 100.0,
-            "minValue": 1.0,
-            "name": "n_pcs",
-            "options": [],
-            "type": "INTEGER",
-            "variableName": "n_pcs",
-            "mode": "BOTH"
-          },
-          {
-            "default": "5",
-            "description": "Number of neighbors for UMAP",
-            "maxValue": 50.0,
-            "minValue": 1.0,
-            "name": "n_neighbors",
-            "options": [],
-            "type": "INTEGER",
-            "variableName": "n_neighbors",
-            "mode": "BOTH"
-          },
-          {
-            "default": "UMAP",
-            "description": "Dimensionality reduction method",
-            "name": "method",
-            "options": [
-              "PCA",
-              "UMAP"
-            ],
-            "type": "CATEGORICAL",
-            "variableName": "method",
-            "mode": "BOTH"
-          },
-          {
-            "default": "500",
-            "description": "Lower bound for cell filtering",
-            "maxValue": 10000.0,
-            "minValue": 0.0,
-            "name": "lowerbound",
-            "options": [],
-            "type": "INTEGER",
-            "variableName": "lowerbound",
-            "mode": "BOTH"
-          },
-          {
-            "default": "5000",
-            "description": "Upper bound for cell filtering (max genes per cell)",
-            "maxValue": 10000.0,
-            "minValue": 0.0,
-            "name": "upperbound",
-            "options": [],
-            "type": "INTEGER",
-            "variableName": "upperbound",
-            "mode": "BOTH"
-          },
-          {
-            "default": "10",
-            "description": "Number of bins for histogram",
-            "maxValue": 100.0,
-            "minValue": 1.0,
-            "name": "nbins",
-            "options": [],
-            "type": "INTEGER",
-            "variableName": "nbins",
-            "mode": "BOTH"
-          }
-        ],
-        "input": [
-          {
-            "description": "Path to h5ad file (e.g. ./data/test_data.h5ad)",
-            "name": "data",
-            "required": true,
-            "type": "PATH",
-            "variableName": "data",
-            "mode": "BOTH"
-          }
-        ],
-        "output": [
-          {
-            "description": "Reduced dimensionality data file",
-            "name": "reduced_data",
-            "required": false,
-            "type": "PATH",
-            "variableName": "reduced_data",
-            "mode": "BOTH"
-          },
-          {
-            "description": "Cell annotation visualization",
-            "name": "cell_annotation",
-            "required": false,
-            "type": "IMAGE",
-            "variableName": "cell_annotation",
-            "mode": "BOTH"
-          },
-          {
-            "description": "Cluster visualization",
-            "name": "cluster",
-            "required": false,
-            "type": "IMAGE",
-            "variableName": "cluster",
-            "mode": "BOTH"
-          },
-          {
-            "description": "Highly variable genes plot",
-            "name": "highly_variable_genes",
-            "required": false,
-            "type": "IMAGE",
-            "variableName": "highly_variable_genes",
-            "mode": "BOTH"
-          },
-          {
-            "description": "Violin plot of QC metrics (n_genes, total_counts, pct_mito)",
-            "name": "violin_plot",
-            "required": false,
-            "type": "IMAGE",
-            "variableName": "violin_plot",
-            "mode": "BOTH"
-          },
-          {
-            "description": "Processed data file",
-            "name": "processed_data",
-            "required": false,
-            "type": "PATH",
-            "variableName": "processed_data",
-            "mode": "BOTH"
-          }
-        ]
-      }
-    }
-  ]
+          "errors" : [ ],
+          "results" : [ ],
+          "version" : "1.33.1",
+          "skipped_rules" : [ ],
+          "interfile_languages_used" : [ ]
+        },
+        "startedAt" : "2026-10-30T16:47:25.940+00:00",
+        "finishedAt" : "2026-10-30T16:47:28.143+00:00"
+      },
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ],
+        "startedAt" : "2026-10-30T17:07:38.232+00:00",
+        "finishedAt" : "2026-10-30T17:07:46.858+00:00"
+      },
+      "imageName" : "scanet:2068b8a44709c9261dd6b9e2832cca4d639f224e"
+    },
+    "imageName" : "scanet:2068b8a44709c9261dd6b9e2832cca4d639f224e"
+  } ]
 }

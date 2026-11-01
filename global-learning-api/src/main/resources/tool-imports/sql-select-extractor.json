@@ -130,7 +130,7 @@
             "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
             "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
             "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
-            "Fingerprint" : "sha256:fde1037059e170fb977ccd89e0f1e6173b71a1be531f2cad40bb2d9b36e76278",
+            "Fingerprint" : "sha256:bcacabe85bc539e2ee06aa5601d107eb0281de177d02f2162694c554f9f90372",
             "FixedVersion" : "26.2.2-r1",
             "PkgIdentifier" : {
               "UID" : "e312a630b5feffa5",
@@ -172,7 +172,7 @@
             "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
             "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
             "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
-            "Fingerprint" : "sha256:07c141ba9284660a31f9cf88f69bec212c9b1555014bb43f3bef440902d543ed",
+            "Fingerprint" : "sha256:70e1410cffcd762cde4f126b273f888f3a5768c3f8ef3fb2fcffb1edd9e9c947",
             "FixedVersion" : "26.2.2-r1",
             "PkgIdentifier" : {
               "UID" : "13c556fe77452e6c",
@@ -214,7 +214,7 @@
             "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
             "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
             "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
-            "Fingerprint" : "sha256:4d180a769a5b9270c026813185456352f713ca3bafa65784a2e23602bf13fb3b",
+            "Fingerprint" : "sha256:b13b2c89731524e8537a7d0fe2d093e05106eb76a004c97e618421e54049a881",
             "FixedVersion" : "26.2.2-r1",
             "PkgIdentifier" : {
               "UID" : "7c76833665079f6",
@@ -258,7 +258,7 @@
             "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
             "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
             "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
-            "Fingerprint" : "sha256:50a5112a884accd42ecdd6d8c2bccde19d48a9582dc678d19737a2c081de82ac",
+            "Fingerprint" : "sha256:3ccbc55eec1d3202f2838cb7e60f903a7e733f6fe86a181cbfc55068b43cb2e8",
             "FixedVersion" : "1.2.3",
             "PkgIdentifier" : {
               "UID" : "31fb384af0a0e9ca",
@@ -311,7 +311,7 @@
             "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
             "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:13578", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/9/ALSA-2025-13578.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
             "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
-            "Fingerprint" : "sha256:ca6031c508c98db4d1de44c7742b2b1f79d38b0dcb3a20e208cf57ba176a9e9e",
+            "Fingerprint" : "sha256:7b919b90b9fddbb263337f61185b88e5dba2c00609f9fe65476bb5ab2b126825",
             "FixedVersion" : "78.1.1",
             "PkgIdentifier" : {
               "UID" : "c5eccaa7d8e0c308",
@@ -338,12 +338,12 @@
             "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
           } ]
         },
-        "startedAt" : "2026-10-30T15:38:10.025+00:00",
-        "finishedAt" : "2026-10-30T15:38:58.065+00:00"
+        "startedAt" : "2026-10-30T19:09:42.077+00:00",
+        "finishedAt" : "2026-10-30T19:38:25.793+00:00"
       },
       "sastScanResult" : {
         "tool" : "opengrep",
-        "version" : "1.31.0",
+        "version" : "1.33.1",
         "target" : "/app/repo",
         "success" : true,
         "complete" : true,
@@ -362,20 +362,20 @@
           },
           "errors" : [ ],
           "results" : [ ],
-          "version" : "1.31.0",
+          "version" : "1.33.1",
           "skipped_rules" : [ ],
           "interfile_languages_used" : [ ]
         },
-        "startedAt" : "2026-10-30T15:38:06.515+00:00",
-        "finishedAt" : "2026-10-30T15:38:09.633+00:00"
+        "startedAt" : "2026-10-30T19:08:59.083+00:00",
+        "finishedAt" : "2026-10-30T19:09:05.909+00:00"
       },
       "malwareScanResult" : {
         "tool" : "clamav",
         "success" : true,
         "infectedCount" : 0,
         "findings" : [ ],
-        "startedAt" : "2026-10-30T15:38:58.072+00:00",
-        "finishedAt" : "2026-10-30T15:39:04.750+00:00"
+        "startedAt" : "2026-10-30T19:38:25.837+00:00",
+        "finishedAt" : "2026-10-30T19:55:29.172+00:00"
       },
       "imageName" : "sql-select-extractor:1ed7072f60a88c344a3dd2e2eb8b4ae6c0076192"
     },

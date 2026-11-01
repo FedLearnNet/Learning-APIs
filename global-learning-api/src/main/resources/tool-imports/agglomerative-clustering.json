@@ -1,168 +1,428 @@
 {
-  "name": "agglomerative-clustering",
-  "uniqueAppId": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b",
-  "slug": "agglomerative-clustering",
-  "type": "SELF_LEARNED",
-  "supportsFederatedLearning": false,
-  "sourceUrl": "https://github.com/FedLearnNet/tool-agglomerative-clustering",
-  "authors": [
-    {
-      "keycloakId": "test"
+  "name" : "agglomerative-clustering",
+  "uniqueAppId" : "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b",
+  "slug" : "agglomerative-clustering",
+  "type" : "SELF_LEARNED",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://github.com/FedLearnNet/tool-agglomerative-clustering",
+  "authors" : [ {
+    "keycloakId" : "test"
+  }, {
+    "keycloakId" : "admin"
+  } ],
+  "versions" : [ {
+    "appVersion" : "5.0.1",
+    "publishHash" : "733b937bf1d5ab5c25c6faf3f27f015736b83d8b",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "shortDescription" : "Runs hierarchical agglomerative clustering and generates a dendrogram image and summary report.",
+    "longDescription" : "# agglomerative-clustering\n\nRuns hierarchical agglomerative clustering and generates a dendrogram image and summary report.\n\n## Input and outputs\n\nProvide a numeric CSV table as `features`. The implementation fits Ward/Euclidean\nagglomerative clustering on the first four columns. Supply feature columns without\nan identifier column.\n\n- `dendrogram_png`: a PNG file containing the SciPy dendrogram.\n- `report`: a plain-text summary of the fitted cluster count.\n- Metrics: `samples` and `clusters`, calculated from the fitted result.\n\n`distance_threshold` controls the clustering cut; its default `0.0` builds the full\nhierarchy. `plot_title`, `dendrogram_truncate_mode`, and `dendrogram_p` control the\nplot. The existing `linkage`, `metric`, `standardize`, `compute_distances`,\n`use_distance_threshold`, and `n_clusters` fields are retained for compatibility;\nthe current fitting implementation does not apply those settings.\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` contains only\nadditional runtime dependencies; `requirements-dev.txt` includes the API for local development.\n\nBuild with `docker build -t tool-agglomerative-clustering .`.\nThe image runs as `nonroot` and uses Matplotlib's headless Agg backend.\n",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "default" : "ward",
+        "description" : "Linkage strategy for hierarchical merges. Note: 'ward' requires metric='euclidean'.",
+        "name" : "linkage",
+        "options" : [ "ward", "complete", "average", "single" ],
+        "type" : "CATEGORICAL",
+        "variableName" : "linkage",
+        "mode" : "BOTH"
+      }, {
+        "default" : "1",
+        "description" : "Store distances between merged clusters (needed for plotting an accurate dendrogram in some settings).",
+        "name" : "compute_distances",
+        "options" : [ ],
+        "type" : "BOOLEAN",
+        "variableName" : "compute_distances",
+        "mode" : "BOTH"
+      }, {
+        "default" : "1",
+        "description" : "Standardize features to zero mean / unit variance before clustering (recommended).",
+        "name" : "standardize",
+        "options" : [ ],
+        "type" : "BOOLEAN",
+        "variableName" : "standardize",
+        "mode" : "BOTH"
+      }, {
+        "default" : "euclidean",
+        "description" : "Distance metric for clustering (ignored when linkage='ward', which always uses euclidean).",
+        "name" : "metric",
+        "options" : [ "euclidean", "manhattan", "cosine" ],
+        "type" : "CATEGORICAL",
+        "variableName" : "metric",
+        "mode" : "BOTH"
+      }, {
+        "default" : "1",
+        "description" : "If true, build the full tree with distance_threshold=0 and n_clusters=None to enable a dendrogram.",
+        "name" : "use_distance_threshold",
+        "options" : [ ],
+        "type" : "BOOLEAN",
+        "variableName" : "use_distance_threshold",
+        "mode" : "BOTH"
+      }, {
+        "default" : "2",
+        "description" : "Number of clusters to cut the tree into (used only if use_distance_threshold=false).",
+        "maxValue" : 200.0,
+        "minValue" : 2.0,
+        "name" : "n_clusters",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "n_clusters",
+        "mode" : "BOTH"
+      }, {
+        "default" : "Agglomerative Clustering Dendrogram",
+        "description" : "Title text for the dendrogram.",
+        "name" : "plot_title",
+        "options" : [ ],
+        "pattern" : "^.{0,120}$",
+        "type" : "STRING",
+        "variableName" : "plot_title",
+        "mode" : "BOTH"
+      }, {
+        "default" : "none",
+        "description" : "Truncation mode for the dendrogram plot. 'none' shows the full tree; 'lastp' keeps the last P leaves; 'level' shows the last P merging levels.",
+        "name" : "dendrogram_truncate_mode",
+        "options" : [ "none", "lastp", "level" ],
+        "type" : "CATEGORICAL",
+        "variableName" : "dendrogram_truncate_mode",
+        "mode" : "BOTH"
+      }, {
+        "default" : "30",
+        "description" : "Parameter P for truncate_mode 'lastp' or 'level' (ignored when truncate_mode='none').",
+        "maxValue" : 10000.0,
+        "minValue" : 1.0,
+        "name" : "dendrogram_p",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "dendrogram_p",
+        "mode" : "BOTH"
+      }, {
+        "default" : "0.0",
+        "description" : "Height at which to cut the dendrogram to form clusters (used only if use_distance_threshold=true). Set to 0.0 to compute the full tree like in the scikit-learn example.",
+        "minValue" : 0.0,
+        "name" : "distance_threshold",
+        "options" : [ ],
+        "type" : "FLOAT",
+        "variableName" : "distance_threshold",
+        "mode" : "BOTH"
+      } ],
+      "input" : [ {
+        "description" : "Numeric feature table. The first four columns are used for clustering; provide features without an identifier column.",
+        "mode" : "BOTH",
+        "name" : "features",
+        "required" : true,
+        "type" : "CSV",
+        "variableName" : "features"
+      } ],
+      "output" : [ {
+        "description" : "PNG file containing the dendrogram plot.",
+        "mode" : "BOTH",
+        "name" : "dendrogram_png",
+        "required" : false,
+        "type" : "IMAGE",
+        "variableName" : "dendrogram_png"
+      }, {
+        "description" : "Plain-text summary of the fitted cluster count.",
+        "mode" : "BOTH",
+        "name" : "report",
+        "required" : false,
+        "type" : "TEXT",
+        "variableName" : "report"
+      } ]
     },
-    {
-      "keycloakId": "admin"
-    }
-  ],
-  "versions": [
-    {
-      "appVersion": "5.0.1",
-      "publishHash": "733b937bf1d5ab5c25c6faf3f27f015736b83d8b",
-      "versionPublishStatus": "PUBLISHED",
-      "needsInternetAccess": false,
-      "needsHostAccess": false,
-      "shortDescription": "Runs hierarchical agglomerative clustering and generates a dendrogram image and summary report.",
-      "longDescription": "# agglomerative-clustering\n\nRuns hierarchical agglomerative clustering and generates a dendrogram image and summary report.\n\n## Input and outputs\n\nProvide a numeric CSV table as `features`. The implementation fits Ward/Euclidean\nagglomerative clustering on the first four columns. Supply feature columns without\nan identifier column.\n\n- `dendrogram_png`: a PNG file containing the SciPy dendrogram.\n- `report`: a plain-text summary of the fitted cluster count.\n- Metrics: `samples` and `clusters`, calculated from the fitted result.\n\n`distance_threshold` controls the clustering cut; its default `0.0` builds the full\nhierarchy. `plot_title`, `dendrogram_truncate_mode`, and `dendrogram_p` control the\nplot. The existing `linkage`, `metric`, `standardize`, `compute_distances`,\n`use_distance_threshold`, and `n_clusters` fields are retained for compatibility;\nthe current fitting implementation does not apply those settings.\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs in .env before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` contains only\nadditional runtime dependencies; `requirements-dev.txt` includes the API for local development.\n\nBuild with `docker build -t tool-agglomerative-clustering .`.\nThe image runs as `nonroot` and uses Matplotlib's headless Agg backend.\n",
-      "appConfig": {
-        "hyperparams": [
-          {
-            "default": "ward",
-            "description": "Linkage strategy for hierarchical merges. Note: 'ward' requires metric='euclidean'.",
-            "name": "linkage",
-            "options": [
-              "ward",
-              "complete",
-              "average",
-              "single"
-            ],
-            "type": "CATEGORICAL",
-            "variableName": "linkage",
-            "mode": "BOTH"
+    "publishInfo" : {
+      "commitHash" : "733b937bf1d5ab5c25c6faf3f27f015736b83d8b",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-agglomerative-clustering/blob/733b937bf1d5ab5c25c6faf3f27f015736b83d8b/data/iris.csv" ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "localhost:5001/flnet/tools/agglomerative-clustering:733b937bf1d5ab5c25c6faf3f27f015736b83d8b",
+        "success" : false,
+        "summary" : {
+          "critical" : 0,
+          "high" : 5,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 5
+        },
+        "rawReport" : {
+          "os-pkgs-wolfi" : [ {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3-pip-wheel@26.2.2-r0",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "py3-pip-wheel",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:b23b2b1427bbdf305666dc26a2f3ea0b8b42ae3c8d7c4379f56e36ad15452970",
+            "FixedVersion" : "26.2.2-r1",
+            "PkgIdentifier" : {
+              "UID" : "e312a630b5feffa5",
+              "PURL" : "pkg:apk/wolfi/py3-pip-wheel@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3.11-pip@26.2.2-r0",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "py3.11-pip",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:eff72401f9fb1a3e80672b52902d2d29884a826fcc1e2a7e80668b60c5d6a219",
+            "FixedVersion" : "26.2.2-r1",
+            "PkgIdentifier" : {
+              "UID" : "13c556fe77452e6c",
+              "PURL" : "pkg:apk/wolfi/py3.11-pip@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3.11-pip-base@26.2.2-r0",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "py3.11-pip-base",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:6d5a072277f05f7482937df4e8b53400a2705e9cd54af02f26e5c3b5e2945ab3",
+            "FixedVersion" : "26.2.2-r1",
+            "PkgIdentifier" : {
+              "UID" : "7c76833665079f6",
+              "PURL" : "pkg:apk/wolfi/py3.11-pip-base@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          } ],
+          "lang-pkgs-python-pkg" : [ {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:7f4269b6f697f22026d574f3546cfe9d3479ba7f714c0b6b7a671fd21e7a9ab1"
+            },
+            "PkgID" : "msgpack@1.2.1",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "msgpack",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-j586-36cw-2gc2" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:10e4781c2316a81587a0a90e1c0f131f72e5eec1d7293313d70ed97f92189a3e",
+            "FixedVersion" : "1.2.3",
+            "PkgIdentifier" : {
+              "UID" : "31fb384af0a0e9ca",
+              "PURL" : "pkg:pypi/msgpack@1.2.1",
+              "BOMRef" : "pkg:pypi/msgpack@1.2.1"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "1.2.1",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 8.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "ghsa" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              },
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:L"
+              },
+              "bitnami" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:7f4269b6f697f22026d574f3546cfe9d3479ba7f714c0b6b7a671fd21e7a9ab1"
+            },
+            "PkgID" : "setuptools@70.3.0",
+            "Title" : "setuptools: Path Traversal Vulnerability in setuptools PackageIndex",
+            "CweIDs" : [ "CWE-22" ],
+            "Status" : "fixed",
+            "PkgName" : "setuptools",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-5rjg-fvgr-3xxf" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:13578", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/9/ALSA-2025-13578.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
+            "Fingerprint" : "sha256:ffaf3ceb6057eecf3a3f61f7b21922fef77b584400cf1c4717a98c844d66469c",
+            "FixedVersion" : "78.1.1",
+            "PkgIdentifier" : {
+              "UID" : "c5eccaa7d8e0c308",
+              "PURL" : "pkg:pypi/setuptools@70.3.0",
+              "BOMRef" : "pkg:pypi/setuptools@70.3.0"
+            },
+            "PublishedDate" : "2025-05-17T16:15:19.11Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 2,
+              "ghsa" : 3,
+              "azure" : 3,
+              "rocky" : 2,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "bitnami" : 3,
+              "oracle-oval" : 2
+            },
+            "VulnerabilityID" : "CVE-2025-47273",
+            "InstalledVersion" : "70.3.0",
+            "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
+          } ]
+        },
+        "startedAt" : "2026-10-30T18:10:08.934+00:00",
+        "finishedAt" : "2026-10-30T18:10:35.034+00:00"
+      },
+      "sastScanResult" : {
+        "tool" : "opengrep",
+        "version" : "1.33.1",
+        "target" : "/app/repo",
+        "success" : true,
+        "complete" : true,
+        "scannedFiles" : 2,
+        "summary" : {
+          "error" : 0,
+          "warning" : 0,
+          "info" : 0,
+          "unknown" : 0
+        },
+        "findings" : [ ],
+        "errors" : [ ],
+        "rawReport" : {
+          "paths" : {
+            "scanned" : [ "/app/repo/app.py", "/app/repo/main.py" ]
           },
-          {
-            "default": "1",
-            "description": "Store distances between merged clusters (needed for plotting an accurate dendrogram in some settings).",
-            "name": "compute_distances",
-            "options": [],
-            "type": "BOOLEAN",
-            "variableName": "compute_distances",
-            "mode": "BOTH"
-          },
-          {
-            "default": "1",
-            "description": "Standardize features to zero mean / unit variance before clustering (recommended).",
-            "name": "standardize",
-            "options": [],
-            "type": "BOOLEAN",
-            "variableName": "standardize",
-            "mode": "BOTH"
-          },
-          {
-            "default": "euclidean",
-            "description": "Distance metric for clustering (ignored when linkage='ward', which always uses euclidean).",
-            "name": "metric",
-            "options": [
-              "euclidean",
-              "manhattan",
-              "cosine"
-            ],
-            "type": "CATEGORICAL",
-            "variableName": "metric",
-            "mode": "BOTH"
-          },
-          {
-            "default": "1",
-            "description": "If true, build the full tree with distance_threshold=0 and n_clusters=None to enable a dendrogram.",
-            "name": "use_distance_threshold",
-            "options": [],
-            "type": "BOOLEAN",
-            "variableName": "use_distance_threshold",
-            "mode": "BOTH"
-          },
-          {
-            "default": "2",
-            "description": "Number of clusters to cut the tree into (used only if use_distance_threshold=false).",
-            "maxValue": 200.0,
-            "minValue": 2.0,
-            "name": "n_clusters",
-            "options": [],
-            "type": "INTEGER",
-            "variableName": "n_clusters",
-            "mode": "BOTH"
-          },
-          {
-            "default": "Agglomerative Clustering Dendrogram",
-            "description": "Title text for the dendrogram.",
-            "name": "plot_title",
-            "options": [],
-            "pattern": "^.{0,120}$",
-            "type": "STRING",
-            "variableName": "plot_title",
-            "mode": "BOTH"
-          },
-          {
-            "default": "none",
-            "description": "Truncation mode for the dendrogram plot. 'none' shows the full tree; 'lastp' keeps the last P leaves; 'level' shows the last P merging levels.",
-            "name": "dendrogram_truncate_mode",
-            "options": [
-              "none",
-              "lastp",
-              "level"
-            ],
-            "type": "CATEGORICAL",
-            "variableName": "dendrogram_truncate_mode",
-            "mode": "BOTH"
-          },
-          {
-            "default": "30",
-            "description": "Parameter P for truncate_mode 'lastp' or 'level' (ignored when truncate_mode='none').",
-            "maxValue": 10000.0,
-            "minValue": 1.0,
-            "name": "dendrogram_p",
-            "options": [],
-            "type": "INTEGER",
-            "variableName": "dendrogram_p",
-            "mode": "BOTH"
-          },
-          {
-            "default": "0.0",
-            "description": "Height at which to cut the dendrogram to form clusters (used only if use_distance_threshold=true). Set to 0.0 to compute the full tree like in the scikit-learn example.",
-            "minValue": 0.0,
-            "name": "distance_threshold",
-            "options": [],
-            "type": "FLOAT",
-            "variableName": "distance_threshold",
-            "mode": "BOTH"
-          }
-        ],
-        "input": [
-          {
-            "description": "Numeric feature table. The first four columns are used for clustering; provide features without an identifier column.",
-            "mode": "BOTH",
-            "name": "features",
-            "required": true,
-            "type": "CSV",
-            "variableName": "features"
-          }
-        ],
-        "output": [
-          {
-            "description": "PNG file containing the dendrogram plot.",
-            "mode": "BOTH",
-            "name": "dendrogram_png",
-            "required": false,
-            "type": "IMAGE",
-            "variableName": "dendrogram_png"
-          },
-          {
-            "description": "Plain-text summary of the fitted cluster count.",
-            "mode": "BOTH",
-            "name": "report",
-            "required": false,
-            "type": "TEXT",
-            "variableName": "report"
-          }
-        ]
-      }
-    }
-  ]
+          "errors" : [ ],
+          "results" : [ ],
+          "version" : "1.33.1",
+          "skipped_rules" : [ ],
+          "interfile_languages_used" : [ ]
+        },
+        "startedAt" : "2026-10-30T18:08:28.774+00:00",
+        "finishedAt" : "2026-10-30T18:08:38.782+00:00"
+      },
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ],
+        "startedAt" : "2026-10-30T18:10:35.045+00:00",
+        "finishedAt" : "2026-10-30T18:10:42.572+00:00"
+      },
+      "imageName" : "agglomerative-clustering:733b937bf1d5ab5c25c6faf3f27f015736b83d8b"
+    },
+    "imageName" : "agglomerative-clustering:733b937bf1d5ab5c25c6faf3f27f015736b83d8b"
+  } ]
 }

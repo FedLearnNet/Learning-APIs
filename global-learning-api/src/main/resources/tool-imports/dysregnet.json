@@ -1,170 +1,441 @@
 {
-  "name": "dysregnet",
-  "uniqueAppId": "b7d9f3e4-6a2c-4f8e-9b5d-7e3a1c8f4b2d",
-  "slug": "dysregnet",
-  "type": "SELF_LEARNED",
-  "supportsFederatedLearning": false,
-  "sourceUrl": "https://github.com/FedLearnNet/tool-dysregnet",
-  "authors": [
-    {
-      "keycloakId": "admin"
-    }
-  ],
-  "versions": [
-    {
-      "appVersion": "1.0.0",
-      "publishHash": "8b1c9f303e3ea7a2d0ddb95bd18143a5c170fa8c",
-      "versionPublishStatus": "PUBLISHED",
-      "needsInternetAccess": false,
-      "needsHostAccess": false,
-      "shortDescription": "Infers sample-specific dysregulated networks with DysRegNet and exports network results and plots.",
-      "longDescription": "# dysregnet\n\nInfers sample-specific dysregulated networks with DysRegNet and exports network results and plots.\n\n## Runtime inputs\n\nSupply input files according to the schemas in `app.yml`.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `grn` | CSV | Gene Regulatory Network (GRN) with two columns in the following order ['TF', 'target']. |\n| `meta` | CSV | Gene expression matrix in the format patients as rows (first column - patients/samples ids), and genes as columns. |\n| `expr` | CSV | Gene expression matrix in the format - patients as rows (first column - patients/samples ids), and genes as columns. |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `adjacency_heatmap` | IMAGE | Distribution of non-zero values (representing interaction strengths) |\n| `pvalue_distribution` | IMAGE | Heatmap of results matrix (sample of top interactions) |\n| `top_interactions` | IMAGE | Top 20 Strongest Regulatory Interactions |\n| `results` | CSV | Results of the analysis in CSV format |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `zscoring` | `false` | Apply z-score normalization to expression values before analysis. |\n| `bonferroni_alpha` | `0.01` | Bonferroni-corrected significance level (alpha). |\n| `r2_threshold` | `0.2` | R² threshold for filtering; set to null to disable. |\n| `normaltest` | `false` | Perform D’Agostino-Pearson normality test on residuals. |\n| `normaltest_alpha` | `0.001` | Alpha level for the normality test. |\n| `direction_condition` | `false` | Enforce directionality condition when assessing dysregulation. |\n| `con_cov` | `birth_days_to` | List of continuous covariates. They should match the name of their columns in the meta Dataframe, separated by commas. |\n| `cat_cov` | `race,gender` | List of categorical variable names. They should match the name of their columns in the meta Dataframe, separated by commas. |\n| `con_col` | `sample_type` | Column name for the condition in the meta DataFrame. |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-dysregnet .`.\n",
-      "appConfig": {
-        "hyperparams": [
-          {
-            "default": "false",
-            "description": "Apply z-score normalization to expression values before analysis.",
-            "minValue": "0",
-            "name": "zscoring",
-            "options": [],
-            "type": "BOOLEAN",
-            "variableName": "zscoring",
-            "mode": "BOTH"
+  "name" : "dysregnet",
+  "uniqueAppId" : "b7d9f3e4-6a2c-4f8e-9b5d-7e3a1c8f4b2d",
+  "slug" : "dysregnet",
+  "type" : "SELF_LEARNED",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://github.com/FedLearnNet/tool-dysregnet",
+  "authors" : [ {
+    "keycloakId" : "admin"
+  } ],
+  "versions" : [ {
+    "appVersion" : "1.0.0",
+    "publishHash" : "8b1c9f303e3ea7a2d0ddb95bd18143a5c170fa8c",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "shortDescription" : "Infers sample-specific dysregulated networks with DysRegNet and exports network results and plots.",
+    "longDescription" : "# dysregnet\n\nInfers sample-specific dysregulated networks with DysRegNet and exports network results and plots.\n\n## Runtime inputs\n\nSupply input files according to the schemas in `app.yml`.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `grn` | CSV | Gene Regulatory Network (GRN) with two columns in the following order ['TF', 'target']. |\n| `meta` | CSV | Gene expression matrix in the format patients as rows (first column - patients/samples ids), and genes as columns. |\n| `expr` | CSV | Gene expression matrix in the format - patients as rows (first column - patients/samples ids), and genes as columns. |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `adjacency_heatmap` | IMAGE | Distribution of non-zero values (representing interaction strengths) |\n| `pvalue_distribution` | IMAGE | Heatmap of results matrix (sample of top interactions) |\n| `top_interactions` | IMAGE | Top 20 Strongest Regulatory Interactions |\n| `results` | CSV | Results of the analysis in CSV format |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `zscoring` | `false` | Apply z-score normalization to expression values before analysis. |\n| `bonferroni_alpha` | `0.01` | Bonferroni-corrected significance level (alpha). |\n| `r2_threshold` | `0.2` | R² threshold for filtering; set to null to disable. |\n| `normaltest` | `false` | Perform D’Agostino-Pearson normality test on residuals. |\n| `normaltest_alpha` | `0.001` | Alpha level for the normality test. |\n| `direction_condition` | `false` | Enforce directionality condition when assessing dysregulation. |\n| `con_cov` | `birth_days_to` | List of continuous covariates. They should match the name of their columns in the meta Dataframe, separated by commas. |\n| `cat_cov` | `race,gender` | List of categorical variable names. They should match the name of their columns in the meta Dataframe, separated by commas. |\n| `con_col` | `sample_type` | Column name for the condition in the meta DataFrame. |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-dysregnet .`.\n",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "default" : "false",
+        "description" : "Apply z-score normalization to expression values before analysis.",
+        "minValue" : "0",
+        "name" : "zscoring",
+        "options" : [ ],
+        "type" : "BOOLEAN",
+        "variableName" : "zscoring",
+        "mode" : "BOTH"
+      }, {
+        "default" : "0.01",
+        "description" : "Bonferroni-corrected significance level (alpha).",
+        "minValue" : "0",
+        "name" : "bonferroni_alpha",
+        "options" : [ ],
+        "type" : "FLOAT",
+        "variableName" : "bonferroni_alpha",
+        "mode" : "BOTH"
+      }, {
+        "default" : "0.2",
+        "description" : "R² threshold for filtering; set to null to disable.",
+        "name" : "r2_threshold",
+        "options" : [ ],
+        "type" : "FLOAT",
+        "variableName" : "r2_threshold",
+        "mode" : "BOTH"
+      }, {
+        "default" : "false",
+        "description" : "Perform D’Agostino-Pearson normality test on residuals.",
+        "name" : "normaltest",
+        "options" : [ ],
+        "type" : "BOOLEAN",
+        "variableName" : "normaltest",
+        "mode" : "BOTH"
+      }, {
+        "default" : "0.001",
+        "description" : "Alpha level for the normality test.",
+        "name" : "normaltest_alpha",
+        "options" : [ ],
+        "type" : "FLOAT",
+        "variableName" : "normaltest_alpha",
+        "mode" : "BOTH"
+      }, {
+        "default" : "false",
+        "description" : "Enforce directionality condition when assessing dysregulation.",
+        "name" : "direction_condition",
+        "options" : [ ],
+        "type" : "BOOLEAN",
+        "variableName" : "direction_condition",
+        "mode" : "BOTH"
+      }, {
+        "description" : "List of continuous covariates. They should match the name of their columns in the meta Dataframe, separated by commas.",
+        "default" : "birth_days_to",
+        "name" : "con_cov",
+        "options" : [ ],
+        "type" : "STRING",
+        "variableName" : "con_cov",
+        "mode" : "BOTH"
+      }, {
+        "description" : "List of categorical variable names. They should match the name of their columns in the meta Dataframe, separated by commas.",
+        "default" : "race,gender",
+        "name" : "cat_cov",
+        "options" : [ ],
+        "type" : "STRING",
+        "variableName" : "cat_cov",
+        "mode" : "BOTH"
+      }, {
+        "description" : "Column name for the condition in the meta DataFrame.",
+        "default" : "sample_type",
+        "name" : "con_col",
+        "options" : [ ],
+        "type" : "STRING",
+        "variableName" : "con_col",
+        "mode" : "BOTH"
+      } ],
+      "input" : [ {
+        "description" : "Gene Regulatory Network (GRN) with two columns in the following order ['TF', 'target'].",
+        "name" : "grn",
+        "required" : true,
+        "hasHeader" : true,
+        "type" : "CSV",
+        "variableName" : "grn",
+        "mode" : "BOTH"
+      }, {
+        "description" : "Gene expression matrix in the format patients as rows (first column - patients/samples ids), and genes as columns.",
+        "name" : "meta",
+        "required" : true,
+        "type" : "CSV",
+        "hasHeader" : true,
+        "variableName" : "meta",
+        "mode" : "BOTH"
+      }, {
+        "description" : "Gene expression matrix in the format - patients as rows (first column - patients/samples ids), and genes as columns.",
+        "name" : "expr",
+        "required" : true,
+        "hasHeader" : true,
+        "type" : "CSV",
+        "variableName" : "expr",
+        "mode" : "BOTH"
+      } ],
+      "output" : [ {
+        "description" : "Distribution of non-zero values (representing interaction strengths)",
+        "name" : "adjacency_heatmap",
+        "type" : "IMAGE",
+        "variableName" : "adjacency_heatmap",
+        "mode" : "BOTH"
+      }, {
+        "description" : "Heatmap of results matrix (sample of top interactions)",
+        "name" : "pvalue_distribution",
+        "type" : "IMAGE",
+        "variableName" : "pvalue_distribution",
+        "mode" : "BOTH"
+      }, {
+        "description" : "Top 20 Strongest Regulatory Interactions",
+        "name" : "top_interactions",
+        "type" : "IMAGE",
+        "variableName" : "top_interactions",
+        "mode" : "BOTH"
+      }, {
+        "description" : "Results of the analysis in CSV format",
+        "name" : "results",
+        "type" : "CSV",
+        "variableName" : "results",
+        "mode" : "BOTH"
+      } ]
+    },
+    "publishInfo" : {
+      "commitHash" : "8b1c9f303e3ea7a2d0ddb95bd18143a5c170fa8c",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-dysregnet/blob/8b1c9f303e3ea7a2d0ddb95bd18143a5c170fa8c/data/README.md" ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "localhost:5001/flnet/tools/dysregnet:8b1c9f303e3ea7a2d0ddb95bd18143a5c170fa8c",
+        "success" : false,
+        "summary" : {
+          "critical" : 0,
+          "high" : 5,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 5
+        },
+        "rawReport" : {
+          "os-pkgs-wolfi" : [ {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3-pip-wheel@26.2.2-r0",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "py3-pip-wheel",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:5a683b935e9a6b27e38543ed4fc1aed641506a846d05b999ca4c209414e71a6c",
+            "FixedVersion" : "26.2.2-r1",
+            "PkgIdentifier" : {
+              "UID" : "e312a630b5feffa5",
+              "PURL" : "pkg:apk/wolfi/py3-pip-wheel@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3.11-pip@26.2.2-r0",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "py3.11-pip",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:5777c2fc1b23e9c8adcddd8f072d9bc6ea2b1a392b2de4dda2b55bc6dab231c8",
+            "FixedVersion" : "26.2.2-r1",
+            "PkgIdentifier" : {
+              "UID" : "13c556fe77452e6c",
+              "PURL" : "pkg:apk/wolfi/py3.11-pip@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3.11-pip-base@26.2.2-r0",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "py3.11-pip-base",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:41f16eaf2b4972e92d81a690be05345cee17faeed9816c9a55a983b66fa23f55",
+            "FixedVersion" : "26.2.2-r1",
+            "PkgIdentifier" : {
+              "UID" : "7c76833665079f6",
+              "PURL" : "pkg:apk/wolfi/py3.11-pip-base@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          } ],
+          "lang-pkgs-python-pkg" : [ {
+            "CVSS" : {
+              "ghsa" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "redhat" : {
+                "V3Score" : 7.5,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:7f4269b6f697f22026d574f3546cfe9d3479ba7f714c0b6b7a671fd21e7a9ab1"
+            },
+            "PkgID" : "msgpack@1.2.1",
+            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
+            "CweIDs" : [ "CWE-401" ],
+            "Status" : "fixed",
+            "PkgName" : "msgpack",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-j586-36cw-2gc2" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
+            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
+            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
+            "Fingerprint" : "sha256:a05f5fcfea1fcb41955a13633b0a24f8e1de753b2eb9ceedbb57b59f86596306",
+            "FixedVersion" : "1.2.3",
+            "PkgIdentifier" : {
+              "UID" : "31fb384af0a0e9ca",
+              "PURL" : "pkg:pypi/msgpack@1.2.1",
+              "BOMRef" : "pkg:pypi/msgpack@1.2.1"
+            },
+            "PublishedDate" : "2026-10-22T19:17:37.733Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "ghsa" : 3,
+              "redhat" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-114613",
+            "InstalledVersion" : "1.2.1",
+            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 8.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "ghsa" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              },
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:L"
+              },
+              "bitnami" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:7f4269b6f697f22026d574f3546cfe9d3479ba7f714c0b6b7a671fd21e7a9ab1"
+            },
+            "PkgID" : "setuptools@70.3.0",
+            "Title" : "setuptools: Path Traversal Vulnerability in setuptools PackageIndex",
+            "CweIDs" : [ "CWE-22" ],
+            "Status" : "fixed",
+            "PkgName" : "setuptools",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-5rjg-fvgr-3xxf" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:13578", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/9/ALSA-2025-13578.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
+            "Fingerprint" : "sha256:f3ccb6a3d2941057f0d98233914d02c122f16718880647e5acfb1585ad0d856b",
+            "FixedVersion" : "78.1.1",
+            "PkgIdentifier" : {
+              "UID" : "c5eccaa7d8e0c308",
+              "PURL" : "pkg:pypi/setuptools@70.3.0",
+              "BOMRef" : "pkg:pypi/setuptools@70.3.0"
+            },
+            "PublishedDate" : "2025-05-17T16:15:19.11Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 2,
+              "ghsa" : 3,
+              "azure" : 3,
+              "rocky" : 2,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "bitnami" : 3,
+              "oracle-oval" : 2
+            },
+            "VulnerabilityID" : "CVE-2025-47273",
+            "InstalledVersion" : "70.3.0",
+            "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
+          } ]
+        },
+        "startedAt" : "2026-10-30T17:41:14.200+00:00",
+        "finishedAt" : "2026-10-30T17:42:02.304+00:00"
+      },
+      "sastScanResult" : {
+        "tool" : "opengrep",
+        "version" : "1.33.1",
+        "target" : "/app/repo",
+        "success" : true,
+        "complete" : true,
+        "scannedFiles" : 4,
+        "summary" : {
+          "error" : 0,
+          "warning" : 0,
+          "info" : 0,
+          "unknown" : 0
+        },
+        "findings" : [ ],
+        "errors" : [ ],
+        "rawReport" : {
+          "paths" : {
+            "scanned" : [ "/app/repo/app.py", "/app/repo/config.py", "/app/repo/main.py", "/app/repo/model.py" ]
           },
-          {
-            "default": "0.01",
-            "description": "Bonferroni-corrected significance level (alpha).",
-            "minValue": "0",
-            "name": "bonferroni_alpha",
-            "options": [],
-            "type": "FLOAT",
-            "variableName": "bonferroni_alpha",
-            "mode": "BOTH"
-          },
-          {
-            "default": "0.2",
-            "description": "R² threshold for filtering; set to null to disable.",
-            "name": "r2_threshold",
-            "options": [],
-            "type": "FLOAT",
-            "variableName": "r2_threshold",
-            "mode": "BOTH"
-          },
-          {
-            "default": "false",
-            "description": "Perform D’Agostino-Pearson normality test on residuals.",
-            "name": "normaltest",
-            "options": [],
-            "type": "BOOLEAN",
-            "variableName": "normaltest",
-            "mode": "BOTH"
-          },
-          {
-            "default": "0.001",
-            "description": "Alpha level for the normality test.",
-            "name": "normaltest_alpha",
-            "options": [],
-            "type": "FLOAT",
-            "variableName": "normaltest_alpha",
-            "mode": "BOTH"
-          },
-          {
-            "default": "false",
-            "description": "Enforce directionality condition when assessing dysregulation.",
-            "name": "direction_condition",
-            "options": [],
-            "type": "BOOLEAN",
-            "variableName": "direction_condition",
-            "mode": "BOTH"
-          },
-          {
-            "description": "List of continuous covariates. They should match the name of their columns in the meta Dataframe, separated by commas.",
-            "default": "birth_days_to",
-            "name": "con_cov",
-            "options": [],
-            "type": "STRING",
-            "variableName": "con_cov",
-            "mode": "BOTH"
-          },
-          {
-            "description": "List of categorical variable names. They should match the name of their columns in the meta Dataframe, separated by commas.",
-            "default": "race,gender",
-            "name": "cat_cov",
-            "options": [],
-            "type": "STRING",
-            "variableName": "cat_cov",
-            "mode": "BOTH"
-          },
-          {
-            "description": "Column name for the condition in the meta DataFrame.",
-            "default": "sample_type",
-            "name": "con_col",
-            "options": [],
-            "type": "STRING",
-            "variableName": "con_col",
-            "mode": "BOTH"
-          }
-        ],
-        "input": [
-          {
-            "description": "Gene Regulatory Network (GRN) with two columns in the following order ['TF', 'target'].",
-            "name": "grn",
-            "required": true,
-            "hasHeader": true,
-            "type": "CSV",
-            "variableName": "grn",
-            "mode": "BOTH"
-          },
-          {
-            "description": "Gene expression matrix in the format patients as rows (first column - patients/samples ids), and genes as columns.",
-            "name": "meta",
-            "required": true,
-            "type": "CSV",
-            "hasHeader": true,
-            "variableName": "meta",
-            "mode": "BOTH"
-          },
-          {
-            "description": "Gene expression matrix in the format - patients as rows (first column - patients/samples ids), and genes as columns.",
-            "name": "expr",
-            "required": true,
-            "hasHeader": true,
-            "type": "CSV",
-            "variableName": "expr",
-            "mode": "BOTH"
-          }
-        ],
-        "output": [
-          {
-            "description": "Distribution of non-zero values (representing interaction strengths)",
-            "name": "adjacency_heatmap",
-            "type": "IMAGE",
-            "variableName": "adjacency_heatmap",
-            "mode": "BOTH"
-          },
-          {
-            "description": "Heatmap of results matrix (sample of top interactions)",
-            "name": "pvalue_distribution",
-            "type": "IMAGE",
-            "variableName": "pvalue_distribution",
-            "mode": "BOTH"
-          },
-          {
-            "description": "Top 20 Strongest Regulatory Interactions",
-            "name": "top_interactions",
-            "type": "IMAGE",
-            "variableName": "top_interactions",
-            "mode": "BOTH"
-          },
-          {
-            "description": "Results of the analysis in CSV format",
-            "name": "results",
-            "type": "CSV",
-            "variableName": "results",
-            "mode": "BOTH"
-          }
-        ]
-      }
-    }
-  ]
+          "errors" : [ ],
+          "results" : [ ],
+          "version" : "1.33.1",
+          "skipped_rules" : [ ],
+          "interfile_languages_used" : [ ]
+        },
+        "startedAt" : "2026-10-30T17:40:19.166+00:00",
+        "finishedAt" : "2026-10-30T17:40:21.983+00:00"
+      },
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ],
+        "startedAt" : "2026-10-30T17:42:02.314+00:00",
+        "finishedAt" : "2026-10-30T17:42:11.932+00:00"
+      },
+      "imageName" : "dysregnet:8b1c9f303e3ea7a2d0ddb95bd18143a5c170fa8c"
+    },
+    "imageName" : "dysregnet:8b1c9f303e3ea7a2d0ddb95bd18143a5c170fa8c"
+  } ]
 }
