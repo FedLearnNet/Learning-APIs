@@ -5,5 +5,5 @@ public enum ExecutionPurpose {
     TRAINING, //For local and global FL-Net
     PROCESSING, //For local and global processing. e.g. ETL
     TEST, //For testing an app in the developer's own app engine while it is built
-    ENGINE //For a built app the platform runs as the developer's app engine, it serves TEST runs
+    TEST_HOSTING //For a built app the platform hosts as the developer's app engine, it serves TEST runs
 }

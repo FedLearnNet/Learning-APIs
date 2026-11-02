@@ -48,7 +48,7 @@ public class TestEngineBO {
             start.upsertEnv("TEST_MODE", "true");
             return;
         }
-        start.upsertEnv("APP_API_KEY", toolApiKeyService.issue(Scope.TEST_ENGINE, appId));
+        start.upsertEnv("APP_API_KEY", toolApiKeyService.issue(Scope.TEST_EMBED_APP, appId));
         FLNetConfig.FederatedTestConfig federated = config.testEngine().federated();
         if (federated.useDockerizedController()) {
             start.upsertEnv("FL_TEST__USE_DOCKERIZED_CONTROLLER", "true");

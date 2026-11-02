@@ -46,9 +46,9 @@ class ToolEndpointSecurityPolicyTest {
 
     @Test
     void testEngineEndpointsAlsoAllowUsers() {
-        assertGrant("GET", "/testembed/42/app", "websocket", Scope.TEST_ENGINE, 42L);
-        assertGrant("POST", "/testembed/42/upload/output", null, Scope.TEST_ENGINE, 42L);
-        assertGrant("POST", "/testembed/42/upload/model", null, Scope.TEST_ENGINE, 42L);
+        assertGrant("GET", "/testembed/42/app", "websocket", Scope.TEST_EMBED_APP, 42L);
+        assertGrant("POST", "/testembed/42/upload/output", null, Scope.TEST_EMBED_APP, 42L);
+        assertGrant("POST", "/testembed/42/upload/model", null, Scope.TEST_EMBED_APP, 42L);
         assertTrue(ToolEndpointSecurityPolicy.match("GET", "/testembed/42/app", "websocket").orElseThrow().usersAllowed());
         assertFalse(ToolEndpointSecurityPolicy.match("GET", "/execution/workflow/42/app", "websocket").orElseThrow().usersAllowed());
         assertFalse(ToolEndpointSecurityPolicy.match("GET", "/testembed/42/upload/output/7", null).isPresent());

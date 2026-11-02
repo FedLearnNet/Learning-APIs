@@ -19,10 +19,10 @@ public class ExecutionRunDetailDTO extends ExecutionRunDTO {
     private String federatedAppVersionName;
     // The experiment the run belongs to, if any.
     private ExecutionExperimentDTO experiment;
-    // The ENGINE run whose container served the run; none for the developer's local engine.
+    // The TEST_HOSTING run whose container served the run; none for the developer's local engine.
     private Long testEngineId;
     private TestEngineMode testEngineMode;
-    // What the container of an ENGINE run is for.
+    // What the container of a TEST_HOSTING run is for.
     private TestEngineMode engineMode;
     // Who takes part in a federated run.
     private List<ExecutionParticipantDTO> participants = new ArrayList<>();

@@ -36,13 +36,13 @@ public class ExecutionRunEntity extends BaseExecutionRunEntity<ExecutionRunStepE
     @JoinColumn(name = "experiment_id")
     private ExecutionExperimentEntity experiment;
 
-    // The ENGINE run whose container served this test run; none for the developer's local engine
+    // The TEST_HOSTING run whose container served this test run; none for the developer's local engine
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "test_engine_id")
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private ExecutionRunEntity testEngine;
 
-    // What an ENGINE run's container is for
+    // What a TEST_HOSTING run's container is for
     @Enumerated(EnumType.STRING)
     @Column(name = "engine_mode", length = 32)
     private TestEngineMode engineMode;

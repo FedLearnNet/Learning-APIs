@@ -46,19 +46,22 @@ public class TestEngineEventsBO {
     @OnOverflow(OnOverflow.Strategy.DROP)
     Emitter<ExecutionRunDetailDTO> engineEmitter;
 
+    // ExecutionAttemptLauncher starts the container; watched on a thread of its own, the committed transaction stays behind
     void onAttemptLaunch(@Observes(during = TransactionPhase.AFTER_SUCCESS) AttemptLaunchEvent event) {
-        engineBO.watch(event.getAttemptId());
+        if (event.getPurpose() == ExecutionPurpose.TEST_HOSTING) {
+            virtualThreads.execute(() -> engineBO.watch(event.getAttemptId()));
+        }
     }
 
     void onAttemptFinished(@Observes(during = TransactionPhase.AFTER_SUCCESS) AttemptFinishedEvent event) {
-        if (event.getPurpose() == ExecutionPurpose.ENGINE) {
+        if (event.getPurpose() == ExecutionPurpose.TEST_HOSTING) {
             virtualThreads.execute(() -> runBO.cleanUpTransactional(event.getAttemptId()));
         }
     }
 
     void onRunsChanged(@Observes ExecutionRunsChangedEvent event) {
         List<Long> runIds = List.copyOf(event.getRunIds());
-        if (event.getPurpose() == ExecutionPurpose.ENGINE) {
+        if (event.getPurpose() == ExecutionPurpose.TEST_HOSTING) {
             runAO.listByIds(runIds).stream()
                     .map(run -> runMapper.mapRunEntityToDetailDTO(run, false))
                     .forEach(run -> {

@@ -83,7 +83,7 @@ public class TestEngineRunBO {
         }
 
         String name = version.getFederatedApp().getName() + " v" + version.getVersionFormatted();
-        ExecutionStartDTO start = new ExecutionStartDTO(ExecutionPurpose.ENGINE, ExecutionMode.SINGLE, name);
+        ExecutionStartDTO start = new ExecutionStartDTO(ExecutionPurpose.TEST_HOSTING, ExecutionMode.SINGLE, name);
         HyperParamSearchDTO search = HyperParamSearchDTO.fixed(new LinkedHashMap<>());
         LinkedHashMap<String, Object> inputs = new LinkedHashMap<>();
         ExecutionRunEntity engine = workflowExecutionBO.executeSingleTransactional(start, search, inputs,
@@ -134,7 +134,7 @@ public class TestEngineRunBO {
     @Transactional
     public boolean settleTransactional(Long attemptId, Integer exitCode, boolean timedOut) {
         ExecutionAttemptEntity attempt = attemptAO.findByIdWrite(attemptId).orElse(null);
-        if (attempt == null || attempt.hasEnded() || attempt.getStep().getRun().getPurpose() != ExecutionPurpose.ENGINE) {
+        if (attempt == null || attempt.hasEnded() || attempt.getStep().getRun().getPurpose() != ExecutionPurpose.TEST_HOSTING) {
             return true;
         }
         boolean selfTest = !attempt.getStep().getRun().getEngineMode().connects();
@@ -171,7 +171,7 @@ public class TestEngineRunBO {
         }
         ExecutionRunEntity engine = attempt.getStep().getRun();
         if (engine.getEngineMode().connects()) {
-            toolApiKeyService.revoke(Scope.TEST_ENGINE, attempt.getStep().getFederatedAppVersion().getFederatedApp().getId());
+            toolApiKeyService.revoke(Scope.TEST_EMBED_APP, attempt.getStep().getFederatedAppVersion().getFederatedApp().getId());
         }
         if (engine.getEngineMode() == TestEngineMode.SINGLE_RUN) {
             runAO.listOpenRunsOfTestEngine(engine.getId()).forEach(run -> workflowExecutionBO.stopTransactional(run.getId()));

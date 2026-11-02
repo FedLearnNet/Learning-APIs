@@ -6,6 +6,6 @@ public enum Scope {
     MODEL_PREDICTION_RUN,
     MODEL_WORKFLOW_RUN,
     PIPELINE_RUN,
-    // A built tool started by the platform as a developer's test engine; the run id is the app id
-    TEST_ENGINE
+    // The test engine container of an app, connecting as the APP of /testembed/{appId}; the run id is the app id
+    TEST_EMBED_APP
 }

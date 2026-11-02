@@ -129,7 +129,7 @@ public abstract class BaseStepCoordinator<
         attemptAO.persist(attempt);
 
         step.begin(RunStatusTypes.RUNNING);
-        events.attemptLaunch(attempt.getId());
+        events.attemptLaunch(attempt);
         Log.infof("Step %d starts trial %d as attempt %d", step.getId(), trialIndex, attempt.getId());
         return attempt;
     }

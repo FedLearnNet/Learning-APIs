@@ -81,14 +81,55 @@
         "success" : false,
         "summary" : {
           "critical" : 0,
-          "high" : 5,
+          "high" : 8,
           "medium" : 0,
           "low" : 0,
           "unknown" : 0,
-          "num" : 5
+          "num" : 8
         },
         "rawReport" : {
           "os-pkgs-wolfi" : [ {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 6.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3-pip-wheel@26.2.2-r0",
+            "Title" : "crypto/x509: golang: crypto/x509: Man-in-the-middle attacks via untrusted intermediate certificates",
+            "CweIDs" : [ "CWE-299" ],
+            "Status" : "fixed",
+            "PkgName" : "py3-pip-wheel",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-111943",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/10/20/29", "https://access.redhat.com/errata/RHSA-2026:91719", "https://access.redhat.com/errata/RHSA-2026:91720", "https://access.redhat.com/security/cve/CVE-2026-111943", "https://bugzilla.redhat.com/2556068", "https://bugzilla.redhat.com/show_bug.cgi?id=2556068", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-111943", "https://errata.almalinux.org/10/ALSA-2026-91720.html", "https://errata.rockylinux.org/RLSA-2026:91719", "https://github.com/golang/go/issues/82345", "https://go.dev/cl/851047", "https://go.dev/issue/82345", "https://groups.google.com/g/golang-announce/c/66pojueaQek", "https://groups.google.com/g/golang-nuts/c/K22sG2AYnKU", "https://linux.oracle.com/cve/CVE-2026-111943.html", "https://linux.oracle.com/errata/ELSA-2026-91720.html", "https://nvd.nist.gov/vuln/detail/CVE-2026-111943", "https://pkg.go.dev/vuln/GO-2026-6809", "https://www.cve.org/CVERecord?id=CVE-2026-111943" ],
+            "Description" : "On most platforms, Go uses the given system root certificates. However, in some narrower cases, the system trust stores may not be updated without further action. To defend against the narrower set of cases that may remain affected, a denylist was added in crypto/x509 to return an error when calling Verify with any of the known intermediate certificates that are no longer considered to be trustworthy.",
+            "Fingerprint" : "sha256:d87bcbb21cc2df5e06e3cfc7262e6a2c70445ce767b343a64ce7c3ee807f69b6",
+            "FixedVersion" : "26.2.2-r2",
+            "PkgIdentifier" : {
+              "UID" : "e312a630b5feffa5",
+              "PURL" : "pkg:apk/wolfi/py3-pip-wheel@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-21T01:17:20.797Z",
+            "VendorSeverity" : {
+              "alma" : 3,
+              "rocky" : 3,
+              "amazon" : 2,
+              "redhat" : 3,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-111943",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-30T13:18:28.74Z"
+          }, {
             "CVSS" : {
               "ghsa" : {
                 "V3Score" : 7.5,
@@ -132,6 +173,47 @@
             "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
           }, {
             "CVSS" : {
+              "redhat" : {
+                "V3Score" : 6.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3.11-pip@26.2.2-r0",
+            "Title" : "crypto/x509: golang: crypto/x509: Man-in-the-middle attacks via untrusted intermediate certificates",
+            "CweIDs" : [ "CWE-299" ],
+            "Status" : "fixed",
+            "PkgName" : "py3.11-pip",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-111943",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/10/20/29", "https://access.redhat.com/errata/RHSA-2026:91719", "https://access.redhat.com/errata/RHSA-2026:91720", "https://access.redhat.com/security/cve/CVE-2026-111943", "https://bugzilla.redhat.com/2556068", "https://bugzilla.redhat.com/show_bug.cgi?id=2556068", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-111943", "https://errata.almalinux.org/10/ALSA-2026-91720.html", "https://errata.rockylinux.org/RLSA-2026:91719", "https://github.com/golang/go/issues/82345", "https://go.dev/cl/851047", "https://go.dev/issue/82345", "https://groups.google.com/g/golang-announce/c/66pojueaQek", "https://groups.google.com/g/golang-nuts/c/K22sG2AYnKU", "https://linux.oracle.com/cve/CVE-2026-111943.html", "https://linux.oracle.com/errata/ELSA-2026-91720.html", "https://nvd.nist.gov/vuln/detail/CVE-2026-111943", "https://pkg.go.dev/vuln/GO-2026-6809", "https://www.cve.org/CVERecord?id=CVE-2026-111943" ],
+            "Description" : "On most platforms, Go uses the given system root certificates. However, in some narrower cases, the system trust stores may not be updated without further action. To defend against the narrower set of cases that may remain affected, a denylist was added in crypto/x509 to return an error when calling Verify with any of the known intermediate certificates that are no longer considered to be trustworthy.",
+            "Fingerprint" : "sha256:1a2560f8fac0218645dfc1700657b017152c353f1263d537e5507f6d6cb61e1c",
+            "FixedVersion" : "26.2.2-r2",
+            "PkgIdentifier" : {
+              "UID" : "13c556fe77452e6c",
+              "PURL" : "pkg:apk/wolfi/py3.11-pip@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-21T01:17:20.797Z",
+            "VendorSeverity" : {
+              "alma" : 3,
+              "rocky" : 3,
+              "amazon" : 2,
+              "redhat" : 3,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-111943",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-30T13:18:28.74Z"
+          }, {
+            "CVSS" : {
               "ghsa" : {
                 "V3Score" : 7.5,
                 "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
@@ -172,6 +254,47 @@
             "VulnerabilityID" : "CVE-2026-114613",
             "InstalledVersion" : "26.2.2-r0",
             "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
+          }, {
+            "CVSS" : {
+              "redhat" : {
+                "V3Score" : 6.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:N"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:8e13a8c373250aebbfce0a656411057355539e85ce660e34c566381dc4dc1171"
+            },
+            "PkgID" : "py3.11-pip-base@26.2.2-r0",
+            "Title" : "crypto/x509: golang: crypto/x509: Man-in-the-middle attacks via untrusted intermediate certificates",
+            "CweIDs" : [ "CWE-299" ],
+            "Status" : "fixed",
+            "PkgName" : "py3.11-pip-base",
+            "Severity" : "HIGH",
+            "DataSource" : {
+              "ID" : "wolfi",
+              "URL" : "https://packages.wolfi.dev/os/security.json",
+              "Name" : "Wolfi Secdb"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-111943",
+            "References" : [ "http://www.openwall.com/lists/oss-security/2026/10/20/29", "https://access.redhat.com/errata/RHSA-2026:91719", "https://access.redhat.com/errata/RHSA-2026:91720", "https://access.redhat.com/security/cve/CVE-2026-111943", "https://bugzilla.redhat.com/2556068", "https://bugzilla.redhat.com/show_bug.cgi?id=2556068", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-111943", "https://errata.almalinux.org/10/ALSA-2026-91720.html", "https://errata.rockylinux.org/RLSA-2026:91719", "https://github.com/golang/go/issues/82345", "https://go.dev/cl/851047", "https://go.dev/issue/82345", "https://groups.google.com/g/golang-announce/c/66pojueaQek", "https://groups.google.com/g/golang-nuts/c/K22sG2AYnKU", "https://linux.oracle.com/cve/CVE-2026-111943.html", "https://linux.oracle.com/errata/ELSA-2026-91720.html", "https://nvd.nist.gov/vuln/detail/CVE-2026-111943", "https://pkg.go.dev/vuln/GO-2026-6809", "https://www.cve.org/CVERecord?id=CVE-2026-111943" ],
+            "Description" : "On most platforms, Go uses the given system root certificates. However, in some narrower cases, the system trust stores may not be updated without further action. To defend against the narrower set of cases that may remain affected, a denylist was added in crypto/x509 to return an error when calling Verify with any of the known intermediate certificates that are no longer considered to be trustworthy.",
+            "Fingerprint" : "sha256:207db04565f160b028ee7b3ca7e9ab7200f0cdf987e167918e72f434fbc07461",
+            "FixedVersion" : "26.2.2-r2",
+            "PkgIdentifier" : {
+              "UID" : "7c76833665079f6",
+              "PURL" : "pkg:apk/wolfi/py3.11-pip-base@26.2.2-r0?arch=aarch64&distro=20230201"
+            },
+            "PublishedDate" : "2026-10-21T01:17:20.797Z",
+            "VendorSeverity" : {
+              "alma" : 3,
+              "rocky" : 3,
+              "amazon" : 2,
+              "redhat" : 3,
+              "oracle-oval" : 3
+            },
+            "VulnerabilityID" : "CVE-2026-111943",
+            "InstalledVersion" : "26.2.2-r0",
+            "LastModifiedDate" : "2026-10-30T13:18:28.74Z"
           }, {
             "CVSS" : {
               "ghsa" : {
@@ -295,7 +418,7 @@
               "Name" : "GitHub Security Advisory pip"
             },
             "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
-            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:13578", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/9/ALSA-2025-13578.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:9940", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/10/ALSA-2025-9940.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
             "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
             "Fingerprint" : "sha256:1a205509d7d106d668372f84ace8cb5502665afbd6319e3bd576910813f49021",
             "FixedVersion" : "78.1.1",
@@ -324,8 +447,8 @@
             "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
           } ]
         },
-        "startedAt" : "2026-10-30T19:09:43.932+00:00",
-        "finishedAt" : "2026-10-30T19:55:39.449+00:00"
+        "startedAt" : "2026-11-01T14:38:34.576+00:00",
+        "finishedAt" : "2026-11-01T14:42:36.831+00:00"
       },
       "sastScanResult" : {
         "tool" : "opengrep",
@@ -352,16 +475,16 @@
           "skipped_rules" : [ ],
           "interfile_languages_used" : [ ]
         },
-        "startedAt" : "2026-10-30T19:08:58.530+00:00",
-        "finishedAt" : "2026-10-30T19:09:05.301+00:00"
+        "startedAt" : "2026-11-01T14:38:32.237+00:00",
+        "finishedAt" : "2026-11-01T14:38:34.082+00:00"
       },
       "malwareScanResult" : {
         "tool" : "clamav",
         "success" : true,
         "infectedCount" : 0,
         "findings" : [ ],
-        "startedAt" : "2026-10-30T19:55:39.458+00:00",
-        "finishedAt" : "2026-10-30T20:25:36.932+00:00"
+        "startedAt" : "2026-11-01T14:42:36.847+00:00",
+        "finishedAt" : "2026-11-01T14:42:43.227+00:00"
       },
       "imageName" : "train-test-split:6c1a92c5ac69c52d243bbf343e4580bc80b676ab"
     },

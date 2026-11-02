@@ -45,7 +45,7 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
         super(Map.of(
                 ExecutionPurpose.ANALYSIS, new ExecutionCallback(Scope.MODEL_WORKFLOW_RUN, "execution/workflow"),
                 ExecutionPurpose.TRAINING, new ExecutionCallback(Scope.MODEL_WORKFLOW_RUN, "execution/workflow"),
-                ExecutionPurpose.ENGINE, new ExecutionCallback(Scope.TEST_ENGINE, "testembed")));
+                ExecutionPurpose.TEST_HOSTING, new ExecutionCallback(Scope.TEST_EMBED_APP, "testembed")));
     }
 
     @Override
@@ -80,7 +80,7 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
     @Override
     protected void customizeStart(ExecutionAttemptEntity attempt, StartWorkflowNodeDTO start) {
         start.setEnableRemoteResultSaving(attempt.getStep().getRun().getPurpose() == ExecutionPurpose.ANALYSIS);
-        if (attempt.getStep().getRun().getPurpose() == ExecutionPurpose.ENGINE) {
+        if (attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TEST_HOSTING) {
             testEngineBO.customizeStart(attempt, start);
         }
     }

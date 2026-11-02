@@ -39,8 +39,8 @@ public class ExecutionEventPublisher {
         stepChanged.fire(new StepChangedEvent(stepId));
     }
 
-    public void attemptLaunch(Long attemptId) {
-        attemptLaunch.fire(new AttemptLaunchEvent(attemptId));
+    public void attemptLaunch(BaseExecutionAttemptEntity<?, ?> attempt) {
+        attemptLaunch.fire(new AttemptLaunchEvent(attempt.getId(), attempt.getStep().getRun().getPurpose()));
     }
 
     public void attemptUpdated(Long attemptId) {
