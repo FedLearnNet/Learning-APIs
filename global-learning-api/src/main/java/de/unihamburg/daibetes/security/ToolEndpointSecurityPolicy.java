@@ -20,6 +20,7 @@ public class ToolEndpointSecurityPolicy extends BaseToolEndpointSecurityPolicy {
             websocket(Scope.MODEL_WORKFLOW_RUN, "/model/run/workflow/([^/]+)/app"),
             websocket(Scope.LOCAL_EXPERIMENT_RUN, "/project/experiment/local/([^/]+)/app"),
             websocket(Scope.FEDERATED_AGGREGATOR_RUN, "/project/experiment/federated/aggregator/([^/]+)/app"),
+            post(Scope.FEDERATED_AGGREGATOR_RUN, "/project/experiment/federated/aggregator/([^/]+)/upload/model"),
             // callbacks of the build pipeline container
             get(Scope.PIPELINE_RUN, "/pipeline/([^/]+)/info"),
             get(Scope.PIPELINE_RUN, "/pipeline/([^/]+)/zip"),
