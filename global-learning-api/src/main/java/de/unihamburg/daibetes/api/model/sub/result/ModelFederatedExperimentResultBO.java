@@ -60,9 +60,9 @@ public class ModelFederatedExperimentResultBO {
         }
 
         ProjectFederatedExperimentEntity experiment = findExperiment(dto.getGlobalFLExperimentUniqueId(), dto.getClinicId());
-        if (Boolean.FALSE.equals(experiment.getModelCanBePublic())) {
-            Log.warnf("Model of experiment %s cannot be public", experiment.getGlobalUniqueId());
-            throw new BadRequestException("Model of experiment " + experiment.getGlobalUniqueId() + " cannot be public");
+        if (!Boolean.TRUE.equals(experiment.getModelCanBePublic())) {
+            Log.warnf("Model of experiment %s is not set to be public", experiment.getGlobalUniqueId());
+            throw new BadRequestException("Model of experiment " + experiment.getGlobalUniqueId() + " is not set to be public");
         }
         FederatedAppVersionDTO appVersion = federatedAppVersionBO.getById(appVersionId);
         Long appId = appVersion.getFederatedAppId();
