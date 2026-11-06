@@ -61,9 +61,9 @@ public class ProjectFederatedExperimentAggregatorModelBO {
         ProjectFederatedExperimentStepEntity step = stepBO.findEntityByIdOptional(stepId)
                 .orElseThrow(() -> new NotFoundException("Step with id " + stepId + " not found"));
         ProjectFederatedExperimentEntity experiment = step.getExperiment();
-        if (Boolean.FALSE.equals(experiment.getModelCanBePublic())) {
-            Log.warnf("Model of experiment %s cannot be public", experiment.getGlobalUniqueId());
-            throw new BadRequestException("Model of experiment " + experiment.getGlobalUniqueId() + " cannot be public");
+        if (!Boolean.TRUE.equals(experiment.getModelCanBePublic())) {
+            Log.warnf("Model of experiment %s is not set to be public", experiment.getGlobalUniqueId());
+            throw new BadRequestException("Model of experiment " + experiment.getGlobalUniqueId() + " is not set to be public");
         }
 
         WorkflowDTO workflow = workflowBO.entityToDto(experiment.getWorkflow());
