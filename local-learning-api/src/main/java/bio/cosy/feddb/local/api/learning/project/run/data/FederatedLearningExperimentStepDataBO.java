@@ -135,7 +135,6 @@ public class FederatedLearningExperimentStepDataBO extends BaseBo<FederatedLearn
                 step.getExperiment().getUniqueRandomClinicId(),
                 step.getExperiment().getProject().getRequest().getGlobalFLExperimentUniqueId(),
                 Boolean.TRUE.equals(step.getExperiment().getProject().getIsCoordinator()),
-                Boolean.TRUE.equals(step.getExperiment().getProject().getRequest().getModelCanBePublic()),
                 null
         );
         saveResults(context);
@@ -165,7 +164,6 @@ public class FederatedLearningExperimentStepDataBO extends BaseBo<FederatedLearn
                 step.getExperiment().getUniqueRandomClinicId(),
                 step.getExperiment().getProject().getRequest().getGlobalFLExperimentUniqueId(),
                 isCoordinator,
-                Boolean.TRUE.equals(step.getExperiment().getProject().getRequest().getModelCanBePublic()),
                 null
         );
         uploadFiles(file.getFile(), context);
@@ -241,10 +239,6 @@ public class FederatedLearningExperimentStepDataBO extends BaseBo<FederatedLearn
             Log.infof("Skipping upload of model result to global API, not a coordinator");
             return;
         }
-        if (!context.modelCanBePublic()) {
-            Log.infof("Skipping upload of model result to global API, model cannot be public");
-            return;
-        }
         ClientMultipartForm form = buildClientMultipartForm(
                 file,
                 context.globalFLExperimentUniqueId(),
@@ -269,10 +263,6 @@ public class FederatedLearningExperimentStepDataBO extends BaseBo<FederatedLearn
     public void uploadFiles(List<File> files, StepResultContext context, List<FileDTO> internalFiles) {
         if (!context.coordinator()) {
             Log.infof("Skipping upload of model result to global API, not a coordinator");
-            return;
-        }
-        if (!context.modelCanBePublic()) {
-            Log.infof("Skipping upload of model result to global API, model cannot be public");
             return;
         }
         ClientMultipartForm form = buildClientMultipartForm(

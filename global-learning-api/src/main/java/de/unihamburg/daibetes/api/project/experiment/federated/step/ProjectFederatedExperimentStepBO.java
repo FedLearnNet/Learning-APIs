@@ -39,6 +39,10 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
         return ao.setPlatformAggregatorContainerTransactional(stepId, containerId, relayInfo);
     }
 
+    public boolean markPlatformAggregatorFinished(Long stepId) {
+        return ao.markPlatformAggregatorFinishedTransactional(stepId);
+    }
+
     @Inject
     ProjectFederatedExperimentParticipantAO participantAO;
 
@@ -86,8 +90,10 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
                     .filter(FederatedLearningRelayInfoDTO::getCoordinator)
                     .findFirst()
                     .orElse(null);
-            boolean anyClinicIsCoordinator = experiment.getParticipants().stream()
-                    .anyMatch(ProjectFederatedExperimentParticipantEntity::getIsCoordinator);
+            if (experiment.isPlatformIsCoordinator() && coordinatorInfo == null) {
+                throw new IllegalStateException("Relay server returned no coordinator slot for the platform aggregator of experiment "
+                        + experiment.getId());
+            }
 
             for (ProjectFederatedExperimentParticipantEntity participant : experiment.getParticipants()) {
                 String id = participant.getUniqueRandomClinicId();
@@ -110,10 +116,9 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
             step.setRelayStopped(false);
             ao.setRelayRunTransactional(step.getId(), step.getChannel(), step.getRelayKey(), relayClientIds);
 
-            // No clinic is coordinator - the relay server still minted a coordinator-only slot
-            // (v2) for whoever it is; that's the platform when platformIsCoordinator is active.
-            // Surface it instead of silently dropping it.
-            FederatedLearningRelayInfoDTO platformRelayInfo = anyClinicIsCoordinator ? null : coordinatorInfo;
+            // With the platform as coordinator no clinic takes the coordinator slot; hand it to the
+            // platform's own aggregator instead.
+            FederatedLearningRelayInfoDTO platformRelayInfo = experiment.isPlatformIsCoordinator() ? coordinatorInfo : null;
             return new FederatedRelaySetupResult(result, platformRelayInfo);
         }
 

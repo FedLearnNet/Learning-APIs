@@ -39,9 +39,10 @@ public class ProjectFederatedExperimentAggregatorWebsocketService extends Workfl
 
     @OnClose
     public void onClose(WebSocketConnection connection) {
-        toolApiKeyService.revoke(Scope.FEDERATED_AGGREGATOR_RUN,
-                Long.parseLong(connection.pathParam("stepId")));
+        Long stepId = Long.parseLong(connection.pathParam("stepId"));
+        toolApiKeyService.revoke(Scope.FEDERATED_AGGREGATOR_RUN, stepId);
         Log.info("Platform aggregator connection closed: " + connection.id());
+        aggregatorBO.onConnectionClosed(stepId);
     }
 
     @OnError
@@ -77,7 +78,9 @@ public class ProjectFederatedExperimentAggregatorWebsocketService extends Workfl
     @Override
     @Transactional
     protected void finishRun(Long stepId, FinishRunDTO finishTest, AppRunTypeEnum runType) {
-        aggregatorBO.onStatusUpdate(stepId, RunStatusTypes.FINISHED, null);
+        // FINISH_FEDERATED_RUN also reports a failed run (status ERROR), so forward the actual status.
+        RunStatusTypes status = finishTest.getStatus() != null ? finishTest.getStatus() : RunStatusTypes.FINISHED;
+        aggregatorBO.onStatusUpdate(stepId, status, finishTest.getError());
     }
 
     @Override

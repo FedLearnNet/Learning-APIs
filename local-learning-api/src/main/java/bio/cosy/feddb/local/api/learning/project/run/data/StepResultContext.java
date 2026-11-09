@@ -11,7 +11,6 @@ public record StepResultContext(
         String clinicId,
         String globalFLExperimentUniqueId,
         boolean coordinator,
-        boolean modelCanBePublic,
         FederatedAppType appType
 ) {
 }

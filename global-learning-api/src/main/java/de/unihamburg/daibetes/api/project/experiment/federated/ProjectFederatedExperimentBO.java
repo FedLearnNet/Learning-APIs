@@ -453,10 +453,61 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
                 stopLearning(experiment, ProjectStatus.ERROR);
                 return;
             }
+            if (isWaitingForPlatformAggregator(experiment.getCurrentWorkflowNode())) {
+                // The platform aggregator reports FINISHED only after its model upload; stopping it now
+                // (handleNextStep) could cut that upload off. onPlatformAggregatorFinished continues.
+                Log.infof("All clinics finished step %d of experiment %d - waiting for the platform aggregator",
+                        experiment.getCurrentWorkflowNode().getId(), experimentId);
+                sendMessage(reloadExperiment(experimentId));
+                return;
+            }
             handleNextStep(participants, experiment);
             return;
         }
         sendMessage(reloadExperiment(experimentId));
+    }
+
+    private boolean isWaitingForPlatformAggregator(ProjectFederatedExperimentStepEntity step) {
+        if (step.getPlatformRelayInfo() == null) {
+            return false;
+        }
+        // The step entity was loaded before the experiment lock, so refresh it: the aggregator may have
+        // finished in between (see onPlatformAggregatorFinished).
+        ao.getEntityManager().refresh(step);
+        return !step.isPlatformAggregatorFinished();
+    }
+
+    /**
+     * Marks the platform aggregator of a step as FINISHED and, once all clinics are finished as well,
+     * proceeds to the next step (the clinic path waits for this, see updateStepAndNotify).
+     *
+     * @param stepId the step the platform aggregator ran for
+     */
+    public void onPlatformAggregatorFinished(Long stepId) {
+        Optional<ProjectFederatedExperimentEntity> experimentOptional = projectFederatedExperimentStepBO
+                .findEntityByIdOptional(stepId)
+                .map(step -> step.getExperiment().getId())
+                .flatMap(experimentId -> ao.findByIdOptional(experimentId, LockModeType.PESSIMISTIC_WRITE));
+        if (experimentOptional.isEmpty()) {
+            Log.errorf("Platform aggregator finished step %d, but its experiment was not found", stepId);
+            return;
+        }
+        // Only after the experiment lock: the clinic path locks the experiment first and then writes the
+        // step row, so writing the step before the lock could deadlock with it.
+        projectFederatedExperimentStepBO.markPlatformAggregatorFinished(stepId);
+        ProjectFederatedExperimentEntity experiment = experimentOptional.get();
+        if (!ProjectStatus.RUNNING.equals(experiment.getExperimentStatus())
+                || experiment.getCurrentWorkflowNode() == null
+                || !stepId.equals(experiment.getCurrentWorkflowNode().getId())) {
+            return;
+        }
+        Set<ProjectFederatedExperimentParticipantEntity> participants = new HashSet<>(
+                projectFederatedExperimentParticipantAO.getAllByExperiment(experiment.getId())
+        );
+        if (ProjectFederatedExperimentHelper.getNextStatus(participants).equals(ProjectStatus.FINISHED)) {
+            Log.infof("Platform aggregator and all clinics finished step %d of experiment %d", stepId, experiment.getId());
+            handleNextStep(participants, experiment);
+        }
     }
 
     /**

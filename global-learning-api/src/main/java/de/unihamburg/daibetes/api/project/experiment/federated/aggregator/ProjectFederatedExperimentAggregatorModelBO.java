@@ -13,10 +13,8 @@ import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedE
 import de.unihamburg.daibetes.api.project.experiment.federated.step.ProjectFederatedExperimentStepBO;
 import de.unihamburg.daibetes.api.project.experiment.federated.step.ProjectFederatedExperimentStepEntity;
 import de.unihamburg.daibetes.api.workflow.WorkflowBO;
-import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
 /**
@@ -48,23 +46,17 @@ public class ProjectFederatedExperimentAggregatorModelBO {
 
     /**
      * Stores the model file the platform aggregator uploaded for the given step, resolving the
-     * app/app-version to store it under from the step's own workflow node.
+     * app/app-version to store it under from the step's own workflow node. Private models are stored
+     * too, like a clinic's model; every new model version starts unpublished.
      *
      * @param stepId    the platform aggregator's step id (the {@code StartRunDTO.id} it was started with)
      * @param file      the uploaded model file and its metadata
      * @param keycloakId the identity to attribute the stored file to
-     * @throws BadRequestException if the experiment's model may not be made public (mirrors the
-     *                             check {@link ModelFederatedExperimentResultBO#uploadResults} runs
-     *                             for a clinic-relayed model)
      */
     public void uploadModel(final Long stepId, final ModelSubDataDTO file, final String keycloakId) {
         ProjectFederatedExperimentStepEntity step = stepBO.findEntityByIdOptional(stepId)
                 .orElseThrow(() -> new NotFoundException("Step with id " + stepId + " not found"));
         ProjectFederatedExperimentEntity experiment = step.getExperiment();
-        if (!Boolean.TRUE.equals(experiment.getModelCanBePublic())) {
-            Log.warnf("Model of experiment %s is not set to be public", experiment.getGlobalUniqueId());
-            throw new BadRequestException("Model of experiment " + experiment.getGlobalUniqueId() + " is not set to be public");
-        }
 
         WorkflowDTO workflow = workflowBO.entityToDto(experiment.getWorkflow());
         WorkflowNodeDetailDTO node = baseWorkflowEngine.findByNodeId(workflow, step.getWorkflowNode().getNodeId());

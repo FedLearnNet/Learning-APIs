@@ -46,6 +46,11 @@ public class ProjectFederatedExperimentStepEntity extends BaseWorkflowStepEntity
     @Column(name = "platform_relay_info", columnDefinition = "jsonb")
     private FederatedLearningRelayInfoDTO platformRelayInfo;
 
+    // Set when the platform's own aggregator reported FINISHED for this step (after its model upload);
+    // the step only completes once the clinics and the platform aggregator are finished.
+    @Column(name = "platform_aggregator_finished", columnDefinition = "boolean default false")
+    private boolean platformAggregatorFinished;
+
     // Relay client id assigned to each clinic (unique random clinic id -> relay client id) for the relay run
     // of this step. Used to only sign relay certificates for the client id a clinic actually owns.
     @JdbcTypeCode(SqlTypes.JSON)

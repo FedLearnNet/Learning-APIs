@@ -37,7 +37,7 @@ class FederatedLearningExperimentStepDataBOTest {
     void missingExecutionOrderFailsBeforeDownloading() {
         var service = new FederatedLearningExperimentStepDataBO();
         service.workflowOrchestratorBO = mock(WorkflowOrchestratorBO.class);
-        var context = new StepResultContext(20L, 891L, null, 20L, 1L, "clinic", "run", false, false, null);
+        var context = new StepResultContext(20L, 891L, null, 20L, 1L, "clinic", "run", false, null);
 
         assertThrows(IllegalStateException.class, () -> service.saveResults(context));
         verifyNoInteractions(service.workflowOrchestratorBO);

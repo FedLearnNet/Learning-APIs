@@ -34,6 +34,8 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Starts/stops the FL aggregator on the platform itself (global-learning-api's own orch-api +
@@ -75,6 +77,10 @@ public class ProjectFederatedExperimentAggregatorBO {
     GlobalRelayService globalRelayService;
 
     protected static final BaseWorkflowEngine baseWorkflowEngine = new BaseWorkflowEngine();
+
+    // Steps whose container the platform stops itself: their connection close is expected and must not be
+    // treated as a lost aggregator (stop() runs inside a transaction whose step progress is not committed yet).
+    private final Set<Long> stoppedSteps = ConcurrentHashMap.newKeySet();
 
     /**
      * Starts the platform's own aggregator container for the experiment's current step.
@@ -167,6 +173,7 @@ public class ProjectFederatedExperimentAggregatorBO {
         if (stepOptional.isEmpty() || stepOptional.get().getContainerId() == null) {
             return;
         }
+        stoppedSteps.add(stepId);
         toolApiKeyService.revoke(Scope.FEDERATED_AGGREGATOR_RUN, stepId);
         try {
             workflowOrchestratorBO.cleanup(stepOptional.get().getContainerId(), true);
@@ -208,11 +215,14 @@ public class ProjectFederatedExperimentAggregatorBO {
 
     /**
      * Feeds a status report from the platform's own aggregator container into the experiment's
-     * lifecycle. Only ERROR is actionable here - clinics (now all CLIENT-only in platform mode)
-     * already drive round completion via their own participant status updates, so a healthy
-     * aggregator reporting RUNNING/FINISHED needs no action.
+     * lifecycle. FINISHED (sent after the model upload) lets the step complete once the clinics are
+     * finished too; ERROR stops the experiment; RUNNING needs no action.
      */
     public void onStatusUpdate(Long stepId, RunStatusTypes status, String error) {
+        if (status == RunStatusTypes.FINISHED) {
+            experimentBO.onPlatformAggregatorFinished(stepId);
+            return;
+        }
         if (status != RunStatusTypes.ERROR) {
             return;
         }
@@ -221,5 +231,26 @@ public class ProjectFederatedExperimentAggregatorBO {
                     step.getExperiment().getId(), stepId, error);
             experimentBO.stopLearning(step.getExperiment(), ProjectStatus.ERROR);
         }, () -> Log.errorf("Platform aggregator reported error for unknown step %d: %s", stepId, error));
+    }
+
+    /**
+     * The aggregator's API key is revoked when its connection closes, so it cannot report anymore: a
+     * connection that closes before FINISHED while its step is still running fails the experiment
+     * instead of letting it wait for the aggregator forever.
+     */
+    @Transactional
+    public void onConnectionClosed(Long stepId) {
+        if (stoppedSteps.remove(stepId)) {
+            return;
+        }
+        stepBO.findEntityByIdOptional(stepId).ifPresent(step -> {
+            ProjectFederatedExperimentEntity experiment = step.getExperiment();
+            boolean stepStillRunning = ProjectStatus.RUNNING.equals(experiment.getExperimentStatus())
+                    && experiment.getCurrentWorkflowNode() != null
+                    && stepId.equals(experiment.getCurrentWorkflowNode().getId());
+            if (stepStillRunning && step.getPlatformRelayInfo() != null && !step.isPlatformAggregatorFinished()) {
+                onStatusUpdate(stepId, RunStatusTypes.ERROR, "Platform aggregator disconnected before finishing the step");
+            }
+        });
     }
 }

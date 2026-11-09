@@ -43,6 +43,23 @@ public class ProjectFederatedExperimentStepAO extends BaseWorkflowStepAO<Project
         return updated == 1;
     }
 
+    @Transactional
+    public boolean markPlatformAggregatorFinishedTransactional(Long stepId) {
+        int updated = update(
+                """
+                        platformAggregatorFinished = true,
+                        updatedAt = ?1
+                        where id = ?2
+                        """,
+                new Date(),
+                stepId
+        );
+        if (updated > 1) {
+            throw new IllegalStateException("Multiple steps updated for stepId " + stepId);
+        }
+        return updated == 1;
+    }
+
     /**
      * Steps of the experiment whose relay run was created but not stopped yet.
      */
