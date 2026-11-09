@@ -12,7 +12,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "1.0.0",
-    "publishHash" : "20c7e42f16e54d392f9563a102d633dfbdab8408",
+    "publishHash" : "576393a4fd9c4ebb155806291347d71efe2e3296",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -183,67 +183,22 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "20c7e42f16e54d392f9563a102d633dfbdab8408",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-gaussian-mixture-model/blob/20c7e42f16e54d392f9563a102d633dfbdab8408/data/README.md", "https://github.com/FedLearnNet/tool-gaussian-mixture-model/blob/20c7e42f16e54d392f9563a102d633dfbdab8408/data/iris.csv" ],
+      "commitHash" : "576393a4fd9c4ebb155806291347d71efe2e3296",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-gaussian-mixture-model/blob/576393a4fd9c4ebb155806291347d71efe2e3296/data/README.md", "https://github.com/FedLearnNet/tool-gaussian-mixture-model/blob/576393a4fd9c4ebb155806291347d71efe2e3296/data/iris.csv" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
-        "target" : "localhost:5001/flnet/tools/gaussian-mixture-model:20c7e42f16e54d392f9563a102d633dfbdab8408",
+        "target" : "localhost:5001/flnet/tools/gaussian-mixture-model:576393a4fd9c4ebb155806291347d71efe2e3296",
         "success" : false,
         "summary" : {
           "critical" : 0,
-          "high" : 2,
+          "high" : 1,
           "medium" : 0,
           "low" : 0,
           "unknown" : 0,
-          "num" : 2
+          "num" : 1
         },
         "rawReport" : {
           "lang-pkgs-python-pkg" : [ {
-            "CVSS" : {
-              "ghsa" : {
-                "V3Score" : 7.5,
-                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
-              },
-              "redhat" : {
-                "V3Score" : 7.5,
-                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
-              }
-            },
-            "Layer" : {
-              "DiffID" : "sha256:7f4269b6f697f22026d574f3546cfe9d3479ba7f714c0b6b7a671fd21e7a9ab1"
-            },
-            "PkgID" : "msgpack@1.2.1",
-            "Title" : "msgpack: msgpack: Denial of Service via memory leak during map deserialization",
-            "CweIDs" : [ "CWE-401" ],
-            "Status" : "fixed",
-            "PkgName" : "msgpack",
-            "Severity" : "HIGH",
-            "VendorIDs" : [ "GHSA-j586-36cw-2gc2" ],
-            "DataSource" : {
-              "ID" : "ghsa",
-              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
-              "Name" : "GitHub Security Advisory pip"
-            },
-            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2026-114613",
-            "References" : [ "https://access.redhat.com/security/cve/CVE-2026-114613", "https://advisory.echohq.com/cve/CVE-2026-114613", "https://github.com/msgpack/msgpack-python", "https://github.com/msgpack/msgpack-python/commit/620b0eb4c89cd72d4098564537624d9dbb2ce141", "https://github.com/msgpack/msgpack-python/releases/tag/v1.2.3", "https://github.com/msgpack/msgpack-python/security/advisories/GHSA-j586-36cw-2gc2", "https://nvd.nist.gov/vuln/detail/CVE-2026-114613", "https://www.cve.org/CVERecord?id=CVE-2026-114613" ],
-            "Description" : "MessagePack is the serializer implementation for Python msgpack.org. Prior to 1.2.3, the msgpack-python C extension (msgpack._cmsgpack) leaks a decoded map value when deserialization rejects a key with strict_map_key=True (the default). Repeated malformed inputs can cause unbounded process memory growth and denial of service in applications that deserialize attacker-controlled MessagePack data. Both unpackb() and the streaming Unpacker API are affected. The pure-Python fallback does not exhibit this leak in the reported tests. This issue is fixed in version 1.2.3.",
-            "Fingerprint" : "sha256:c10cafa52bb56cb64f7c99d943739c366d12ede77c7a24c94f515a688c042cc9",
-            "FixedVersion" : "1.2.3",
-            "PkgIdentifier" : {
-              "UID" : "31fb384af0a0e9ca",
-              "PURL" : "pkg:pypi/msgpack@1.2.1",
-              "BOMRef" : "pkg:pypi/msgpack@1.2.1"
-            },
-            "PublishedDate" : "2026-10-22T19:17:37.733Z",
-            "SeveritySource" : "ghsa",
-            "VendorSeverity" : {
-              "ghsa" : 3,
-              "redhat" : 3
-            },
-            "VulnerabilityID" : "CVE-2026-114613",
-            "InstalledVersion" : "1.2.1",
-            "LastModifiedDate" : "2026-10-23T21:17:21.823Z"
-          }, {
             "CVSS" : {
               "nvd" : {
                 "V3Score" : 8.8,
@@ -263,7 +218,7 @@
               }
             },
             "Layer" : {
-              "DiffID" : "sha256:7f4269b6f697f22026d574f3546cfe9d3479ba7f714c0b6b7a671fd21e7a9ab1"
+              "DiffID" : "sha256:935ce6de17d6f7643d4ec834285b7ce4525e3c03308abfd55061bc29e81db8e9"
             },
             "PkgID" : "setuptools@70.3.0",
             "Title" : "setuptools: Path Traversal Vulnerability in setuptools PackageIndex",
@@ -278,9 +233,9 @@
               "Name" : "GitHub Security Advisory pip"
             },
             "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
-            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:13578", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/9/ALSA-2025-13578.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:14900", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/2384043", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/8/ALSA-2025-14900.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
             "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
-            "Fingerprint" : "sha256:ae315e90e0398114066feb3604c468f54afabbb85b26cc240388c5e5b7a19128",
+            "Fingerprint" : "sha256:5e77147b9aff1a959a9decfccb5bc32729bc036783550273c2ce8230f863e2fd",
             "FixedVersion" : "78.1.1",
             "PkgIdentifier" : {
               "UID" : "c5eccaa7d8e0c308",
@@ -307,8 +262,8 @@
             "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
           } ]
         },
-        "startedAt" : "2026-10-30T17:40:54.939+00:00",
-        "finishedAt" : "2026-10-30T17:41:41.203+00:00"
+        "startedAt" : "2026-11-09T15:59:50.299+00:00",
+        "finishedAt" : "2026-11-09T16:01:29.603+00:00"
       },
       "sastScanResult" : {
         "tool" : "opengrep",
@@ -335,20 +290,20 @@
           "skipped_rules" : [ ],
           "interfile_languages_used" : [ ]
         },
-        "startedAt" : "2026-10-30T17:39:39.617+00:00",
-        "finishedAt" : "2026-10-30T17:39:42.220+00:00"
+        "startedAt" : "2026-11-09T15:59:04.361+00:00",
+        "finishedAt" : "2026-11-09T15:59:10.179+00:00"
       },
       "malwareScanResult" : {
         "tool" : "clamav",
         "success" : true,
         "infectedCount" : 0,
         "findings" : [ ],
-        "startedAt" : "2026-10-30T17:41:41.215+00:00",
-        "finishedAt" : "2026-10-30T17:41:55.430+00:00"
+        "startedAt" : "2026-11-09T16:01:29.615+00:00",
+        "finishedAt" : "2026-11-09T16:01:36.064+00:00"
       },
-      "imageName" : "gaussian-mixture-model:20c7e42f16e54d392f9563a102d633dfbdab8408"
+      "imageName" : "gaussian-mixture-model:576393a4fd9c4ebb155806291347d71efe2e3296"
     },
-    "imageName" : "gaussian-mixture-model:20c7e42f16e54d392f9563a102d633dfbdab8408"
+    "imageName" : "gaussian-mixture-model:576393a4fd9c4ebb155806291347d71efe2e3296"
   } ],
   "icon" : "https://scikit-learn.org/stable/_static/scikit-learn-logo-small.png"
 }

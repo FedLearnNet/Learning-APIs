@@ -10,7 +10,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "1.0.0",
-    "publishHash" : "935397316c19f5df0d326122499612857560e7db",
+    "publishHash" : "429479c7f786de4bef95f1442853fec66f3823d7",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -157,11 +157,11 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "935397316c19f5df0d326122499612857560e7db",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-patient-export-umap/blob/935397316c19f5df0d326122499612857560e7db/data/patient_export_sample.csv" ],
+      "commitHash" : "429479c7f786de4bef95f1442853fec66f3823d7",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-patient-export-umap/blob/429479c7f786de4bef95f1442853fec66f3823d7/data/patient_export_sample.csv" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
-        "target" : "localhost:5001/flnet/tools/patient-export-umap:935397316c19f5df0d326122499612857560e7db",
+        "target" : "localhost:5001/flnet/tools/patient-export-umap:429479c7f786de4bef95f1442853fec66f3823d7",
         "success" : false,
         "summary" : {
           "critical" : 0,
@@ -447,8 +447,8 @@
         "startedAt" : "2026-10-30T17:08:06.647+00:00",
         "finishedAt" : "2026-10-30T17:08:13.437+00:00"
       },
-      "imageName" : "patient-export-umap:935397316c19f5df0d326122499612857560e7db"
+      "imageName" : "patient-export-umap:429479c7f786de4bef95f1442853fec66f3823d7"
     },
-    "imageName" : "patient-export-umap:935397316c19f5df0d326122499612857560e7db"
+    "imageName" : "patient-export-umap:429479c7f786de4bef95f1442853fec66f3823d7"
   } ]
 }

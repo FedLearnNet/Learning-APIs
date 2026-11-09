@@ -10,7 +10,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "1.0.0",
-    "publishHash" : "8fe3c252e95ee372d4e4d7b7becea6fc5b6a4b5b",
+    "publishHash" : "6c1f2167d93aa76b344e1f8f083aeb7b5978ce07",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -100,11 +100,11 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "8fe3c252e95ee372d4e4d7b7becea6fc5b6a4b5b",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-mosbi/blob/8fe3c252e95ee372d4e4d7b7becea6fc5b6a4b5b/data/README.md" ],
+      "commitHash" : "6c1f2167d93aa76b344e1f8f083aeb7b5978ce07",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-mosbi/blob/6c1f2167d93aa76b344e1f8f083aeb7b5978ce07/data/README.md" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
-        "target" : "localhost:5001/flnet/tools/mosbi:8fe3c252e95ee372d4e4d7b7becea6fc5b6a4b5b",
+        "target" : "localhost:5001/flnet/tools/mosbi:6c1f2167d93aa76b344e1f8f083aeb7b5978ce07",
         "success" : false,
         "summary" : {
           "critical" : 0,
@@ -390,8 +390,8 @@
         "startedAt" : "2026-10-30T18:06:53.648+00:00",
         "finishedAt" : "2026-10-30T18:07:07.491+00:00"
       },
-      "imageName" : "mosbi:8fe3c252e95ee372d4e4d7b7becea6fc5b6a4b5b"
+      "imageName" : "mosbi:6c1f2167d93aa76b344e1f8f083aeb7b5978ce07"
     },
-    "imageName" : "mosbi:8fe3c252e95ee372d4e4d7b7becea6fc5b6a4b5b"
+    "imageName" : "mosbi:6c1f2167d93aa76b344e1f8f083aeb7b5978ce07"
   } ]
 }

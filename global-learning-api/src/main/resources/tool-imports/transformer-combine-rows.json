@@ -10,7 +10,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "1.0.0",
-    "publishHash" : "f7e92d6d914f9ae376c4adf8f4ff3064ef57a24a",
+    "publishHash" : "417289f0ba3fa346eabc1474f86f67f838c5e336",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -54,11 +54,11 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "f7e92d6d914f9ae376c4adf8f4ff3064ef57a24a",
+      "commitHash" : "417289f0ba3fa346eabc1474f86f67f838c5e336",
       "filePaths" : [ ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
-        "target" : "localhost:5001/flnet/tools/transformer-combine-rows:f7e92d6d914f9ae376c4adf8f4ff3064ef57a24a",
+        "target" : "localhost:5001/flnet/tools/transformer-combine-rows:417289f0ba3fa346eabc1474f86f67f838c5e336",
         "success" : false,
         "summary" : {
           "critical" : 0,
@@ -344,8 +344,8 @@
         "startedAt" : "2026-10-30T15:38:20.079+00:00",
         "finishedAt" : "2026-10-30T15:38:26.653+00:00"
       },
-      "imageName" : "transformer-combine-rows:f7e92d6d914f9ae376c4adf8f4ff3064ef57a24a"
+      "imageName" : "transformer-combine-rows:417289f0ba3fa346eabc1474f86f67f838c5e336"
     },
-    "imageName" : "transformer-combine-rows:f7e92d6d914f9ae376c4adf8f4ff3064ef57a24a"
+    "imageName" : "transformer-combine-rows:417289f0ba3fa346eabc1474f86f67f838c5e336"
   } ]
 }
