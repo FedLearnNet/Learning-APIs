@@ -1,10 +1,12 @@
 package de.unihamburg.daibetes.execution.attempt;
 
+import bio.cosy.feddb.core.api.model.ModelSubDataDTO;
 import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
 import de.unihamburg.daibetes.api.analysis.run.DataAnalysisExecutionBO;
+import de.unihamburg.daibetes.api.project.training.platform.PlatformTrainingBO;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -20,6 +22,9 @@ public class ExecutionAttemptService {
     @Inject
     DataAnalysisExecutionBO executionBO;
 
+    @Inject
+    PlatformTrainingBO trainingBO;
+
     @POST
     @Path("output")
     @ToolAuthenticated({Scope.MODEL_PREDICTION_RUN, Scope.MODEL_WORKFLOW_RUN})
@@ -28,6 +33,17 @@ public class ExecutionAttemptService {
     @Operation(summary = "Uploads the outputs of an attempt")
     public Response uploadOutput(@PathParam("runId") Long attemptId, @BeanParam AppRunUploadData upload) {
         executionBO.uploadOutputTransactional(attemptId, upload);
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @POST
+    @Path("model")
+    @ToolAuthenticated(Scope.MODEL_WORKFLOW_RUN)
+    @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Operation(summary = "Uploads the model an attempt of a training trained")
+    public Response uploadModel(@PathParam("runId") Long attemptId, @BeanParam ModelSubDataDTO model) {
+        trainingBO.keepModelTransactional(attemptId, model);
         return Response.status(Response.Status.CREATED).build();
     }
 }

@@ -76,6 +76,13 @@ public abstract class BaseExecutionFileBO<
         return paths;
     }
 
+    public Map<String, File> loadForAttempt(Long attemptId, ExecutionFileDirection direction) {
+        Map<String, File> loaded = new LinkedHashMap<>();
+        ao.listForAttempt(attemptId, direction)
+                .forEach(linked -> loaded.putIfAbsent(mapper.entityToDto(linked).getFileNameWithExtension(), loadFile(linked.getFile())));
+        return loaded;
+    }
+
     public List<DTO> addOutputs(Attempt attempt, List<FileUpload> uploads) {
         List<DTO> outputs = new ArrayList<>();
         for (FileUpload upload : uploads) {

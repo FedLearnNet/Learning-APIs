@@ -2,7 +2,11 @@ package de.unihamburg.daibetes.api.project.training.federated;
 
 import bio.cosy.feddb.core.api.project.ProjectStatus;
 import bio.cosy.feddb.core.api.socket.LearningClientSyncResponseDTO;
+import bio.cosy.feddb.core.execution.failure.ExecutionFailure;
+import bio.cosy.feddb.core.execution.failure.FailureCategory;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
+import de.unihamburg.daibetes.execution.federation.ExecutionFederationEntity;
 import de.unihamburg.daibetes.execution.federation.ExecutionParticipantEntity;
 import de.unihamburg.daibetes.execution.run.ExecutionRunEntity;
 import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
@@ -52,7 +56,42 @@ public class FederatedTrainingProgressBO {
         participant.setStatus(update.getProjectStatus());
         participant.setCurrentNodeId(update.getCurrentNodeId());
         participant.setStepStatus(reported);
+        reportOnAttempt(participant, reported, update.getError());
         return true;
+    }
+
+    private void reportOnAttempt(ExecutionParticipantEntity participant, ProjectStatus reported, String error) {
+        Optional<ExecutionRunStepEntity> step = participant.getRun().getCurrentStep();
+        Optional<ExecutionAttemptEntity> found = step.flatMap(current -> current.getAttempts().stream()
+                .filter(attempt -> attempt.getFederation() != null && attempt.getFederation().getParticipant() == participant)
+                .findFirst());
+        if (found.isEmpty() || found.get().hasEnded()) {
+            return;
+        }
+        ExecutionAttemptEntity attempt = found.get();
+        ExecutionFederationEntity federation = step.get().getFederation();
+        switch (reported) {
+            case RUNNING -> attempt.moveTo(RunStatusTypes.RUNNING);
+            case FINISHED -> {
+                if (federation != null && federation.getTotalRounds() != null) {
+                    attempt.getFederation().setCurrentRound(federation.getTotalRounds());
+                }
+                attempt.end(RunStatusTypes.FINISHED, null);
+            }
+            case ERROR -> attempt.end(RunStatusTypes.ERROR, new ExecutionFailure(FailureCategory.TOOL,
+                    "Clinic " + participant.getParticipantId() + ": " + (error != null ? error : "reported an error")));
+            case STOPPED, SHUTDOWN -> attempt.end(RunStatusTypes.STOPPED,
+                    new ExecutionFailure(FailureCategory.CANCELLED, "Clinic " + participant.getParticipantId() + " stopped"));
+            default -> {
+            }
+        }
+        if (federation != null) {
+            step.get().getAttempts().stream()
+                    .filter(each -> each.getFederation() != null && each.getFederation().getCurrentRound() != null)
+                    .mapToInt(each -> each.getFederation().getCurrentRound())
+                    .min()
+                    .ifPresent(federation::setCurrentRound);
+        }
     }
 
     public Optional<ExecutionRunStepEntity> stepToStart(ExecutionRunEntity run) {

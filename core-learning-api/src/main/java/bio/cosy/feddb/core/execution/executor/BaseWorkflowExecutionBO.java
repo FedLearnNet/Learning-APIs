@@ -12,9 +12,9 @@ import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepEntity;
 import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
 import jakarta.ws.rs.NotFoundException;
 
 import java.util.*;
@@ -38,6 +38,9 @@ public abstract class BaseWorkflowExecutionBO<
     @Inject
     public RunAO runAO;
 
+    @Inject
+    Validator validator;
+
     private final Supplier<Run> newRun;
     private final Supplier<Step> newStep;
     private final ExecutionLocation location;
@@ -49,12 +52,16 @@ public abstract class BaseWorkflowExecutionBO<
     }
 
     @Transactional
-    public Run executeTransactional(@NotNull @Valid ExecutionStartDTO start, @NotEmpty Collection<Node> nodes) {
+    public Run executeTransactional(ExecutionStartDTO start, Collection<Node> nodes) {
         return announceStarted(createTransactional(start, nodes));
     }
 
     @Transactional
-    public Run createTransactional(@NotNull @Valid ExecutionStartDTO start, @NotEmpty Collection<Node> nodes) {
+    public Run createTransactional(ExecutionStartDTO start, Collection<Node> nodes) {
+        requireValid(start, "start");
+        if (nodes == null || nodes.isEmpty()) {
+            throw new ConstraintViolationException("nodes must not be empty", Set.of());
+        }
         Set<Long> nodeIds = new HashSet<>();
         nodes.forEach(node -> nodeIds.add(node.getId()));
         requireNodesOf(nodeIds, start.getSearches().keySet(), "Searches");
@@ -69,7 +76,8 @@ public abstract class BaseWorkflowExecutionBO<
     }
 
     @Transactional
-    public Run startTransactional(@NotNull Long runId) {
+    public Run startTransactional(Long runId) {
+        requireNotNull(runId, "runId");
         Run run = runAO.findByIdWrite(runId).orElseThrow(() -> new NotFoundException("Run " + runId + " not found"));
         if (run.getStatus() != RunStatusTypes.PENDING || run.getStartedAt() != null) {
             throw new IllegalStateException("Run " + runId + " was started already");
@@ -82,8 +90,13 @@ public abstract class BaseWorkflowExecutionBO<
      * step what it runs; hyper parameters come as the search, fixed or searched.
      */
     @Transactional
-    public Run executeSingleTransactional(@NotNull @Valid ExecutionStartDTO start, @Valid HyperParamSearchDTO search,
-                             LinkedHashMap<String, Object> inputs, @NotNull Consumer<Step> target) {
+    public Run executeSingleTransactional(ExecutionStartDTO start, HyperParamSearchDTO search,
+                                          LinkedHashMap<String, Object> inputs, Consumer<Step> target) {
+        requireValid(start, "start");
+        if (search != null) {
+            requireValid(search, "search");
+        }
+        requireNotNull(target, "target");
         requireNodesOf(Set.of(), start.getSearches().keySet(), "Searches");
         requireNodesOf(Set.of(), start.getInputs().keySet(), "Inputs");
 
@@ -97,7 +110,8 @@ public abstract class BaseWorkflowExecutionBO<
      * revokes the keys of the stopped attempts. A run that already ended is left as it is.
      */
     @Transactional
-    public Run stopTransactional(@NotNull Long runId) {
+    public Run stopTransactional(Long runId) {
+        requireNotNull(runId, "runId");
         Run run = runAO.findByIdWrite(runId).orElseThrow(() -> new NotFoundException("Run " + runId + " not found"));
         if (run.hasEnded()) {
             return run;
@@ -121,13 +135,27 @@ public abstract class BaseWorkflowExecutionBO<
 
     /** Deletes a run with its steps and attempts, stopping it first if it still runs. */
     @Transactional
-    public void deleteTransactional(@NotNull Long runId) {
+    public void deleteTransactional(Long runId) {
         Run run = stopTransactional(runId);
         // A step points at its selected attempt, which would block deleting the attempts.
         run.getSteps().forEach(step -> step.setSelectedAttempt(null));
         runAO.flush();
         runAO.delete(run);
         Log.infof("Deleted run %d", runId);
+    }
+
+    private static void requireNotNull(Object value, String name) {
+        if (value == null) {
+            throw new ConstraintViolationException(name + " must not be null", Set.of());
+        }
+    }
+
+    private void requireValid(Object bean, String name) {
+        requireNotNull(bean, name);
+        Set<ConstraintViolation<Object>> violations = validator.validate(bean);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
     }
 
     private void requireNodesOf(Set<Long> nodeIds, Set<Long> keys, String what) {
@@ -142,7 +170,7 @@ public abstract class BaseWorkflowExecutionBO<
         run.setName(start.getName());
         run.setPurpose(start.getPurpose());
         run.setMode(start.getMode());
-        run.setLocation(location);
+        run.setLocation(start.getLocation() != null ? start.getLocation() : location);
         run.setStatus(RunStatusTypes.PENDING);
         return run;
     }

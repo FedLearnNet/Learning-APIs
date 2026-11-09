@@ -2,18 +2,25 @@ package de.unihamburg.daibetes.api.project.training.federated;
 
 import bio.cosy.feddb.core.api.project.ProjectStatus;
 import bio.cosy.feddb.core.execution.event.ExecutionEventPublisher;
+import bio.cosy.feddb.core.execution.failure.ExecutionFailure;
+import bio.cosy.feddb.core.execution.failure.FailureCategory;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.services.controller.RelayStopRequestDTO;
 import de.unihamburg.daibetes.api.feddbclient.FLNetClientBroadcastBO;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
 import de.unihamburg.daibetes.execution.federation.ExecutionFederationEntity;
 import de.unihamburg.daibetes.execution.run.ExecutionRunEntity;
+import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
 import de.unihamburg.daibetes.services.GlobalRelayService;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+
+import java.util.Objects;
+import java.util.Optional;
 
 @ApplicationScoped
 public class FederatedTrainingCleanupBO {
@@ -34,16 +41,19 @@ public class FederatedTrainingCleanupBO {
             participant.setStepStatus(ProjectStatus.FINISHED);
         });
         experiment.setStatus(ProjectStatus.FINISHED);
-        finishRun(run, RunStatusTypes.FINISHED);
+        finishRun(run, RunStatusTypes.FINISHED, null);
     }
 
     public void stopTraining(ExecutionExperimentEntity experiment, ExecutionRunEntity run, ProjectStatus reason) {
         Log.infof("Stopping training %d as %s", run.getId(), reason);
         RunStatusTypes status = reason == ProjectStatus.ERROR ? RunStatusTypes.ERROR : RunStatusTypes.STOPPED;
+        ExecutionFailure stopped = new ExecutionFailure(FailureCategory.CANCELLED, "Training stopped as " + reason.name());
         run.getSteps().forEach(step -> {
             stopRelay(step.getFederation());
             if (!step.hasEnded() && step.getStatus() != RunStatusTypes.PENDING) {
-                step.moveTo(status);
+                ExecutionFailure cause = failureOf(step).orElse(status == RunStatusTypes.ERROR ? null : stopped);
+                step.getAttempts().stream().filter(attempt -> !attempt.hasEnded()).forEach(attempt -> attempt.end(RunStatusTypes.STOPPED, stopped));
+                step.end(status, cause);
             }
         });
         run.getParticipants().forEach(participant -> {
@@ -52,7 +62,7 @@ public class FederatedTrainingCleanupBO {
         });
         experiment.setStatus(reason);
         if (!run.hasEnded()) {
-            finishRun(run, status);
+            finishRun(run, status, run.getSteps().stream().map(ExecutionRunStepEntity::getFailure).filter(Objects::nonNull).findFirst().orElse(null));
         }
         String globalUniqueId = experiment.getGlobalUniqueId();
         broadcastBO.sendAfterCommit("Stop of training " + run.getId(), () -> broadcastBO.stopLearning(globalUniqueId));
@@ -76,8 +86,15 @@ public class FederatedTrainingCleanupBO {
         }
     }
 
-    private void finishRun(ExecutionRunEntity run, RunStatusTypes status) {
-        run.end(status, null);
+    // The first failure a clinic reported in the step.
+    private Optional<ExecutionFailure> failureOf(ExecutionRunStepEntity step) {
+        return step.getAttempts().stream().map(ExecutionAttemptEntity::getFailure)
+                .filter(failure -> failure != null && failure.getCategory() != FailureCategory.CANCELLED)
+                .findFirst();
+    }
+
+    private void finishRun(ExecutionRunEntity run, RunStatusTypes status, ExecutionFailure failure) {
+        run.end(status, failure);
         events.runFinished(run.getId(), status);
     }
 }

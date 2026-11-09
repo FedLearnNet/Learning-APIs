@@ -8,6 +8,7 @@ import de.unihamburg.daibetes.execution.message.ExecutionMessageAO;
 import de.unihamburg.daibetes.execution.message.ExecutionMessageEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 @ApplicationScoped
 public class ExecutionAttemptLifecycle extends BaseAttemptLifecycle<ExecutionAttemptEntity, ExecutionAttemptAO,
@@ -27,11 +28,25 @@ public class ExecutionAttemptLifecycle extends BaseAttemptLifecycle<ExecutionAtt
         });
     }
 
+    @Transactional
+    public boolean predictsTransactional(Long attemptId) {
+        return attemptAO.findByIdOptional(attemptId)
+                .map(attempt -> attempt.getStep().getSubModel() != null)
+                .orElse(false);
+    }
+
     @Override
     protected void customizeStartup(ExecutionAttemptEntity attempt, StartRunDTO start) {
         super.customizeStartup(attempt, start);
         switch (attempt.getStep().getRun().getPurpose()) {
-            case ANALYSIS -> analysisResultBO.withInputFileUrlsTransactional(start);
+            case ANALYSIS -> {
+                analysisResultBO.withInputFileUrlsTransactional(start);
+                platformTrainingBO.inputFilePathsOf(attempt).forEach((name, file) -> {
+                    if (!start.getInputData().containsKey(name)) {
+                        start.getInputFilePaths().putIfAbsent(name, file);
+                    }
+                });
+            }
             case TRAINING -> start.setInputFilePaths(platformTrainingBO.inputFilePathsOf(attempt));
             default -> {
             }

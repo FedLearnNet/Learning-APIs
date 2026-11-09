@@ -2,6 +2,9 @@ package de.unihamburg.daibetes.execution.attempt;
 
 import bio.cosy.feddb.core.execution.attempt.BaseAttemptLifecycle;
 import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
+import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
+import bio.cosy.feddb.core.execution.run.types.AppMessageTypeEnum;
+import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
 import bio.cosy.feddb.core.execution.server.BaseAttemptAppServer;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
@@ -44,6 +47,14 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
     @OnTextMessage
     <T> void onMessage(AppMessageWrapperDTO<T> message) {
         consume(connection, message);
+    }
+
+    @Override
+    protected AppMessageWrapperDTO<StartRunDTO> startMessageOf(StartRunDTO start) {
+        AppMessageTypeEnum type = lifecycle.predictsTransactional(start.getId())
+                ? AppMessageTypeEnum.START_PREDICTION
+                : AppMessageTypeEnum.START_RUN;
+        return new AppMessageWrapperDTO<>(type, start, AppRunTypeEnum.MODEL_RUN);
     }
 
     @Override

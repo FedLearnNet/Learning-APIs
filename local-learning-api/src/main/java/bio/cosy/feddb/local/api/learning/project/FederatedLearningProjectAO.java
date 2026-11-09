@@ -18,7 +18,7 @@ public class FederatedLearningProjectAO implements PanacheRepository<FederatedLe
     }
 
     public List<FederatedLearningProjectEntity> list(Page page) {
-        return find("experiment IS NOT NULL ORDER BY id DESC").page(page).list();
+        return find("run IS NOT NULL ORDER BY id DESC").page(page).list();
     }
 
     @Transactional
