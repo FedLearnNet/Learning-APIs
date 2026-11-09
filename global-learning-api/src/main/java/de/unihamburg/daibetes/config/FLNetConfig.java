@@ -134,6 +134,10 @@ public interface FLNetConfig {
         @WithDefault("100")
         @WithName("participants.mindatacount")
         int participantsMinDataCount();
+
+        @WithDefault("false")
+        @WithName("platform-aggregator.enabled")
+        boolean platformAggregatorEnabled();
     }
 
 

@@ -13,4 +13,7 @@ public class CreateProjectFederatedExperimentDTO {
 
     private Boolean modelNeedToBePublic;
 
+    //IF not set, the platform will decide randomly which client is coordinator
+    private Boolean platformIsCoordinator;
+
 }

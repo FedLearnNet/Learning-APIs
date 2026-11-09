@@ -66,6 +66,7 @@ public interface ProjectFederatedExperimentMapper extends BaseMapper<ProjectFede
             @Mapping(target = "name", source = "dto.name"),
             @Mapping(target = "description", source = "dto.description"),
             @Mapping(target = "modelNeedToBePublic", source = "dto.modelNeedToBePublic"),
+            @Mapping(target = "platformIsCoordinator", source = "dto.platformIsCoordinator"),
     })
     ProjectFederatedExperimentForLocalDTO dtoToSimpleDTO(ProjectFederatedExperimentDTO dto,
                                                          String keycloakId,
