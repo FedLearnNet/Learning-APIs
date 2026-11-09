@@ -10,7 +10,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "1.0.0",
-    "publishHash" : "a6b770f361b7726ca5fee49d73cbf1c9ee20dc50",
+    "publishHash" : "7d8b033ba430884f8de1c765272da8ed88a23cbf",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -128,11 +128,11 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "a6b770f361b7726ca5fee49d73cbf1c9ee20dc50",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-spectral-clustering/blob/a6b770f361b7726ca5fee49d73cbf1c9ee20dc50/data/README.md", "https://github.com/FedLearnNet/tool-spectral-clustering/blob/a6b770f361b7726ca5fee49d73cbf1c9ee20dc50/data/iris_encoded.csv" ],
+      "commitHash" : "7d8b033ba430884f8de1c765272da8ed88a23cbf",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-spectral-clustering/blob/7d8b033ba430884f8de1c765272da8ed88a23cbf/data/README.md", "https://github.com/FedLearnNet/tool-spectral-clustering/blob/7d8b033ba430884f8de1c765272da8ed88a23cbf/data/iris_encoded.csv" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
-        "target" : "localhost:5001/flnet/tools/spectral-clustering:a6b770f361b7726ca5fee49d73cbf1c9ee20dc50",
+        "target" : "localhost:5001/flnet/tools/spectral-clustering:7d8b033ba430884f8de1c765272da8ed88a23cbf",
         "success" : false,
         "summary" : {
           "critical" : 0,
@@ -418,9 +418,9 @@
         "startedAt" : "2026-10-30T16:49:00.221+00:00",
         "finishedAt" : "2026-10-30T16:49:06.935+00:00"
       },
-      "imageName" : "spectral-clustering:a6b770f361b7726ca5fee49d73cbf1c9ee20dc50"
+      "imageName" : "spectral-clustering:7d8b033ba430884f8de1c765272da8ed88a23cbf"
     },
-    "imageName" : "spectral-clustering:a6b770f361b7726ca5fee49d73cbf1c9ee20dc50"
+    "imageName" : "spectral-clustering:7d8b033ba430884f8de1c765272da8ed88a23cbf"
   } ],
   "icon" : "https://scikit-learn.org/stable/_static/scikit-learn-logo-small.png"
 }

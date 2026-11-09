@@ -10,7 +10,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "1.0.0",
-    "publishHash" : "1ed7072f60a88c344a3dd2e2eb8b4ae6c0076192",
+    "publishHash" : "a6dca9e8aed061443847e48e984d5e9f0418d30c",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : true,
     "needsHostAccess" : false,
@@ -87,11 +87,11 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "1ed7072f60a88c344a3dd2e2eb8b4ae6c0076192",
+      "commitHash" : "a6dca9e8aed061443847e48e984d5e9f0418d30c",
       "filePaths" : [ ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
-        "target" : "localhost:5001/flnet/tools/sql-select-extractor:1ed7072f60a88c344a3dd2e2eb8b4ae6c0076192",
+        "target" : "localhost:5001/flnet/tools/sql-select-extractor:a6dca9e8aed061443847e48e984d5e9f0418d30c",
         "success" : false,
         "summary" : {
           "critical" : 0,
@@ -377,8 +377,8 @@
         "startedAt" : "2026-10-30T19:38:25.837+00:00",
         "finishedAt" : "2026-10-30T19:55:29.172+00:00"
       },
-      "imageName" : "sql-select-extractor:1ed7072f60a88c344a3dd2e2eb8b4ae6c0076192"
+      "imageName" : "sql-select-extractor:a6dca9e8aed061443847e48e984d5e9f0418d30c"
     },
-    "imageName" : "sql-select-extractor:1ed7072f60a88c344a3dd2e2eb8b4ae6c0076192"
+    "imageName" : "sql-select-extractor:a6dca9e8aed061443847e48e984d5e9f0418d30c"
   } ]
 }

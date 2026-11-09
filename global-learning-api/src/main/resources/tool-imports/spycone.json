@@ -10,7 +10,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "1.0.0",
-    "publishHash" : "d09f716a2a1854c0e18480b54cbed850db7ac522",
+    "publishHash" : "4106b599e56eca63c3b4bfb50c880d3216eb1a04",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -95,11 +95,11 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "d09f716a2a1854c0e18480b54cbed850db7ac522",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-spycone/blob/d09f716a2a1854c0e18480b54cbed850db7ac522/data/README.md" ],
+      "commitHash" : "4106b599e56eca63c3b4bfb50c880d3216eb1a04",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-spycone/blob/4106b599e56eca63c3b4bfb50c880d3216eb1a04/data/README.md" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
-        "target" : "localhost:5001/flnet/tools/spycone:d09f716a2a1854c0e18480b54cbed850db7ac522",
+        "target" : "localhost:5001/flnet/tools/spycone:4106b599e56eca63c3b4bfb50c880d3216eb1a04",
         "success" : false,
         "summary" : {
           "critical" : 0,
@@ -435,8 +435,8 @@
         "startedAt" : "2026-10-30T15:40:21.870+00:00",
         "finishedAt" : "2026-10-30T15:40:30.418+00:00"
       },
-      "imageName" : "spycone:d09f716a2a1854c0e18480b54cbed850db7ac522"
+      "imageName" : "spycone:4106b599e56eca63c3b4bfb50c880d3216eb1a04"
     },
-    "imageName" : "spycone:d09f716a2a1854c0e18480b54cbed850db7ac522"
+    "imageName" : "spycone:4106b599e56eca63c3b4bfb50c880d3216eb1a04"
   } ]
 }

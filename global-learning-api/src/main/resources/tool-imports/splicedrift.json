@@ -10,7 +10,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "1.0.1",
-    "publishHash" : "fe3bc65b2a28992aacdc06697e9597c0a3c856f5",
+    "publishHash" : "df36dd9c098c63a346d282c1e4065f24347739a6",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -84,11 +84,11 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "fe3bc65b2a28992aacdc06697e9597c0a3c856f5",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-splicedrift/blob/fe3bc65b2a28992aacdc06697e9597c0a3c856f5/data/README.md" ],
+      "commitHash" : "df36dd9c098c63a346d282c1e4065f24347739a6",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-splicedrift/blob/df36dd9c098c63a346d282c1e4065f24347739a6/data/README.md" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
-        "target" : "localhost:5001/flnet/tools/splicedrift:fe3bc65b2a28992aacdc06697e9597c0a3c856f5",
+        "target" : "localhost:5001/flnet/tools/splicedrift:df36dd9c098c63a346d282c1e4065f24347739a6",
         "success" : false,
         "summary" : {
           "critical" : 0,
@@ -374,8 +374,8 @@
         "startedAt" : "2026-10-30T15:40:35.387+00:00",
         "finishedAt" : "2026-10-30T15:40:42.181+00:00"
       },
-      "imageName" : "splicedrift:fe3bc65b2a28992aacdc06697e9597c0a3c856f5"
+      "imageName" : "splicedrift:df36dd9c098c63a346d282c1e4065f24347739a6"
     },
-    "imageName" : "splicedrift:fe3bc65b2a28992aacdc06697e9597c0a3c856f5"
+    "imageName" : "splicedrift:df36dd9c098c63a346d282c1e4065f24347739a6"
   } ]
 }
