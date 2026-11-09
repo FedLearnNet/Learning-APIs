@@ -73,7 +73,8 @@ public enum ProjectStatus {
 
     public static ProjectStatus fromRunStatusTypes(RunStatusTypes runStatus) {
         return switch (runStatus) {
-            case PENDING, INITIALIZED, STARTED -> READY;
+            case PENDING, INITIALIZED -> INIT;
+            case STARTED -> READY;
             case RUNNING -> RUNNING;
             case FINISHED -> FINISHED;
             case STOPPED -> STOPPED;

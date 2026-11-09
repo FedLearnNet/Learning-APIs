@@ -76,8 +76,11 @@ public class TestEngineBO {
             return List.of();
         }
         try {
-            Long containerRunId = containerClient.getRunOfContainer(containerId).getId();
-            return containerClient.getRunLogs(containerRunId).stream().map(ContainerLogDTO::getLog).toList();
+            ContainerRunDTO containerRun = containerClient.getRunOfContainer(containerId);
+            if (containerRun == null || containerRun.getId() == null) {
+                return List.of();
+            }
+            return containerClient.getRunLogs(containerRun.getId()).stream().map(ContainerLogDTO::getLog).toList();
         } catch (Exception e) {
             Log.warnf(e, "Failed to load logs of test engine %d", runId);
             return List.of();
