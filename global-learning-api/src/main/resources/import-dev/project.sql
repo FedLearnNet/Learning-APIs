@@ -3,38 +3,182 @@ INSERT INTO queries
  group_id, global_unique_id, keycloak_id, name, description,
  query_string)
 VALUES (1, NOW(), NOW(), 0,
-        '6cd039c0-363f-4aa9-a99b-c7f02e529945', '6cd039c0-363f-4aa9-a99b-c7f02e529945', 'test', 'Query 1',
-        'Description for Query 1',
-        '[
-          {
-            "ontologyId": "2dd810ca-0ab1-44cb-bd4f-c9fd509b9950",
-            "operator": [
-              {"operator": "BIGGER", "value": "100"},
-              {"operator": "SMALLER_EQUAL", "value": "200"}
-            ]
-          },
-          {
-            "ontologyId": "2df01f58-5227-4baa-bfde-c7cfc997f2c4",
-            "operator": [
-              {"operator": "EQUAL", "value": "42"}
-            ]
-          }
-        ]'),
+        '6cd039c0-363f-4aa9-a99b-c7f02e529945', '6cd039c0-363f-4aa9-a99b-c7f02e529945', 'test', 'Weight Loss Query',
+        'Weight loss of more than 5 kg over a 6 month period',
+        '{
+  "connecting_operator": "$and",
+  "conditions": [
+    {
+      "ontology_id": "57cba292-ab9a-59b3-bd21-d17a327881d9",
+      "data_type_id": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+      "operator": "<",
+      "value_mode": "delta 6 months",
+      "time_aggregation_method": "None",
+      "value_aggregation_method": "None",
+      "value": -5,
+      "datatype": "Float"
+    },
+    {
+      "ontology_id": "77fd29aa-47ab-5eb8-a1b6-21ae28be7e68",
+      "data_type_id": "725625ba-93e4-5b08-9d0a-31aa22320e59",
+      "operator": "=",
+      "value_mode": "absolute",
+      "time_aggregation_method": "None",
+      "value_aggregation_method": "None",
+      "value": "3141-9"
+    }
+  ],
+  "temporal_relations": [
+    {
+      "source_condition": 1,
+      "target_condition": 0,
+      "relationship": "same group"
+    }
+  ]
+}'),
        (2, NOW(), NOW(), 0,
-        '7cd039c0-363f-4aa9-a99b-c7f02e529945', '7cd039c0-363f-4aa9-a99b-c7f02e529945', 'test', 'Query 2',
-        'Description for Query 2',
-        '[
-          {
-            "ontologyId": "63900-5",
-            "operator": [
-              {"operator": "BIGGER_EQUAL", "value": "300"}
-            ]
-          }
-        ]'),
-       (3, NOW(), NOW(), 0,
-        '80f17acb-8041-4c3c-9b7b-370c489aa8cf', 'a7d79b12-5e2f-47c7-911c-9ad621f0836d', 'test', 'Test-FL',
-        'Description for Query 2',
-        '[{"ontologyId":"f5e88546-ce08-40e0-a645-bc40d54a72a5","dataTypeId":"8267d8b1-1be4-4035-a18d-248ee8e7f767","operator":[{"operator":"EXISTS","value":""}]}]');
+        '7cd039c0-363f-4aa9-a99b-c7f02e529945', '7cd039c0-363f-4aa9-a99b-c7f02e529945', 'test', 'Heart-rate delta family combined with sex / region',
+        '(HR delta 3 min < -20 AND female) OR (HR delta (any gap) > 20 AND LAZIO) OR (HR delta 3 min >= 20 AND region != LOMBARDIA)',
+        '{
+  "connecting_operator": "$or",
+  "conditions": [
+    {
+      "connecting_operator": "$and",
+      "conditions": [
+        {
+          "connecting_operator": "$and",
+          "conditions": [
+            {
+              "ontology_id": "6442751d-e654-5b16-9e81-0110587ff4eb",
+              "data_type_id": "725625ba-93e4-5b08-9d0a-31aa22320e59",
+              "operator": "=",
+              "value_mode": "absolute",
+              "time_aggregation_method": "None",
+              "value_aggregation_method": "None",
+              "value": "9999-9"
+            },
+            {
+              "ontology_id": "edb0b362-ce63-5d7d-8014-d67f9e48ab6d",
+              "data_type_id": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+              "operator": "<",
+              "value_mode": "delta 3 minutes",
+              "time_aggregation_method": "None",
+              "value_aggregation_method": "None",
+              "value": -20,
+              "datatype": "Float"
+            }
+          ],
+          "temporal_relations": [
+            {
+              "source_condition": 0,
+              "target_condition": 1,
+              "relationship": "same group"
+            }
+          ]
+        },
+        {
+          "ontology_id": "a1cbbfb8-a214-55c7-beb5-2c64fb1e1db9",
+          "data_type_id": "98233adb-7f45-5ab6-b14e-9dcd5bc02f9d",
+          "operator": "=",
+          "value_mode": "absolute",
+          "time_aggregation_method": "None",
+          "value_aggregation_method": "None",
+          "value": "Female (finding)"
+        }
+      ]
+    },
+    {
+      "connecting_operator": "$and",
+      "conditions": [
+        {
+          "connecting_operator": "$and",
+          "conditions": [
+            {
+              "ontology_id": "6442751d-e654-5b16-9e81-0110587ff4eb",
+              "data_type_id": "725625ba-93e4-5b08-9d0a-31aa22320e59",
+              "operator": "=",
+              "value_mode": "absolute",
+              "time_aggregation_method": "None",
+              "value_aggregation_method": "None",
+              "value": "9999-9"
+            },
+            {
+              "ontology_id": "edb0b362-ce63-5d7d-8014-d67f9e48ab6d",
+              "data_type_id": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+              "operator": ">",
+              "value_mode": "delta",
+              "time_aggregation_method": "None",
+              "value_aggregation_method": "None",
+              "value": 20,
+              "datatype": "Float"
+            }
+          ],
+          "temporal_relations": [
+            {
+              "source_condition": 0,
+              "target_condition": 1,
+              "relationship": "same group"
+            }
+          ]
+        },
+        {
+          "ontology_id": "8b37934e-2531-5069-b5c6-7c4e1eaba313",
+          "data_type_id": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+          "operator": "=",
+          "value_mode": "absolute",
+          "time_aggregation_method": "None",
+          "value_aggregation_method": "None",
+          "value": "LAZIO"
+        }
+      ]
+    },
+    {
+      "connecting_operator": "$and",
+      "conditions": [
+        {
+          "connecting_operator": "$and",
+          "conditions": [
+            {
+              "ontology_id": "6442751d-e654-5b16-9e81-0110587ff4eb",
+              "data_type_id": "725625ba-93e4-5b08-9d0a-31aa22320e59",
+              "operator": "=",
+              "value_mode": "absolute",
+              "time_aggregation_method": "None",
+              "value_aggregation_method": "None",
+              "value": "9999-9"
+            },
+            {
+              "ontology_id": "edb0b362-ce63-5d7d-8014-d67f9e48ab6d",
+              "data_type_id": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+              "operator": ">=",
+              "value_mode": "delta 3 minutes",
+              "time_aggregation_method": "None",
+              "value_aggregation_method": "None",
+              "value": 20,
+              "datatype": "Float"
+            }
+          ],
+          "temporal_relations": [
+            {
+              "source_condition": 0,
+              "target_condition": 1,
+              "relationship": "same group"
+            }
+          ]
+        },
+        {
+          "ontology_id": "8b37934e-2531-5069-b5c6-7c4e1eaba313",
+          "data_type_id": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+          "operator": "!=",
+          "value_mode": "absolute",
+          "time_aggregation_method": "None",
+          "value_aggregation_method": "None",
+          "value": "LOMBARDIA"
+        }
+      ]
+    }
+  ]
+}');
 
 
 INSERT INTO workflow (id, created_at, updated_at, version, keycloak_id, name, description, publish_status,

@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.api.query;
 
+import bio.cosy.feddb.core.api.query.Lang2QueryDocuments;
 import bio.cosy.feddb.core.api.query.QueryClientResponseDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.base.BaseBo;
@@ -124,7 +125,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         // Enhance the query with additional information if needed
         // This is a placeholder for any future enhancements
 
-        List<LocalQueryItemDTO> enhanced = query.getQuery().stream()
+        List<LocalQueryItemDTO> enhanced = Lang2QueryDocuments.flattenLeaves(query.getQuery()).stream()
                 .map(q -> {
                     List<SchemaNodeEntity> schemaNodeEntities = builderBO.getSchemaNodesForQueryItem(q.getOntologyId(), q.getDataTypeId());
                     List<LocalSchemaNodeDTO> schemaNodes = schemaNodeMapper.entitiesToDtos(schemaNodeEntities);
@@ -176,7 +177,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
             createTransactional(query, message, QueryStatusEnum.REJECTED_EAM_PRE_HARMONIZED);
             return QueryClientResponseDTO.createErrorResponse("Permission denied", queryGlobalUniqueId);
         }
-        allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(query.getQuery(), allowedCohortIds);
+        allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(Lang2QueryDocuments.leavesOf(query), allowedCohortIds);
 
         if (allowedCohorts.isEmpty()) {
             String message = "Cohort QueryAbility is rejecting the query";
@@ -295,7 +296,9 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
             logger.warn(message);
         }
 
-        allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(query.getQuery(), allowedCohortIds);
+        allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(
+                Lang2QueryDocuments.flattenLeaves(query.getQuery()),
+                allowedCohortIds);
         if (allowedCohorts.isEmpty()) {
             String message = "Cohort QueryAbility is rejecting the query";
             logger.warn(message);
