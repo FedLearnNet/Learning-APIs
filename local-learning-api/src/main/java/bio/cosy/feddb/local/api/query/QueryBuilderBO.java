@@ -44,6 +44,10 @@ public class QueryBuilderBO {
     private static final String EMPTY_PATIENT_QUERY =
             "SELECT DISTINCT " + PATIENT_ID_NAME + " FROM " + TABLE_NAME + " WHERE 1 = 0";
     private static final Pattern INTERVAL_PART = Pattern.compile("(\\d+)\\s+(minutes?|hours?|days?|weeks?|months?|years?)");
+    // Keeps event_time +/- interval inside PostgreSQL's timestamp range; an overflow there
+    // would fail only when matching rows exist and reveal them through the error.
+    private static final int MAX_INTERVAL_YEARS = 200;
+    private static final long MAX_INTERVAL_MINUTES = MAX_INTERVAL_YEARS * 366L * 24 * 60;
     private static final Pattern NUMERIC_LITERAL = Pattern.compile("-?\\d+(?:\\.\\d+)?");
     private static final String INTEGER_TEXT = "^-?[0-9]+$";
     private static final String FLOAT_TEXT = "^-?[0-9]+([.][0-9]+)?$";
@@ -435,6 +439,7 @@ public class QueryBuilderBO {
     private String requireInterval(String text, String fieldLabel) {
         String remaining = text.trim().toLowerCase(Locale.ROOT);
         List<String> parts = new ArrayList<>();
+        long totalMinutes = 0;
         while (!remaining.isEmpty()) {
             Matcher matcher = INTERVAL_PART.matcher(remaining);
             if (!matcher.lookingAt()) {
@@ -449,10 +454,27 @@ public class QueryBuilderBO {
             if (count <= 0) {
                 throw new QueryRejectedException(fieldLabel + " must be positive: " + text);
             }
+            totalMinutes += count * intervalUnitMinutes(matcher.group(2));
+            if (totalMinutes > MAX_INTERVAL_MINUTES) {
+                throw new QueryRejectedException(
+                        fieldLabel + " exceeds the maximum of " + MAX_INTERVAL_YEARS + " years: " + text);
+            }
             parts.add(count + " " + matcher.group(2));
             remaining = remaining.substring(matcher.end()).stripLeading();
         }
         return String.join(" ", parts);
+    }
+
+    private long intervalUnitMinutes(final String unit) {
+        return switch (unit.endsWith("s") ? unit.substring(0, unit.length() - 1) : unit) {
+            case "minute" -> 1L;
+            case "hour" -> 60L;
+            case "day" -> 24L * 60;
+            case "week" -> 7L * 24 * 60;
+            case "month" -> 31L * 24 * 60;
+            case "year" -> 366L * 24 * 60;
+            default -> throw new QueryRejectedException("Unsupported interval unit: " + unit);
+        };
     }
 
     private static final Pattern WITHIN_COUNT_SUFFIX =
