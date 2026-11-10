@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * An ontology and the datatype used together on the same schema node.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
