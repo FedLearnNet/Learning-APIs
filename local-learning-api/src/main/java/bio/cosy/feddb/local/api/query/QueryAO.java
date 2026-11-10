@@ -21,6 +21,7 @@ public class QueryAO implements PanacheRepository<QueryEntity> {
             """;
 
     private static final String COHORT_FILTER = " AND pm.cohort_id IN (:cohortIds)";
+    private static final int MILLISECONDS_PER_SECOND = 1000;
 
     @ConfigProperty(name = "feddb.query.timeout-seconds", defaultValue = "120")
     int queryTimeoutSeconds;
@@ -48,7 +49,8 @@ public class QueryAO implements PanacheRepository<QueryEntity> {
      * @param cohortIds cohorts the caller is allowed to count
      * @return one row per cohort that has a match
      */
-    public List<QueryResultDTO> findPatientCountsByCohort(String patientMatchSql, Collection<Long> cohortIds) {
+    public List<QueryResultDTO> findPatientCountsByCohort(
+            final String patientMatchSql, final Collection<Long> cohortIds) {
         if (cohortIds == null || cohortIds.isEmpty()) {
             return List.of();
         }
@@ -56,7 +58,7 @@ public class QueryAO implements PanacheRepository<QueryEntity> {
     }
 
     private List<QueryResultDTO> countPatients(
-            String patientMatchSql, boolean restrictCohorts, Collection<Long> cohortIds) {
+            final String patientMatchSql, final boolean restrictCohorts, final Collection<Long> cohortIds) {
         String sql = restrictCohorts
                 ? COHORT_PATIENT_COUNT_SQL.replace(
                         "WHERE pm.cohort_id IS NOT NULL",
@@ -64,7 +66,7 @@ public class QueryAO implements PanacheRepository<QueryEntity> {
                 : COHORT_PATIENT_COUNT_SQL;
         var query = getEntityManager()
                 .createNativeQuery(sql.formatted(patientMatchSql))
-                .setHint("jakarta.persistence.query.timeout", queryTimeoutSeconds * 1000);
+                .setHint("jakarta.persistence.query.timeout", queryTimeoutSeconds * MILLISECONDS_PER_SECOND);
         if (restrictCohorts) {
             query.setParameter("cohortIds", cohortIds);
         }

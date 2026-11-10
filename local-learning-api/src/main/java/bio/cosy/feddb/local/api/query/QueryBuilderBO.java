@@ -71,7 +71,7 @@ public class QueryBuilderBO {
      * @param cohortIds cohorts whose schema nodes may be used
      * @return patient-id SQL
      */
-    public String buildCountDistinctSql(QueryDTO dto, Collection<Long> cohortIds) {
+    public String buildCountDistinctSql(final QueryDTO dto, final Collection<Long> cohortIds) {
         if (cohortIds == null) {
             return compile(dto);
         }
@@ -83,7 +83,7 @@ public class QueryBuilderBO {
         }
     }
 
-    private String compile(QueryDTO dto) {
+    private String compile(final QueryDTO dto) {
         if (dto == null || dto.getQuery() == null || isEmptyGroup(dto.getQuery())) {
             return EMPTY_PATIENT_QUERY;
         }
@@ -1803,7 +1803,7 @@ public class QueryBuilderBO {
         return schemaNodeAO.findByOntologyAndDatatypeGlobalId(ontologyId, dataTypeId);
     }
 
-    private List<SchemaNodeEntity> schemaNodesFor(String ontologyId, String dataTypeId) {
+    private List<SchemaNodeEntity> schemaNodesFor(final String ontologyId, final String dataTypeId) {
         Set<Long> cohortLimit = COHORT_LIMIT.get();
         if (cohortLimit == null) {
             return getSchemaNodesForQueryItem(ontologyId, dataTypeId);
@@ -1967,7 +1967,7 @@ public class QueryBuilderBO {
         };
     }
 
-    private String buildRegexClause(DataTypes dataType, String columnName, String value) {
+    private String buildRegexClause(final DataTypes dataType, final String columnName, final String value) {
         if (dataType != DataTypes.STRING && dataType != DataTypes.CATEGORICAL) {
             throw new QueryRejectedException("Regular expression requires a text value");
         }
@@ -1975,7 +1975,7 @@ public class QueryBuilderBO {
         return columnName + " ~ " + encodeValue(dataType, value);
     }
 
-    private void requireValidRegex(String value) {
+    private void requireValidRegex(final String value) {
         if (value == null || value.isBlank()) {
             throw new QueryRejectedException(INVALID_REGEX);
         }
@@ -1991,7 +1991,7 @@ public class QueryBuilderBO {
         }
     }
 
-    private boolean isInvalidRegex(Throwable error) {
+    private boolean isInvalidRegex(final Throwable error) {
         Throwable current = error;
         while (current != null) {
             if (current instanceof SQLException sql) {

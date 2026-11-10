@@ -362,7 +362,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         return queryResult;
     }
 
-    private QueryResultWrapperDTO emptyQueryResult(LocalQueryDTO query) {
+    private QueryResultWrapperDTO emptyQueryResult(final LocalQueryDTO query) {
         QueryResultWrapperDTO emptyResult = new QueryResultWrapperDTO();
         emptyResult.setQueryId(query.getId());
         emptyResult.setResult(List.of());
