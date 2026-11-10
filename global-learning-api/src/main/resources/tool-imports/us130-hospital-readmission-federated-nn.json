@@ -16,7 +16,7 @@
     "appVersion" : "0.0.0",
     "publishHash" : "91401b9192b3703a059e1d5fa71aeff47f1616a4947b078867647fd7513e2062",
     "publishInfo" : {
-      "commitHash" : "a2bc1713a3991f0d1de17ee414e12d542132408c",
+      "commitHash" : "015a8d01e92e3644c23a1c0df9e348c939b31959",
       "filePaths" : [ "https://raw.githubusercontent.com/FedLearnNet/FL-Tool-US-130-NN/refs/heads/main/data/test_us130_wide_c85ce744.csv", "https://raw.githubusercontent.com/FedLearnNet/FL-Tool-US-130-NN/refs/heads/main/data/test_us130_wide.csv" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
@@ -140,14 +140,14 @@
         "infectedCount" : 0,
         "findings" : [ ]
       },
-      "imageName" : "us130-hospital-readmission-federated-nn:a2bc1713a3991f0d1de17ee414e12d542132408c"
+      "imageName" : "us130-hospital-readmission-federated-nn:015a8d01e92e3644c23a1c0df9e348c939b31959"
     },
     "changelog" : "",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
     "certificationLevel" : 0,
-    "imageName" : "us130-hospital-readmission-federated-nn:a2bc1713a3991f0d1de17ee414e12d542132408c",
+    "imageName" : "us130-hospital-readmission-federated-nn:015a8d01e92e3644c23a1c0df9e348c939b31959",
     "shortDescription" : "Predict 30-day hospital readmission for diabetic patients using a federated neural network",
     "longDescription" : "",
     "appConfig" : {
