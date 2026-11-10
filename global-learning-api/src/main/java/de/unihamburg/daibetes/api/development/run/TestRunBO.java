@@ -1,23 +1,29 @@
 package de.unihamburg.daibetes.api.development.run;
 
 import bio.cosy.feddb.core.execution.ExecutionMode;
+import bio.cosy.feddb.core.api.model.ModelSubDataDTO;
+import bio.cosy.feddb.core.execution.file.ExecutionFileDirection;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageRoundDTO;
 import bio.cosy.feddb.core.execution.run.dto.*;
 import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import bio.cosy.feddb.core.helper.FileHelper;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
+import de.unihamburg.daibetes.api.model.ModelBO;
 import de.unihamburg.daibetes.api.development.run.federated.FederatedParticipantUpdateDTO;
 import de.unihamburg.daibetes.api.development.run.federated.FederatedRoundMessageCreateDTO;
 import de.unihamburg.daibetes.api.development.run.federated.FederatedTestRunCreateDTO;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptAO;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptLifecycle;
 import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentAO;
 import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentDTO;
 import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
+import de.unihamburg.daibetes.execution.file.ExecutionFileBO;
 import de.unihamburg.daibetes.execution.run.ExecutionRunAO;
 import de.unihamburg.daibetes.execution.run.ExecutionRunDetailDTO;
 import de.unihamburg.daibetes.execution.run.ExecutionRunDetailMapper;
@@ -29,8 +35,10 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 
-import java.util.LinkedHashMap;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Test runs of an app in the developer's own app engine, as runs of the execution. A test run is a run of
@@ -60,13 +68,22 @@ public class TestRunBO {
     ExecutionRunDetailMapper mapper;
 
     @Inject
+    ModelBO modelBO;
+
+    @Inject
     TestRunSetupBO setupBO;
 
     @Inject
     TestRunProgressBO progressBO;
 
     @Inject
+    ExecutionAttemptLifecycle lifecycle;
+
+    @Inject
     TestRunCleanupBO cleanupBO;
+
+    @Inject
+    ExecutionFileBO executionFileBO;
 
     @Transactional
     public List<ExecutionRunDetailDTO> listTransactional(Long appId, ExecutionMode mode, boolean experiments, String keycloakId) {
@@ -106,10 +123,12 @@ public class TestRunBO {
     }
 
     @Transactional
-    public ExecutionRunDetailDTO runOfAttemptTransactional(Long attemptId, String keycloakId) {
-        ExecutionRunDetailDTO run = mapper.mapRunEntityToDetailDTO(testAttemptOf(attemptId).getStep().getRun(), false);
-        requireAuthor(run.getFederatedAppId(), keycloakId);
-        return run;
+    public void keepModelTransactional(ExecutionAttemptEntity attempt, ModelSubDataDTO model) {
+        FederatedAppVersionEntity version = attempt.getStep().getFederatedAppVersion();
+        ExecutionRunEntity run = attempt.getStep().getRun();
+        requireAuthor(version.getFederatedApp().getId(), run.getKeycloakId());
+        modelBO.saveModel(version.getId(), run.getExperiment() == null ? null : run.getExperiment().getId(),
+                version.getFederatedApp().getId(), model, run.getKeycloakId());
     }
 
     @Transactional
@@ -127,53 +146,62 @@ public class TestRunBO {
         return setupBO.federatedStartupOf(step);
     }
 
-    public void updateAttempt(UpdateRunDTO update) {
-        progressBO.updateAttempt(update);
+    @Transactional
+    public void updateRunTransactional(UpdateRunDTO updateTest, AppRunTypeEnum runType) {
+        if (runType != null && runType.isFederated()) {
+            FederatedRunLifecycleDTO update = new FederatedRunLifecycleDTO();
+            update.setId(updateTest.getRunId());
+            update.setStatus(updateTest.getStatus() != null ? updateTest.getStatus().name() : null);
+            update.setError(updateTest.getError());
+            updateFederatedRunTransactional(update);
+        } else {
+            lifecycle.updateTransactional(updateTest.getRunId(), updateTest);
+        }
     }
 
-    public void finishAttempt(FinishRunDTO finish) {
-        cleanupBO.finishAttempt(finish);
+    @Transactional
+    public void finishRunTransactional(FinishRunDTO finishTest, AppRunTypeEnum runType) {
+        if (runType != null && runType.isFederated()) {
+            finishFederatedTransactional(finishTest);
+        } else {
+            lifecycle.finish(finishTest.getRunId(), finishTest);
+        }
     }
 
     @Transactional
     public ExecutionMessageLogDTO storeLogTransactional(Long runId, ExecutionMessageLogDTO log, AppRunTypeEnum runType) {
-        progressBO.storeLog(runType.isFederated() ? participantAttemptOf(runId, log.getWorkerId()).getId() : runId, log);
+        lifecycle.storeLogTransactional(runType.isFederated() ? participantAttemptOf(runId, log.getWorkerId()).getId() : runId, log);
         return log;
     }
 
     @Transactional
     public ExecutionMessageMetricDTO storeMetricTransactional(Long runId, ExecutionMessageMetricDTO metric, AppRunTypeEnum runType) {
-        progressBO.storeMetric(runType.isFederated() ? participantAttemptOf(runId, metric.getWorkerId()).getId() : runId, metric);
+        lifecycle.storeMetricTransactional(runType.isFederated() ? participantAttemptOf(runId, metric.getWorkerId()).getId() : runId, metric);
         return metric;
     }
 
     @Transactional
-    public ExecutionRunDetailDTO uploadOutputTransactional(OutputRunDataDTO output, AppRunTypeEnum runType) {
-        ExecutionAttemptEntity attempt = runType.isFederated()
-                ? federatedStepOf(output.getRunId()).getSelectedAttempt()
-                : testAttemptOf(output.getRunId());
-        progressBO.mergeOutput(attempt, output);
-        return mapper.mapRunEntityToDetailDTO(attempt.getStep().getRun(), false);
+    public byte[] downloadOutputTransactional(Long appId, Long id, AppRunTypeEnum runType, String keycloakId) {
+        requireAuthor(appId, keycloakId);
+        ExecutionAttemptEntity attempt = runType == AppRunTypeEnum.EXPERIMENT_RUN
+                ? testAttemptOf(id) : testRunOf(appId, id).getSteps().getFirst().getSelectedAttempt();
+        Map<String, Object> fields = Map.of();
+        Map<String, File> files = Map.of();
+        if (attempt != null) {
+            if (runType == AppRunTypeEnum.EXPERIMENT_RUN) {
+                testRunOf(appId, attempt.getStep().getRun().getId());
+            }
+            fields = mapper.mapJsonToFields(attempt.getResult());
+            files = executionFileBO.loadForAttempt(attempt.getId(), ExecutionFileDirection.OUTPUT);
+        }
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        FileHelper.createOutputZip(output, fields, files);
+        return output.toByteArray();
     }
 
     @Transactional
     public List<ExecutionRunDetailDTO> runsOfTransactional(List<Long> runIds) {
         return runAO.listByIds(runIds).stream().map(run -> mapper.mapRunEntityToDetailDTO(run, false)).toList();
-    }
-
-    @Transactional
-    public LinkedHashMap<String, Object> outputOfTransactional(Long appId, Long runId, String keycloakId) {
-        requireAuthor(appId, keycloakId);
-        ExecutionAttemptEntity attempt = testRunOf(appId, runId).getSteps().getFirst().getSelectedAttempt();
-        return attempt == null ? new LinkedHashMap<>() : mapper.mapJsonToFields(attempt.getResult());
-    }
-
-    @Transactional
-    public LinkedHashMap<String, Object> outputOfAttemptTransactional(Long appId, Long attemptId, String keycloakId) {
-        requireAuthor(appId, keycloakId);
-        ExecutionAttemptEntity attempt = testAttemptOf(attemptId);
-        testRunOf(appId, attempt.getStep().getRun().getId());
-        return mapper.mapJsonToFields(attempt.getResult());
     }
 
     @Transactional
@@ -246,6 +274,21 @@ public class TestRunBO {
     public void requireAuthor(Long appId, String keycloakId) {
         if (!authorBO.isUserAuthor(keycloakId, appId)) {
             throw new ForbiddenException();
+        }
+    }
+
+    @Transactional
+    public boolean acceptsReportOfAppTransactional(Long appId, Long id, boolean federated) {
+        if (id == null) {
+            throw new ForbiddenException("Execution identity is required");
+        }
+        if (federated) {
+            return !testRunOf(appId, id).hasEnded();
+        } else {
+            ExecutionAttemptEntity attempt = testAttemptOf(id);
+            testRunOf(appId, attempt.getStep().getRun().getId());
+            // Ownership is checked even for late reports; an ended execution is simply ignored.
+            return !attempt.hasEnded();
         }
     }
 }

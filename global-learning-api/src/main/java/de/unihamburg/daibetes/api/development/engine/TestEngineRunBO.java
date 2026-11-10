@@ -10,8 +10,9 @@ import bio.cosy.feddb.core.execution.hyperparam.config.HyperParamSearchDTO;
 import bio.cosy.feddb.core.execution.run.dto.UpdateRunDTO;
 import bio.cosy.feddb.core.execution.run.types.AppConnectionTypesEnum;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
-import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
+import bio.cosy.feddb.core.security.Scope;
+import de.unihamburg.daibetes.api.app.FederatedAppAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.development.run.TestRunBO;
@@ -20,13 +21,14 @@ import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptAO;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptLifecycle;
 import de.unihamburg.daibetes.execution.run.*;
-import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -64,9 +66,23 @@ public class TestEngineRunBO {
     @Inject
     ToolApiKeyService toolApiKeyService;
 
+    @Inject
+    FederatedAppAO appAO;
+
+    @Transactional
+    public String bootstrapCredentialTransactional(Long appId, String keycloakId) {
+        testRunBO.requireAuthor(appId, keycloakId);
+        appAO.findByIdOptional(appId, LockModeType.PESSIMISTIC_WRITE).orElseThrow(NotFoundException::new);
+        if (runAO.findConnectingEngineOfApp(appId).isPresent()) {
+            throw new BadRequestException("Stop the hosted test engine before connecting locally");
+        }
+        return toolApiKeyService.issue(Scope.TEST_EMBED_APP, appId, null);
+    }
+
     @Transactional
     public ExecutionRunDetailDTO startTransactional(Long appId, TestEngineCreateDTO create, String keycloakId) {
         testRunBO.requireAuthor(appId, keycloakId);
+        appAO.findByIdOptional(appId, LockModeType.PESSIMISTIC_WRITE).orElseThrow(NotFoundException::new);
         FederatedAppVersionEntity version = versionAO.findLastVersionByAppIdOptional(appId)
                 .filter(FederatedAppVersionEntity::hasImage)
                 .orElseThrow(() -> new BadRequestException("The latest version has no image yet"));
@@ -165,14 +181,12 @@ public class TestEngineRunBO {
     // Whoever ended the engine's attempt, its key and a single run waiting on it go too
     @Transactional
     public void cleanUpTransactional(Long attemptId) {
+        toolApiKeyService.revokeExecution(attemptId);
         ExecutionAttemptEntity attempt = attemptAO.findByIdOptional(attemptId).orElse(null);
         if (attempt == null) {
             return;
         }
         ExecutionRunEntity engine = attempt.getStep().getRun();
-        if (engine.getEngineMode().connects()) {
-            toolApiKeyService.revoke(Scope.TEST_EMBED_APP, attempt.getStep().getFederatedAppVersion().getFederatedApp().getId());
-        }
         if (engine.getEngineMode() == TestEngineMode.SINGLE_RUN) {
             runAO.listOpenRunsOfTestEngine(engine.getId()).forEach(run -> workflowExecutionBO.stopTransactional(run.getId()));
         }
@@ -202,11 +216,6 @@ public class TestEngineRunBO {
     }
 
     @Transactional
-    public String findOwnerOfConnectingEngineTransactional(Long appId) {
-        return runAO.findConnectingEngineOfApp(appId).map(ExecutionRunEntity::getKeycloakId).orElse(null);
-    }
-
-    @Transactional
     public boolean hasConnectingEngineTransactional(Long appId) {
         return runAO.findConnectingEngineOfApp(appId).isPresent();
     }
@@ -216,8 +225,10 @@ public class TestEngineRunBO {
         testRunBO.requireAuthor(appId, keycloakId);
     }
 
+    // A step selects its attempt when it ends; until then the engine runs its latest one
     static Optional<ExecutionAttemptEntity> attemptOf(ExecutionRunEntity engine) {
-        return engine.getCurrentStep().map(ExecutionRunStepEntity::getSelectedAttempt);
+        return engine.getCurrentStep().flatMap(step -> Optional.ofNullable(step.getSelectedAttempt())
+                .or(() -> step.getAttempts().stream().max(Comparator.comparing(ExecutionAttemptEntity::getId))));
     }
 
     private Optional<Long> connectingAttemptIdOf(Long appId) {
@@ -230,6 +241,7 @@ public class TestEngineRunBO {
         }
         attempt.setExitCode(exitCode);
         attempt.end(status, failure);
+        toolApiKeyService.revokeExecution(attempt.getId());
         events.attemptFinished(attempt);
     }
 }

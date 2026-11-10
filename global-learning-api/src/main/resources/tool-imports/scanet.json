@@ -10,7 +10,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "0.0.0",
-    "publishHash" : "f787a71e8debb6d08691941e58d7a8f2ba8b84bd",
+    "publishHash" : "de9f70317fd6877b23a033395da02e668bb73a20",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -177,11 +177,11 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "f787a71e8debb6d08691941e58d7a8f2ba8b84bd",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-scanet/blob/f787a71e8debb6d08691941e58d7a8f2ba8b84bd/data/README.md" ],
+      "commitHash" : "de9f70317fd6877b23a033395da02e668bb73a20",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-scanet/blob/de9f70317fd6877b23a033395da02e668bb73a20/data/README.md" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
-        "target" : "localhost:5001/flnet/tools/scanet:f787a71e8debb6d08691941e58d7a8f2ba8b84bd",
+        "target" : "localhost:5001/flnet/tools/scanet:de9f70317fd6877b23a033395da02e668bb73a20",
         "success" : false,
         "summary" : {
           "critical" : 0,
@@ -517,8 +517,8 @@
         "startedAt" : "2026-10-30T17:07:38.232+00:00",
         "finishedAt" : "2026-10-30T17:07:46.858+00:00"
       },
-      "imageName" : "scanet:f787a71e8debb6d08691941e58d7a8f2ba8b84bd"
+      "imageName" : "scanet:de9f70317fd6877b23a033395da02e668bb73a20"
     },
-    "imageName" : "scanet:f787a71e8debb6d08691941e58d7a8f2ba8b84bd"
+    "imageName" : "scanet:de9f70317fd6877b23a033395da02e668bb73a20"
   } ]
 }

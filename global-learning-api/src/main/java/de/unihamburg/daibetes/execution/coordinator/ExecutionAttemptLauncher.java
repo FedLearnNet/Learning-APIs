@@ -43,9 +43,16 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
     // The apps talk back through the existing BO and websocket of their purpose, an engine like a local one.
     public ExecutionAttemptLauncher() {
         super(Map.of(
-                ExecutionPurpose.ANALYSIS, new ExecutionCallback(Scope.MODEL_WORKFLOW_RUN, "execution/workflow"),
-                ExecutionPurpose.TRAINING, new ExecutionCallback(Scope.MODEL_WORKFLOW_RUN, "execution/workflow"),
+                ExecutionPurpose.ANALYSIS, new ExecutionCallback(Scope.EXECUTION_ATTEMPT, "execution/APP"),
+                ExecutionPurpose.TRAINING, new ExecutionCallback(Scope.EXECUTION_ATTEMPT, "execution/APP"),
                 ExecutionPurpose.TEST_HOSTING, new ExecutionCallback(Scope.TEST_EMBED_APP, "testembed")));
+    }
+
+    @Override
+    protected String provisionCredential(ExecutionAttemptEntity attempt, ExecutionCallback callback) {
+        return attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TEST_HOSTING
+                ? testEngineBO.provisionCredential(attempt)
+                : super.provisionCredential(attempt, callback);
     }
 
     @Override

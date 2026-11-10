@@ -17,6 +17,7 @@ import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
 import java.time.Duration;
@@ -48,6 +49,8 @@ public class ConnectorAppRunProgressBO {
     // Table a run uploaded, until whoever waits for the run takes it.
     private final Map<Long, ConnectorAppOutputDTO> outputs = new ConcurrentHashMap<>();
 
+    private final Map<Long, Long> batchAttempts = new ConcurrentHashMap<>();
+
     // Result of a batch by the id the app was started with; batch ids are negative, never an attempt id.
     private final Map<Long, CompletableFuture<TableData>> batches = new ConcurrentHashMap<>();
 
@@ -71,7 +74,10 @@ public class ConnectorAppRunProgressBO {
     }
 
     /** Hands the table to whoever waits for the batch; false when the upload answers no batch. */
-    public boolean completeBatch(Long batchId, TableData table) {
+    public boolean completeBatch(Long attemptId, Long batchId, TableData table) {
+        if (batchId != null && batchId < 0 && !attemptId.equals(batchAttempts.get(batchId))) {
+            throw new ForbiddenException("Batch belongs to another execution");
+        }
         CompletableFuture<TableData> batch = batchId != null ? batches.remove(batchId) : null;
         if (batch == null) {
             return false;
@@ -89,11 +95,13 @@ public class ConnectorAppRunProgressBO {
     }
 
     /** Announces a batch before it is sent, so its result cannot arrive before anyone waits. */
-    public CompletableFuture<TableData> expectBatch(Long batchId) {
+    public CompletableFuture<TableData> expectBatch(Long attemptId, Long batchId) {
+        batchAttempts.put(batchId, attemptId);
         return batches.computeIfAbsent(batchId, id -> new CompletableFuture<>());
     }
 
     public void forgetBatch(Long batchId) {
+        batchAttempts.remove(batchId);
         Optional.ofNullable(batches.remove(batchId)).ifPresent(batch -> batch.cancel(true));
     }
 

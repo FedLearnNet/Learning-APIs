@@ -1,6 +1,7 @@
 package bio.cosy.feddb.core.security;
 
 public enum Scope {
+    EXECUTION_ATTEMPT,
     LEARNING_RUN,
     TOOL_RUN,
     MODEL_PREDICTION_RUN,

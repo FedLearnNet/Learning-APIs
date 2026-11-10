@@ -14,6 +14,8 @@ import java.util.Optional;
 public class ToolEndpointSecurityPolicy extends BaseToolEndpointSecurityPolicy {
 
     private static final List<Rule> RULES = List.of(
+            post(Scope.EXECUTION_ATTEMPT, "/execution/APP/([^/]+)/upload/(?:output|model)"),
+            websocket(Scope.EXECUTION_ATTEMPT, "/execution/APP/([^/]+)/app"),
             post(Scope.TOOL_RUN, "/execution/tool/([^/]+)/upload/output"),
             websocket(Scope.TOOL_RUN, "/execution/tool/([^/]+)/app"),
             post(Scope.LEARNING_RUN, "/execution/learning/([^/]+)/upload/(?:output|model)"),

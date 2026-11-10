@@ -98,6 +98,20 @@ public abstract class BaseExecutionFileBO<
         return outputs;
     }
 
+    public void keepOutputs(Attempt attempt, AppRunUploadData upload) {
+        if (attempt.hasEnded()) {
+            throw new IllegalStateException("Execution has ended");
+        }
+        // Fail the upload if any artifact cannot be stored; do not acknowledge partial results.
+        for (FileUpload file : upload.getFilesNullsafe()) {
+            F stored = storeFile(attempt, file);
+            createLink(attempt, stored, AppRunUploadData.keyOf(file), ExecutionFileDirection.OUTPUT);
+        }
+        if (upload.getMeta() != null) {
+            attempt.setMeta(upload.getMeta());
+        }
+    }
+
     public List<DTO> storeAndLinkFiles(Attempt attempt, List<File> files, ExecutionFileDirection direction) {
         Map<String, F> stored = new LinkedHashMap<>();
         files.forEach(file -> stored.putIfAbsent(FilenameUtils.getBaseName(file.getName()),

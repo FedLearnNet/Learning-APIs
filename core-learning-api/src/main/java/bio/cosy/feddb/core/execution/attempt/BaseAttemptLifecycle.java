@@ -17,6 +17,13 @@ import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
 import bio.cosy.feddb.core.execution.run.dto.UpdateRunDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import bio.cosy.feddb.core.security.Scope;
+import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
+import bio.cosy.feddb.core.security.ToolApiKeyService;
+import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
@@ -55,11 +62,35 @@ public abstract class BaseAttemptLifecycle<
     @Inject
     public MessageAO messageAO;
 
+    @Inject
+    ToolApiKeyService apiKeys;
+
+    @Inject
+    SecurityIdentity identity;
+
+    protected abstract String ownerOf(Attempt attempt);
+
     // Creates a message already linked to its attempt.
     private final Function<Attempt, Message> newMessage;
 
     protected BaseAttemptLifecycle(Function<Attempt, Message> newMessage) {
         this.newMessage = newMessage;
+    }
+
+    @Transactional
+    public String bootstrapCredentialTransactional(Long attemptId) {
+        if (identity.isAnonymous() || identity.hasRole(ToolApiKeyAuthenticationMechanism.ROLE)) {
+            throw new ForbiddenException();
+        }
+        Attempt attempt = attemptAO.findByIdWrite(attemptId)
+                .orElseThrow(() -> new NotFoundException("Execution not found"));
+        if (!identity.getPrincipal().getName().equals(ownerOf(attempt))) {
+            throw new ForbiddenException();
+        }
+        if (attempt.hasEnded()) {
+            throw new WebApplicationException("Execution has ended", 409);
+        }
+        return apiKeys.issue(Scope.EXECUTION_ATTEMPT, attemptId);
     }
 
     @Transactional
@@ -190,6 +221,7 @@ public abstract class BaseAttemptLifecycle<
             return;
         }
         attempt.end(status, failure);
+        apiKeys.revokeExecution(attempt.getId());
         events.attemptFinished(attempt);
         Log.infof("Attempt %d finished as %s", attempt.getId(), status);
     }

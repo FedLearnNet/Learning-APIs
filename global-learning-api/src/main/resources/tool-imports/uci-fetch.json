@@ -16,11 +16,90 @@
   "versions" : [ {
     "federatedAppId" : 27,
     "appVersion" : "1.0.0",
-    "publishHash" : "0e3f44e0140bad048a8c8d7a0c9267dd80baeaed",
+    "publishHash" : "462d4058895205a77ed93452b549744aa18fb389",
     "publishInfo" : {
-      "commitHash" : "0e3f44e0140bad048a8c8d7a0c9267dd80baeaed",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-uci-fetch/blob/0e3f44e0140bad048a8c8d7a0c9267dd80baeaed/data/README.md" ],
-      "vulnerabilityScanResult" : null,
+      "commitHash" : "462d4058895205a77ed93452b549744aa18fb389",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-uci-fetch/blob/462d4058895205a77ed93452b549744aa18fb389/data/README.md" ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "localhost:5001/flnet/tools/uci-fetch:462d4058895205a77ed93452b549744aa18fb389",
+        "success" : false,
+        "summary" : {
+          "critical" : 0,
+          "high" : 1,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 1
+        },
+        "rawReport" : {
+          "lang-pkgs-python-pkg" : [ {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 8.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "ghsa" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              },
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:L"
+              },
+              "bitnami" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:2b6dee70431b6e642bcb551f9e6728b2929954536cff91eb38686afc59f4600b"
+            },
+            "PkgID" : "setuptools@70.3.0",
+            "Title" : "setuptools: Path Traversal Vulnerability in setuptools PackageIndex",
+            "CweIDs" : [ "CWE-22" ],
+            "Status" : "fixed",
+            "PkgName" : "setuptools",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-5rjg-fvgr-3xxf" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:13578", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/9/ALSA-2025-13578.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
+            "Fingerprint" : "sha256:8b6d642f4c7c883d313da3e959798ed6d31831a6b3c9ac2ae0b72bb30f59df28",
+            "FixedVersion" : "78.1.1",
+            "PkgIdentifier" : {
+              "UID" : "c5eccaa7d8e0c308",
+              "PURL" : "pkg:pypi/setuptools@70.3.0",
+              "BOMRef" : "pkg:pypi/setuptools@70.3.0"
+            },
+            "PublishedDate" : "2025-05-17T16:15:19.11Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 2,
+              "ghsa" : 3,
+              "azure" : 3,
+              "rocky" : 2,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "bitnami" : 3,
+              "oracle-oval" : 2
+            },
+            "VulnerabilityID" : "CVE-2025-47273",
+            "InstalledVersion" : "70.3.0",
+            "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
+          } ]
+        },
+        "startedAt" : "2026-11-10T09:39:32.680+00:00",
+        "finishedAt" : "2026-11-10T09:40:44.515+00:00"
+      },
       "sastScanResult" : {
         "tool" : "opengrep",
         "version" : "1.33.1",
@@ -46,25 +125,25 @@
           "skipped_rules" : [ ],
           "interfile_languages_used" : [ ]
         },
-        "startedAt" : "2026-11-09T15:44:18.916+00:00",
-        "finishedAt" : "2026-11-09T15:44:31.431+00:00"
+        "startedAt" : "2026-11-10T09:38:28.558+00:00",
+        "finishedAt" : "2026-11-10T09:38:30.681+00:00"
       },
       "malwareScanResult" : {
         "tool" : "clamav",
         "success" : true,
         "infectedCount" : 0,
         "findings" : [ ],
-        "startedAt" : "2026-11-09T15:50:36.740+00:00",
-        "finishedAt" : "2026-11-09T15:51:30.404+00:00"
+        "startedAt" : "2026-11-10T09:40:44.533+00:00",
+        "finishedAt" : "2026-11-10T09:40:50.635+00:00"
       },
-      "imageName" : "uci-fetch:0e3f44e0140bad048a8c8d7a0c9267dd80baeaed"
+      "imageName" : "uci-fetch:462d4058895205a77ed93452b549744aa18fb389"
     },
     "rebuilding" : false,
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : true,
     "needsHostAccess" : false,
     "certificationLevel" : 0,
-    "imageName" : "uci-fetch:0e3f44e0140bad048a8c8d7a0c9267dd80baeaed",
+    "imageName" : "uci-fetch:462d4058895205a77ed93452b549744aa18fb389",
     "shortDescription" : "Fetches a UCI dataset by ID and exports its features and targets as a combined CSV table.",
     "longDescription" : "# uci-fetch\n\nFetches a UCI dataset by ID and exports its features and targets as a combined CSV table.\n\n## Runtime inputs\n\nSupply input files according to the schemas in `app.yml`.\n\n## Inputs and outputs\n\n### Inputs\n\nNo fields are declared.\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `report` | TEXT | Small textual report about the fetched dataset and output shape. |\n| `dataset` | CSV | Single CSV combining features and targets from the fetched UCI dataset. |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `dataset_id` | `17` | UCI dataset numeric id to fetch via ucimlrepo (e.g., 17 = Breast Cancer Wisconsin Diagnostic). |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-uci-fetch .`.\n",
     "appConfig" : {

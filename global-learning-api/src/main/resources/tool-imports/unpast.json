@@ -10,7 +10,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "1.0.0",
-    "publishHash" : "9b72e769202e8a653f08581166f57f228d812658",
+    "publishHash" : "1178532691186bb85d9593239376f9efd40afeb8",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -127,11 +127,11 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "9b72e769202e8a653f08581166f57f228d812658",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-unpast/blob/9b72e769202e8a653f08581166f57f228d812658/data/README.md" ],
+      "commitHash" : "1178532691186bb85d9593239376f9efd40afeb8",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-unpast/blob/1178532691186bb85d9593239376f9efd40afeb8/data/README.md" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
-        "target" : "localhost:5001/flnet/tools/unpast:9b72e769202e8a653f08581166f57f228d812658",
+        "target" : "localhost:5001/flnet/tools/unpast:1178532691186bb85d9593239376f9efd40afeb8",
         "success" : false,
         "summary" : {
           "critical" : 0,
@@ -417,8 +417,8 @@
         "startedAt" : "2026-10-30T23:53:58.292+00:00",
         "finishedAt" : "2026-10-30T23:54:36.027+00:00"
       },
-      "imageName" : "unpast:9b72e769202e8a653f08581166f57f228d812658"
+      "imageName" : "unpast:1178532691186bb85d9593239376f9efd40afeb8"
     },
-    "imageName" : "unpast:9b72e769202e8a653f08581166f57f228d812658"
+    "imageName" : "unpast:1178532691186bb85d9593239376f9efd40afeb8"
   } ]
 }

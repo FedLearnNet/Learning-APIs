@@ -266,7 +266,7 @@ public class AppTransformerBatchingE2ETest {
             clients.add(client);
             WebSocket socket = client.newWebSocketBuilder()
                     .header(ToolApiKeyService.HEADER_NAME, apiKey)
-                    .buildAsync(URI.create("ws://localhost:" + port + "/connectors/run/execution/" + stepId + "/app"),
+                    .buildAsync(URI.create("ws://localhost:" + port + "/execution/APP/" + stepId + "/app"),
                             new AppListener(stepId, apiKey, port))
                     .join();
             sockets.add(socket);
@@ -371,7 +371,7 @@ public class AppTransformerBatchingE2ETest {
                         // The id the run was started with: this is what pairs the result with its batch.
                         .multiPart("runId", String.valueOf(batchId))
                         .when()
-                        .post("/connectors/run/execution/{stepId}/upload/output", stepId)
+                        .post("/execution/APP/{stepId}/upload/output", stepId)
                         .then()
                         .statusCode(201);
             }

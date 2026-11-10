@@ -10,7 +10,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "1.0.0",
-    "publishHash" : "20deb8699d2712914e4ece7473ded05f88db3353",
+    "publishHash" : "fa01f71c88f6f0720521ceeb01ab9695d7a54c98",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -66,8 +66,8 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "20deb8699d2712914e4ece7473ded05f88db3353",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-branch-merge-aggregator/blob/20deb8699d2712914e4ece7473ded05f88db3353/data/left.csv", "https://github.com/FedLearnNet/tool-branch-merge-aggregator/blob/20deb8699d2712914e4ece7473ded05f88db3353/data/iris.csv", "https://github.com/FedLearnNet/tool-branch-merge-aggregator/blob/20deb8699d2712914e4ece7473ded05f88db3353/data/right.csv" ],
+      "commitHash" : "fa01f71c88f6f0720521ceeb01ab9695d7a54c98",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-branch-merge-aggregator/blob/fa01f71c88f6f0720521ceeb01ab9695d7a54c98/data/left.csv", "https://github.com/FedLearnNet/tool-branch-merge-aggregator/blob/fa01f71c88f6f0720521ceeb01ab9695d7a54c98/data/iris.csv", "https://github.com/FedLearnNet/tool-branch-merge-aggregator/blob/fa01f71c88f6f0720521ceeb01ab9695d7a54c98/data/right.csv" ],
       "vulnerabilityScanResult" : null,
       "sastScanResult" : {
         "tool" : "opengrep",
@@ -105,8 +105,8 @@
         "startedAt" : "2026-11-09T16:09:07.965+00:00",
         "finishedAt" : "2026-11-09T16:11:02.235+00:00"
       },
-      "imageName" : "branch-merge-aggregator:20deb8699d2712914e4ece7473ded05f88db3353"
+      "imageName" : "branch-merge-aggregator:fa01f71c88f6f0720521ceeb01ab9695d7a54c98"
     },
-    "imageName" : "branch-merge-aggregator:20deb8699d2712914e4ece7473ded05f88db3353"
+    "imageName" : "branch-merge-aggregator:fa01f71c88f6f0720521ceeb01ab9695d7a54c98"
   } ]
 }

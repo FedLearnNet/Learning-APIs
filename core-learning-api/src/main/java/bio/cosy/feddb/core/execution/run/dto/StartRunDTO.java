@@ -2,6 +2,7 @@ package bio.cosy.feddb.core.execution.run.dto;
 
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -9,6 +10,11 @@ import java.util.List;
 @Data
 public class StartRunDTO {
     private Long id;
+
+    // A persistent development engine receives a credential for each execution it serves.
+    private Long executionId;
+    @ToString.Exclude
+    private String executionApiKey;
 
     private RunStatusTypes status;
 

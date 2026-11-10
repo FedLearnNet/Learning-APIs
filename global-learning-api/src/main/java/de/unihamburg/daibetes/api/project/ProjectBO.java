@@ -154,6 +154,10 @@ public class ProjectBO extends BaseBo<ProjectDetailDTO, ProjectEntity, ProjectAO
         return exportConfigUtilsBO.dummyTrainingInputsOf(appVersionId, getById(id).getExportConfig());
     }
 
+    public String exportTestCsvOf(Long id, Integer amount, String keycloakId) {
+        return exportConfigUtilsBO.testCsvOf(get(id, keycloakId).getExportConfig(), amount);
+    }
+
     public Response generateExportConfigTestCsv(Long id, Integer amount, String keycloakId) {
         ProjectDetailDTO currentDto = get(id, keycloakId);
         return exportConfigUtilsBO.generateTestCsv(currentDto.getExportConfig(), amount);

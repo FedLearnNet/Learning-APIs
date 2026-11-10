@@ -31,7 +31,8 @@ public abstract class BaseToolEndpointSecurityPolicy implements HttpSecurityPoli
             Optional<RequestGrant> requestedGrant = match(rules(), context.request().method().name(),
                     context.normalizedPath(), context.request().getHeader("Upgrade"));
             if (requestedGrant.isPresent()) {
-                if (requestedGrant.get().usersAllowed() && !currentIdentity.hasRole(ToolApiKeyAuthenticationMechanism.ROLE)) {
+                if (requestedGrant.get().usersAllowed() && !currentIdentity.isAnonymous()
+                        && !currentIdentity.hasRole(ToolApiKeyAuthenticationMechanism.ROLE)) {
                     return CheckResult.PERMIT;
                 }
                 return matchesToolIdentity(currentIdentity, requestedGrant.get())
@@ -80,11 +81,6 @@ public abstract class BaseToolEndpointSecurityPolicy implements HttpSecurityPoli
 
     protected static Rule websocket(Scope scope, String path) {
         return new Rule("GET", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), true, scope, false);
-    }
-
-    /** Like {@link #post} on an endpoint users call as well; only an API key must match the scope and run id. */
-    protected static Rule postAlsoForUsers(Scope scope, String path) {
-        return new Rule("POST", Pattern.compile("^" + path + "/?$", Pattern.CASE_INSENSITIVE), false, scope, true);
     }
 
     /** Like {@link #websocket} on an endpoint users call as well; only an API key must match the scope and run id. */

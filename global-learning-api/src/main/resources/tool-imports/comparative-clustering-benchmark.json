@@ -10,7 +10,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "1.0.0",
-    "publishHash" : "5f3d2692c1c37577b48a997a4efc3a5b744ee41c",
+    "publishHash" : "ebaa6b27955a02ba39da0931d67f417d9c5aad45",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -76,8 +76,8 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "5f3d2692c1c37577b48a997a4efc3a5b744ee41c",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-comparative-clustering-benchmark/blob/5f3d2692c1c37577b48a997a4efc3a5b744ee41c/data/README.md" ],
+      "commitHash" : "ebaa6b27955a02ba39da0931d67f417d9c5aad45",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-comparative-clustering-benchmark/blob/ebaa6b27955a02ba39da0931d67f417d9c5aad45/data/README.md" ],
       "vulnerabilityScanResult" : null,
       "sastScanResult" : {
         "tool" : "opengrep",
@@ -115,8 +115,8 @@
         "startedAt" : "2026-11-09T16:09:47.056+00:00",
         "finishedAt" : "2026-11-09T16:11:49.620+00:00"
       },
-      "imageName" : "comparative-clustering-benchmark:5f3d2692c1c37577b48a997a4efc3a5b744ee41c"
+      "imageName" : "comparative-clustering-benchmark:ebaa6b27955a02ba39da0931d67f417d9c5aad45"
     },
-    "imageName" : "comparative-clustering-benchmark:5f3d2692c1c37577b48a997a4efc3a5b744ee41c"
+    "imageName" : "comparative-clustering-benchmark:ebaa6b27955a02ba39da0931d67f417d9c5aad45"
   } ]
 }

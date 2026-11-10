@@ -4,6 +4,8 @@ import bio.cosy.feddb.core.api.workflow.base.BaseWorkflowEngine;
 import bio.cosy.feddb.core.execution.ExecutionLocation;
 import bio.cosy.feddb.core.execution.executor.BaseWorkflowExecutionBO;
 import bio.cosy.feddb.core.execution.executor.ExecutionStartDTO;
+import bio.cosy.feddb.core.execution.file.ExecutionFileDirection;
+import de.unihamburg.daibetes.execution.file.ExecutionFileBO;
 import de.unihamburg.daibetes.api.workflow.WorkflowAO;
 import de.unihamburg.daibetes.api.workflow.WorkflowEntity;
 import de.unihamburg.daibetes.api.workflow.WorkflowMapper;
@@ -28,8 +30,19 @@ public class WorkflowExecutionBO extends BaseWorkflowExecutionBO<ExecutionRunEnt
     @Inject
     WorkflowMapper workflowMapper;
 
+    @Inject
+    ExecutionFileBO executionFileBO;
+
     public WorkflowExecutionBO() {
         super(ExecutionRunEntity::new, ExecutionRunStepEntity::new, ExecutionLocation.PLATFORM);
+    }
+
+    @Override
+    @Transactional
+    public void deleteTransactional(Long runId) {
+        stopTransactional(runId);
+        executionFileBO.deleteForRun(runId, ExecutionFileDirection.OUTPUT);
+        super.deleteTransactional(runId);
     }
 
     @Transactional

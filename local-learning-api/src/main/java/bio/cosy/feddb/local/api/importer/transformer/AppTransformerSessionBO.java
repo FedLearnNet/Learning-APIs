@@ -103,7 +103,7 @@ public class AppTransformerSessionBO {
                         + transformer.getAppImage() + "' in import " + sessionId));
         WebSocketConnection connection = connectionOf(attemptId, transformer);
         Long batchId = batchIds.decrementAndGet();
-        CompletableFuture<TableData> result = appRunBO.expectBatch(batchId);
+        CompletableFuture<TableData> result = appRunBO.expectBatch(attemptId, batchId);
         StartRunDTO start = new StartRunDTO();
         start.setId(batchId);
         start.setStatus(RunStatusTypes.PENDING);

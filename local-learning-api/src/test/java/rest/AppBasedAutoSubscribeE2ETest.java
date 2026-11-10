@@ -384,7 +384,7 @@ public class AppBasedAutoSubscribeE2ETest {
                                 .build())
                         .multiPart("runId", String.valueOf(stepId))
                         .when()
-                        .post("/execution/tool/{runId}/upload/output", stepId)
+                        .post("/execution/APP/{runId}/upload/output", stepId)
                         .then()
                         .statusCode(201);
             } catch (Exception e) {

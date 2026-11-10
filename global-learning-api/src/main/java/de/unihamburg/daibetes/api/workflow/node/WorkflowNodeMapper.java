@@ -4,6 +4,7 @@ package de.unihamburg.daibetes.api.workflow.node;
 import bio.cosy.feddb.core.api.app.FederatedAppDTO;
 import bio.cosy.feddb.core.api.app.FederatedAppType;
 import bio.cosy.feddb.core.api.model.ModelDTO;
+import bio.cosy.feddb.core.api.model.ModelDetailDTO;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDTO;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowPositionDTO;
@@ -14,6 +15,7 @@ import de.unihamburg.daibetes.api.app.FederatedAppMapper;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.model.ModelMapper;
 import de.unihamburg.daibetes.api.model.sub.ModelSubEntity;
+import de.unihamburg.daibetes.api.model.version.ModelVersionMapper;
 import de.unihamburg.daibetes.helper.HyperParamMapper;
 import de.unihamburg.daibetes.api.workflow.export.WorkflowNodeExportDTO;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
@@ -21,6 +23,7 @@ import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
 import java.io.IOException;
+import java.util.List;
 
 @Mapper(config = QuarkusMappingConfig.class)
 public interface WorkflowNodeMapper extends BaseMapper<WorkflowNodeDetailDTO, WorkflowNodeEntity> {
@@ -28,6 +31,7 @@ public interface WorkflowNodeMapper extends BaseMapper<WorkflowNodeDetailDTO, Wo
     HyperParamMapper hyperParamMapper = Mappers.getMapper(HyperParamMapper.class);
     FederatedAppMapper appMapper = Mappers.getMapper(FederatedAppMapper.class);
     ModelMapper modelMapper = Mappers.getMapper(ModelMapper.class);
+    ModelVersionMapper modelVersionMapper = Mappers.getMapper(ModelVersionMapper.class);
     ObjectMapper objectMapper = new ObjectMapper();
 
     @Mappings({
@@ -100,7 +104,9 @@ public interface WorkflowNodeMapper extends BaseMapper<WorkflowNodeDetailDTO, Wo
             ModelDTO model = modelMapper.entityToDto(entity.getSubModel().getModelVersion().getModel());
             FederatedAppDTO app = appMapper.entityToDto(entity.getSubModel().getModelVersion().getModel().getFederatedAppVersion().getFederatedApp());
             dto.setAppDetail(appMapper.dtoToDetailDto(app));
-            dto.setModelDetail(modelMapper.toDetail(model));
+            ModelDetailDTO detail = modelMapper.toDetail(model);
+            detail.setModelVersions(List.of(modelVersionMapper.entityToDto(entity.getSubModel().getModelVersion())));
+            dto.setModelDetail(detail);
         }
         if (entity.getFederatedAppVersion() != null) {
             FederatedAppDTO app = appMapper.entityToDto(entity.getFederatedAppVersion().getFederatedApp());

@@ -49,10 +49,10 @@ public class BaseWorkflowEngine {
         } else {
             throw new IllegalArgumentException("Node " + node.getId() + " has neither model nor app defined.");
         }
-        dto.setEnvironments(List.of(
-                "APP_ID=" + node.getId(),
-                "APP_API_KEY=" + apiKey
-        ));
+        dto.setEnvironments(new ArrayList<>(List.of("APP_ID=" + node.getId())));
+        if (apiKey != null) {
+            dto.upsertEnv("APP_API_KEY", apiKey);
+        }
 
         dto.setNeedsInternetAccess(node.needsInternetAccess());
         dto.setNeedsHostAccess(node.needsHostAccess());

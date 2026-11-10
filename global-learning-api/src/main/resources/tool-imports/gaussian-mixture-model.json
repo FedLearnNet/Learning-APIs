@@ -12,7 +12,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "1.0.0",
-    "publishHash" : "576393a4fd9c4ebb155806291347d71efe2e3296",
+    "publishHash" : "280e2163a3b32e6599c0fcc998c6edaacd0a5344",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -183,11 +183,11 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "576393a4fd9c4ebb155806291347d71efe2e3296",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-gaussian-mixture-model/blob/576393a4fd9c4ebb155806291347d71efe2e3296/data/README.md", "https://github.com/FedLearnNet/tool-gaussian-mixture-model/blob/576393a4fd9c4ebb155806291347d71efe2e3296/data/iris.csv" ],
+      "commitHash" : "280e2163a3b32e6599c0fcc998c6edaacd0a5344",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-gaussian-mixture-model/blob/280e2163a3b32e6599c0fcc998c6edaacd0a5344/data/README.md", "https://github.com/FedLearnNet/tool-gaussian-mixture-model/blob/280e2163a3b32e6599c0fcc998c6edaacd0a5344/data/iris.csv" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
-        "target" : "localhost:5001/flnet/tools/gaussian-mixture-model:576393a4fd9c4ebb155806291347d71efe2e3296",
+        "target" : "localhost:5001/flnet/tools/gaussian-mixture-model:280e2163a3b32e6599c0fcc998c6edaacd0a5344",
         "success" : false,
         "summary" : {
           "critical" : 0,
@@ -301,9 +301,9 @@
         "startedAt" : "2026-11-09T16:01:29.615+00:00",
         "finishedAt" : "2026-11-09T16:01:36.064+00:00"
       },
-      "imageName" : "gaussian-mixture-model:576393a4fd9c4ebb155806291347d71efe2e3296"
+      "imageName" : "gaussian-mixture-model:280e2163a3b32e6599c0fcc998c6edaacd0a5344"
     },
-    "imageName" : "gaussian-mixture-model:576393a4fd9c4ebb155806291347d71efe2e3296"
+    "imageName" : "gaussian-mixture-model:280e2163a3b32e6599c0fcc998c6edaacd0a5344"
   } ],
   "icon" : "https://scikit-learn.org/stable/_static/scikit-learn-logo-small.png"
 }

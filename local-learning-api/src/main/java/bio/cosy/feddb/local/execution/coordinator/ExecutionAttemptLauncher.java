@@ -63,8 +63,8 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
     // Tools reading or writing patient data and connector apps alike process data; a training learns across clinics.
     public ExecutionAttemptLauncher() {
         super(Map.of(
-                ExecutionPurpose.PROCESSING, new ExecutionCallback(Scope.TOOL_RUN, "execution/tool"),
-                ExecutionPurpose.TRAINING, new ExecutionCallback(Scope.LEARNING_RUN, "execution/learning")));
+                ExecutionPurpose.PROCESSING, new ExecutionCallback(Scope.EXECUTION_ATTEMPT, "execution/APP"),
+                ExecutionPurpose.TRAINING, new ExecutionCallback(Scope.EXECUTION_ATTEMPT, "execution/APP")));
     }
 
     // A single tool runs like a node of its own: an app of the store, or the image a connector names.

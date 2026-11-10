@@ -10,7 +10,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "4.1.0",
-    "publishHash" : "8b92c5b296aae4d0d3d84560629d97dfd0f3761b",
+    "publishHash" : "e1b421c7155a8e4c44a7693ff44860023d1ff566",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -73,11 +73,11 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "8b92c5b296aae4d0d3d84560629d97dfd0f3761b",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-train-test-split/blob/8b92c5b296aae4d0d3d84560629d97dfd0f3761b/data/example.csv" ],
+      "commitHash" : "e1b421c7155a8e4c44a7693ff44860023d1ff566",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-train-test-split/blob/e1b421c7155a8e4c44a7693ff44860023d1ff566/data/example.csv" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
-        "target" : "localhost:5001/flnet/tools/train-test-split:8b92c5b296aae4d0d3d84560629d97dfd0f3761b",
+        "target" : "localhost:5001/flnet/tools/train-test-split:e1b421c7155a8e4c44a7693ff44860023d1ff566",
         "success" : false,
         "summary" : {
           "critical" : 0,
@@ -108,7 +108,7 @@
               }
             },
             "Layer" : {
-              "DiffID" : "sha256:935ce6de17d6f7643d4ec834285b7ce4525e3c03308abfd55061bc29e81db8e9"
+              "DiffID" : "sha256:2b6dee70431b6e642bcb551f9e6728b2929954536cff91eb38686afc59f4600b"
             },
             "PkgID" : "setuptools@70.3.0",
             "Title" : "setuptools: Path Traversal Vulnerability in setuptools PackageIndex",
@@ -123,9 +123,9 @@
               "Name" : "GitHub Security Advisory pip"
             },
             "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
-            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:14900", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/2384043", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/8/ALSA-2025-14900.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:13578", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/9/ALSA-2025-13578.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
             "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
-            "Fingerprint" : "sha256:3476bbf5ca7ecbc079bdba21d4becfff7ce8ed88d453a568258c8be62cbfc351",
+            "Fingerprint" : "sha256:8c683817adb4e591c6c24450105b7df4dc24ea708c4a5dc04ff74ecda786633a",
             "FixedVersion" : "78.1.1",
             "PkgIdentifier" : {
               "UID" : "c5eccaa7d8e0c308",
@@ -152,8 +152,8 @@
             "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
           } ]
         },
-        "startedAt" : "2026-11-09T15:55:31.278+00:00",
-        "finishedAt" : "2026-11-09T15:57:58.387+00:00"
+        "startedAt" : "2026-11-10T09:41:21.064+00:00",
+        "finishedAt" : "2026-11-10T09:42:41.624+00:00"
       },
       "sastScanResult" : {
         "tool" : "opengrep",
@@ -180,19 +180,19 @@
           "skipped_rules" : [ ],
           "interfile_languages_used" : [ ]
         },
-        "startedAt" : "2026-11-09T15:53:30.039+00:00",
-        "finishedAt" : "2026-11-09T15:54:16.824+00:00"
+        "startedAt" : "2026-11-10T09:40:46.121+00:00",
+        "finishedAt" : "2026-11-10T09:40:48.231+00:00"
       },
       "malwareScanResult" : {
         "tool" : "clamav",
         "success" : true,
         "infectedCount" : 0,
         "findings" : [ ],
-        "startedAt" : "2026-11-09T15:57:58.399+00:00",
-        "finishedAt" : "2026-11-09T15:58:04.707+00:00"
+        "startedAt" : "2026-11-10T09:42:41.663+00:00",
+        "finishedAt" : "2026-11-10T09:42:50.523+00:00"
       },
-      "imageName" : "train-test-split:8b92c5b296aae4d0d3d84560629d97dfd0f3761b"
+      "imageName" : "train-test-split:e1b421c7155a8e4c44a7693ff44860023d1ff566"
     },
-    "imageName" : "train-test-split:8b92c5b296aae4d0d3d84560629d97dfd0f3761b"
+    "imageName" : "train-test-split:e1b421c7155a8e4c44a7693ff44860023d1ff566"
   } ]
 }

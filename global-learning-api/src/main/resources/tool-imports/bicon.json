@@ -10,7 +10,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "1.0.0",
-    "publishHash" : "613efb10b73162b1742f6955e5a824595541d6b1",
+    "publishHash" : "197cbdbddaf1ec1effc8b3528c8882c1df5efd0e",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -81,11 +81,11 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "613efb10b73162b1742f6955e5a824595541d6b1",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-bicon/blob/613efb10b73162b1742f6955e5a824595541d6b1/data/README.md" ],
+      "commitHash" : "197cbdbddaf1ec1effc8b3528c8882c1df5efd0e",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-bicon/blob/197cbdbddaf1ec1effc8b3528c8882c1df5efd0e/data/README.md" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
-        "target" : "localhost:5001/flnet/tools/bicon:613efb10b73162b1742f6955e5a824595541d6b1",
+        "target" : "localhost:5001/flnet/tools/bicon:197cbdbddaf1ec1effc8b3528c8882c1df5efd0e",
         "success" : false,
         "summary" : {
           "critical" : 0,
@@ -419,8 +419,8 @@
         "startedAt" : "2026-10-30T18:10:11.929+00:00",
         "finishedAt" : "2026-10-30T18:10:20.341+00:00"
       },
-      "imageName" : "bicon:613efb10b73162b1742f6955e5a824595541d6b1"
+      "imageName" : "bicon:197cbdbddaf1ec1effc8b3528c8882c1df5efd0e"
     },
-    "imageName" : "bicon:613efb10b73162b1742f6955e5a824595541d6b1"
+    "imageName" : "bicon:197cbdbddaf1ec1effc8b3528c8882c1df5efd0e"
   } ]
 }

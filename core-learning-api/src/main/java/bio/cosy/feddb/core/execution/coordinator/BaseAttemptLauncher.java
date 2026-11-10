@@ -79,6 +79,7 @@ public abstract class BaseAttemptLauncher<
             }
         } catch (RuntimeException e) {
             Log.errorf(e, "Could not launch attempt %d", attemptId);
+            toolApiKeyService.revokeExecution(attemptId);
             failLaunchTransactional(attemptId, e);
         }
     }
@@ -86,9 +87,7 @@ public abstract class BaseAttemptLauncher<
     // Works from the event alone, the attempt may be deleted already. A container that was still starting
     // is stopped by the launch itself once it sees the attempt ended.
     public void onAttemptFinished(AttemptFinishedEvent event) {
-        // No callback means no key was ever issued for it.
-        Optional.ofNullable(callbacks.get(event.getPurpose()))
-                .ifPresent(callback -> toolApiKeyService.revoke(callback.getScope(), event.getAttemptId()));
+        toolApiKeyService.revokeExecution(event.getAttemptId());
         stopContainer(event.getAttemptId(), event.getContainerId());
     }
 
@@ -108,7 +107,7 @@ public abstract class BaseAttemptLauncher<
         }
         attempt.setStatus(RunStatusTypes.INITIALIZED);
 
-        String apiKey = toolApiKeyService.issue(callback.getScope(), attempt.getId());
+        String apiKey = provisionCredential(attempt, callback);
         StartWorkflowNodeDTO start = ENGINE.getStartDTO(targetOf(attempt), apiKey);
         // Every attempt gets its own volume, and the app connects back with the attempt id.
         start.setWorkflowId(attempt.getStep().getRun().getId());
@@ -123,6 +122,10 @@ public abstract class BaseAttemptLauncher<
 
     /** Adjusts the container start, e.g. whether the app uploads its results; nothing by default. */
     protected void customizeStart(Attempt attempt, StartWorkflowNodeDTO start) {
+    }
+
+    protected String provisionCredential(Attempt attempt, ExecutionCallback callback) {
+        return toolApiKeyService.issue(callback.getScope(), attempt.getId());
     }
 
     /** The workflow of the attempt's node, whose connections hand over outputs; none by default. */

@@ -73,6 +73,15 @@ public class ExportConfigUtilsBO {
         return inputs;
     }
 
+    // Dummy data of the export as the clients export it, e.g. the participants' data of a federated test run
+    public String testCsvOf(PatientDataExportConfigDTO config, Integer amount) {
+        Response generated = generateTestCsv(config, amount);
+        if (generated.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+            throw new BadRequestException("Dummy data of the export failed: " + generated.getEntity());
+        }
+        return String.valueOf(generated.getEntity());
+    }
+
     public Response generateTestCsv(PatientDataExportConfigDTO config, Integer amount) {
         if (config == null || config.getFeatures() == null || config.getFeatures().isEmpty()) {
             throw new BadRequestException("Project does not have export features defined");

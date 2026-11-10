@@ -22,6 +22,9 @@ class ToolEndpointSecurityPolicyTest {
 
     @Test
     void allowsOnlyToolCallbacks() {
+        assertGrant("POST", "/execution/APP/42/upload/output", null, Scope.EXECUTION_ATTEMPT, 42L);
+        assertGrant("POST", "/execution/APP/42/upload/model", null, Scope.EXECUTION_ATTEMPT, 42L);
+        assertGrant("GET", "/execution/APP/42/app", "websocket", Scope.EXECUTION_ATTEMPT, 42L);
         assertGrant("POST", "/execution/prediction/42/upload/output", null,
                 Scope.MODEL_PREDICTION_RUN, 42L);
         assertGrant("POST", "/execution/workflow/42/upload/output", null,
@@ -47,8 +50,6 @@ class ToolEndpointSecurityPolicyTest {
     @Test
     void testEngineEndpointsAlsoAllowUsers() {
         assertGrant("GET", "/testembed/42/app", "websocket", Scope.TEST_EMBED_APP, 42L);
-        assertGrant("POST", "/testembed/42/upload/output", null, Scope.TEST_EMBED_APP, 42L);
-        assertGrant("POST", "/testembed/42/upload/model", null, Scope.TEST_EMBED_APP, 42L);
         assertTrue(ToolEndpointSecurityPolicy.match("GET", "/testembed/42/app", "websocket").orElseThrow().usersAllowed());
         assertFalse(ToolEndpointSecurityPolicy.match("GET", "/execution/workflow/42/app", "websocket").orElseThrow().usersAllowed());
         assertFalse(ToolEndpointSecurityPolicy.match("GET", "/testembed/42/upload/output/7", null).isPresent());
@@ -63,6 +64,36 @@ class ToolEndpointSecurityPolicyTest {
         assertFalse(ToolEndpointSecurityPolicy.match("POST", "/pipeline/42/update", null).isPresent());
         assertFalse(ToolEndpointSecurityPolicy.match("PUT", "/pipeline/42/update/extra", null).isPresent());
         assertFalse(ToolEndpointSecurityPolicy.match("PUT", "/x/pipeline/42/update", null).isPresent());
+    }
+
+    @Test
+    void canonicalCallbacksRejectUsersAndKeysForAnotherExecution() {
+        ToolEndpointSecurityPolicy policy = new ToolEndpointSecurityPolicy();
+        var key = io.quarkus.security.runtime.QuarkusSecurityIdentity.builder()
+                .setPrincipal(() -> "execution-42")
+                .addRole(bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism.ROLE)
+                .addAttribute(bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism.SCOPE_ATTRIBUTE, Scope.EXECUTION_ATTEMPT)
+                .addAttribute(bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism.RUN_ID_ATTRIBUTE, 42L).build();
+        var user = io.quarkus.security.runtime.QuarkusSecurityIdentity.builder()
+                .setPrincipal(() -> "owner").build();
+        var anonymous = io.quarkus.security.runtime.QuarkusSecurityIdentity.builder().setAnonymous(true).build();
+        for (var identity : java.util.List.of(key, user, anonymous)) {
+            for (String path : java.util.List.of("/execution/APP/42/upload/output", "/execution/APP/43/upload/output",
+                    "/execution/APP/42/credential")) {
+                var context = org.mockito.Mockito.mock(io.vertx.ext.web.RoutingContext.class);
+                var request = org.mockito.Mockito.mock(io.vertx.core.http.HttpServerRequest.class);
+                org.mockito.Mockito.when(context.request()).thenReturn(request);
+                org.mockito.Mockito.when(context.normalizedPath()).thenReturn(path);
+                org.mockito.Mockito.when(request.method()).thenReturn(io.vertx.core.http.HttpMethod.POST);
+                var result = policy.checkPermission(context, io.smallrye.mutiny.Uni.createFrom().item(identity), null)
+                        .await().indefinitely();
+                boolean allowed = (identity == key && path.equals("/execution/APP/42/upload/output"))
+                        || (identity != key && path.endsWith("/credential"));
+                org.junit.jupiter.api.Assertions.assertSame(allowed
+                        ? io.quarkus.vertx.http.runtime.security.HttpSecurityPolicy.CheckResult.PERMIT
+                        : io.quarkus.vertx.http.runtime.security.HttpSecurityPolicy.CheckResult.DENY, result);
+            }
+        }
     }
 
     private static void assertGrant(String method, String path, String upgrade,

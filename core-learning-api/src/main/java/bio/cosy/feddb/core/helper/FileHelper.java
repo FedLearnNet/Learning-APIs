@@ -84,35 +84,31 @@ public class FileHelper {
         return base64WithMimeType;
     }
 
-    public static void createOutputZip(ByteArrayOutputStream byteArrayOutputStream, Map<String, Object> output) throws IOException, IllegalArgumentException {
-        try (ZipOutputStream zos = new ZipOutputStream(byteArrayOutputStream)) {
-            for (Map.Entry<String, Object> entry : output.entrySet()) {
-                String fileName = entry.getKey();
-                String value = (String) entry.getValue();
+    public static void createOutputZip(ByteArrayOutputStream output, Map<String, Object> fields) {
+        createOutputZip(output, fields, Map.of());
+    }
+
+    public static void createOutputZip(ByteArrayOutputStream output, Map<String, Object> fields, Map<String, File> files) {
+        try (ZipOutputStream zos = new ZipOutputStream(output)) {
+            for (Map.Entry<String, Object> entry : fields.entrySet()) {
+                String value = String.valueOf(entry.getValue());
                 String extension = "txt";
+                byte[] content = value.getBytes();
                 if (value.contains(";base64,")) {
                     String[] parts = value.split(",", 2);
-                    if (parts.length != 2) {
-                        throw new IllegalArgumentException("Invalid Base64 format for: " + fileName);
-                    }
-                    String mimeType = parts[0]; // MIME type
-                    String base64Content = parts[1]; // Base64 content
-
-                    if (isValidBase64(base64Content)) {
-                        mimeType = mimeType.replace("data:", "");
-                        mimeType = mimeType.replace(";base64", "");
+                    if (isValidBase64(parts[1])) {
+                        String mimeType = parts[0].replace("data:", "").replace(";base64", "");
                         extension = getExtensionFromMimeType(mimeType);
                         if (extension == null) {
                             throw new IllegalArgumentException("Unsupported MIME type: " + mimeType);
                         }
-                        byte[] fileContent = Base64.getDecoder().decode(base64Content);
-                        addFileToZip(zos, fileName + "." + extension, fileContent);
-                    } else {
-                        addFileToZip(zos, fileName + ".txt", value.getBytes());
+                        content = Base64.getDecoder().decode(parts[1]);
                     }
-                } else {
-                    addFileToZip(zos, fileName + ".txt", value.getBytes());
                 }
+                addFileToZip(zos, entry.getKey() + "." + extension, content);
+            }
+            for (Map.Entry<String, File> entry : files.entrySet()) {
+                addFileToZip(zos, entry.getKey(), Files.readAllBytes(entry.getValue().toPath()));
             }
         } catch (IOException e) {
             throw new IllegalArgumentException("Invalid ZIP", e);

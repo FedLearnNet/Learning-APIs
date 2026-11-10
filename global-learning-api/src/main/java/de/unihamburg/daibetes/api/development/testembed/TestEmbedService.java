@@ -11,6 +11,8 @@ import bio.cosy.feddb.core.execution.run.types.AppConnectionTypesEnum;
 import bio.cosy.feddb.core.execution.run.types.AppMessageTypeEnum;
 import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
 import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
+import bio.cosy.feddb.core.security.ToolApiKeyService;
+import bio.cosy.feddb.core.security.Scope;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
@@ -19,20 +21,33 @@ import de.unihamburg.daibetes.api.development.run.federated.FederatedParticipant
 import de.unihamburg.daibetes.api.development.run.federated.FederatedRoundMessageCreateDTO;
 import de.unihamburg.daibetes.api.development.run.federated.FederatedTestRunCreateDTO;
 import de.unihamburg.daibetes.api.development.run.TestRunCreateDTO;
+import de.unihamburg.daibetes.api.development.run.TestRunBO;
+import de.unihamburg.daibetes.api.development.run.TestRunLauncher;
 import de.unihamburg.daibetes.api.development.testembed.pydantic.PydanticUpdateDTO;
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.security.Authenticated;
 import io.quarkus.websockets.next.*;
 import jakarta.inject.Inject;
-import org.apache.commons.lang3.StringUtils;
+import jakarta.inject.Singleton;
 import org.jboss.logging.Logger;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 @WebSocket(path = "/testembed/{appid}/{type}")
 @Authenticated
+@Singleton
 public class TestEmbedService {
+
+    // The endpoint also receives errors after the WebSocket session context has been destroyed.
+    // Keep the bean stateless and store authorization state on each connection instead.
+    private static final UserData.TypedKey<Boolean> ACCEPTED = UserData.TypedKey.forBoolean("testembed.accepted");
+    private static final UserData.TypedKey<Boolean> ENGINE_CONTAINER = UserData.TypedKey.forBoolean("testembed.engineContainer");
+
+    @Inject
+    ToolApiKeyService apiKeys;
+
+    @Inject
+    ObjectMapper objectMapper;
 
     private final List<AppMessageTypeEnum> DONT_FORWARD_DIRECTLY = List.of(AppMessageTypeEnum.START_RUN,
             AppMessageTypeEnum.CONFIG_CHANGED, AppMessageTypeEnum.UPDATE_RUN, AppMessageTypeEnum.LOG_MESSAGE,
@@ -44,6 +59,10 @@ public class TestEmbedService {
     WebSocketConnection connection;
     @Inject
     TestEmbedBO testEmbedBO;
+    @Inject
+    TestRunBO testRunBO;
+    @Inject
+    TestRunLauncher testRunLauncher;
     @LoggerName("TestEmbedWebService")
     Logger logger;
     @Inject
@@ -54,24 +73,30 @@ public class TestEmbedService {
     @Inject
     TestEngineRunBO testEngineRunBO;
 
+    @Inject
+    TestEmbedConnections connections;
+
     @OnOpen
     public AppMessageWrapperDTO<String> onOpen() {
         String keycloakId = userIdentity.getKeycloakId();
         String type = connection.pathParam("type");
         Long appId = Long.valueOf(connection.pathParam("appid"));
+        boolean keyIdentity = userIdentity.getRoles().contains(ToolApiKeyAuthenticationMechanism.ROLE);
+        boolean engineContainer = keyIdentity && apiKeys.isExecutionOwned(Scope.TEST_EMBED_APP, appId);
+        connection.userData().put(ENGINE_CONTAINER, engineContainer);
         logger.infof("New connection to TestEmbedService for app %d and type %s", appId, type);
-        if (StringUtils.isNotEmpty(keycloakId) &&
-                type.equals(AppConnectionTypesEnum.CLIENT.name()) &&
-                !federatedAppAuthorBO.isUserAuthor(userIdentity.getKeycloakId(), appId)) {
+        if ((!AppConnectionTypesEnum.CLIENT.isEqual(type) && !AppConnectionTypesEnum.APP.isEqual(type))
+                || (!keyIdentity && !federatedAppAuthorBO.isUserAuthor(keycloakId, appId))) {
             logger.warnf("Can not connect to TestEmbedService as User %s is not author of app %d", keycloakId, appId);
-            connection.close(new CloseReason(403, "User is not author of app"));
-            return null;
-        }//TODO ELSE
-        if (AppConnectionTypesEnum.APP.isEqual(type) && !acceptEngine(appId)) {
+            connection.close(new CloseReason(1008, "User is not author of app"));
             return null;
         }
+        if (AppConnectionTypesEnum.APP.isEqual(type) && !acceptEngine(appId, engineContainer)) {
+            return null;
+        }
+        connection.userData().put(ACCEPTED, true);
         AppMessageWrapperDTO<String> dto = new AppMessageWrapperDTO<>(AppMessageTypeEnum.CLIENT_STARTED, "Type " + type + " connected");
-        connectionsOf(appId, AppConnectionTypesEnum.oppositeOf(type)).forEach(c -> c.sendTextAndAwait(dto));
+        connections.of(appId, AppConnectionTypesEnum.oppositeOf(type)).forEach(c -> connections.sendTo(c, dto));
         handleClientConnected(appId, type);
         handleAppConnected(appId, type);
         return dto;
@@ -82,82 +107,91 @@ public class TestEmbedService {
         String type = connection.pathParam("type");
         Long appId = Long.valueOf(connection.pathParam("appid"));
 
-        logger.errorf("Error in TestEmbedService for app %d and type %s: %s", appId, type, throwable.getMessage());
+        if (TestEmbedConnections.isClosedFailure(throwable)) {
+            logger.debugf("Testembed connection closed for app %d and type %s", appId, type);
+        } else {
+            logger.errorf(throwable, "Error in TestEmbedService for app %d and type %s", appId, type);
+        }
     }
 
     @OnTextMessage
     <T> void consume(AppMessageWrapperDTO<T> m) {
+        if (!Boolean.TRUE.equals(connection.userData().get(ACCEPTED))) {
+            return;
+        }
         Long appId = Long.valueOf(connection.pathParam("appid"));
         String type = connection.pathParam("type");
         AppRunTypeEnum runType = m.getRunType();
         try {
+            if (AppConnectionTypesEnum.APP.isEqual(type) && !acceptsReportOfApp(m, appId, runType)) {
+                logger.debugf("Ignoring late %s for app %d after its execution ended", m.getType(), appId);
+                return;
+            }
             logger.debug("Received message Text: " + m.getMessage() + " for app " + appId + " and type " + type);
             if (!DONT_FORWARD_DIRECTLY.contains(m.getType())) {
-                connectionsOf(appId, AppConnectionTypesEnum.oppositeOf(type)).forEach(c -> c.sendTextAndAwait(m));
+                connections.of(appId, AppConnectionTypesEnum.oppositeOf(type)).forEach(c -> connections.sendTo(c, m));
             }
-            if (AppConnectionTypesEnum.APP.isEqual(type)) {
-                handleAppMessages(m, appId, type, runType);
-            }
-            if (AppConnectionTypesEnum.CLIENT.isEqual(type)) {
-                handleClientMessages(m, appId, type, runType);
+            if (m.getType() == AppMessageTypeEnum.CONFIG_CHANGED) {
+                handleConfiguration(m, appId, AppConnectionTypesEnum.APP.isEqual(type));
+            } else if (AppConnectionTypesEnum.APP.isEqual(type)) {
+                handleAppMessages(m, appId, runType);
+            } else {
+                handleClientMessages(m, appId);
             }
         } catch (Exception e) {
-            e.printStackTrace();
             AppMessageWrapperDTO<String> responseAppStarted = new AppMessageWrapperDTO<>(AppMessageTypeEnum.SERVER_ERROR,
                     e.getMessage());
-            connection.sendTextAndAwait(responseAppStarted);
             logger.error("Error handling message for app " + appId + " and type " + type, e);
+            connections.sendTo(connection, responseAppStarted);
         }
     }
 
     @OnClose
     public void onClose() {
+        if (!Boolean.TRUE.equals(connection.userData().remove(ACCEPTED))) {
+            return;
+        }
         Long appId = Long.valueOf(connection.pathParam("appid"));
         String type = connection.pathParam("type");
         AppMessageWrapperDTO<String> dto = new AppMessageWrapperDTO<>(AppMessageTypeEnum.CLIENT_STOPPED,
                 "Type " + type + " disconnected",
                 AppRunTypeEnum.NOT_DEFINED);
-        connectionsOf(appId, AppConnectionTypesEnum.oppositeOf(type)).forEach(c -> c.sendTextAndAwait(dto));
+        connections.of(appId, AppConnectionTypesEnum.oppositeOf(type)).forEach(c -> connections.sendTo(c, dto));
         // The frontend learns about the ended test runs from the test run sender.
         if (AppConnectionTypesEnum.APP.isEqual(type)) {
-            testEmbedBO.closeAllTest(appId);
-        }
-        if (AppConnectionTypesEnum.APP.isEqual(type) && isEngineContainer()) {
-            testEngineRunBO.markDisconnectedTransactional(appId);
+            testRunBO.closeAllOnDisconnectTransactional(appId);
+            if (Boolean.TRUE.equals(connection.userData().get(ENGINE_CONTAINER))) {
+                testEngineRunBO.markDisconnectedTransactional(appId);
+            }
         }
     }
 
     // A test engine container may only connect while it is started; a local engine not while one runs
-    private boolean acceptEngine(Long appId) {
-        boolean container = isEngineContainer();
+    private boolean acceptEngine(Long appId, boolean engineContainer) {
         boolean containerStarted = testEngineRunBO.hasConnectingEngineTransactional(appId);
-        if (container && !containerStarted) {
-            connection.close(new CloseReason(403, "No test engine is started for this app"));
+        if (engineContainer && !containerStarted) {
+            connection.close(new CloseReason(1008, "No test engine is started for this app"));
             return false;
         }
-        if (!container && containerStarted) {
+        if (!engineContainer && containerStarted) {
             logger.warnf("Refused local engine of app %d while a test engine container runs", appId);
-            connection.close(new CloseReason(409, "A test engine container runs for this app, stop it first"));
+            connection.close(new CloseReason(1008, "A test engine container runs for this app, stop it first"));
             return false;
         }
-        if (container) {
+        if (engineContainer) {
             testEngineRunBO.markConnectedTransactional(appId);
         }
         return true;
-    }
-
-    private boolean isEngineContainer() {
-        return userIdentity.getRoles().contains(ToolApiKeyAuthenticationMechanism.ROLE);
     }
 
     private void handleClientConnected(Long appId, String type) {
         if (!AppConnectionTypesEnum.CLIENT.isEqual(type)) {
             return;
         }
-        if (connectionsOf(appId, AppConnectionTypesEnum.APP).findAny().isPresent()) {
+        if (connections.of(appId, AppConnectionTypesEnum.APP).findAny().isPresent()) {
             AppMessageWrapperDTO<String> responseAppStarted = new AppMessageWrapperDTO<>(AppMessageTypeEnum.CLIENT_STARTED,
                     "app is connected");
-            connection.sendTextAndAwait(responseAppStarted);
+            connections.sendTo(connection, responseAppStarted);
         }
     }
 
@@ -165,59 +199,68 @@ public class TestEmbedService {
         if (!AppConnectionTypesEnum.APP.isEqual(type)) {
             return;
         }
-        testEmbedBO.launchPendingTestRuns(appId);
+        testRunLauncher.launchPending(appId);
         testEmbedBO.findAppConfigTransactional(appId).ifPresent(config -> {
-            connectionsOf(appId, AppConnectionTypesEnum.APP).forEach(c -> c.sendTextAndAwait(config));
+            connections.of(appId, AppConnectionTypesEnum.APP).forEach(c -> connections.sendTo(c, config));
         });
     }
 
-    private <T> void handleClientMessages(AppMessageWrapperDTO<T> m, Long appId, String type, AppRunTypeEnum runType) {
-        ObjectMapper objectMapper = new ObjectMapper();
+    private <T> void handleConfiguration(AppMessageWrapperDTO<T> message, Long appId, boolean fromApp) {
+        FederatedAppDetailDTO config = objectMapper.convertValue(message.getMessage(), FederatedAppDetailDTO.class);
+        AppMessageWrapperDTO<FederatedAppDetailDTO> updated = testEmbedBO.saveAppConfigTransactional(config, appId, fromApp);
+        if (updated.getType() == AppMessageTypeEnum.DO_NOTHING) {
+            return;
+        }
+        if (!fromApp) {
+            connections.of(appId, AppConnectionTypesEnum.APP).forEach(c -> connections.sendTo(c, updated));
+        }
+        AppMessageWrapperDTO<PydanticUpdateDTO> pydantic = testEmbedBO.pydanticObjOf(updated.getMessage());
+        connections.of(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> {
+            connections.sendTo(c, pydantic);
+            if (fromApp) {
+                connections.sendTo(c, updated);
+            }
+        });
+    }
 
+    private <T> void handleClientMessages(AppMessageWrapperDTO<T> m, Long appId) {
         switch (m.getType()) {
-            case CONFIG_CHANGED:
-                // handle pydantic class generation
-                FederatedAppDetailDTO config = objectMapper.convertValue(m.getMessage(), FederatedAppDetailDTO.class);
-                AppMessageWrapperDTO<FederatedAppDetailDTO> updatedConfig = testEmbedBO.saveAppConfigTransactional(config, appId, false);
-                if (updatedConfig.getType().equals(AppMessageTypeEnum.DO_NOTHING)) {
-                    return;
-                }
-                connectionsOf(appId, AppConnectionTypesEnum.APP).forEach(c -> c.sendTextAndAwait(updatedConfig));
-                AppMessageWrapperDTO<PydanticUpdateDTO> pydanticDto = testEmbedBO.pydanticObjOf(updatedConfig.getMessage());
-                connectionsOf(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(pydanticDto));
-                break;
             case START_RUN:
                 // The test run launcher hands it to the app, the test run sender shows it to the frontend.
                 TestRunCreateDTO createDTO = objectMapper.convertValue(m.getMessage(), TestRunCreateDTO.class);
-                testEmbedBO.startTest(appId, createDTO, userIdentity.getKeycloakId());
+                testRunBO.startTestTransactional(appId, createDTO, userIdentity.getKeycloakId());
                 break;
             case START_FEDERATED_RUN:
                 FederatedTestRunCreateDTO fedCreate = objectMapper.convertValue(m.getMessage(), FederatedTestRunCreateDTO.class);
-                testEmbedBO.startFederatedTest(appId, fedCreate, userIdentity.getKeycloakId());
+                testRunBO.startFederatedTestTransactional(appId, fedCreate, userIdentity.getKeycloakId());
                 break;
             case NOTIFY_START_EXPERIMENT:
-                testEmbedBO.launchPendingTestRuns(appId);
+                testRunLauncher.launchPending(appId);
             default:
                 break;
 
         }
     }
 
-    private <T> void handleAppMessages(AppMessageWrapperDTO<T> m, Long appId, String type, AppRunTypeEnum runType) {
-        ObjectMapper objectMapper = new ObjectMapper();
+    <T> boolean acceptsReportOfApp(AppMessageWrapperDTO<T> m, Long appId, AppRunTypeEnum runType) {
+        // A development engine serves many executions, but only those of its authenticated app.
+        String identityField = switch (m.getType()) {
+            case UPDATE_RUN, FINISH_RUN, LOG_MESSAGE, LOG_METRIC -> "runId";
+            case UPDATE_FEDERATED_RUN, FINISH_FEDERATED_RUN -> "id";
+            case FEDERATED_PARTICIPANT_UPDATE, FEDERATED_ROUND_MESSAGE -> "federatedRunId";
+            default -> null;
+        };
+        if (identityField != null) {
+            var id = objectMapper.valueToTree(m.getMessage()).get(identityField);
+            boolean federated = !"runId".equals(identityField) || (runType != null && runType.isFederated());
+            return testRunBO.acceptsReportOfAppTransactional(appId,
+                    id != null && id.canConvertToLong() ? id.longValue() : null, federated);
+        }
+        return true;
+    }
 
+    private <T> void handleAppMessages(AppMessageWrapperDTO<T> m, Long appId, AppRunTypeEnum runType) {
         switch (m.getType()) {
-            case CONFIG_CHANGED:
-                // handle pydantic class generation
-                FederatedAppDetailDTO config = objectMapper.convertValue(m.getMessage(), FederatedAppDetailDTO.class);
-                AppMessageWrapperDTO<FederatedAppDetailDTO> updatedConfig = testEmbedBO.saveAppConfigTransactional(config, appId, true);
-                if (updatedConfig.getType().equals(AppMessageTypeEnum.DO_NOTHING)) {
-                    return;
-                }
-                AppMessageWrapperDTO<PydanticUpdateDTO> pydanticDto = testEmbedBO.pydanticObjOf(updatedConfig.getMessage());
-                connectionsOf(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(pydanticDto));
-                connectionsOf(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(updatedConfig));
-                break;
             case CLIENT_STARTED:
                 break;
             case SEND_MODEL:
@@ -225,60 +268,41 @@ public class TestEmbedService {
                 break;
             case UPDATE_RUN:
                 UpdateRunDTO updateTest = objectMapper.convertValue(m.getMessage(), UpdateRunDTO.class);
-                testEmbedBO.updateRunTransactional(updateTest, runType);
+                testRunBO.updateRunTransactional(updateTest, runType);
                 break;
             case FINISH_RUN:
                 FinishRunDTO finishTest = objectMapper.convertValue(m.getMessage(), FinishRunDTO.class);
                 // The next trial of an experiment is launched by its step coordinator.
-                testEmbedBO.finishRunTransactional(finishTest, runType);
+                testRunBO.finishRunTransactional(finishTest, runType);
                 break;
             case LOG_MESSAGE:
                 ExecutionMessageLogDTO runMessage = objectMapper.convertValue(m.getMessage(), ExecutionMessageLogDTO.class);
                 AppMessageWrapperDTO<ExecutionMessageLogDTO> savedLog = testEmbedBO.logTestMessageTransactional(runMessage.getRunId(), runMessage, runType);
-                connectionsOf(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(savedLog));
+                connections.of(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> connections.sendTo(c, savedLog));
                 break;
             case LOG_METRIC:
                 ExecutionMessageMetricDTO runMetric = objectMapper.convertValue(m.getMessage(), ExecutionMessageMetricDTO.class);
                 AppMessageWrapperDTO<ExecutionMessageMetricDTO> savedMetric = testEmbedBO.logTestMetricTransactional(runMetric.getRunId(), runMetric, runType);
-                connectionsOf(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(savedMetric));
+                connections.of(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> connections.sendTo(c, savedMetric));
                 break;
             case UPDATE_FEDERATED_RUN:
             case FINISH_FEDERATED_RUN:
                 // The app sends its whole run, only status, error and round are taken from it.
                 FederatedRunLifecycleDTO fedUpdate = objectMapper.convertValue(m.getMessage(), FederatedRunLifecycleDTO.class);
-                testEmbedBO.updateFederatedRun(fedUpdate);
+                testRunBO.updateFederatedRunTransactional(fedUpdate);
                 break;
             case FEDERATED_PARTICIPANT_UPDATE:
                 FederatedParticipantUpdateDTO pUpdate = objectMapper.convertValue(m.getMessage(), FederatedParticipantUpdateDTO.class);
-                testEmbedBO.updateFederatedParticipant(pUpdate);
+                testRunBO.updateParticipantTransactional(pUpdate);
                 break;
             case FEDERATED_ROUND_MESSAGE:
                 FederatedRoundMessageCreateDTO rmCreate = objectMapper.convertValue(m.getMessage(), FederatedRoundMessageCreateDTO.class);
                 AppMessageWrapperDTO<?> round = testEmbedBO.logFederatedRoundMessage(rmCreate);
-                connectionsOf(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> c.sendTextAndAwait(round));
+                connections.of(appId, AppConnectionTypesEnum.CLIENT).forEach(c -> connections.sendTo(c, round));
                 break;
             default:
                 break;
         }
 
     }
-
-
-    private Stream<WebSocketConnection> connectionsOf(Long appId) {
-        return connection.getOpenConnections().stream()
-                .filter(c -> c.endpointId().equals(this.getClass().getCanonicalName()))
-                .filter(c -> c.pathParam("appid").equalsIgnoreCase(appId.toString()));
-    }
-
-    private Stream<WebSocketConnection> connectionsOf(Long appId, AppConnectionTypesEnum type) {
-        return connectionsOf(appId)
-                .filter(c -> type.isEqual(c.pathParam("type")));
-    }
-
-    public void sendPublishedUpdate(FederatedAppDetailDTO app) {
-        AppMessageWrapperDTO<FederatedAppDetailDTO> updateTestEmbed = new AppMessageWrapperDTO<>(AppMessageTypeEnum.CONFIG_CHANGED, app);
-
-        connectionsOf(app.getId()).forEach(c -> c.sendTextAndAwait(updateTestEmbed));
-    }
-
 }

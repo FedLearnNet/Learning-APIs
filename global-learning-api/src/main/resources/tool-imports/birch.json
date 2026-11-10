@@ -10,7 +10,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "1.0.0",
-    "publishHash" : "47558bd16d2824006dd24281d7fc71396769acb4",
+    "publishHash" : "0a9245ba3f1fc1bd18e366566816589062fa673c",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -107,8 +107,8 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "47558bd16d2824006dd24281d7fc71396769acb4",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-birch/blob/47558bd16d2824006dd24281d7fc71396769acb4/data/iris.csv", "https://github.com/FedLearnNet/tool-birch/blob/47558bd16d2824006dd24281d7fc71396769acb4/data/iris_encoded.csv" ],
+      "commitHash" : "0a9245ba3f1fc1bd18e366566816589062fa673c",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-birch/blob/0a9245ba3f1fc1bd18e366566816589062fa673c/data/iris.csv", "https://github.com/FedLearnNet/tool-birch/blob/0a9245ba3f1fc1bd18e366566816589062fa673c/data/iris_encoded.csv" ],
       "vulnerabilityScanResult" : null,
       "sastScanResult" : {
         "tool" : "opengrep",
@@ -146,9 +146,9 @@
         "startedAt" : "2026-11-09T16:10:00.743+00:00",
         "finishedAt" : "2026-11-09T16:12:07.073+00:00"
       },
-      "imageName" : "birch:47558bd16d2824006dd24281d7fc71396769acb4"
+      "imageName" : "birch:0a9245ba3f1fc1bd18e366566816589062fa673c"
     },
-    "imageName" : "birch:47558bd16d2824006dd24281d7fc71396769acb4"
+    "imageName" : "birch:0a9245ba3f1fc1bd18e366566816589062fa673c"
   } ],
   "icon" : "https://scikit-learn.org/stable/_static/scikit-learn-logo-small.png"
 }

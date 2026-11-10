@@ -46,7 +46,7 @@ public class ConnectorAppRunBO {
             failAttempt(attemptId, "Uploaded output could not be read: " + e.getMessage());
             throw e;
         }
-        if (progressBO.completeBatch(upload.getRunId(), table)) {
+        if (progressBO.completeBatch(attemptId, upload.getRunId(), table)) {
             return;
         }
         progressBO.storeOutputTransactional(attemptId, table, upload);
@@ -69,8 +69,8 @@ public class ConnectorAppRunBO {
         return progressBO.connectedAttemptId(runId);
     }
 
-    public CompletableFuture<TableData> expectBatch(Long batchId) {
-        return progressBO.expectBatch(batchId);
+    public CompletableFuture<TableData> expectBatch(Long attemptId, Long batchId) {
+        return progressBO.expectBatch(attemptId, batchId);
     }
 
     public void forgetBatch(Long batchId) {

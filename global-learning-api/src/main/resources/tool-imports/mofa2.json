@@ -10,7 +10,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "1.0.0",
-    "publishHash" : "85daa2e08e31a5bebf4d039e3af235bf72982c24",
+    "publishHash" : "559430d5b52bfa38f81bae5436dcfad3718fbd08",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -85,11 +85,11 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "85daa2e08e31a5bebf4d039e3af235bf72982c24",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-mofa2/blob/85daa2e08e31a5bebf4d039e3af235bf72982c24/data/README.md" ],
+      "commitHash" : "559430d5b52bfa38f81bae5436dcfad3718fbd08",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-mofa2/blob/559430d5b52bfa38f81bae5436dcfad3718fbd08/data/README.md" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
-        "target" : "localhost:5001/flnet/tools/mofa2:85daa2e08e31a5bebf4d039e3af235bf72982c24",
+        "target" : "localhost:5001/flnet/tools/mofa2:559430d5b52bfa38f81bae5436dcfad3718fbd08",
         "success" : false,
         "summary" : {
           "critical" : 0,
@@ -375,8 +375,8 @@
         "startedAt" : "2026-10-30T17:38:01.418+00:00",
         "finishedAt" : "2026-10-30T17:38:09.413+00:00"
       },
-      "imageName" : "mofa2:85daa2e08e31a5bebf4d039e3af235bf72982c24"
+      "imageName" : "mofa2:559430d5b52bfa38f81bae5436dcfad3718fbd08"
     },
-    "imageName" : "mofa2:85daa2e08e31a5bebf4d039e3af235bf72982c24"
+    "imageName" : "mofa2:559430d5b52bfa38f81bae5436dcfad3718fbd08"
   } ]
 }

@@ -12,7 +12,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "5.0.1",
-    "publishHash" : "820d4f7012c5051a9aafb9011694c4e269bf9841",
+    "publishHash" : "9a503b51824d0b9e6a7ed6e2837bc6b5d194f74f",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -131,11 +131,11 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "820d4f7012c5051a9aafb9011694c4e269bf9841",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-agglomerative-clustering/blob/820d4f7012c5051a9aafb9011694c4e269bf9841/data/iris.csv" ],
+      "commitHash" : "9a503b51824d0b9e6a7ed6e2837bc6b5d194f74f",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-agglomerative-clustering/blob/9a503b51824d0b9e6a7ed6e2837bc6b5d194f74f/data/iris.csv" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
-        "target" : "localhost:5001/flnet/tools/agglomerative-clustering:820d4f7012c5051a9aafb9011694c4e269bf9841",
+        "target" : "localhost:5001/flnet/tools/agglomerative-clustering:9a503b51824d0b9e6a7ed6e2837bc6b5d194f74f",
         "success" : false,
         "summary" : {
           "critical" : 0,
@@ -249,8 +249,8 @@
         "startedAt" : "2026-11-09T16:15:54.388+00:00",
         "finishedAt" : "2026-11-09T16:16:05.200+00:00"
       },
-      "imageName" : "agglomerative-clustering:820d4f7012c5051a9aafb9011694c4e269bf9841"
+      "imageName" : "agglomerative-clustering:9a503b51824d0b9e6a7ed6e2837bc6b5d194f74f"
     },
-    "imageName" : "agglomerative-clustering:820d4f7012c5051a9aafb9011694c4e269bf9841"
+    "imageName" : "agglomerative-clustering:9a503b51824d0b9e6a7ed6e2837bc6b5d194f74f"
   } ]
 }

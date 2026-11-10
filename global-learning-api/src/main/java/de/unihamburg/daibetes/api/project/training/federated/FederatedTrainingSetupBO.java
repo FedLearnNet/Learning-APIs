@@ -8,10 +8,12 @@ import bio.cosy.feddb.core.execution.ExecutionLocation;
 import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.core.execution.ExecutionPurpose;
 import bio.cosy.feddb.core.execution.executor.ExecutionStartDTO;
+import bio.cosy.feddb.core.execution.helper.NodeHyperParams;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.services.controller.CreateFLLearningRelayServerRequestDTO;
 import bio.cosy.feddb.core.services.controller.CreateFLLearningRelayServerResponseDTO;
 import bio.cosy.feddb.core.services.controller.RelayServerAppVersions;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.feddbclient.FLNetClientBroadcastBO;
 import de.unihamburg.daibetes.api.project.ProjectAO;
@@ -20,6 +22,8 @@ import de.unihamburg.daibetes.api.workflow.WorkflowBO;
 import de.unihamburg.daibetes.api.workflow.WorkflowEntity;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
 import de.unihamburg.daibetes.config.FLNetConfig;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptAO;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentAO;
 import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
 import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentMapper;
@@ -75,6 +79,12 @@ public class FederatedTrainingSetupBO {
     ExecutionFederationMapper federationMapper;
 
     @Inject
+    ExecutionAttemptAO attemptAO;
+
+    @Inject
+    ObjectMapper objectMapper;
+
+    @Inject
     @RestClient
     GlobalRelayService globalRelayService;
 
@@ -91,10 +101,9 @@ public class FederatedTrainingSetupBO {
                 project, workflow, relayServerAddress, HashUtil.randomHex(32));
         experimentAO.persist(experiment);
 
-        ExecutionRunEntity run = workflowExecutionBO.createTransactional(
-                new ExecutionStartDTO(ExecutionPurpose.TRAINING, ExecutionMode.FEDERATED, create.getName()), workflow.getNodes());
-        // The clinics run it, never the coordinators of the platform.
-        run.setLocation(ExecutionLocation.LOCAL);
+        ExecutionStartDTO start = new ExecutionStartDTO(ExecutionPurpose.TRAINING, ExecutionMode.FEDERATED, create.getName());
+        start.setLocation(ExecutionLocation.LOCAL);
+        ExecutionRunEntity run = workflowExecutionBO.createTransactional(start, workflow.getNodes());
         run.setKeycloakId(keycloakId);
         run.setExperiment(experiment);
         experiment.getRuns().add(run);
@@ -184,6 +193,7 @@ public class FederatedTrainingSetupBO {
             participant.setCurrentNodeId(node.getNodeId());
             participant.setStepStatus(ProjectStatus.RUNNING);
         });
+        addAttempts(run, step);
         step.moveTo(RunStatusTypes.STARTED);
         Log.infof("All clinics ready, starting step %d of training %d", step.getId(), run.getId());
         String globalUniqueId = experiment.getGlobalUniqueId();
@@ -206,6 +216,28 @@ public class FederatedTrainingSetupBO {
         Long nodeId = node.getId();
         String workflowNodeId = node.getNodeId();
         broadcastBO.sendAfterCommit("Setup of step " + next.getId(), () -> broadcastBO.nextStepLearning(globalUniqueId, nodeId, workflowNodeId));
+    }
+
+    private void addAttempts(ExecutionRunEntity run, ExecutionRunStepEntity step) {
+        if (!step.getAttempts().isEmpty()) {
+            return;
+        }
+        LinkedHashMap<String, Object> params = NodeHyperParams.of(objectMapper, step.getWorkflowNode());
+        step.federationOrNew().setTotalRounds(NodeHyperParams.totalRounds(params));
+        for (ExecutionParticipantEntity participant : run.getParticipants()) {
+            ExecutionAttemptEntity attempt = new ExecutionAttemptEntity();
+            attempt.setPublicId(UUID.randomUUID());
+            attempt.setStep(step);
+            attempt.setTrialIndex(step.getAttempts().size());
+            attempt.setParams(new LinkedHashMap<>(params));
+            attempt.begin(RunStatusTypes.RUNNING);
+            attempt.federationOrNew().setParticipant(participant);
+            step.getAttempts().add(attempt);
+            attemptAO.persist(attempt);
+            if (participant.isCoordinator()) {
+                step.setSelectedAttempt(attempt);
+            }
+        }
     }
 
     // The relay run of the step if its app learns across clinics; the relay data per clinic.

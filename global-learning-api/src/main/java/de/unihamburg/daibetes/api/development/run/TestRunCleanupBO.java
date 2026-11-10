@@ -29,10 +29,6 @@ public class TestRunCleanupBO {
     @Inject
     ExecutionEventPublisher events;
 
-    public void finishAttempt(FinishRunDTO finish) {
-        lifecycle.finish(finish.getRunId(), finish);
-    }
-
     public void finishFederated(ExecutionRunStepEntity step, FinishRunDTO finish) {
         ExecutionAttemptEntity standing = step.getSelectedAttempt();
         if (standing != null && finish.getMeta() != null) {

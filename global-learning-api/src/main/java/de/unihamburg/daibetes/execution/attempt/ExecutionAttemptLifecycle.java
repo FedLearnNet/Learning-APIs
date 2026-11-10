@@ -20,6 +20,11 @@ public class ExecutionAttemptLifecycle extends BaseAttemptLifecycle<ExecutionAtt
     @Inject
     PlatformTrainingBO platformTrainingBO;
 
+    @Override
+    protected String ownerOf(ExecutionAttemptEntity attempt) {
+        return attempt.getStep().getRun().getKeycloakId();
+    }
+
     public ExecutionAttemptLifecycle() {
         super(attempt -> {
             ExecutionMessageEntity message = new ExecutionMessageEntity();

@@ -10,7 +10,7 @@
   } ],
   "versions" : [ {
     "appVersion" : "1.0.0",
-    "publishHash" : "f055572995919f4373738d09e80d6ccd9cd720c9",
+    "publishHash" : "8987119c2412a0cbed8bece61632e96b1d657093",
     "versionPublishStatus" : "PUBLISHED",
     "needsInternetAccess" : false,
     "needsHostAccess" : false,
@@ -85,11 +85,11 @@
       } ]
     },
     "publishInfo" : {
-      "commitHash" : "f055572995919f4373738d09e80d6ccd9cd720c9",
-      "filePaths" : [ "https://github.com/FedLearnNet/tool-clusteval/blob/f055572995919f4373738d09e80d6ccd9cd720c9/data/README.md" ],
+      "commitHash" : "8987119c2412a0cbed8bece61632e96b1d657093",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-clusteval/blob/8987119c2412a0cbed8bece61632e96b1d657093/data/README.md" ],
       "vulnerabilityScanResult" : {
         "tool" : "trivy",
-        "target" : "localhost:5001/flnet/tools/clusteval:f055572995919f4373738d09e80d6ccd9cd720c9",
+        "target" : "localhost:5001/flnet/tools/clusteval:8987119c2412a0cbed8bece61632e96b1d657093",
         "success" : false,
         "summary" : {
           "critical" : 0,
@@ -375,8 +375,8 @@
         "startedAt" : "2026-10-30T17:46:06.765+00:00",
         "finishedAt" : "2026-10-30T17:46:50.251+00:00"
       },
-      "imageName" : "clusteval:f055572995919f4373738d09e80d6ccd9cd720c9"
+      "imageName" : "clusteval:8987119c2412a0cbed8bece61632e96b1d657093"
     },
-    "imageName" : "clusteval:f055572995919f4373738d09e80d6ccd9cd720c9"
+    "imageName" : "clusteval:8987119c2412a0cbed8bece61632e96b1d657093"
   } ]
 }

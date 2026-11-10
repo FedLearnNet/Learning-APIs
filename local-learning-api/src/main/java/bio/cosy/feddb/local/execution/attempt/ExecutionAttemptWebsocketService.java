@@ -18,7 +18,7 @@ import jakarta.inject.Inject;
 
 // mode = tool or learning, see ExecutionAttemptLauncher; runId is the attempt the app runs; type = AppConnectionTypesEnum.
 @WebSocket(path = "/execution/{mode}/{runId}/{type}")
-@ToolAuthenticated({Scope.TOOL_RUN, Scope.LEARNING_RUN})
+@ToolAuthenticated({Scope.EXECUTION_ATTEMPT, Scope.TOOL_RUN, Scope.LEARNING_RUN})
 @RolesAllowed(ToolApiKeyAuthenticationMechanism.ROLE)
 public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
 

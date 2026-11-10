@@ -9,17 +9,19 @@ import bio.cosy.feddb.core.execution.run.BaseExecutionRunAO;
 import bio.cosy.feddb.core.execution.run.BaseExecutionRunEntity;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepEntity;
+import bio.cosy.feddb.core.security.ToolApiKeyService;
+import bio.cosy.feddb.core.validation.ValidationHelper;
 import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Validator;
 import jakarta.ws.rs.NotFoundException;
 
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import static bio.cosy.feddb.core.validation.ValidationHelper.requireNotNull;
 
 /**
  * Starts an execution: a workflow as one run with a step per node, a single node or a single app as a run
@@ -39,7 +41,10 @@ public abstract class BaseWorkflowExecutionBO<
     public RunAO runAO;
 
     @Inject
-    Validator validator;
+    ValidationHelper validation;
+
+    @Inject
+    ToolApiKeyService apiKeys;
 
     private final Supplier<Run> newRun;
     private final Supplier<Step> newStep;
@@ -58,7 +63,7 @@ public abstract class BaseWorkflowExecutionBO<
 
     @Transactional
     public Run createTransactional(ExecutionStartDTO start, Collection<Node> nodes) {
-        requireValid(start, "start");
+        validation.requireValid(start, "start");
         if (nodes == null || nodes.isEmpty()) {
             throw new ConstraintViolationException("nodes must not be empty", Set.of());
         }
@@ -92,9 +97,9 @@ public abstract class BaseWorkflowExecutionBO<
     @Transactional
     public Run executeSingleTransactional(ExecutionStartDTO start, HyperParamSearchDTO search,
                                           LinkedHashMap<String, Object> inputs, Consumer<Step> target) {
-        requireValid(start, "start");
+        validation.requireValid(start, "start");
         if (search != null) {
-            requireValid(search, "search");
+            validation.requireValid(search, "search");
         }
         requireNotNull(target, "target");
         requireNodesOf(Set.of(), start.getSearches().keySet(), "Searches");
@@ -121,6 +126,7 @@ public abstract class BaseWorkflowExecutionBO<
                     .filter(attempt -> !attempt.hasEnded())
                     .forEach(attempt -> {
                         attempt.end(RunStatusTypes.STOPPED, null);
+                        apiKeys.revokeExecution(attempt.getId());
                         events.attemptFinished(attempt);
                     });
             if (!step.hasEnded()) {
@@ -142,20 +148,6 @@ public abstract class BaseWorkflowExecutionBO<
         runAO.flush();
         runAO.delete(run);
         Log.infof("Deleted run %d", runId);
-    }
-
-    private static void requireNotNull(Object value, String name) {
-        if (value == null) {
-            throw new ConstraintViolationException(name + " must not be null", Set.of());
-        }
-    }
-
-    private void requireValid(Object bean, String name) {
-        requireNotNull(bean, name);
-        Set<ConstraintViolation<Object>> violations = validator.validate(bean);
-        if (!violations.isEmpty()) {
-            throw new ConstraintViolationException(violations);
-        }
     }
 
     private void requireNodesOf(Set<Long> nodeIds, Set<Long> keys, String what) {

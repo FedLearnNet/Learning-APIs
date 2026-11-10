@@ -41,6 +41,14 @@ public class TestEngineBO {
     ExecutorService virtualThreads;
 
     // An engine connects back with its app's id like a local engine
+    public String provisionCredential(ExecutionAttemptEntity attempt) {
+        if (!attempt.getStep().getRun().getEngineMode().connects()) {
+            return null;
+        }
+        Long appId = attempt.getStep().getFederatedAppVersion().getFederatedApp().getId();
+        return toolApiKeyService.issue(Scope.TEST_EMBED_APP, appId, attempt.getId());
+    }
+
     public void customizeStart(ExecutionAttemptEntity attempt, StartWorkflowNodeDTO start) {
         Long appId = attempt.getStep().getFederatedAppVersion().getFederatedApp().getId();
         start.upsertEnv("APP_ID", String.valueOf(appId));
@@ -48,7 +56,6 @@ public class TestEngineBO {
             start.upsertEnv("TEST_MODE", "true");
             return;
         }
-        start.upsertEnv("APP_API_KEY", toolApiKeyService.issue(Scope.TEST_EMBED_APP, appId));
         FLNetConfig.FederatedTestConfig federated = config.testEngine().federated();
         if (federated.useDockerizedController()) {
             start.upsertEnv("FL_TEST__USE_DOCKERIZED_CONTROLLER", "true");

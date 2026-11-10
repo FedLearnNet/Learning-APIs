@@ -11,6 +11,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ToolApiKeyServiceTest {
 
     @Test
+    void hostingCredentialIsRevokedByItsAttemptWithoutAffectingAnotherAppOrPipeline() {
+        ToolApiKeyService service = new ToolApiKeyService();
+        String engine = service.issue(Scope.TEST_EMBED_APP, 7L, 42L);
+        String otherEngine = service.issue(Scope.TEST_EMBED_APP, 42L, 99L);
+        String pipeline = service.issue(Scope.PIPELINE_RUN, 42L);
+        service.revokeExecution(42L);
+        assertFalse(service.resolve(engine).isPresent());
+        assertTrue(service.resolve(otherEngine).isPresent());
+        assertTrue(service.resolve(pipeline).isPresent());
+    }
+
+    @Test
     void keyIsUniqueAndBoundToScopeAndRun() {
         ToolApiKeyService service = new ToolApiKeyService();
         String first = service.issue(Scope.LEARNING_RUN, 42L);

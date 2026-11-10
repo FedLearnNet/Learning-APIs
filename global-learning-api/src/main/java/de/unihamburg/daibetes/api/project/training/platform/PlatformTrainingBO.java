@@ -1,12 +1,15 @@
 package de.unihamburg.daibetes.api.project.training.platform;
 
+import bio.cosy.feddb.core.api.model.ModelSubDataDTO;
+import bio.cosy.feddb.core.execution.ExecutionPurpose;
+import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
+import de.unihamburg.daibetes.api.model.ModelBO;
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipAO;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptAO;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
-import de.unihamburg.daibetes.execution.run.ExecutionRunAO;
-import de.unihamburg.daibetes.execution.run.ExecutionRunDetailDTO;
-import de.unihamburg.daibetes.execution.run.ExecutionRunDetailMapper;
-import de.unihamburg.daibetes.execution.run.ExecutionRunEntity;
-import de.unihamburg.daibetes.execution.run.WorkflowExecutionBO;
+import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
+import de.unihamburg.daibetes.execution.run.*;
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -44,21 +47,33 @@ public class PlatformTrainingBO {
     @Inject
     PlatformTrainingCleanupBO cleanupBO;
 
-    /** The trainings of a project, newest first; its tests are not among them. */
+    @Inject
+    ExecutionAttemptAO attemptAO;
+
+    @Inject
+    ModelBO modelBO;
+
+    /**
+     * The trainings of a project, newest first; its tests are not among them.
+     */
     @Transactional
     public List<ExecutionRunDetailDTO> listTransactional(Long projectId, String keycloakId) {
         membershipAO.checkProjectAndUser(projectId, keycloakId);
         return runAO.listPlatformTrainingsOfProject(projectId, false).stream().map(run -> mapper.mapRunEntityToDetailDTO(run, false)).toList();
     }
 
-    /** The run; with messages every attempt carries its logs and metrics. */
+    /**
+     * The run; with messages every attempt carries its logs and metrics.
+     */
     @Transactional
     public ExecutionRunDetailDTO findRunTransactional(Long projectId, Long runId, String keycloakId, boolean withMessages) {
         membershipAO.checkProjectAndUser(projectId, keycloakId);
         return mapper.mapRunEntityToDetailDTO(runOf(projectId, runId), withMessages);
     }
 
-    /** The latest test of a project; null if it was never tested. */
+    /**
+     * The latest test of a project; null if it was never tested.
+     */
     @Transactional
     public ExecutionRunDetailDTO findTestTransactional(Long projectId, String keycloakId) {
         membershipAO.checkProjectAndUser(projectId, keycloakId);
@@ -67,14 +82,18 @@ public class PlatformTrainingBO {
                 .orElse(null);
     }
 
-    /** Sets up a training, started later. */
+    /**
+     * Sets up a training, started later.
+     */
     @Transactional
     public ExecutionRunDetailDTO createTransactional(Long projectId, CreateProjectLocalExperimentDTO create, String keycloakId) {
         membershipAO.checkProjectAndUser(projectId, keycloakId);
         return mapper.mapRunEntityToDetailDTO(setupBO.createRun(projectId, create.getName(), create.getDescription(), false, keycloakId), false);
     }
 
-    /** Tests the project's workflow on dummy data; replaces the test before. */
+    /**
+     * Tests the project's workflow on dummy data; replaces the test before.
+     */
     @Transactional
     public ExecutionRunDetailDTO createTestAndStartTransactional(Long projectId, String keycloakId) {
         membershipAO.checkProjectAndUser(projectId, keycloakId);
@@ -107,6 +126,21 @@ public class PlatformTrainingBO {
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void keepOutputsTransactional(Long stepId) {
         progressBO.keepOutputs(stepId);
+    }
+
+    @Transactional
+    public void keepModelTransactional(Long attemptId, ModelSubDataDTO model) {
+        ExecutionAttemptEntity attempt = attemptAO.findByIdOptional(attemptId)
+                .orElseThrow(() -> new NotFoundException("Attempt " + attemptId + " not found"));
+        ExecutionRunEntity run = attempt.getStep().getRun();
+        ExecutionExperimentEntity experiment = run.getExperiment();
+        if (run.getPurpose() != ExecutionPurpose.TRAINING || experiment == null || experiment.isTest() || attempt.getStep().getWorkflowNode() == null) {
+            Log.infof("Not keeping the model of attempt %d, it is no attempt of a training", attemptId);
+            return;
+        }
+        FederatedAppVersionEntity version = attempt.getStep().getWorkflowNode().getToolVersion();
+        model.setRunId(attemptId);
+        modelBO.saveModel(version.getId(), experiment.getId(), version.getFederatedApp().getId(), model, run.getKeycloakId());
     }
 
     private ExecutionRunEntity runOf(Long projectId, Long runId) {
