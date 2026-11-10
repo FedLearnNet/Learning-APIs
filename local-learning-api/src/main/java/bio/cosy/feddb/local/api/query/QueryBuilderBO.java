@@ -12,19 +12,24 @@ import bio.cosy.feddb.local.api.schema.datatype.DataTypeEntity;
 import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeAO;
 import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeEntity;
 import io.quarkus.logging.Log;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -42,14 +47,43 @@ public class QueryBuilderBO {
     private static final Pattern NUMERIC_LITERAL = Pattern.compile("-?\\d+(?:\\.\\d+)?");
     private static final String INTEGER_TEXT = "^-?[0-9]+$";
     private static final String FLOAT_TEXT = "^-?[0-9]+([.][0-9]+)?$";
+    private static final String INVALID_REGEX = "Regular expression is not valid";
+    private static final ThreadLocal<Set<Long>> COHORT_LIMIT = new ThreadLocal<>();
 
     @Inject
     SchemaNodeAO schemaNodeAO;
+
+    @Inject
+    EntityManager entityManager;
 
     /**
      * Builds a SQL to count distinct patient IDs matching all query items via INTERSECT
      */
     public String buildCountDistinctSql(QueryDTO dto) {
+        return compile(dto);
+    }
+
+    /**
+     * Builds the patient-match SQL using schema nodes from the given cohorts only.
+     * A null collection keeps every schema node, matching {@link #buildCountDistinctSql(QueryDTO)}.
+     *
+     * @param dto query to compile
+     * @param cohortIds cohorts whose schema nodes may be used
+     * @return patient-id SQL
+     */
+    public String buildCountDistinctSql(final QueryDTO dto, final Collection<Long> cohortIds) {
+        if (cohortIds == null) {
+            return compile(dto);
+        }
+        COHORT_LIMIT.set(Set.copyOf(cohortIds));
+        try {
+            return compile(dto);
+        } finally {
+            COHORT_LIMIT.remove();
+        }
+    }
+
+    private String compile(final QueryDTO dto) {
         if (dto == null || dto.getQuery() == null || isEmptyGroup(dto.getQuery())) {
             return EMPTY_PATIENT_QUERY;
         }
@@ -1532,7 +1566,7 @@ public class QueryBuilderBO {
         if (ontologyId == null || ontologyId.isBlank()) {
             throw new QueryRejectedException("Query item is missing an ontologyId and cannot be evaluated");
         }
-        List<SchemaNodeEntity> schemaNodes = getSchemaNodesForQueryItem(ontologyId, dataTypeId);
+        List<SchemaNodeEntity> schemaNodes = schemaNodesFor(ontologyId, dataTypeId);
         if (schemaNodes.isEmpty()) {
             Log.warnf("Found no schema nodes for ontology %s", ontologyId);
             throw new QueryRejectedException("Required condition cannot be found on this node");
@@ -1699,7 +1733,7 @@ public class QueryBuilderBO {
         NumericParse requestedNumeric = numericParse(datatypeHint);
         boolean numericHinted = requestedNumeric != null && isNumericComparisonOperators(item.getOperator());
 
-        List<SchemaNodeEntity> schemaNodes = getSchemaNodesForQueryItem(item.getOntologyId(), item.getDataTypeId());
+        List<SchemaNodeEntity> schemaNodes = schemaNodesFor(item.getOntologyId(), item.getDataTypeId());
         if (schemaNodes.isEmpty()) {
             Log.warnf("Found no schema nodes for ontology %s", item.getOntologyId());
             throw new QueryRejectedException("Required condition cannot be found on this node");
@@ -1767,6 +1801,17 @@ public class QueryBuilderBO {
             return schemaNodeAO.findByOntologyGlobalId(ontologyId);
         }
         return schemaNodeAO.findByOntologyAndDatatypeGlobalId(ontologyId, dataTypeId);
+    }
+
+    private List<SchemaNodeEntity> schemaNodesFor(final String ontologyId, final String dataTypeId) {
+        Set<Long> cohortLimit = COHORT_LIMIT.get();
+        if (cohortLimit == null) {
+            return getSchemaNodesForQueryItem(ontologyId, dataTypeId);
+        }
+        if (dataTypeId == null || dataTypeId.isBlank()) {
+            return schemaNodeAO.findByOntologyGlobalIdAndCohortIds(ontologyId, cohortLimit);
+        }
+        return schemaNodeAO.findByOntologyAndDatatypeGlobalIdAndCohortIds(ontologyId, dataTypeId, cohortLimit);
     }
 
     private String getColumnName(DataTypes dataType) {
@@ -1903,6 +1948,7 @@ public class QueryBuilderBO {
             case CONTAINS -> buildLikeClause(dataType, columnName, op.getValue(), "%", "%");
             case START_WIDTH -> buildLikeClause(dataType, columnName, op.getValue(), "", "%");
             case END_WIDTH -> buildLikeClause(dataType, columnName, op.getValue(), "%", "");
+            case REGEX -> buildRegexClause(dataType, columnName, op.getValue());
             case IN, NOT_IN -> {
                 String encodedList = encodeListValue(dataType, op.getValue());
                 if (encodedList == null || encodedList.isBlank()) {
@@ -1919,6 +1965,47 @@ public class QueryBuilderBO {
                 yield columnName + " " + mappedOperator + " " + encodedValue;
             }
         };
+    }
+
+    private String buildRegexClause(final DataTypes dataType, final String columnName, final String value) {
+        if (dataType != DataTypes.STRING && dataType != DataTypes.CATEGORICAL) {
+            throw new QueryRejectedException("Regular expression requires a text value");
+        }
+        requireValidRegex(value);
+        return columnName + " ~ " + encodeValue(dataType, value);
+    }
+
+    private void requireValidRegex(final String value) {
+        if (value == null || value.isBlank()) {
+            throw new QueryRejectedException(INVALID_REGEX);
+        }
+        try {
+            QuarkusTransaction.requiringNew().run(() -> entityManager.createNativeQuery("SELECT '' ~ :pattern")
+                    .setParameter("pattern", value)
+                    .getSingleResult());
+        } catch (RuntimeException e) {
+            if (isInvalidRegex(e)) {
+                throw new QueryRejectedException(INVALID_REGEX);
+            }
+            throw e;
+        }
+    }
+
+    private boolean isInvalidRegex(final Throwable error) {
+        Throwable current = error;
+        while (current != null) {
+            if (current instanceof SQLException sql) {
+                if ("2201B".equals(sql.getSQLState())) {
+                    return true;
+                }
+                String message = sql.getMessage();
+                if (message != null && message.toLowerCase(Locale.ROOT).contains("invalid regular expression")) {
+                    return true;
+                }
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     private String buildLikeClause(DataTypes dataType, String columnName, String value, String prefix, String suffix) {

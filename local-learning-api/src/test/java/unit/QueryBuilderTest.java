@@ -926,6 +926,43 @@ public class QueryBuilderTest {
                 () -> queryBuilderBO.buildCountDistinctSql(queryTree(firstInjected)));
     }
 
+    @Test
+    @Order(35)
+    void testInvalidRegexIsRejectedBeforeExecution() {
+        Lang2QueryNodeDTO invalid = leaf("2001", "1001", "regex", "(");
+        QueryRejectedException rejected = Assertions.assertThrows(
+                QueryRejectedException.class,
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(invalid)));
+        Assertions.assertEquals("Regular expression is not valid", rejected.getMessage());
+
+        Lang2QueryNodeDTO valid = leaf("2001", "1001", "regex", "Diabetes");
+        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(valid));
+        Assertions.assertTrue(sql.contains("value_string ~ 'Diabetes'"));
+        assertSqlExecutes(sql);
+    }
+
+    @Test
+    @Order(36)
+    void testCountsAreLimitedToTheAllowedCohorts() {
+        Lang2QueryNodeDTO age = leaf("2002", "1002", ">", 26);
+        String unscoped = queryBuilderBO.buildCountDistinctSql(queryTree(age));
+        Assertions.assertFalse(queryAO.findPatientCountsByCohort(unscoped).isEmpty());
+        Assertions.assertTrue(queryAO.findPatientCountsByCohort(unscoped, List.of(2L)).isEmpty());
+        Assertions.assertTrue(queryAO.findPatientCountsByCohort(unscoped, List.of()).isEmpty());
+
+        Assertions.assertEquals(
+                List.of(1L, 2L),
+                matchedPatientIds(queryBO.runQuery(queryTree(age), List.of(1L))));
+
+        Lang2QueryNodeDTO tooTall = leaf("2003", "1002", ">", 1000);
+        QueryResultWrapperDTO none = queryBO.runQuery(queryTree(tooTall), List.of(2L));
+        Assertions.assertTrue(none.getResult().isEmpty());
+
+        Assertions.assertThrows(
+                QueryRejectedException.class,
+                () -> queryBO.runQuery(queryTree(age), List.of(2L)));
+    }
+
     private QueryDTO queryTree(Lang2QueryNodeDTO root) {
         QueryDTO queryDTO = new QueryDTO();
         queryDTO.setQuery(root);
