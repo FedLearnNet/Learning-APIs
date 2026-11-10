@@ -1,11 +1,13 @@
 package de.unihamburg.daibetes.api.ontology;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
+import bio.cosy.feddb.core.api.datamodler.ontology.OntologyDataTypeDTO;
 import bio.cosy.feddb.core.api.datamodler.ontology.OntologyEdgeDTO;
 import bio.cosy.feddb.core.api.datamodler.ontology.OntologyNodeDTO;
 import bio.cosy.feddb.core.api.datamodler.ontology.OntologyQueryAbilityDTO;
 import bio.cosy.feddb.core.api.datamodler.schema.SchemaEdgeDTO;
 import bio.cosy.feddb.core.api.datamodler.schema.SchemaNodeDTO;
+import de.unihamburg.daibetes.api.datatype.DataTypeMapper;
 import de.unihamburg.daibetes.api.schema.SchemaSubscriptions;
 import de.unihamburg.daibetes.base.BaseDAO;
 import de.unihamburg.daibetes.base.CypherTemplate;
@@ -14,6 +16,7 @@ import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.neo4j.driver.Value;
@@ -26,6 +29,9 @@ public class OntologyDAO extends BaseDAO<OntologyNodeDTO, OntologyEdgeDTO, Ontol
 
     @ConfigProperty(name = "quarkus.langchain4j.neo4j.label", defaultValue = "Document")
     String embeddingDocumentLabel;
+
+    @Inject
+    DataTypeMapper dataTypeMapper;
 
 
     public Uni<Void> createNodeBatch(List<OntologyNodeDTO> nodes) {
@@ -336,6 +342,38 @@ public class OntologyDAO extends BaseDAO<OntologyNodeDTO, OntologyEdgeDTO, Ontol
                 .onItem().transform(mapper::fromNodeRecord);
     }
 
+    public Multi<OntologyDataTypeDTO> findSchemaSiblingsWithDataTypes(UUID ontologyId) {
+        String cypher = CypherTemplate.of("""
+                        MATCH (:${ONTO_LABEL} {${ID_PROP}: $id})<-[:${SCHEMA_TO_ONTOLOGY_REL}]-(:${SCHEMA_LABEL})
+                              <-[:${SUB_SCHEMA_REL}*0..]-(root:${SCHEMA_LABEL} {isRoot: true})
+                        WITH DISTINCT root
+                        MATCH (root)-[:${SUB_SCHEMA_REL}*0..]->(n:${SCHEMA_LABEL})-[:${SCHEMA_TO_ONTOLOGY_REL}]->(o:${ONTO_LABEL})
+                        MATCH (n)-[:${SCHEMA_TO_DATA_TYPE_REL}]->(d:${DATA_LABEL})
+                        WITH DISTINCT o, d, root
+                        UNWIND CASE
+                            WHEN root.subscriptions IS NULL OR size(root.subscriptions) = 0 THEN [null]
+                            ELSE root.subscriptions
+                        END AS subscription
+                        WITH o, d, count(DISTINCT subscription) AS subscriptionsCount
+                        RETURN o AS ontology, d AS dataType, subscriptionsCount
+                        ORDER BY o.${ID_PROP}, d.name
+                        """)
+                .bind("ONTO_LABEL", getNodeLabel())
+                .bind("SCHEMA_LABEL", SchemaNodeDTO.nodeLabel())
+                .bind("DATA_LABEL", DataTypeNodeDTO.nodeLabel())
+                .bind("ID_PROP", idPropertyName)
+                .bind("SCHEMA_TO_ONTOLOGY_REL", InterNodeEdgeLabels.SCHEMA_TO_ONTOLOGY)
+                .bind("SCHEMA_TO_DATA_TYPE_REL", InterNodeEdgeLabels.SCHEMA_TO_DATA_TYPE)
+                .bind("SUB_SCHEMA_REL", SchemaEdgeDTO.edgeLabel())
+                .build();
+
+        return read(cypher, Values.parameters("id", ontologyId.toString()))
+                .onItem().transform(record -> new OntologyDataTypeDTO(
+                        mapper.fromNode(record.get("ontology").asNode()),
+                        dataTypeMapper.fromNode(record.get("dataType").asNode()),
+                        record.get("subscriptionsCount").asInt(0)
+                ));
+    }
 
     public Multi<OntologyQueryAbilityDTO> listQueryability() {
         String cypher = CypherTemplate.of("""
