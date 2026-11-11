@@ -351,9 +351,7 @@ public class ConnectorTransformerBO extends BaseBo<
     }
 
     private boolean isAppTransformer(ConnectorTransformerDTO transformer) {
-        return transformer != null
-                && transformer.getAppImage() != null
-                && !transformer.getAppImage().isBlank();
+        return transformer != null && transformer.isAppBased();
     }
 
 }

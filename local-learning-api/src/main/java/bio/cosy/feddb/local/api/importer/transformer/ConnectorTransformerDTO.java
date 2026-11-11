@@ -26,12 +26,14 @@ public class ConnectorTransformerDTO extends BaseDTO {
     // For remote app execution
     private Long appVersionId;
     private String appImage;
+    private String appSlug;
     private LinkedHashMap<String, Object> hyperparams;
 
     private Long connectorId;
 
     @JsonIgnore
     public boolean isAppBased() {
-        return appImage != null && !appImage.isBlank();
+        return appImage != null && !appImage.isBlank()
+                || appSlug != null && !appSlug.isBlank();
     }
 }

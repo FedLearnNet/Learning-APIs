@@ -76,7 +76,7 @@ public class WorkflowExportBO {
                 importWorkflowTransactional(export);
             } catch (Exception e) {
                 failed++;
-                Log.warnf(e, "Failed to import workflow %s: %s", export.getName(), e.getMessage());
+                Log.warnf("Failed to import workflow %s: %s", export.getName(), e.getMessage());
             }
         }
         if (failed > 0) {

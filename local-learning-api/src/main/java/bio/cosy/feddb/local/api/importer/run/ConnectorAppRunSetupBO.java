@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.api.importer.run;
 
 import bio.cosy.feddb.local.api.cohort.CohortAO;
+import bio.cosy.feddb.local.api.importer.extract.ConnectorAppResolverBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerAO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
@@ -15,6 +16,9 @@ import java.util.LinkedHashMap;
 
 @ApplicationScoped
 public class ConnectorAppRunSetupBO {
+
+    @Inject
+    ConnectorAppResolverBO appResolverBO;
 
     @Inject
     WorkflowExecutionBO workflowExecutionBO;
@@ -33,6 +37,9 @@ public class ConnectorAppRunSetupBO {
 
     public ExecutionRunDTO start(ConnectorTransformerDTO app, LinkedHashMap<String, Object> hyperParams, Long connectorRunId,
                                  Long cohortId, String keycloakId) {
+        if (app.getAppSlug() != null && !app.getAppSlug().isBlank()) {
+            appResolverBO.resolve(app);
+        }
         String name = app.getMethodName() != null ? app.getMethodName() : app.getAppImage();
         ExecutionRunEntity run = workflowExecutionBO.executeAppTransactional(name, hyperParams, step -> {
             step.setAppImage(app.getAppImage());

@@ -6,6 +6,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Mappings;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(config = QuarkusMappingConfig.class)
 public interface ConnectorTransformerMapper extends BaseMapper<ConnectorTransformerDTO, ConnectorTransformerEntity> {
@@ -27,6 +28,7 @@ public interface ConnectorTransformerMapper extends BaseMapper<ConnectorTransfor
             @Mapping(target = "updatedAt", ignore = true),
             @Mapping(target = "connector", ignore = true),
             @Mapping(target = "position", ignore = true),
+            @Mapping(target = "appSlug", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_NULL),
     })
     void updateContentFromDto(ConnectorTransformerDTO dto, @MappingTarget ConnectorTransformerEntity entity);
 

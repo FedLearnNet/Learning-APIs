@@ -36,6 +36,12 @@ services:
       QUARKUS_DATASOURCE_USERNAME: user
       QUARKUS_DATASOURCE_PASSWORD: password
       QUARKUS_LOG_CONSOLE_JSON_ENABLED: false
+      # Tool images built by the global dev stack are pulled by the shared Docker daemon.
+      ORCH_DOCKER__PRIVATE__REGISTRY_URL: localhost:5001
+      # Registry HTTP requests originate inside this container, on a separate Compose network.
+      ORCH_DOCKER__PRIVATE__REGISTRY_API_URL: http://host.docker.internal:5001
+      ORCH_DOCKER__PRIVATE__REGISTRY_USERNAME: ""
+      ORCH_DOCKER__PRIVATE__REGISTRY_PASSWORD: ""
       CONTAINER_HOST_OVERRIDE: host.docker.internal
       CONTAINER_NETWORK_CONTROLLER: controller:8001
       CONTAINER_NETWORK_NAMES: local-learning-network

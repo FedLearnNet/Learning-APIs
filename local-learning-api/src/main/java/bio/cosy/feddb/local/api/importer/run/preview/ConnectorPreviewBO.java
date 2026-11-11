@@ -349,7 +349,7 @@ public class ConnectorPreviewBO {
             return false;
         }
         return transformers.stream()
-                .filter(transformer -> transformer.getAppImage() == null || transformer.getAppImage().isBlank())
+                .filter(transformer -> !transformer.isAppBased())
                 .anyMatch(transformer -> functionRunnerBO.mode(transformer) == FunctionExecutionMode.PATIENT);
     }
 

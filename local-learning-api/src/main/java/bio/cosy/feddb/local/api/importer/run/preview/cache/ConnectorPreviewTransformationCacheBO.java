@@ -46,6 +46,7 @@ public class ConnectorPreviewTransformationCacheBO extends BaseBo<
         definition.put("moduleName", transformer.getModuleName());
         definition.put("methodName", transformer.getMethodName());
         definition.put("appImage", transformer.getAppImage());
+        definition.put("appSlug", transformer.getAppSlug());
         definition.put("column", transformer.getColumn());
         definition.put("inputMapping", transformer.getInputMapping());
         definition.put("returnMapping", transformer.getReturnMapping());

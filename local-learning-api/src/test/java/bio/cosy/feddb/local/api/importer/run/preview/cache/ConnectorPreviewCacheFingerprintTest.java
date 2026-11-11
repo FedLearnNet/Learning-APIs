@@ -74,6 +74,16 @@ class ConnectorPreviewCacheFingerprintTest {
     }
 
     @Test
+    void changingTheAppSlugInvalidatesTheCachedStage() {
+        ConnectorTransformerDTO app = transformer("App", Map.of());
+        app.setAppSlug("transformer-combine-rows");
+        String source = cache.sourceFingerprint(config(1L, 7L));
+        String before = cache.stageFingerprint(source, app);
+        app.setAppSlug("transformer-split-rows");
+        assertNotEquals(before, cache.stageFingerprint(source, app));
+    }
+
+    @Test
     void changingTheSourceChangesTheWholeChain() {
         ConnectorTransformerDTO only = transformer("Replace Value", Map.of("search", "?"));
         assertNotEquals(

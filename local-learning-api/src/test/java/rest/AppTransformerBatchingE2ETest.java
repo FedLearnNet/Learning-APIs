@@ -1,6 +1,7 @@
 package rest;
 
 import bio.cosy.feddb.core.api.datamodler.schema.SchemaStructureDTO;
+import bio.cosy.feddb.core.api.app.FederatedAppDetailDTO;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
 import bio.cosy.feddb.core.services.orch.dto.CreateContainerResponseDTO;
@@ -17,6 +18,7 @@ import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
 import bio.cosy.feddb.local.api.importer.run.ImportStatusEnum;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import bio.cosy.feddb.local.services.datamodler.GlobalSchemaSubscriptionService;
+import bio.cosy.feddb.local.services.GlobalAPIStoreService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.narayana.jta.QuarkusTransaction;
@@ -122,6 +124,18 @@ public class AppTransformerBatchingE2ETest {
 
     @BeforeEach
     void installMocks() throws Exception {
+        GlobalAPIStoreService store = org.mockito.Mockito.mock(GlobalAPIStoreService.class);
+        long versionId = 101L;
+        for (String slug : List.of("transformer-combine-rows", "transformer-split-rows")) {
+            FederatedAppDetailDTO app = new FederatedAppDetailDTO();
+            app.setLatestVersionId(versionId);
+            app.setImageName("test-registry/" + slug + ":current");
+            org.mockito.Mockito.when(store.getApp(slug)).thenReturn(app);
+            org.mockito.Mockito.when(store.getAppByVersion(versionId)).thenReturn(app);
+            versionId++;
+        }
+        QuarkusMock.installMockForType(store, GlobalAPIStoreService.class, RestClient.LITERAL);
+
         SchemaStructureDTO dummySchema;
         try (InputStream in = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(SCHEMA_DUMMY_PATH.substring(1))) {
@@ -187,6 +201,9 @@ public class AppTransformerBatchingE2ETest {
         assertEquals(2, transformerApps.startedImages.size(),
                 "Exactly one container per app transformer should be started, was "
                         + transformerApps.startedImages);
+        assertEquals(List.of("test-registry/transformer-combine-rows:current",
+                "test-registry/transformer-split-rows:current"), transformerApps.startedImages,
+                "Both transformer slugs must resolve to this platform's images");
 
         // ...and many more batches than containers, which is what proves they were reused.
         assertTrue(transformerApps.totalBatches() > transformerApps.startedImages.size(),
