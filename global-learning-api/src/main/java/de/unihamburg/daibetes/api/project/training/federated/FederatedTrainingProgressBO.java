@@ -86,8 +86,10 @@ public class FederatedTrainingProgressBO {
             }
         }
         if (federation != null) {
+            // The round the clinics are at; the platform's aggregator does not report one.
             step.get().getAttempts().stream()
-                    .filter(each -> each.getFederation() != null && each.getFederation().getCurrentRound() != null)
+                    .filter(each -> each.getFederation() != null && each.getFederation().getParticipant() != null
+                            && each.getFederation().getCurrentRound() != null)
                     .mapToInt(each -> each.getFederation().getCurrentRound())
                     .min()
                     .ifPresent(federation::setCurrentRound);

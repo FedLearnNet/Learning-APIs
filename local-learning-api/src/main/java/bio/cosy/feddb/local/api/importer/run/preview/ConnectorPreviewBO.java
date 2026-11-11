@@ -73,6 +73,7 @@ public class ConnectorPreviewBO {
 
         PreviewResponseDTO response = new PreviewResponseDTO();
         response.setJsons(new ArrayList<>());
+        response.setColumns(new ArrayList<>());
         response.setStages(new ArrayList<>());
 
         ConnectorPreviewTransformationStageData stage =
@@ -80,7 +81,7 @@ public class ConnectorPreviewBO {
                         .getStage();
 
         if (response.getJsons().isEmpty()) {
-            response.getJsons().add(render(stage));
+            addTable(response, stage);
         }
 
         return response;
@@ -165,7 +166,8 @@ public class ConnectorPreviewBO {
             } else {
                 List<Map<String, Object>> rows =
                         transformerBO.applyBuiltInTransformation(transformer, stage.getRows(), patientIdColumn);
-                stage = new ConnectorPreviewTransformationStageData(rows, stage.getColumns(), stage.getProfiles());
+                stage = new ConnectorPreviewTransformationStageData(
+                        rows, ColumnNames.withRowColumns(stage.getColumns(), rows), stage.getProfiles());
                 if (blockedBy == null) {
                     cacheBO.store(connectorId, stepIndex, transformer.getId(), fingerprint,
                             limitPreviewRows(rows), stage.getColumns());
@@ -174,7 +176,7 @@ public class ConnectorPreviewBO {
             }
 
             if (response != null) {
-                response.getJsons().add(render(stage));
+                addTable(response, stage);
             }
         }
 
@@ -191,6 +193,11 @@ public class ConnectorPreviewBO {
         cacheBO.store(connectorId, stepIndex, transformer.getId(), fingerprint,
                 limitPreviewRows(rows), columns);
         cacheBO.invalidateFrom(connectorId, stepIndex + 1);
+    }
+
+    private void addTable(PreviewResponseDTO response, ConnectorPreviewTransformationStageData stage) {
+        response.getJsons().add(render(stage));
+        response.getColumns().add(ColumnNames.withRowColumns(List.of(), limitPreviewRows(stage.getRows())));
     }
 
     private String render(ConnectorPreviewTransformationStageData stage) {

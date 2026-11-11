@@ -46,10 +46,13 @@ services:
       ORCH_DOCKER__PRIVATE__REGISTRY_USERNAME: ""
       ORCH_DOCKER__PRIVATE__REGISTRY_PASSWORD: ""
       CONTAINER_HOST_OVERRIDE: host.docker.internal
-      CONTAINER_NETWORK_CONTROLLER: controller:8001
+      CONTAINER_NETWORK_CONTROLLER:  local-learning-controller:8001
       CONTAINER_NETWORK_NAMES: local-learning-network
       CONTAINER_NETWORK_ALWAYS_BRIDGE: "true"
       QUARKUS_LOG_CATEGORY_"bio.cosy.featurecloud"_LEVEL: DEBUG
+      ORCH_DOCKER__PRIVATE__REGISTRY_URL: localhost:5001
+      ORCH_DOCKER__PRIVATE__REGISTRY_USERNAME: ""
+      ORCH_DOCKER__PRIVATE__REGISTRY_PASSWORD: ""
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - orch-data:/mnt/input:rw
@@ -63,10 +66,9 @@ services:
       - local-learning-network
   controller:
     image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller:staging
+    container_name: local-learning-controller
     ports:
       - '8092:8000'
-    profiles:
-      - dev
     environment:
       RELAY_ADDRESS_TCP: "host.docker.internal:9161"
       RELAY_TRUST_CERTIFICATE: "true"
@@ -84,6 +86,7 @@ services:
 
   controller-test:
     image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller:staging
+    container_name: local-learning-controller
     ports:
       - '8092:8000'
     profiles:
@@ -110,77 +113,6 @@ services:
       io.quarkus.devservices.compose.wait_for.ports.disable: true
     networks:
       - local-learning-network
-
-  # datamodeler-api:
-  #   image: ghcr.io/fedlearnnet/learning-apis/datamodeler-api:staging
-  #   pull_policy: always
-  #   environment:
-  #     DEBUG: 1
-  #     DJANGO_NEO4J_BOLT_URL: bolt://neo4j:neo4jpwd@datamodeler-db:7687
-  #     DJANGO_SUPERUSER_USERNAME: admin
-  #     DJANGO_SUPERUSER_PASSWORD: admin
-  #     DJANGO_SUPERUSER_EMAIL: admin@admin.com
-  #   ports:
-  #     - '8093:8000'
-  #   networks:
-  #     - local-learning-network
-  #   depends_on:
-  #     datamodeler-db:
-  #       condition: service_healthy
-
-  # datamodeler-db:
-  #   image: neo4j:5.18.1-enterprise
-  #   ports:
-  #     - "7474:7474"
-  #     - "7687:7687"
-  #   environment:
-  #     NEO4J_AUTH: neo4j/neo4jpwd
-  #     NEO4J_ACCEPT_LICENSE_AGREEMENT: yes
-  #     NEO4J_PLUGINS: '["apoc", "apoc-extended"]'
-  #     NEO4J_dbms_security_procedures_unrestricted: apoc.*,gds.*
-  #     NEO4J_dbms_security_procedures_allowlist: apoc.*,gds.*
-  #     NEO4J_apoc_import_file_enabled: true
-  #     NEO4J_apoc_export_file_enabled: true
-  #     NEO4J_apoc_import_file_use__neo4j__config: true
-  #   volumes:
-  #     - neo4j-data:/data
-  #     - neo4j-import:/var/lib/neo4j/import
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "cypher-shell -u neo4j -p neo4jpwd 'RETURN 1'"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 10
-  #     start_period: 60s
-  #   labels:
-  #     io.quarkus.devservices.compose.wait_for.ports.timeout: "120s"
-  #   networks:
-  #     - local-learning-network
-
-  # # Yes we start a whole new neo4j just to run the init script
-  # # it works which is what matters
-  # # alternatively we could use a custom dockerfile that copies the init script
-  # # We do this to ensure the permissions of the cypher script dont get changed
-  # datamodeler-init:
-  #   image: neo4j:5.18.1-enterprise
-  #   volumes:
-  #     - neo4j-import:/var/lib/neo4j/import
-  #     - ./src/main/resources/schema.cypher:/tmp/schema.cypher:ro
-  #   depends_on:
-  #     datamodeler-db:
-  #       condition: service_healthy
-  #   command: >
-  #     bash -c "
-  #       echo 'Copying schema file...' &&
-  #       cp /tmp/schema.cypher /var/lib/neo4j/import/schema.cypher &&
-  #       echo 'Executing schema script...' &&
-  #       cypher-shell -a bolt://datamodeler-db:7687 -u neo4j -p neo4jpwd --file /var/lib/neo4j/import/schema.cypher &&
-  #       echo 'Schema initialization completed successfully!' &&
-  #       echo 'DONE'
-  #     "
-  #   labels:
-  #     io.quarkus.devservices.compose.wait_for.logs: .*DONE.*
-  #   networks:
-  #     - local-learning-network
 
 volumes:
   local-learning-api-db-volume:

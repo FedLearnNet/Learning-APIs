@@ -22,6 +22,7 @@ public class FederatedLearningRequestDTO extends BaseDTO {
 
     private Boolean modelNeedToBePublic;
     private Boolean modelCanBePublic;
+    private Boolean platformIsCoordinator;
 
     private String channelId;
 

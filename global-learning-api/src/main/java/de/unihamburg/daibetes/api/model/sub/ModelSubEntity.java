@@ -46,16 +46,15 @@ public class ModelSubEntity extends BaseEntity {
     @JoinColumn(name = "federated_training_id")
     private ExecutionAttemptEntity federatedExperimentRun; */
 
-    // The trial of an experiment that trained it.
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "experiment_run_id")
     private ExecutionAttemptEntity experimentRun;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "federated_experiment_id")
     private ExecutionExperimentEntity federatedExperiment;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "model_version_id", nullable = false)
     private ModelVersionEntity modelVersion;
 

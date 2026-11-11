@@ -8,6 +8,7 @@ import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
 import de.unihamburg.daibetes.api.analysis.run.DataAnalysisExecutionBO;
 import de.unihamburg.daibetes.api.development.run.TestRunBO;
+import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingAggregatorBO;
 import de.unihamburg.daibetes.api.project.training.platform.PlatformTrainingBO;
 import de.unihamburg.daibetes.execution.file.ExecutionFileBO;
 import io.quarkus.security.Authenticated;
@@ -44,6 +45,9 @@ public class ExecutionAttemptService {
 
     @Inject
     PlatformTrainingBO trainingBO;
+
+    @Inject
+    FederatedTrainingAggregatorBO aggregatorBO;
 
     @Inject
     ExecutionAttemptAO attemptAO;
@@ -103,6 +107,8 @@ public class ExecutionAttemptService {
         ExecutionAttemptEntity attempt = activeAttempt(attemptId);
         if (attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TEST) {
             testRunBO.keepModelTransactional(attempt, model);
+        } else if (FederatedTrainingAggregatorBO.isAggregator(attempt)) {
+            aggregatorBO.storeModel(attempt, model);
         } else if (attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TRAINING) {
             trainingBO.keepModelTransactional(attemptId, model);
         } else {

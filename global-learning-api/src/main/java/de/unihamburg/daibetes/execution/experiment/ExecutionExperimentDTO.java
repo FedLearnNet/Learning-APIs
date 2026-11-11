@@ -25,4 +25,5 @@ public class ExecutionExperimentDTO extends BaseExecutionExperimentDTO {
     private String relayServerAddress;
     private Boolean modelCanBePublic;
     private Boolean modelNeedToBePublic;
+    private boolean platformIsCoordinator;
 }

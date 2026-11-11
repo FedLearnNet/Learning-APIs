@@ -82,4 +82,8 @@ public class ExecutionExperimentEntity extends BaseExecutionExperimentEntity {
 
     @Column(name = "model_need_to_be_public")
     private Boolean modelNeedToBePublic;
+
+    // The platform runs the aggregator itself instead of a clinic chosen at random; the clinics accept it knowing that.
+    @Column(name = "platform_is_coordinator", nullable = false)
+    private boolean platformIsCoordinator;
 }

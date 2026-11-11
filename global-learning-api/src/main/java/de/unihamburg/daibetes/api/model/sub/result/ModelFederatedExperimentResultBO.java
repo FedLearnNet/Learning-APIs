@@ -15,7 +15,6 @@ import de.unihamburg.daibetes.api.model.sub.file.ModelSubFileBO;
 import de.unihamburg.daibetes.api.model.version.ModelVersionBO;
 import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentAO;
 import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
-import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
@@ -60,10 +59,6 @@ public class ModelFederatedExperimentResultBO {
         }
 
         ExecutionExperimentEntity experiment = findExperiment(dto.getGlobalFLExperimentUniqueId(), dto.getClinicId());
-        if (Boolean.FALSE.equals(experiment.getModelCanBePublic())) {
-            Log.warnf("Model of experiment %s cannot be public", experiment.getGlobalUniqueId());
-            throw new BadRequestException("Model of experiment " + experiment.getGlobalUniqueId() + " cannot be public");
-        }
         FederatedAppVersionDTO appVersion = federatedAppVersionBO.getById(appVersionId);
         Long appId = appVersion.getFederatedAppId();
 

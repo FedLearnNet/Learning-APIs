@@ -24,11 +24,11 @@ public class ConnectorRunMessagesEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ConnectorRunMessageLevels severity;
 
-    @ManyToOne(cascade = CascadeType.REFRESH)
+    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     @JoinColumn(name = "run_transformer_id")
     private ConnectorTransformerEntity transformer;
 
-    @ManyToOne(cascade = CascadeType.REFRESH)
+    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     @JoinColumn(name = "run_id")
     private ConnectorRunEntity run;
 }

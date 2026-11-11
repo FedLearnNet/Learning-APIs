@@ -173,6 +173,28 @@ class ConnectorPreviewBOTest {
     }
 
     @Test
+    void previewListsTheColumnOrderOfEachTableItReturns() {
+        Map<String, Object> source = new LinkedHashMap<>();
+        source.put("patient_id", "p1");
+        source.put("2019", 5);
+        source.put("sex", "f");
+        ConnectorExtractBO extractBO = mock(ConnectorExtractBO.class);
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
+                .thenReturn(new TableData(List.of("patient_id", "2019", "sex"), List.of(source), new ArrayList<>()));
+
+        ConnectorPreviewBO previewBO = new ConnectorPreviewBO();
+        previewBO.cacheBO = new ConnectorPreviewTransformationCacheBO();
+        previewBO.extractBO = extractBO;
+        previewBO.fileHandlerBO = mock(TabularFileReaderBO.class);
+
+        PreviewResponseDTO response = previewBO.previewPivot(new ConnectorConfigDTO());
+
+        // A browser parsing the rows lists number-like keys such as "2019" first, so the order the
+        // rows have is sent along with them.
+        assertEquals(List.of(List.of("patient_id", "2019", "sex")), response.getColumns());
+    }
+
+    @Test
     void appBasedStepIsReportedAsNeedingARunAndKeepsShowingItsInput() {
         ConnectorTransformerDTO appTransformer = new ConnectorTransformerDTO();
         appTransformer.setAppImage("transformer-combine-rows:qfyjTIKg");
@@ -289,6 +311,52 @@ class ConnectorPreviewBOTest {
         // after it is computed on that output instead of being blocked behind an unrun app step.
         verify(cacheBO).store(eq(3L), eq(1), any(), any(), eq(appOutput), any());
         verify(cacheBO).store(eq(3L), eq(2), any(), any(), eq(appOutput), any());
+    }
+
+    @Test
+    void aBuiltInStepCachesTheColumnsItAddsInTheirOrder() {
+        ConnectorTransformerDTO split = new ConnectorTransformerDTO();
+        ConnectorConfigDTO config = new ConnectorConfigDTO();
+        config.setConnectorId(3L);
+        config.setTransformer(List.of(split));
+
+        ConnectorExtractBO extractBO = mock(ConnectorExtractBO.class);
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
+                .thenReturn(new TableData(
+                        List.of("patient_nbr", "race"),
+                        new ArrayList<>(List.of(row("patient-1", "Caucasian"))),
+                        new ArrayList<>()));
+        ConnectorTransformerBO transformerBO = mock(ConnectorTransformerBO.class);
+        when(transformerBO.applyBuiltInTransformation(same(split), anyList(), isNull()))
+                .thenAnswer(invocation -> {
+                    List<Map<String, Object>> rows = invocation.getArgument(1);
+                    return rows.stream().map(input -> {
+                        Map<String, Object> output = new LinkedHashMap<>(input);
+                        output.put("race_main", "Caucasian");
+                        output.put("race_detail", "");
+                        return output;
+                    }).toList();
+                });
+
+        ConnectorPreviewTransformationCacheBO cacheBO =
+                mock(ConnectorPreviewTransformationCacheBO.class, CALLS_REAL_METHODS);
+        doReturn(Optional.empty()).when(cacheBO).find(any(), anyInt(), any());
+        doNothing().when(cacheBO).store(any(), anyInt(), any(), any(), any(), any());
+
+        ConnectorPreviewBO previewBO = new ConnectorPreviewBO();
+        previewBO.cacheBO = cacheBO;
+        previewBO.extractBO = extractBO;
+        previewBO.fileHandlerBO = mock(TabularFileReaderBO.class);
+        previewBO.transformerBO = transformerBO;
+        previewBO.functionRunnerBO = mock(FunctionRunnerBO.class);
+
+        PreviewResponseDTO response = previewBO.preview(config);
+
+        // The cache keeps rows as jsonb, which drops their key order; the stored column list is what
+        // restores it, so it has to name the columns the step added too, in the order it added them.
+        verify(cacheBO).store(eq(3L), eq(1), any(), any(), anyList(),
+                eq(List.of("patient_nbr", "race", "race_main", "race_detail")));
+        assertEquals(List.of(List.of("patient_nbr", "race", "race_main", "race_detail")), response.getColumns());
     }
 
     private static Map<String, Object> row(String patientId, String race) {

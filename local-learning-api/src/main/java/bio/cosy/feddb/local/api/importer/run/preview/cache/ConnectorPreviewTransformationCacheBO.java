@@ -12,6 +12,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.apache.commons.codec.digest.DigestUtils;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +62,31 @@ public class ConnectorPreviewTransformationCacheBO extends BaseBo<
         }
         return ao.find(connectorId, stepIndex, fingerprint)
                 .map(entity -> new ConnectorPreviewTransformationCacheStage(
-                        entity.getRows(), entity.getColumns(), entity.getUpdatedAt()));
+                        inColumnOrder(entity.getRows(), entity.getColumns()),
+                        entity.getColumns(),
+                        entity.getUpdatedAt()));
+    }
+
+    private static List<Map<String, Object>> inColumnOrder(List<Map<String, Object>> rows, List<String> columns) {
+        if (rows == null || columns == null || columns.isEmpty()) {
+            return rows;
+        }
+        List<Map<String, Object>> ordered = new ArrayList<>(rows.size());
+        for (Map<String, Object> row : rows) {
+            Map<String, Object> orderedRow = new LinkedHashMap<>();
+            for (String column : columns) {
+                if (row.containsKey(column)) {
+                    orderedRow.put(column, row.get(column));
+                }
+            }
+            row.forEach((column, value) -> {
+                if (!orderedRow.containsKey(column)) {
+                    orderedRow.put(column, value);
+                }
+            });
+            ordered.add(orderedRow);
+        }
+        return ordered;
     }
 
 

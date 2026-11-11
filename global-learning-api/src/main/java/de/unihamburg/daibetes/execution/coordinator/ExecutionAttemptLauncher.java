@@ -17,6 +17,7 @@ import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptAO;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
 import io.smallrye.common.annotation.RunOnVirtualThread;
+import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingAggregatorBO;
 import de.unihamburg.daibetes.api.project.training.platform.PlatformTrainingBO;
 import de.unihamburg.daibetes.api.workflow.WorkflowBO;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -39,6 +40,9 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
 
     @Inject
     TestEngineBO testEngineBO;
+
+    @Inject
+    FederatedTrainingAggregatorBO aggregatorBO;
 
     // The apps talk back through the existing BO and websocket of their purpose, an engine like a local one.
     public ExecutionAttemptLauncher() {
@@ -76,9 +80,12 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
         return workflowBO.entityToDto(attempt.getStep().getWorkflowNode().getWorkflow());
     }
 
+    // The platform's aggregator of a training across clinics reads no data, its controller joins the relay instead.
     @Override
     protected void stageInputs(ExecutionAttemptEntity attempt) {
-        if (attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TRAINING) {
+        if (FederatedTrainingAggregatorBO.isAggregator(attempt)) {
+            aggregatorBO.connectController(attempt);
+        } else if (attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TRAINING) {
             platformTrainingBO.stageInputs(attempt);
         }
     }

@@ -14,6 +14,7 @@ import java.util.Optional;
 public class ToolEndpointSecurityPolicy extends BaseToolEndpointSecurityPolicy {
 
     private static final List<Rule> RULES = List.of(
+            // Every app an attempt runs on the platform, also the aggregator of a training across clinics
             post(Scope.EXECUTION_ATTEMPT, "/execution/APP/([^/]+)/upload/(?:output|model)"),
             websocket(Scope.EXECUTION_ATTEMPT, "/execution/APP/([^/]+)/app"),
             post(Scope.MODEL_PREDICTION_RUN, "/execution/prediction/([^/]+)/upload/output"),

@@ -8,9 +8,8 @@ import bio.cosy.feddb.core.execution.ExecutionPurpose;
 import bio.cosy.feddb.core.execution.event.ExecutionEventPublisher;
 import bio.cosy.feddb.core.execution.executor.ExecutionStartDTO;
 import bio.cosy.feddb.core.execution.file.ExecutionFileDirection;
-import bio.cosy.feddb.core.execution.helper.NodeHyperParams;
 import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
-import bio.cosy.feddb.core.execution.run.dto.FederatedRunParticipantDTO;
+import bio.cosy.feddb.core.execution.run.dto.FederatedRunEnricher;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.local.api.cohort.patient.export.PatientDataExportBO;
@@ -112,13 +111,8 @@ public class FederatedLearningSetupBO {
         if (federation == null || federation.getConfig() == null) {
             return;
         }
-        // Only this clinic takes part: all clinics run the same app, which knows itself only as the single participant.
-        boolean coordinator = Boolean.TRUE.equals(federation.getStartAggregator());
-        start.setParticipants(List.of(new FederatedRunParticipantDTO(federation.getConfig().getClientId(),
-                coordinator ? "AGGREGATOR" : "CLIENT", start.getHyperParams(), inputFilePaths)));
-        start.setStartAggregator(coordinator);
-        start.setTotalRounds(NodeHyperParams.totalRounds(start.getHyperParams()));
-        start.setConfig(federation.getConfig());
+        // A clinic always trains on its own data, also when it coordinates.
+        FederatedRunEnricher.enrichWithFederatedRelay(start, federation.getConfig(), Boolean.TRUE.equals(federation.getStartAggregator()), false);
     }
 
     /** Puts the clinic's data into the volume of a step that reads it: the first one or one the workflow feeds. */

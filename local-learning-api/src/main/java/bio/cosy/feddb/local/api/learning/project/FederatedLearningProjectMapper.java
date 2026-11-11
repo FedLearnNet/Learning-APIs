@@ -28,7 +28,9 @@ public interface FederatedLearningProjectMapper extends BaseMapper<ProjectDetail
             @Mapping(target = "query", source = "queryId", qualifiedByName = "toQuery"),
             @Mapping(target = "request", ignore = true),
             @Mapping(target = "run", ignore = true),
-            @Mapping(target = "workflow.id", source = "workflowId")
+            @Mapping(target = "workflow.id", source = "workflowId"),
+            // Set from the learning request, it belongs to the experiment, not the project.
+            @Mapping(target = "platformIsCoordinator", ignore = true)
     })
     FederatedLearningProjectEntity dtoToEntity(ProjectDetailDTO sourceCode);
 

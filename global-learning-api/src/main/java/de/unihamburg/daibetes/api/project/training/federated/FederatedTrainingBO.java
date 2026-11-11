@@ -3,7 +3,10 @@ package de.unihamburg.daibetes.api.project.training.federated;
 import bio.cosy.feddb.core.api.project.ProjectStatus;
 import bio.cosy.feddb.core.api.socket.LearningClientSyncResponseDTO;
 import bio.cosy.feddb.core.execution.event.ExecutionEventPublisher;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipAO;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptAO;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentAO;
 import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
 import de.unihamburg.daibetes.execution.federation.ExecutionFederationAO;
@@ -16,6 +19,7 @@ import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 
@@ -45,6 +49,9 @@ public class FederatedTrainingBO {
 
     @Inject
     ExecutionFederationAO federationAO;
+
+    @Inject
+    ExecutionAttemptAO attemptAO;
 
     @Inject
     ExecutionEventPublisher events;
@@ -132,6 +139,36 @@ public class FederatedTrainingBO {
         }
     }
 
+    /**
+     * The platform's aggregator of a step ended: an aggregator that failed stops the training, a finished one lets the
+     * step finish once the clinics finished too. Any other attempt is left alone.
+     */
+    @Transactional
+    public void aggregatorEndedTransactional(Long attemptId) {
+        // Locked before the attempt is read, like a clinic's report locks it before it moves the step.
+        Optional<ExecutionExperimentEntity> locked = attemptAO.findAggregatorExperimentIdOptional(attemptId)
+                .flatMap(experimentId -> experimentAO.findByIdOptional(experimentId, LockModeType.PESSIMISTIC_WRITE));
+        if (locked.isEmpty()) {
+            return;
+        }
+        ExecutionExperimentEntity experiment = locked.get();
+        ExecutionAttemptEntity aggregator = attemptAO.findById(attemptId);
+        ExecutionRunStepEntity step = aggregator.getStep();
+        ExecutionRunEntity run = step.getRun();
+        if (experiment.getStatus() != ProjectStatus.RUNNING || step.hasEnded() || run.getCurrentStep().filter(step::equals).isEmpty()) {
+            Log.debugf("Ignoring end of aggregator attempt %d, its step is not running anymore", attemptId);
+            return;
+        }
+        if (aggregator.getStatus() != RunStatusTypes.FINISHED) {
+            Log.errorf("Aggregator of step %d of training %d ended as %s", step.getId(), run.getId(), aggregator.getStatus());
+            cleanupBO.stopTraining(experiment, run, ProjectStatus.ERROR);
+        } else if (run.participantStatus() == ProjectStatus.FINISHED) {
+            Log.infof("Aggregator and all clinics finished step %d of training %d", step.getId(), run.getId());
+            nextStep(experiment, run, step);
+        }
+        announceChanged(run);
+    }
+
     @Transactional
     public Optional<String> findRelayChannelForClientTransactional(String globalUniqueId, String nodeId, String clinicId, String clientId) {
         if (globalUniqueId == null || nodeId == null || clinicId == null || clientId == null) {
@@ -151,13 +188,25 @@ public class FederatedTrainingBO {
             }, () -> Log.infof("Training %d has no step to start", run.getId()));
             case RUNNING -> current.ifPresentOrElse(progressBO::markRunning,
                     () -> cleanupBO.stopTraining(experiment, run, ProjectStatus.ERROR));
-            case FINISHED -> current.ifPresentOrElse(step -> nextStep(experiment, run, step),
+            case FINISHED -> current.ifPresentOrElse(step -> onClinicsFinished(experiment, run, step),
                     () -> cleanupBO.stopTraining(experiment, run, ProjectStatus.ERROR));
             case ERROR -> cleanupBO.stopTraining(experiment, run, ProjectStatus.ERROR);
             default -> {
             }
         }
         announceChanged(run);
+    }
+
+    // The platform's aggregator reports only after it uploaded the model, moving on before could cut that off.
+    private void onClinicsFinished(ExecutionExperimentEntity experiment, ExecutionRunEntity run, ExecutionRunStepEntity step) {
+        Optional<ExecutionAttemptEntity> aggregator = FederatedTrainingAggregatorBO.aggregatorOf(step);
+        if (aggregator.isEmpty() || aggregator.get().getStatus() == RunStatusTypes.FINISHED) {
+            nextStep(experiment, run, step);
+        } else if (aggregator.get().hasEnded()) {
+            cleanupBO.stopTraining(experiment, run, ProjectStatus.ERROR);
+        } else {
+            Log.infof("All clinics finished step %d of training %d, waiting for the aggregator", step.getId(), run.getId());
+        }
     }
 
     // All clinics finished the step: the next one is set up, or the training finished.

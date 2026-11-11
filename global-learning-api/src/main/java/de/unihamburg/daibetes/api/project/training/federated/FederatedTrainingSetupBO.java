@@ -82,6 +82,9 @@ public class FederatedTrainingSetupBO {
     ExecutionAttemptAO attemptAO;
 
     @Inject
+    FederatedTrainingAggregatorBO aggregatorBO;
+
+    @Inject
     ObjectMapper objectMapper;
 
     @Inject
@@ -93,6 +96,7 @@ public class FederatedTrainingSetupBO {
 
     /** A training on a copy of the project's workflow; the clinics are asked to accept it. */
     public ExecutionRunEntity create(Long projectId, CreateProjectFederatedExperimentDTO create, String keycloakId, Set<String> roles) {
+        projectBO.checkPlatformIsCoordinatorAllowed(Boolean.TRUE.equals(create.getPlatformIsCoordinator()));
         ProjectDetailDTO project = projectBO.getById(projectId);
         WorkflowEntity workflow = workflowBO.cloneWorkflow(workflowBO.getById(project.getWorkflowId()));
         project.setWorkflowId(workflow.getId());
@@ -158,7 +162,7 @@ public class FederatedTrainingSetupBO {
         return true;
     }
 
-    /** Starts a training enough clinics accepted; one of them, chosen at random, coordinates it. */
+    /** Starts a training enough clinics accepted; the platform or one of them, chosen at random, coordinates it. */
     public void start(ExecutionExperimentEntity experiment, ExecutionRunEntity run) {
         if (experiment.getStatus() != ProjectStatus.READY) {
             throw new NotAllowedException("Experiment is not ready");
@@ -169,21 +173,24 @@ public class FederatedTrainingSetupBO {
         if (run.getSteps().isEmpty()) {
             throw new NotAllowedException("Experiment workflow is missing");
         }
-        ExecutionParticipantEntity coordinator = run.getParticipants().get(RANDOM.nextInt(run.getParticipants().size()));
-        coordinator.setCoordinator(true);
+        // The clinics accepted knowing who aggregates, a clinic must not take over silently when the platform cannot.
+        if (experiment.isPlatformIsCoordinator() && !projectBO.isPlatformAggregatorSupported()) {
+            throw new NotAllowedException("Platform aggregator support is disabled on this deployment; "
+                    + "cannot start this experiment with the platform as coordinator.");
+        }
+        String coordinatorId = experiment.isPlatformIsCoordinator() ? null : chooseClinicCoordinator(run);
         experiment.setStatus(ProjectStatus.RUNNING);
         run.begin(RunStatusTypes.RUNNING);
         String globalUniqueId = experiment.getGlobalUniqueId();
-        String coordinatorId = coordinator.getParticipantId();
         Boolean modelCanBePublic = experiment.getModelCanBePublic();
         broadcastBO.sendAfterCommit("Start of training " + run.getId(), () -> broadcastBO.startLearning(globalUniqueId, coordinatorId, modelCanBePublic));
     }
 
     /** All clinics are ready for the step: its relay run is set up and the clinics start it; false when the relay failed. */
     public boolean startStep(ExecutionExperimentEntity experiment, ExecutionRunEntity run, ExecutionRunStepEntity step) {
-        Map<String, FederatedLearningRelayInfoDTO> relays;
+        RelaySetup relay;
         try {
-            relays = setupRelay(run, step);
+            relay = setupRelay(experiment, run, step);
         } catch (RuntimeException e) {
             Log.errorf(e, "Relay setup of step %d failed", step.getId());
             return false;
@@ -193,12 +200,13 @@ public class FederatedTrainingSetupBO {
             participant.setCurrentNodeId(node.getNodeId());
             participant.setStepStatus(ProjectStatus.RUNNING);
         });
-        addAttempts(run, step);
+        addAttempts(run, step, relay.platform());
         step.moveTo(RunStatusTypes.STARTED);
         Log.infof("All clinics ready, starting step %d of training %d", step.getId(), run.getId());
         String globalUniqueId = experiment.getGlobalUniqueId();
         Long nodeId = node.getId();
         String workflowNodeId = node.getNodeId();
+        Map<String, FederatedLearningRelayInfoDTO> relays = relay.clinics();
         broadcastBO.sendAfterCommit("Start of step " + step.getId(), () -> broadcastBO.startStepLearning(globalUniqueId, nodeId, workflowNodeId, relays));
         return true;
     }
@@ -218,7 +226,14 @@ public class FederatedTrainingSetupBO {
         broadcastBO.sendAfterCommit("Setup of step " + next.getId(), () -> broadcastBO.nextStepLearning(globalUniqueId, nodeId, workflowNodeId));
     }
 
-    private void addAttempts(ExecutionRunEntity run, ExecutionRunStepEntity step) {
+    private String chooseClinicCoordinator(ExecutionRunEntity run) {
+        ExecutionParticipantEntity coordinator = run.getParticipants().get(RANDOM.nextInt(run.getParticipants().size()));
+        coordinator.setCoordinator(true);
+        return coordinator.getParticipantId();
+    }
+
+    // An attempt per clinic, and one for the platform's aggregator if it coordinates.
+    private void addAttempts(ExecutionRunEntity run, ExecutionRunStepEntity step, FederatedLearningRelayInfoDTO platformSlot) {
         if (!step.getAttempts().isEmpty()) {
             return;
         }
@@ -238,24 +253,33 @@ public class FederatedTrainingSetupBO {
                 step.setSelectedAttempt(attempt);
             }
         }
+        if (platformSlot != null) {
+            aggregatorBO.addAttempt(step, platformSlot, params);
+        }
     }
 
-    // The relay run of the step if its app learns across clinics; the relay data per clinic.
-    private Map<String, FederatedLearningRelayInfoDTO> setupRelay(ExecutionRunEntity run, ExecutionRunStepEntity step) {
+    // Relay slot per clinic, and the coordinator slot for the platform's aggregator if it coordinates.
+    private record RelaySetup(Map<String, FederatedLearningRelayInfoDTO> clinics, FederatedLearningRelayInfoDTO platform) {
+    }
+
+    // The relay run of the step if its app learns across clinics.
+    private RelaySetup setupRelay(ExecutionExperimentEntity experiment, ExecutionRunEntity run, ExecutionRunStepEntity step) {
         FederatedAppVersionEntity appVersion = step.getWorkflowNode().getToolVersion();
         if (appVersion == null) {
             throw new IllegalStateException("Step " + step.getId() + " has no app version");
         }
         if (!appVersion.getFederatedApp().isSupportsFederatedLearning()) {
             Log.infof("App version %d of step %d needs no relay run", appVersion.getId(), step.getId());
-            return Collections.emptyMap();
+            return new RelaySetup(Collections.emptyMap(), null);
         }
         boolean v1 = Boolean.TRUE.equals(appVersion.getFederatedApp().getOldFCVersion());
         RelayServerAppVersions version = v1 ? RelayServerAppVersions.v1 : RelayServerAppVersions.v2;
         List<ExecutionParticipantEntity> participants = run.getParticipants();
+        boolean platform = experiment.isPlatformIsCoordinator();
         long coordinators = participants.stream().filter(ExecutionParticipantEntity::isCoordinator).count();
-        // v2 has an aggregator slot of its own for the coordinator, v1 lets the first client coordinate.
-        int clients = v1 ? participants.size() : Math.max(1, participants.size() - (int) coordinators);
+        // v2 has an aggregator slot of its own for the coordinator, v1 lets the first client coordinate; a platform
+        // coordinating v1 needs that first client on top of the clinics.
+        int clients = v1 ? participants.size() + (platform ? 1 : 0) : Math.max(1, participants.size() - (int) coordinators);
         CreateFLLearningRelayServerResponseDTO response = globalRelayService.setupFL(CreateFLLearningRelayServerRequestDTO.create(clients, v1));
 
         Deque<FederatedLearningRelayInfoDTO> clientSlots = new ArrayDeque<>();
@@ -273,6 +297,9 @@ public class FederatedTrainingSetupBO {
             coordinatorSlot = response.relayInfoFor(version, response.getCoordinatorId(), response.getCoordinatorKey());
             coordinatorSlot.setCoordinator(true);
         }
+        if (platform && coordinatorSlot == null) {
+            throw new IllegalStateException("Relay server returned no coordinator slot for the aggregator of step " + step.getId());
+        }
 
         Map<String, FederatedLearningRelayInfoDTO> relays = new HashMap<>();
         for (ExecutionParticipantEntity participant : participants) {
@@ -287,7 +314,8 @@ public class FederatedTrainingSetupBO {
         federation.setRelayClientIds(relays.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getId())));
         federation.setRelayStopped(false);
-        Log.infof("Relay run of step %d: %d clinics, %d client slots (v1=%b)", step.getId(), participants.size(), clients, v1);
-        return relays;
+        Log.infof("Relay run of step %d: %d clinics, %d client slots (v1=%b, platform coordinates=%b)",
+                step.getId(), participants.size(), clients, v1, platform);
+        return new RelaySetup(relays, platform ? coordinatorSlot : null);
     }
 }

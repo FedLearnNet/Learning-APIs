@@ -128,7 +128,7 @@ public class FederatedLearningProgressBO {
         attemptAO.findByIdOptional(attemptId).ifPresent(attempt -> executionFileBO.addOutputs(attempt, uploads));
     }
 
-    /** Hands the model a step trained to the platform, if this clinic coordinates and the model may be public. */
+    /** Hands the model a step trained to the platform if this clinic coordinates; a private one too, the platform refuses publishing it. */
     public void uploadModel(Long attemptId, ModelSubDataDTO model) {
         ExecutionAttemptEntity attempt = attemptAO.findById(attemptId);
         if (attempt == null) {
@@ -136,8 +136,8 @@ public class FederatedLearningProgressBO {
         }
         ExecutionRunEntity run = attempt.getStep().getRun();
         FederatedLearningProjectEntity project = projectAO.findByRunId(run.getId());
-        if (!Boolean.TRUE.equals(project.getIsCoordinator()) || !Boolean.TRUE.equals(project.getRequest().getModelCanBePublic())) {
-            Log.infof("Not handing the model of attempt %d to the platform: this clinic does not coordinate or it is private", attemptId);
+        if (!Boolean.TRUE.equals(project.getIsCoordinator())) {
+            Log.infof("Not handing the model of attempt %d to the platform: this clinic does not coordinate", attemptId);
             return;
         }
         ClientMultipartForm form = ClientMultipartForm.create();

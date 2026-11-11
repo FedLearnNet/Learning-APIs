@@ -121,7 +121,7 @@ services:
       - global-learning-network
   controller:
     image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller:staging
-    container_name: global-learning-controller
+    container_name: ${CONTROLLER_NAME:-global-learning-controller}
     ports:
       - '8192:8000'
     profiles:
@@ -141,7 +141,7 @@ services:
 
   controller-test:
     image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller:staging
-    container_name: global-learning-controller
+    container_name: ${CONTROLLER_NAME:-global-learning-controller}
     ports:
       - '8192:8000'
     profiles:

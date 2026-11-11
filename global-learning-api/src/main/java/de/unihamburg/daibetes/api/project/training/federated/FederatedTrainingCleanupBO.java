@@ -52,7 +52,13 @@ public class FederatedTrainingCleanupBO {
             stopRelay(step.getFederation());
             if (!step.hasEnded() && step.getStatus() != RunStatusTypes.PENDING) {
                 ExecutionFailure cause = failureOf(step).orElse(status == RunStatusTypes.ERROR ? null : stopped);
-                step.getAttempts().stream().filter(attempt -> !attempt.hasEnded()).forEach(attempt -> attempt.end(RunStatusTypes.STOPPED, stopped));
+                step.getAttempts().stream().filter(attempt -> !attempt.hasEnded()).forEach(attempt -> {
+                    attempt.end(RunStatusTypes.STOPPED, stopped);
+                    // The platform's aggregator runs in a container of its own, stopped with its attempt.
+                    if (FederatedTrainingAggregatorBO.isAggregator(attempt)) {
+                        events.attemptFinished(attempt);
+                    }
+                });
                 step.end(status, cause);
             }
         });

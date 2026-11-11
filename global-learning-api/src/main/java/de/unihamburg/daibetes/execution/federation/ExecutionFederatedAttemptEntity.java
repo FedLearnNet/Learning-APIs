@@ -1,6 +1,7 @@
 package de.unihamburg.daibetes.execution.federation;
 
 import bio.cosy.feddb.core.base.BaseEntity;
+import bio.cosy.feddb.core.execution.run.dto.FederatedRunConfigDTO;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -41,4 +42,9 @@ public class ExecutionFederatedAttemptEntity extends BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "waiting_for", columnDefinition = "jsonb")
     private List<String> waitingFor = new ArrayList<>();
+
+    // Relay slot of the platform's own aggregator; a clinic gets its slot through the broadcast instead. Holds secrets.
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "relay_config", columnDefinition = "jsonb")
+    private FederatedRunConfigDTO relayConfig;
 }

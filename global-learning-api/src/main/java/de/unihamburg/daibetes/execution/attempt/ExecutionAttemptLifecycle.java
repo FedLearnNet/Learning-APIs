@@ -3,6 +3,7 @@ package de.unihamburg.daibetes.execution.attempt;
 import bio.cosy.feddb.core.execution.attempt.BaseAttemptLifecycle;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
 import de.unihamburg.daibetes.api.analysis.run.DataAnalysisRunResultBO;
+import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingAggregatorBO;
 import de.unihamburg.daibetes.api.project.training.platform.PlatformTrainingBO;
 import de.unihamburg.daibetes.execution.message.ExecutionMessageAO;
 import de.unihamburg.daibetes.execution.message.ExecutionMessageEntity;
@@ -19,6 +20,9 @@ public class ExecutionAttemptLifecycle extends BaseAttemptLifecycle<ExecutionAtt
 
     @Inject
     PlatformTrainingBO platformTrainingBO;
+
+    @Inject
+    FederatedTrainingAggregatorBO aggregatorBO;
 
     @Override
     protected String ownerOf(ExecutionAttemptEntity attempt) {
@@ -52,7 +56,13 @@ public class ExecutionAttemptLifecycle extends BaseAttemptLifecycle<ExecutionAtt
                     }
                 });
             }
-            case TRAINING -> start.setInputFilePaths(platformTrainingBO.inputFilePathsOf(attempt));
+            case TRAINING -> {
+                if (FederatedTrainingAggregatorBO.isAggregator(attempt)) {
+                    aggregatorBO.customizeStartup(attempt, start);
+                } else {
+                    start.setInputFilePaths(platformTrainingBO.inputFilePathsOf(attempt));
+                }
+            }
             default -> {
             }
         }

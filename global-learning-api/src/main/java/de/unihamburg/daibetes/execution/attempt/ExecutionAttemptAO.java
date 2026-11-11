@@ -25,6 +25,17 @@ public class ExecutionAttemptAO extends BaseExecutionAttemptAO<ExecutionAttemptE
         return find("id = ?1 and step.run.purpose = ?2", attemptId, ExecutionPurpose.TEST).firstResultOptional();
     }
 
+    // Only the id, so the experiment of a platform aggregator is locked before its attempt is loaded.
+    public Optional<Long> findAggregatorExperimentIdOptional(Long attemptId) {
+        return getEntityManager().createQuery("""
+                        select a.step.run.experiment.id from ExecutionAttemptEntity a
+                        where a.id = ?1 and a.federation.relayConfig is not null
+                        """, Long.class)
+                .setParameter(1, attemptId)
+                .getResultStream()
+                .findFirst();
+    }
+
     public Optional<ExecutionAttemptEntity> findParticipantAttemptOptional(Long runId, String participantId) {
         return find("step.run.id = ?1 and federation.participant.participantId = ?2", runId, participantId).firstResultOptional();
     }

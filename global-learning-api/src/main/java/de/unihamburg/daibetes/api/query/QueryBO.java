@@ -4,6 +4,7 @@ package de.unihamburg.daibetes.api.query;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.datamodler.ontology.OntologyNodeDTO;
 import bio.cosy.feddb.core.api.query.EnhancedQueryItemDTO;
+import bio.cosy.feddb.core.api.query.Lang2QueryDocuments;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.query.QueryDetailDTO;
 import bio.cosy.feddb.core.api.query.QueryItemDTO;
@@ -76,14 +77,15 @@ public class QueryBO extends BaseBo<QueryDTO, QueryEntity, QueryAO, QueryMapper>
                 .map(mapper::entityToDto)
                 .toList());
 
-        List<UUID> ontologyIds = detailed.getQuery().stream()
+        List<QueryItemDTO> leaves = Lang2QueryDocuments.flattenLeaves(detailed.getQuery());
+        List<UUID> ontologyIds = leaves.stream()
                 .map(QueryItemDTO::getOntologyId)
                 .filter(Objects::nonNull)
                 .map(this::tryParseUuid)
                 .flatMap(Optional::stream)
                 .toList();
 
-        List<UUID> dataTypeIds = detailed.getQuery().stream()
+        List<UUID> dataTypeIds = leaves.stream()
                 .map(QueryItemDTO::getDataTypeId)
                 .filter(Objects::nonNull)
                 .map(this::tryParseUuid)
@@ -106,7 +108,7 @@ public class QueryBO extends BaseBo<QueryDTO, QueryEntity, QueryAO, QueryMapper>
                 Log.errorf(e, "Failed to fetch data type nodes for query with ID %s", id);
             }
             List<EnhancedQueryItemDTO> enhancedQueryItems = new ArrayList<>();
-            for (QueryItemDTO item : detailed.getQuery()) {
+            for (QueryItemDTO item : leaves) {
                 EnhancedQueryItemDTO enhanced = mapper.queryToEnhanced(item);
                 ontologyNodes.stream()
                         .filter(n -> n.getId().toString().equals(item.getOntologyId()))

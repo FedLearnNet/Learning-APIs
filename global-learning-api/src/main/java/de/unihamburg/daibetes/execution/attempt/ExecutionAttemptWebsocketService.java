@@ -51,6 +51,10 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
 
     @Override
     protected AppMessageWrapperDTO<StartRunDTO> startMessageOf(StartRunDTO start) {
+        // Only an app joining a relay gets its config, e.g. the platform's aggregator of a training across clinics.
+        if (start.getConfig() != null) {
+            return new AppMessageWrapperDTO<>(AppMessageTypeEnum.START_FEDERATED_RUN, start, AppRunTypeEnum.FEDERATED_RUN);
+        }
         AppMessageTypeEnum type = lifecycle.predictsTransactional(start.getId())
                 ? AppMessageTypeEnum.START_PREDICTION
                 : AppMessageTypeEnum.START_RUN;
