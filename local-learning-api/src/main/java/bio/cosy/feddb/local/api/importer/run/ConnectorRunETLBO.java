@@ -20,6 +20,8 @@ import bio.cosy.feddb.local.api.importer.run.patientlog.ConnectorRunPatientLogTy
 import bio.cosy.feddb.local.api.importer.run.preview.ConnectorPreviewBO;
 import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBatchBO;
+import bio.cosy.feddb.local.api.importer.transformer.AppTransformerBatchBO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import io.quarkus.logging.Log;
 import io.smallrye.context.api.ManagedExecutorConfig;
@@ -36,6 +38,7 @@ import org.eclipse.microprofile.context.ThreadContext;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 @ApplicationScoped
 public class ConnectorRunETLBO {
@@ -56,6 +59,12 @@ public class ConnectorRunETLBO {
 
     @Inject
     AppTransformerSessionBO appTransformerSessionBO;
+
+    @Inject
+    ConnectorTransformerBatchBO transformerBatchBO;
+
+    @Inject
+    AppTransformerBatchBO appTransformerBatchBO;
 
     @Inject
     ConnectorRunPatientLogBO errorLogBO;
@@ -116,8 +125,8 @@ public class ConnectorRunETLBO {
      * Runs the memory-bounded, disk-backed streaming ETL pipeline for a single connector run:
      * - EXTRACT — load connector data and merge sheets through disk-backed TableData.
      * - GROUP INDEX — build a disk-backed row index by the raw patient-id source column.
-     * - DRAIN — stream one indexed patient group at a time through
-     * transform, map and load. Peak memory is a single patient
+     * - DRAIN — stream bounded batches of complete patient groups through transformations,
+     * then map and load each patient separately.
      */
     @ActivateRequestContext
     public void processRun(ConnectorRunDTO run, ConnectorDTO connectorDTO) {
@@ -229,7 +238,8 @@ public class ConnectorRunETLBO {
                     mappingContext,
                     dryRun,
                     totalPatients,
-                    hasAppBasedTransformers
+                    hasAppBasedTransformers,
+                    sourceColumn
             );
             long elementNr = orZero(run.getCurrentElementNr());
             long rowNr = orZero(run.getCurrentRowNr());
@@ -270,7 +280,8 @@ public class ConnectorRunETLBO {
             MappingBO.MappingContext mappingContext,
             boolean dryRun,
             long totalPatients,
-            boolean hasAppBasedTransformers) throws Exception {
+            boolean hasAppBasedTransformers,
+            String patientColumn) throws Exception {
         int publishBatchSize = Math.max(1, config.connector().importProgressPublishBatchSize());
         int parallelism = hasAppBasedTransformers ? 1 : Math.max(1, config.connector().etlParallelism());
 
@@ -281,16 +292,22 @@ public class ConnectorRunETLBO {
         long nextProgressLogNanos = startedNanos + DRAIN_LOG_INTERVAL_NANOS;
 
         try (TableDataGroupCursor cursor = groupedData.cursor()) {
+            AppTransformerBatchBO.Reader appBatches = hasAppBasedTransformers
+                    ? appTransformerBatchBO.reader(cursor::next, connectorDTO) : null;
             List<TableDataGroup> patientBatch;
-            while (!(patientBatch = readPatientBatch(cursor, parallelism)).isEmpty()) {
-                for (PatientGroupResultDTO result : processPatientBatch(
+            while (!(patientBatch = appBatches != null ? appBatches.nextBatch()
+                    : readPatientBatch(cursor, parallelism)).isEmpty()) {
+                List<PatientGroupResultDTO> results = hasAppBasedTransformers
+                        ? processAppPatientBatch(patientBatch, connectorDTO, run, mappingContext, dryRun, patientColumn)
+                        : processPatientBatch(
                         patientBatch,
                         connectorDTO,
                         run,
                         mappingContext,
                         dryRun,
                         parallelism
-                )) {
+                );
+                for (PatientGroupResultDTO result : results) {
                     run.addPatientGroupResult(result);
                     long processedPatients = orZero(run.getCurrentElementNr());
                     if (processedPatients % publishBatchSize == 0L) {
@@ -354,6 +371,40 @@ public class ConnectorRunETLBO {
             MappingBO.MappingContext mappingContext,
             TableDataGroup group,
             boolean dryRun) {
+        return processPatientGroup(connectorDTO, run, mappingContext, group, dryRun,
+                worker -> transformerBO.applyTransformations(connectorDTO, worker, new ArrayList<>(group.rows())));
+    }
+
+    private List<PatientGroupResultDTO> processAppPatientBatch(List<TableDataGroup> batch,
+            ConnectorDTO connector, ConnectorRunDTO run, MappingBO.MappingContext mappingContext,
+            boolean dryRun, String patientColumn) throws Exception {
+        // Remote stages are serial per app, with many complete patients per request. Mapping and
+        // loading still have an independent worker, audit context and transaction for each patient.
+        run.setCurrentStep(ConnectorRunStep.TRANSFORMING);
+        List<ConnectorTransformerBatchBO.PatientResult> transformed =
+                transformerBatchBO.transform(connector, run, batch, patientColumn);
+        List<PatientGroupResultDTO> results = new ArrayList<>(transformed.size());
+        for (ConnectorTransformerBatchBO.PatientResult patient : transformed) {
+            results.add(processPatientGroup(connector, run, mappingContext, patient.source(), dryRun, worker -> {
+                worker.setCurrentTransformingStep(patient.step());
+                if (patient.failure() != null) {
+                    throw patient.failure();
+                }
+                return patient.rows();
+            }));
+        }
+        // Per-patient workers clear their audit context; the next batch's transforms need it again.
+        AuditContext.setThreadLocalContext(run.getKeycloakId(), connector.getId(), run.getId());
+        return results;
+    }
+
+    private PatientGroupResultDTO processPatientGroup(
+            ConnectorDTO connectorDTO,
+            ConnectorRunDTO run,
+            MappingBO.MappingContext mappingContext,
+            TableDataGroup group,
+            boolean dryRun,
+            Function<ConnectorRunDTO, List<Map<String, Object>>> transform) {
         AuditContext.setThreadLocalContext(run.getKeycloakId(), connectorDTO.getId(), run.getId());
         ConnectorRunDTO workerRun = run.createPatientWorker();
         long rowCount = group.rows().size();
@@ -361,8 +412,7 @@ public class ConnectorRunETLBO {
         try {
             // TRANSFORM (per patient group; correct for all row/cell built-in functions).
             workerRun.setCurrentStep(ConnectorRunStep.TRANSFORMING);
-            List<Map<String, Object>> transformed =
-                    transformerBO.applyTransformations(connectorDTO, workerRun, new ArrayList<>(group.rows()));
+            List<Map<String, Object>> transformed = transform.apply(workerRun);
             if (transformed == null) {
                 throw new IllegalStateException("Transformation returned null");
             }

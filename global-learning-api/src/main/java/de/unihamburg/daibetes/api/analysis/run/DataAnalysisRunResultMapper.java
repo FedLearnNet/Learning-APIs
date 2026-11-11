@@ -61,6 +61,7 @@ public abstract class DataAnalysisRunResultMapper {
 
     @Mappings({
             @Mapping(target = "dataAnalysisId", source = "dataAnalysis.id"),
+            @Mapping(target = "experimentId", source = "experiment.id"),
             @Mapping(target = "workflowId", source = "steps", qualifiedByName = "mapStepEntitiesToWorkflowId"),
             @Mapping(target = "steps", source = "steps", qualifiedByName = "mapStepEntitiesToResultDTOs")
     })

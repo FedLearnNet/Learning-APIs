@@ -1,10 +1,5 @@
 package bio.cosy.feddb.local.api.importer.transformer;
 
-import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
-import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
-import bio.cosy.feddb.core.execution.run.types.AppMessageTypeEnum;
-import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
-import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorHelper;
 import bio.cosy.feddb.local.api.importer.files.table.TableData;
@@ -22,7 +17,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.time.Duration;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,8 +40,6 @@ public class AppTransformerSessionBO {
     private static final Duration CONNECT_TIMEOUT = Duration.ofMinutes(2);
     // The app reconnects every five seconds when its socket drops, so a batch waits for several attempts.
     private static final Duration RECONNECT_TIMEOUT = Duration.ofSeconds(60);
-    // Name of the app input a transformer reads its rows from; fixed by the transformer contract.
-    private static final String INPUT_VARIABLE = "input";
 
     @Inject
     ConnectorAppRunBO appRunBO;
@@ -57,6 +49,9 @@ public class AppTransformerSessionBO {
 
     @Inject
     WorkflowExecutionBO workflowExecutionBO;
+
+    @Inject
+    AppTransformerBatchBO batchBO;
 
     // Import or preview -> transformer -> attempt of the app serving that transformer.
     private final Map<Long, Map<Long, Long>> sessions = new ConcurrentHashMap<>();
@@ -101,29 +96,33 @@ public class AppTransformerSessionBO {
     }
 
     public List<Map<String, Object>> transform(Long sessionId, ConnectorTransformerDTO transformer, List<Map<String, Object>> rows) {
+        return execute(sessionId, transformer, rows, true);
+    }
+
+    /** Multi-patient results must be matched by patient id before merging any columns. */
+    public List<Map<String, Object>> transformBatch(Long sessionId, ConnectorTransformerDTO transformer, List<Map<String, Object>> rows) {
+        return execute(sessionId, transformer, rows, false);
+    }
+
+    private List<Map<String, Object>> execute(Long sessionId, ConnectorTransformerDTO transformer,
+                                               List<Map<String, Object>> rows, boolean mergeRows) {
         Long attemptId = Optional.ofNullable(sessions.get(sessionId))
                 .map(forSession -> forSession.get(sessionKeyOf(transformer, sessionId)))
                 .orElseThrow(() -> new AppTransformerSessionFailure("No running app transformer for '"
                         + transformer.getAppImage() + "' in import " + sessionId));
         Long batchId = batchIds.decrementAndGet();
         CompletableFuture<TableData> result = appRunBO.expectBatch(attemptId, batchId);
-        StartRunDTO start = new StartRunDTO();
-        start.setId(batchId);
-        start.setStatus(RunStatusTypes.PENDING);
-        start.setHyperParams(transformer.getHyperparams());
-        LinkedHashMap<String, Object> inputData = new LinkedHashMap<>();
-        inputData.put(INPUT_VARIABLE, rows);
-        start.setInputData(inputData);
-        start.setInputFilePaths(new LinkedHashMap<>());
         try {
+            String payload = batchBO.serialize(batchId, transformer, rows);
             WebSocketConnection connection = connectionOf(attemptId, transformer);
-            // The ETL hands its batches over one after another, so it waits here for the app's upload.
-            TableData answered = connection.sendText(new AppMessageWrapperDTO<>(AppMessageTypeEnum.START_PREDICTION, start, AppRunTypeEnum.MODEL_RUN))
+            // Send the exact JSON whose UTF-8 size was checked, with no second codec serialization.
+            TableData answered = connection.sendText(payload)
                     .replaceWith(Uni.createFrom().completionStage(result))
                     .ifNoItem().after(APP_OUTPUT_TIMEOUT).fail()
                     .await().indefinitely();
             try (TableData output = answered) {
-                return ConnectorHelper.mergeRows(rows, output.getRows(), transformer);
+                return mergeRows ? ConnectorHelper.mergeRows(rows, output.getRows(), transformer)
+                        : new java.util.ArrayList<>(output.getRows());
             }
         } catch (RuntimeException e) {
             AppTransformerSessionFailure failure = new AppTransformerSessionFailure("App transformer '"

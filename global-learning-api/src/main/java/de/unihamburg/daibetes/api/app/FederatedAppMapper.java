@@ -88,7 +88,8 @@ public interface FederatedAppMapper extends BaseMapper<FederatedAppDTO, Federate
             @Mapping(target = "sourceUrl", ignore = true),
             @Mapping(target = "tags", ignore = true),
             @Mapping(target = "uniqueAppId", ignore = true),
-            @Mapping(target = "needsHostAccess", ignore = true)
+            @Mapping(target = "needsHostAccess", ignore = true),
+            @Mapping(target = "buildStatus", ignore = true)
     })
     FederatedAppDTO createDtoToDto(AppCreateDTO dto);
 

@@ -1,9 +1,7 @@
 package bio.cosy.feddb.local.api.importer.transformer;
 
 import bio.cosy.feddb.local.api.importer.connector.ConnectorHelper;
-import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
-import bio.cosy.feddb.core.execution.run.types.AppMessageTypeEnum;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import bio.cosy.feddb.local.api.importer.files.table.TableData;
 import bio.cosy.feddb.local.api.importer.run.AppTransformerSessionFailure;
@@ -12,6 +10,9 @@ import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunBO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
 import bio.cosy.feddb.local.execution.run.WorkflowExecutionBO;
+import bio.cosy.feddb.local.config.FLNetClientConfig;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.websockets.next.WebSocketConnection;
 import io.smallrye.mutiny.Uni;
 import org.junit.jupiter.api.Test;
@@ -45,10 +46,10 @@ class AppTransformerSessionBOTest {
             return CompletableFuture.completedFuture(new TableData(List.of("diag_combined"),
                     List.of(Map.of("diag_combined", "250.83|?")), null));
         });
-        when(socket.sendText(any(Object.class))).thenAnswer(call -> {
-            AppMessageWrapperDTO<?> message = call.getArgument(0);
-            assertEquals(AppMessageTypeEnum.START_PREDICTION, message.getType());
-            StartRunDTO start = (StartRunDTO) message.getMessage();
+        when(socket.sendText(anyString())).thenAnswer(call -> {
+            JsonNode message = session.batchBO.objectMapper.readTree((String) call.getArgument(0));
+            assertEquals("START_PREDICTION", message.path("type").asText());
+            StartRunDTO start = session.batchBO.objectMapper.treeToValue(message.path("message"), StartRunDTO.class);
             assertEquals(batchId.get(), start.getId());
             assertTrue(start.getId() < 0);
             assertEquals(rows, start.getInputData().get("input"));
@@ -66,7 +67,7 @@ class AppTransformerSessionBOTest {
         session.close(1L);
 
         verify(session.appRunBO, times(1)).startTransactional(any(), any(), any(), any(), any(), eq(true));
-        verify(socket, times(2)).sendText(any(Object.class));
+        verify(socket, times(2)).sendText(anyString());
         verify(session.appRunBO, times(1)).endSession(11L);
         verify(session.appRunBO, times(2)).forgetBatch(anyLong());
     }
@@ -79,7 +80,7 @@ class AppTransformerSessionBOTest {
         WebSocketConnection socket = mock(WebSocketConnection.class);
         when(session.runBO.connectionOf(11L)).thenReturn(Optional.of(socket));
         when(session.appRunBO.expectBatch(eq(11L), anyLong())).thenReturn(new CompletableFuture<>());
-        when(socket.sendText(any(Object.class))).thenReturn(Uni.createFrom().failure(new IllegalStateException("Socket closed")));
+        when(socket.sendText(anyString())).thenReturn(Uni.createFrom().failure(new IllegalStateException("Socket closed")));
 
         assertThrows(AppTransformerSessionFailure.class,
                 () -> session.transform(1L, transformer, List.of(Map.of("patient_nbr", "8222157"))));
@@ -132,11 +133,36 @@ class AppTransformerSessionBOTest {
         session.appRunBO = mock(ConnectorAppRunBO.class);
         session.runBO = mock(ExecutionRunBO.class);
         session.workflowExecutionBO = mock(WorkflowExecutionBO.class);
+        session.batchBO = new AppTransformerBatchBO();
+        session.batchBO.objectMapper = new ObjectMapper();
+        session.batchBO.config = mock(FLNetClientConfig.class, RETURNS_DEEP_STUBS);
+        when(session.batchBO.config.connector().appTransformMaxMessageBytes()).thenReturn(1048576L);
         ExecutionRunDTO run = new ExecutionRunDTO();
         run.setId(21L);
         when(session.appRunBO.startTransactional(any(), any(), any(), any(), any(), eq(true))).thenReturn(run);
         when(session.appRunBO.connectedAttemptId(21L)).thenReturn(Uni.createFrom().item(11L));
         return session;
+    }
+
+    @Test
+    void oversizedUtf8MessageFailsBeforeAnythingIsSent() {
+        AppTransformerSessionBO session = session();
+        ConnectorTransformerDTO transformer = appTransformer();
+        transformer.setHyperparams(new LinkedHashMap<>(Map.of("delimiter", "\"\\\n")));
+        open(session, transformer);
+        WebSocketConnection socket = mock(WebSocketConnection.class);
+        when(session.runBO.connectionOf(11L)).thenReturn(Optional.of(socket));
+        when(session.appRunBO.expectBatch(eq(11L), anyLong())).thenReturn(new CompletableFuture<>());
+        // Non-ASCII data takes more UTF-8 bytes than Java characters, before any JSON escaping.
+        when(session.batchBO.config.connector().appTransformMaxMessageBytes()).thenReturn(1024L);
+
+        AppTransformerSessionFailure failure = assertThrows(AppTransformerSessionFailure.class,
+                () -> session.transformBatch(1L, transformer, List.of(Map.of("pid", "患者", "text", "é".repeat(500)))));
+
+        assertTrue(failure.getMessage().contains("UTF-8 bytes"));
+        verifyNoInteractions(socket);
+        verify(session.appRunBO).failAttempt(eq(11L), contains("1024"));
+        verify(session.appRunBO).forgetBatch(anyLong());
     }
 
     private static void open(AppTransformerSessionBO session, ConnectorTransformerDTO transformer) {

@@ -95,6 +95,14 @@ public interface FLNetClientConfig {
         @WithDefault("10")
         int etlParallelism();
 
+        /** Complete patients sent to an app transformer in one request. Use 1 for legacy tools. */
+        @WithDefault("100")
+        int appTransformBatchPatients();
+
+        /** UTF-8 bytes of the complete START_PREDICTION envelope, including hyperparameters. */
+        @WithDefault("1048576")
+        long appTransformMaxMessageBytes();
+
         @WithDefault("10")
         int previewRows();
 

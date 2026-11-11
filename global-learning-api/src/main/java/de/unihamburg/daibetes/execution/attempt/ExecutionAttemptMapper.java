@@ -25,7 +25,10 @@ public interface ExecutionAttemptMapper extends BaseExecutionAttemptMapper<Execu
             @Mapping(target = "step.id", source = "stepId"),
             @Mapping(target = "scoreMessage", ignore = true),
             @Mapping(target = "files", ignore = true),
-            @Mapping(target = "federation", ignore = true)
+            @Mapping(target = "federation", ignore = true),
+            @Mapping(target = "lastLogMessage", ignore = true),
+            @Mapping(target = "messages", ignore = true),
+            @Mapping(target = "executionFiles", ignore = true)
     })
     ExecutionAttemptEntity dtoToEntity(ExecutionAttemptDTO dto);
 

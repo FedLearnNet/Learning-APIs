@@ -35,6 +35,28 @@ Each module reads its secrets from environment variables or a module-local `.env
 use the `.env.example` templates):
 - For more detail information which secrets are relevant and how to use them vist the documentation.
 
+## App-based connector transformations
+
+Connector imports reuse one container per app transformer and send batches of complete patients.
+The default limits are 100 patients and 1 MiB for the complete UTF-8 JSON message, including its
+hyperparameters. Configure them on the local learning API:
+
+```properties
+flnet.connector.app-transform-batch-patients=100
+flnet.connector.app-transform-max-message-bytes=1048576
+```
+
+Every app stage rechecks the byte budget after earlier transformations. A patient is never split;
+if one patient's message exceeds the limit, the import fails with an explicit size error before
+sending it. The configured WebSocket frame and message limits also bound the payload.
+
+Batched tools must preserve the source patient-id column in their output. Standard Python Tool API
+transformers preserve it; patient-mode tools group each batch by `patient_id_column` and transform
+each patient separately. Set the patient limit to `1` for legacy tools that return only rewritten
+columns. Built-in functions and database load transactions continue to run separately per patient.
+Rebuild tool images with the updated Python Tool API to pick up immediate worker wakeups and queued
+dispatch of back-to-back batches.
+
 ## Security
 
 - Every REST endpoint needs a logged-in user by default, so you don't have to add `@Authenticated`.

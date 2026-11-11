@@ -4,8 +4,10 @@ import bio.cosy.feddb.core.api.datamodler.schema.SchemaStructureDTO;
 import bio.cosy.feddb.core.api.app.FederatedAppDetailDTO;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
+import bio.cosy.feddb.core.services.orch.clients.WorkflowServiceClient;
+import bio.cosy.feddb.core.services.orch.clients.DockerServiceClient;
 import bio.cosy.feddb.core.services.orch.dto.CreateContainerResponseDTO;
-import bio.cosy.feddb.core.services.orch.dto.StartAppDTO;
+import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import bio.cosy.feddb.local.api.cohort.AutoSubscriberBO;
 import bio.cosy.feddb.local.api.cohort.CohortAO;
 import bio.cosy.feddb.local.api.cohort.CohortEntity;
@@ -23,6 +25,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusMock;
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
 import io.quarkus.test.junit.TestProfile;
@@ -34,6 +38,8 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -76,6 +82,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @QuarkusTest
 @TestProfile(AppTransformerBatchingE2ETest.AppTransformerProfile.class)
+@QuarkusTestResource(value = AppTransformerBatchingE2ETest.DatabaseResource.class, restrictToAnnotatedClass = true)
 public class AppTransformerBatchingE2ETest {
 
     private static final String GROUP_KEY = "us-130-app-transform";
@@ -85,10 +92,38 @@ public class AppTransformerBatchingE2ETest {
     private static final String SCHEMA_DUMMY_PATH = "/connectors/global_schema_dummy.json";
     private static final String ETL_DATA_PATH = "/connectors/clinic_001.csv";
 
+    /** This import test must never reset or clean the developer's live learning database. */
+    public static class DatabaseResource implements QuarkusTestResourceLifecycleManager {
+        private GenericContainer<?> database;
+
+        @Override
+        public Map<String, String> start() {
+            database = new GenericContainer<>("postgres:18")
+                    .withEnv("POSTGRES_USER", "user")
+                    .withEnv("POSTGRES_PASSWORD", "password")
+                    .withEnv("POSTGRES_DB", "flnet_batching_test")
+                    .withExposedPorts(5432)
+                    .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*\\s", 2));
+            database.start();
+            return Map.of("quarkus.datasource.jdbc.url", "jdbc:postgresql://" + database.getHost() + ":"
+                    + database.getMappedPort(5432) + "/flnet_batching_test?sslmode=disable",
+                    "quarkus.datasource.username", "user", "quarkus.datasource.password", "password");
+        }
+
+        @Override
+        public void stop() {
+            if (database != null) {
+                database.stop();
+            }
+        }
+    }
+
     public static class AppTransformerProfile implements QuarkusTestProfile {
         @Override
         public Map<String, String> getConfigOverrides() {
             return Map.of(
+                    "quarkus.oidc.enabled", "false",
+                    "flnet.global.socket.enabled", "false",
                     "flnet.auto-subscribe." + GROUP_KEY + ".global-schema-id", GLOBAL_SCHEMA_ID,
                     "flnet.auto-subscribe." + GROUP_KEY + ".cohort-name", COHORT_NAME,
                     "flnet.auto-subscribe." + GROUP_KEY + ".connector-path", CONNECTOR_PATH,
@@ -157,15 +192,19 @@ public class AppTransformerBatchingE2ETest {
         QuarkusMock.installMockForType(schemaMock, GlobalSchemaSubscriptionService.class, RestClient.LITERAL);
 
         transformerApps = new TransformerAppStub(objectMapper);
-        ContainerServiceClient containerClient = org.mockito.Mockito.mock(ContainerServiceClient.class);
-        org.mockito.Mockito.when(containerClient.startContainer(
-                        org.mockito.ArgumentMatchers.any(StartAppDTO.class),
-                        org.mockito.ArgumentMatchers.anyBoolean(),
-                        org.mockito.ArgumentMatchers.anyBoolean(),
-                        org.mockito.ArgumentMatchers.anyString(),
+        WorkflowServiceClient workflowClient = org.mockito.Mockito.mock(WorkflowServiceClient.class);
+        org.mockito.Mockito.when(workflowClient.startWorkflow(
+                        org.mockito.ArgumentMatchers.any(StartWorkflowNodeDTO.class),
+                        org.mockito.ArgumentMatchers.anyBoolean(), org.mockito.ArgumentMatchers.anyString(),
                         org.mockito.ArgumentMatchers.anyInt()))
                 .thenAnswer(invocation -> transformerApps.startContainer(
-                        invocation.getArgument(0), invocation.getArgument(4)));
+                        invocation.getArgument(0), invocation.getArgument(3)));
+        QuarkusMock.installMockForType(workflowClient, WorkflowServiceClient.class, RestClient.LITERAL);
+        DockerServiceClient dockerClient = org.mockito.Mockito.mock(DockerServiceClient.class);
+        org.mockito.Mockito.when(dockerClient.cleanupWorkflow(org.mockito.ArgumentMatchers.anyLong()))
+                .thenAnswer(invocation -> Response.ok().build());
+        QuarkusMock.installMockForType(dockerClient, DockerServiceClient.class, RestClient.LITERAL);
+        ContainerServiceClient containerClient = org.mockito.Mockito.mock(ContainerServiceClient.class);
         org.mockito.Mockito.when(containerClient.cleanupWorkflow(
                         org.mockito.ArgumentMatchers.anyString(),
                         org.mockito.ArgumentMatchers.anyBoolean()))
@@ -209,6 +248,11 @@ public class AppTransformerBatchingE2ETest {
         assertTrue(transformerApps.totalBatches() > transformerApps.startedImages.size(),
                 "The transformers should have served several batches each, served: "
                         + transformerApps.batchesPerStep());
+        assertTrue(transformerApps.totalBatches() <= 20,
+                "778 patients should need 16 import requests plus preview warming, got " + transformerApps.totalBatches());
+        assertEquals(778L, finalRun.getProcessedEntities());
+        assertEquals(0L, finalRun.getFailedEntities());
+        assertEquals(783L, finalRun.getCurrentRowNr());
 
         List<PatientDTO> patients = QuarkusTransaction.requiringNew()
                 .call(() -> patientBO.listPatientData(cohortId));
@@ -272,7 +316,7 @@ public class AppTransformerBatchingE2ETest {
             return batches;
         }
 
-        CreateContainerResponseDTO startContainer(StartAppDTO createDTO, Integer port) {
+        CreateContainerResponseDTO startContainer(StartWorkflowNodeDTO createDTO, Integer port) {
             startedImages.add(createDTO.getAppImage());
             Long stepId = env(createDTO, "APP_ID").map(Long::valueOf).orElseThrow(
                     () -> new IllegalStateException("Container environment is missing APP_ID"));
@@ -314,6 +358,8 @@ public class AppTransformerBatchingE2ETest {
                     return null;
                 }
                 String payload = buffer.toString();
+                assertTrue(payload.getBytes(StandardCharsets.UTF_8).length <= 1048576,
+                        "Complete transformer messages must fit the byte budget");
                 buffer.setLength(0);
                 try {
                     JsonNode envelope = mapper.readTree(payload);
@@ -419,7 +465,7 @@ public class AppTransformerBatchingE2ETest {
             return map;
         }
 
-        private static Optional<String> env(StartAppDTO dto, String key) {
+        private static Optional<String> env(StartWorkflowNodeDTO dto, String key) {
             List<String> environments = dto.getEnvironments();
             if (environments == null) {
                 return Optional.empty();

@@ -18,7 +18,10 @@ public interface ExecutionRunMapper extends BaseExecutionEntityMapper<ExecutionR
             @Mapping(target = "steps", ignore = true),
             @Mapping(target = "participants", ignore = true),
             @Mapping(target = "experiment", ignore = true),
-            @Mapping(target = "dataAnalysis", ignore = true)
+            @Mapping(target = "dataAnalysis", ignore = true),
+            @Mapping(target = "testEngine", ignore = true),
+            @Mapping(target = "engineMode", ignore = true),
+            @Mapping(target = "stepsInExecutionOrder", ignore = true)
     })
     ExecutionRunEntity dtoToEntity(ExecutionRunDTO dto);
 }
