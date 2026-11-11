@@ -112,13 +112,15 @@ public abstract class ExecutionRunDetailMapper {
     @Named("mapStepEntitiesToDetailDTOs")
     protected List<BaseExecutionRunStepDTO> mapStepEntitiesToDetailDTOs(List<ExecutionRunStepEntity> steps,
                                                                           @Context boolean withMessages) {
-        return steps.stream().<BaseExecutionRunStepDTO>map(step -> {
-            ExecutionRunStepDTO dto = stepMapper.entityToDto(step);
-            dto.setAttempts(step.getAttempts().stream()
-                    .map(attempt -> (BaseExecutionAttemptDTO) mapAttemptEntityToDetailDTO(attempt, withMessages))
-                    .collect(Collectors.toCollection(LinkedHashSet::new)));
-            return dto;
-        }).toList();
+        return steps.stream().<BaseExecutionRunStepDTO>map(step -> mapStepEntityToDetailDTO(step, withMessages)).toList();
+    }
+
+    public ExecutionRunStepDTO mapStepEntityToDetailDTO(ExecutionRunStepEntity step, boolean withMessages) {
+        ExecutionRunStepDTO dto = stepMapper.entityToDto(step);
+        dto.setAttempts(step.getAttempts().stream()
+                .map(attempt -> (BaseExecutionAttemptDTO) mapAttemptEntityToDetailDTO(attempt, withMessages))
+                .collect(Collectors.toCollection(LinkedHashSet::new)));
+        return dto;
     }
 
     public String mapFieldsToJson(LinkedHashMap<String, Object> fields) {

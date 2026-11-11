@@ -60,14 +60,16 @@ public interface ExecutionRunMapper {
     // Attempts in trial order with their step.
     @Named("mapStepEntitiesToDTOs")
     default List<BaseExecutionRunStepDTO> mapStepEntitiesToDTOs(List<ExecutionRunStepEntity> steps, @Context boolean withMessages) {
-        return steps.stream().<BaseExecutionRunStepDTO>map(step -> {
-            ExecutionRunStepDTO dto = mapStepEntityToDTO(step);
-            dto.setAttempts(step.getAttempts().stream()
-                    .sorted(Comparator.comparingInt(ExecutionAttemptEntity::getTrialIndex))
-                    .map(attempt -> (BaseExecutionAttemptDTO) mapAttemptEntityToDTO(attempt, withMessages))
-                    .collect(Collectors.toCollection(LinkedHashSet::new)));
-            return dto;
-        }).toList();
+        return steps.stream().<BaseExecutionRunStepDTO>map(step -> mapStepEntityToDetailDTO(step, withMessages)).toList();
+    }
+
+    default ExecutionRunStepDTO mapStepEntityToDetailDTO(ExecutionRunStepEntity step, boolean withMessages) {
+        ExecutionRunStepDTO dto = mapStepEntityToDTO(step);
+        dto.setAttempts(step.getAttempts().stream()
+                .sorted(Comparator.comparingInt(ExecutionAttemptEntity::getTrialIndex))
+                .map(attempt -> (BaseExecutionAttemptDTO) mapAttemptEntityToDTO(attempt, withMessages))
+                .collect(Collectors.toCollection(LinkedHashSet::new)));
+        return dto;
     }
 
     @Named("mapFileEntitiesToInputDTOs")

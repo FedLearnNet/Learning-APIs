@@ -13,6 +13,7 @@ import bio.cosy.feddb.local.api.importer.run.ConnectorAppRunBO;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunBO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
+import bio.cosy.feddb.local.execution.run.WorkflowExecutionBO;
 import io.quarkus.logging.Log;
 import io.quarkus.websockets.next.WebSocketConnection;
 import io.smallrye.mutiny.Uni;
@@ -53,6 +54,9 @@ public class AppTransformerSessionBO {
 
     @Inject
     ExecutionRunBO runBO;
+
+    @Inject
+    WorkflowExecutionBO workflowExecutionBO;
 
     // Import or preview -> transformer -> attempt of the app serving that transformer.
     private final Map<Long, Map<Long, Long>> sessions = new ConcurrentHashMap<>();
@@ -101,7 +105,6 @@ public class AppTransformerSessionBO {
                 .map(forSession -> forSession.get(sessionKeyOf(transformer, sessionId)))
                 .orElseThrow(() -> new AppTransformerSessionFailure("No running app transformer for '"
                         + transformer.getAppImage() + "' in import " + sessionId));
-        WebSocketConnection connection = connectionOf(attemptId, transformer);
         Long batchId = batchIds.decrementAndGet();
         CompletableFuture<TableData> result = appRunBO.expectBatch(attemptId, batchId);
         StartRunDTO start = new StartRunDTO();
@@ -113,6 +116,7 @@ public class AppTransformerSessionBO {
         start.setInputData(inputData);
         start.setInputFilePaths(new LinkedHashMap<>());
         try {
+            WebSocketConnection connection = connectionOf(attemptId, transformer);
             // The ETL hands its batches over one after another, so it waits here for the app's upload.
             TableData answered = connection.sendText(new AppMessageWrapperDTO<>(AppMessageTypeEnum.START_PREDICTION, start, AppRunTypeEnum.MODEL_RUN))
                     .replaceWith(Uni.createFrom().completionStage(result))
@@ -122,7 +126,10 @@ public class AppTransformerSessionBO {
                 return ConnectorHelper.mergeRows(rows, output.getRows(), transformer);
             }
         } catch (RuntimeException e) {
-            throw new AppTransformerSessionFailure("App transformer '" + transformer.getAppImage() + "' failed on a batch: " + e.getMessage(), e);
+            AppTransformerSessionFailure failure = new AppTransformerSessionFailure("App transformer '"
+                    + transformer.getAppImage() + "' failed on a batch: " + e.getMessage(), e);
+            failAttempt(attemptId, failure);
+            throw failure;
         } finally {
             appRunBO.forgetBatch(batchId);
         }
@@ -147,19 +154,40 @@ public class AppTransformerSessionBO {
 
     private Long start(ConnectorTransformerDTO transformer, Long connectorRunId, String keycloakId, Consumer<ExecutionRunDTO> onRunCreated) {
         ExecutionRunDTO run = appRunBO.startTransactional(transformer, transformer.getHyperparams(), connectorRunId, null, keycloakId, true);
-        onRunCreated.accept(run);
-        // The import runs batch after batch, so it waits here; the app's connect ends the wait, not a poll.
-        Long attemptId = appRunBO.connectedAttemptId(run.getId())
-                .onFailure(AppTransformerSessionFailure.class).transform(e -> new AppTransformerSessionFailure("App transformer '"
-                        + transformer.getAppImage() + "' " + e.getMessage() + " before it could take any work", e))
-                .ifNoItem().after(CONNECT_TIMEOUT).recoverWithUni(() -> timedOut(transformer, run.getId(),
-                        // Most often an image built against a wrapper without API-key auth: it starts, fails the handshake
-                        // and stays silent, its logs travel over the socket it could not open.
-                        "did not connect within " + CONNECT_TIMEOUT.toSeconds() + "s. The container started but never opened its"
-                                + " websocket - check that the image is built against a pyfedappwrap that supports API-key authentication"))
-                .await().indefinitely();
-        Log.infof("App transformer '%s' ready as attempt %d", transformer.getAppImage(), attemptId);
-        return attemptId;
+        try {
+            onRunCreated.accept(run);
+            // The import runs batch after batch, so it waits here; the app's connect ends the wait, not a poll.
+            Long attemptId = appRunBO.connectedAttemptId(run.getId())
+                    .onFailure(AppTransformerSessionFailure.class).transform(e -> new AppTransformerSessionFailure("App transformer '"
+                            + transformer.getAppImage() + "' " + e.getMessage() + " before it could take any work", e))
+                    .ifNoItem().after(CONNECT_TIMEOUT).recoverWithUni(() -> timedOut(transformer, run.getId(),
+                            // Most often an image built against a wrapper without API-key auth: it starts, fails the handshake
+                            // and stays silent, its logs travel over the socket it could not open.
+                            "did not connect within " + CONNECT_TIMEOUT.toSeconds() + "s. The container started but never opened its"
+                                    + " websocket - check that the image is built against a pyfedappwrap that supports API-key authentication"))
+                    .await().indefinitely();
+            Log.infof("App transformer '%s' ready as attempt %d", transformer.getAppImage(), attemptId);
+            return attemptId;
+        } catch (RuntimeException e) {
+            try {
+                workflowExecutionBO.stopTransactional(run.getId());
+            } catch (RuntimeException cleanupFailure) {
+                e.addSuppressed(cleanupFailure);
+                Log.errorf(cleanupFailure, "Could not stop app transformer run %d", run.getId());
+            } finally {
+                appRunBO.forgetSession(run.getId());
+            }
+            throw e;
+        }
+    }
+
+    private void failAttempt(Long attemptId, RuntimeException failure) {
+        try {
+            appRunBO.failAttempt(attemptId, failure.getMessage());
+        } catch (RuntimeException cleanupFailure) {
+            failure.addSuppressed(cleanupFailure);
+            Log.errorf(cleanupFailure, "Could not fail app transformer attempt %d", attemptId);
+        }
     }
 
     // The app drops its socket now and then and connects again on its own.
