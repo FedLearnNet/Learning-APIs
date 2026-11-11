@@ -64,12 +64,13 @@ public class ToolExternalHandler {
         }
     }
 
-    @Transactional
     void importTransactional(List<FederatedAppDetailDTO> tools, List<ModelDetailDTO> models) {
+        int failed = 0;
         for (FederatedAppDetailDTO tool : tools) {
             try {
-                federatedAppCreateImportBO.createExternalTransactional(tool);
+                importToolTransactional(tool);
             } catch (Exception e) {
+                failed++;
                 Log.warnf(e, "Failed to import tool from source: %s", tool.getName());
             }
         }
@@ -80,12 +81,28 @@ public class ToolExternalHandler {
                 continue;
             }
             try {
-                federatedAppCreateImportBO.createExternalTransactional(model.getFederatedApp());
-                modelBO.createExternal(model);
+                importModelTransactional(model);
             } catch (Exception e) {
+                failed++;
                 Log.warnf(e, "Failed to import model from source: %s", model.getName());
             }
         }
+        if (failed > 0) {
+            throw new IllegalStateException("Tool/model import failed for " + failed + " item(s); see preceding errors");
+        }
+    }
+
+    // Each definition commits independently. A rejected item must not roll back
+    // every other tool or leave the rest of the batch in an aborted transaction.
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    public void importToolTransactional(FederatedAppDetailDTO tool) {
+        federatedAppCreateImportBO.createExternalTransactional(tool);
+    }
+
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    public void importModelTransactional(ModelDetailDTO model) {
+        federatedAppCreateImportBO.createExternalTransactional(model.getFederatedApp());
+        modelBO.createExternal(model);
     }
 
     public Optional<Path> saveToolAsJson(FederatedAppDetailDTO tool) {

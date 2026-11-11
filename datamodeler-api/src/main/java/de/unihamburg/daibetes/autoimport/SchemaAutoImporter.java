@@ -58,21 +58,22 @@ public class SchemaAutoImporter extends BaseAutoImporter<SchemaStructureDTO> {
         if (root == null || root.getId() == null) {
             return Uni.createFrom().failure(new IllegalArgumentException("Schema entry needs a root with an ID"));
         }
-        return orNull(schemaDAO.findById(root.getId()))
-                .chain(existing -> {
-                    if (existing != null) {
-                        counter.skipped();
-                        return Uni.createFrom().voidItem();
-                    }
-                    return Multi.createFrom().iterable(flatten(root, context))
-                            .onItem().transformToUniAndConcatenate(schemaBO::createWithId)
-                            .collect().last()
-                            .invoke(ignored -> {
-                                counter.created();
-                                Log.infof("%s import: created schema %s", IMPORT_NAME, describe(root));
-                            })
-                            .replaceWithVoid();
-                });
+        // A previous attempt may have committed the root before a child failed.
+        // Check every node so a restart can finish that schema.
+        return Multi.createFrom().iterable(flatten(root, context))
+                .onItem().transformToUniAndConcatenate(node -> orNull(schemaDAO.findById(node.getId()))
+                        .chain(existing -> {
+                            if (existing != null) {
+                                counter.skipped();
+                                return Uni.createFrom().voidItem();
+                            }
+                            return schemaBO.createWithId(node)
+                                    .invoke(ignored -> counter.created())
+                                    .replaceWithVoid();
+                        }))
+                .collect().last()
+                .invoke(ignored -> Log.infof("%s import: processed schema %s", IMPORT_NAME, describe(root)))
+                .replaceWithVoid();
     }
 
     private List<SchemaNodeDTO> flatten(SchemaStructureDTO root, AutoImportContext context) {

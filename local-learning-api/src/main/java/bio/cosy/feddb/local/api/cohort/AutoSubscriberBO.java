@@ -74,8 +74,7 @@ public class AutoSubscriberBO {
                         try {
                             allSucceeded &= runSubscribe(entry.getKey(), entry.getValue());
                         } catch (Throwable throwable) {
-                            Log.errorf("AutoSubscribe '%s' failed: %s", entry.getKey(), throwable.getMessage(),
-                                    throwable);
+                            Log.errorf(throwable, "AutoSubscribe '%s' failed: %s", entry.getKey(), throwable.getMessage());
                             allSucceeded = false;
                         }
                     }
@@ -89,7 +88,7 @@ public class AutoSubscriberBO {
                     try {
                         emitter.complete(runSubscribe(name, groupConfig));
                     } catch (Throwable throwable) {
-                        Log.errorf("AutoSubscribe '%s' failed: %s", name, throwable.getMessage(), throwable);
+                        Log.errorf(throwable, "AutoSubscribe '%s' failed: %s", name, throwable.getMessage());
                         emitter.complete(false);
                     }
                 }));
@@ -206,30 +205,34 @@ public class AutoSubscriberBO {
         if (connector != null) {
             Log.infof("AutoSubscribe '%s': reusing existing connector %d for cohort %d", name, connector.getId(),
                     cohortId);
-            return connector;
+        } else {
+            connector = createConnector(name, cohortId, connectorPath, keycloakId);
         }
-
-        connector = createConnector(name, groupConfig, cohortId, connectorPath, keycloakId);
         if (connector == null) {
-            return null;
+            throw new IllegalStateException("AutoSubscribe '" + name + "': connector import returned no connector");
         }
+        attachConfiguredFile(name, groupConfig, cohortId, connector, keycloakId);
         Log.infof("AutoSubscribe '%s': using connector %d (%d steps) for cohort %d ", name, connector.getId(),
-                connector.getTransformer().size(), cohortId);
+                connector.getTransformer() == null ? 0 : connector.getTransformer().size(), cohortId);
         return connector;
     }
 
     private ConnectorDTO createConnector(String name,
-                                         FLNetClientConfig.AutoSubscribeGroupConfig groupConfig,
                                          Long cohortId,
                                          String connectorPath,
                                          String keycloakId) {
         Log.infof("AutoSubscribe '%s': loading connector from %s", name, connectorPath);
-        ConnectorDTO connector = connectorBO.importFromRemoteUrl(connectorPath, cohortId, keycloakId, name);
-        if (connector == null) {
-            Log.warnf("AutoSubscribe '%s': connector import returned no connector", name);
-            return null;
-        }
+        return connectorBO.importFromRemoteUrl(connectorPath, cohortId, keycloakId, name);
+    }
 
+    private void attachConfiguredFile(String name,
+                                      FLNetClientConfig.AutoSubscribeGroupConfig groupConfig,
+                                      Long cohortId,
+                                      ConnectorDTO connector,
+                                      String keycloakId) {
+        if (connector.getInputConfig() instanceof FileUploadSettingsDTO settings && settings.getFileId() != null) {
+            return;
+        }
         groupConfig.etlDataPath().ifPresent(etlDataPath -> {
             if (etlDataPath.isBlank()) {
                 return;
@@ -239,16 +242,14 @@ public class AutoSubscriberBO {
                         name, etlDataPath);
                 return;
             }
-            File etlFile = null;
+            File etlFile;
             try {
                 etlFile = ResourceLoader.loadAsFile(etlDataPath);
             } catch (IOException e) {
-                Log.warnf("AutoSubscribe '%s': failed to load etl-data-path %s: %s", name, etlDataPath, e.getMessage());
-                return;
+                throw new IllegalStateException("AutoSubscribe '" + name + "': failed to load etl-data-path " + etlDataPath, e);
             }
             if (!etlFile.exists()) {
-                Log.warnf("AutoSubscribe '%s': etl-data-path %s does not exist", name, etlDataPath);
-                return;
+                throw new IllegalStateException("AutoSubscribe '" + name + "': etl-data-path does not exist: " + etlDataPath);
             }
             ConnectorFilesDTO uploaded = uploadBO.uploadFileForCohort(
                     cohortId,
@@ -261,7 +262,5 @@ public class AutoSubscriberBO {
             Log.infof("AutoSubscribe '%s': attached file %d to connector %d",
                     name, uploaded.getId(), connector.getId());
         });
-
-        return connector;
     }
 }

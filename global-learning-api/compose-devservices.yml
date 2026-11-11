@@ -1,4 +1,54 @@
 services:
+  datamodeler-api:
+    image: ghcr.io/fedlearnnet/learning-apis/datamodeler-api:staging
+    profiles:
+      - dev
+    ports:
+      - "127.0.0.1:8086:8080"
+    environment:
+      QUARKUS_NEO4J_URI: bolt://datamodeler-db:7687
+      QUARKUS_NEO4J_AUTHENTICATION_USERNAME: neo4j
+      QUARKUS_NEO4J_AUTHENTICATION_PASSWORD: password
+      QUARKUS_OIDC_AUTH_SERVER_URL: https://staging.featurecloud.ai/feddb/global-auth/realms/FederatedDB_Global
+      QUARKUS_OIDC_TOKEN_ISSUER: https://staging.featurecloud.ai/feddb/global-auth/realms/FederatedDB_Global
+      QUARKUS_OIDC_TOKEN_AUDIENCE: ""
+      UMLS_AUTO_IMPORT_ENABLED: false
+      EMBEDDING_ENABLED: false
+      FLNET_ONTOLOGY_IMPORTS_ENABLED: true
+      FLNET_DATATYPE_IMPORTS_ENABLED: true
+      FLNET_SCHEMA_IMPORTS_ENABLED: true
+    volumes:
+      - ../datamodeler-api/src/main/resources/datamodeler-imports:/data/datamodeler-imports:ro
+    depends_on:
+      datamodeler-db:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-fsS", "http://localhost:8080/q/health/ready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    labels:
+      io.quarkus.devservices.compose.wait_for.ports.timeout: "180s"
+    networks:
+      - global-learning-network
+
+  datamodeler-db:
+    image: neo4j:2026.09.0
+    profiles:
+      - dev
+    environment:
+      NEO4J_AUTH: neo4j/password
+    volumes:
+      - datamodeler-db:/data
+    healthcheck:
+      test: [ "CMD-SHELL", "cypher-shell -u neo4j -p password 'RETURN 1' || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - global-learning-network
+
   global-learning-api-db:
     image: pgvector/pgvector:pg18
     environment:

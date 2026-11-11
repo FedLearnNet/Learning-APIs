@@ -32,4 +32,10 @@ public class AutoImportCounter {
         Log.infof("%s import finished: %d created, %d already existing, %d failed",
                 importName, created.get(), skipped.get(), failed.get());
     }
+
+    public void failIfAny() {
+        if (failed.get() > 0) {
+            throw new IllegalStateException(importName + " import failed for " + failed.get() + " item(s); see preceding errors");
+        }
+    }
 }

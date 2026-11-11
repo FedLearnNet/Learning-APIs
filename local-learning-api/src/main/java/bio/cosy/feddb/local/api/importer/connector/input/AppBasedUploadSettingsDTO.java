@@ -18,6 +18,8 @@ public class AppBasedUploadSettingsDTO extends ConnectorInputConfigDTO {
     private LinkedHashMap<String, Object> hyperParams;
     private Map<String, Object> inputData;
     private String appImage;
+    // Portable store reference; resolved to this deployment's image/version at run time.
+    private String appSlug;
     private Integer appVersionId;
     private String appTitle;
 

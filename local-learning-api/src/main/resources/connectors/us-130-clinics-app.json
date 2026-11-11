@@ -7,9 +7,8 @@
   "description": "US-130 diabetes clinics imported through the diabetic-130-US-hospital-dataset extractor app instead of an uploaded file.",
   "inputConfig": {
     "mode": "APP",
-    "appTitle": "diabetic-130-US-hospital-dataset",
-    "appImage": "gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/app-build-pipeline/us-d-130:uBvUHput",
-    "appVersionId": 31,
+    "appTitle": "import-diabetes-130-us-hospitals-for-years-1999-2008",
+    "appSlug": "import-diabetes-130-us-hospitals-for-years-1999-2008",
     "hyperParams": {},
     "inputData": {},
     "outputParams": {},

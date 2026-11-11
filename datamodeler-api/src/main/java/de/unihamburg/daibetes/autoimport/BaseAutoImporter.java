@@ -36,11 +36,12 @@ public abstract class BaseAutoImporter<T> {
         AutoImportCounter counter = new AutoImportCounter(getImportName());
         return load()
                 .onItem().transformToMulti(items -> Multi.createFrom().iterable(items))
-                .onItem().transformToUniAndConcatenate(item -> importItem(item, context, counter)
+                .onItem().transformToUniAndConcatenate(item -> Uni.createFrom().deferred(() -> importItem(item, context, counter))
                         .onFailure().invoke(e -> counter.failed(describe(item), e))
                         .onFailure().recoverWithNull())
                 .collect().last()
                 .invoke(counter::log)
+                .invoke(counter::failIfAny)
                 .replaceWithVoid();
     }
 

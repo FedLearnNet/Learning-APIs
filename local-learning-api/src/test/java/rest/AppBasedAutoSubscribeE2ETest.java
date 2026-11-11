@@ -1,6 +1,7 @@
 package rest;
 
 import bio.cosy.feddb.core.api.datamodler.schema.SchemaStructureDTO;
+import bio.cosy.feddb.core.api.app.FederatedAppDetailDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
@@ -29,6 +30,7 @@ import bio.cosy.feddb.local.execution.run.ExecutionRunAO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import bio.cosy.feddb.local.services.datamodler.GlobalSchemaSubscriptionService;
+import bio.cosy.feddb.local.services.GlobalAPIStoreService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusMock;
@@ -65,6 +67,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * End-to-end import of the US-130 cohort with <em>no file anywhere in the configuration</em>:
@@ -150,6 +154,15 @@ public class AppBasedAutoSubscribeE2ETest {
     @BeforeEach
     void installMocks() throws Exception {
         configuredApp = readConfiguredApp();
+        configuredApp.setAppImage("test-registry/us130:extractor");
+        configuredApp.setAppVersionId(31);
+        FederatedAppDetailDTO app = new FederatedAppDetailDTO();
+        app.setImageName(configuredApp.getAppImage());
+        app.setLatestVersionId(31L);
+        GlobalAPIStoreService store = mock(GlobalAPIStoreService.class);
+        when(store.getApp(configuredApp.getAppSlug())).thenReturn(app);
+        when(store.getAppByVersion(31L)).thenReturn(app);
+        QuarkusMock.installMockForType(store, GlobalAPIStoreService.class, RestClient.LITERAL);
 
         SchemaStructureDTO dummySchema;
         try (InputStream in = Thread.currentThread().getContextClassLoader()
@@ -202,8 +215,7 @@ public class AppBasedAutoSubscribeE2ETest {
         AppBasedUploadSettingsDTO appSettings = assertInstanceOf(AppBasedUploadSettingsDTO.class,
                 connector.getInputConfig(), "Connector input must be an app-based extractor");
         assertEquals("APP", appSettings.getMode());
-        assertEquals(configuredApp.getAppImage(), appSettings.getAppImage());
-        assertEquals(configuredApp.getAppVersionId(), appSettings.getAppVersionId());
+        assertEquals(configuredApp.getAppSlug(), appSettings.getAppSlug());
 
         // The extractor app was started, once, with the connector's image.
         assertTrue(extractorApp.started.await(90, TimeUnit.SECONDS), "The extractor app should be started");
@@ -215,6 +227,9 @@ public class AppBasedAutoSubscribeE2ETest {
         assertNotNull(finalRun, "A connector run should have been started and completed");
         assertEquals(ImportStatusEnum.FINISHED, finalRun.getStatus(),
                 "The app-based run should finish successfully, run error: " + finalRun.getErrorMessage());
+        AppBasedUploadSettingsDTO resolved = (AppBasedUploadSettingsDTO) connectorBO.getById(connector.getId()).getInputConfig();
+        assertEquals(configuredApp.getAppImage(), resolved.getAppImage());
+        assertEquals(configuredApp.getAppVersionId(), resolved.getAppVersionId());
 
         // Patients imported, from data that only ever existed inside the app image.
         List<PatientDTO> patients = QuarkusTransaction.requiringNew()

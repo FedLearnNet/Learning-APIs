@@ -23,6 +23,9 @@ import java.util.stream.Stream;
 public class ResourceScanner {
 
     public List<Path> listFiles(Path dir, String extension) {
+        if (Files.isRegularFile(dir)) {
+            return Strings.CI.endsWith(dir.toString(), extension) ? List.of(dir) : List.of();
+        }
         if (!Files.isDirectory(dir)) {
             Log.warnf("Folder does not exist or is not a directory: %s", dir);
             return List.of();
@@ -52,7 +55,7 @@ public class ResourceScanner {
         try {
             URI uri = folderUrl.toURI();
             return switch (uri.getScheme().toLowerCase(Locale.ROOT)) {
-                case "file" -> toUrls(walk(Path.of(uri), extension));
+                case "file" -> toUrls(listFiles(Path.of(uri), extension));
                 case "jar" -> listFilesInJar(uri, extension);
                 default -> {
                     Log.warnf("Unsupported resource URI scheme '%s' for %s, treating it as a single file", uri.getScheme(), uri);
@@ -68,9 +71,9 @@ public class ResourceScanner {
     private List<URL> listFilesInJar(URI folderUri, String extension) throws IOException {
         // Only close a file system we opened ourselves; a shared one may still be in use elsewhere
         try (FileSystem ignored = FileSystems.newFileSystem(folderUri, Map.of())) {
-            return toUrls(walk(Path.of(folderUri), extension));
+            return toUrls(listFiles(Path.of(folderUri), extension));
         } catch (FileSystemAlreadyExistsException e) {
-            return toUrls(walk(Path.of(folderUri), extension));
+            return toUrls(listFiles(Path.of(folderUri), extension));
         }
     }
 

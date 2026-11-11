@@ -53,6 +53,9 @@ public class ConnectorExtractBO {
     ConnectorAppRunBO appRunBO;
 
     @Inject
+    ConnectorAppResolverBO appResolverBO;
+
+    @Inject
     ExecutionRunBO runBO;
 
     @Inject
@@ -370,6 +373,7 @@ public class ConnectorExtractBO {
                                  Long connectorRunId,
                                  String keycloakId,
                                  ExtractRequest request) {
+        resolveApp(appSettings);
         if (!hasAppImage(appSettings)) {
             Log.warn("App-based extractor has no appImage configured");
             throw new BadRequestException("App-based extractor has no app image configured");
@@ -453,6 +457,7 @@ public class ConnectorExtractBO {
     }
 
     public Multi<ConnectorExtractorStreamDTO> startFromApp(AppBasedUploadSettingsDTO appSettings, Long cohortId, String keycloakId) {
+        resolveApp(appSettings);
         if (!hasAppImage(appSettings)) {
             Log.warn("App-based extractor has no appImage configured");
             return Multi.createFrom().empty();
@@ -489,6 +494,12 @@ public class ConnectorExtractBO {
         ConnectorExtractorStreamDTO stream = appExtractorMapper.runToStreamDTO(run);
         stream.setCached(false);
         return stream;
+    }
+
+    private void resolveApp(AppBasedUploadSettingsDTO appSettings) {
+        if (appSettings != null && appSettings.getAppSlug() != null && !appSettings.getAppSlug().isBlank()) {
+            appResolverBO.resolve(appSettings);
+        }
     }
 
     private boolean hasAppImage(AppBasedUploadSettingsDTO appSettings) {

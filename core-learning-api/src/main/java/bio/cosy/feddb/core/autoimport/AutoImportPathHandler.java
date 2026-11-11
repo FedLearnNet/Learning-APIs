@@ -65,6 +65,7 @@ public class AutoImportPathHandler {
 
         List<PathOrUrl> sources = roots.stream()
                 .flatMap(this::resolveSources)
+                .distinct()
                 .sorted(Comparator.comparing(PathOrUrl::sortKey))
                 .toList();
         List<PathOrUrl> whitelisted = PathOrUrl.filterByWhitelist(sources, config.whiteList());
@@ -79,10 +80,15 @@ public class AutoImportPathHandler {
         if (isHttpUrl(root)) {
             return resolveHttpSource(root);
         }
-        if (root.isAbsolute()) {
+        if (Files.exists(root)) {
             return resourceScanner.listFiles(root, JSON_EXTENSION).stream().map(PathOrUrl::ofPath);
         }
-        return resourceScanner.listClasspathFiles(root, JSON_EXTENSION).stream().map(PathOrUrl::ofUrl);
+        // Resource specs use the same optional leading slash as ResourceLoader.
+        String resourceName = root.toString().replace('\\', '/');
+        if (resourceName.startsWith("/")) {
+            resourceName = resourceName.substring(1);
+        }
+        return resourceScanner.listClasspathFiles(Path.of(resourceName), JSON_EXTENSION).stream().map(PathOrUrl::ofUrl);
     }
 
     public <T> List<T> readAll(String name, List<PathOrUrl> sources, Class<T> type) {
