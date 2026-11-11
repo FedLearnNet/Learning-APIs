@@ -19,15 +19,15 @@ import lombok.Setter;
         })
 public class ConnectorRunMessagesEntity extends BaseRunMessageEntity {
 
-    @ManyToOne(cascade = CascadeType.REFRESH)
+    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     @JoinColumn(name = "run_step_id")
     private ConnectorRunStepEntity step;
 
-    @ManyToOne(cascade = CascadeType.REFRESH)
+    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     @JoinColumn(name = "run_transformer_id", nullable = true)
     private ConnectorTransformerEntity transformer;
 
-    @ManyToOne(cascade = CascadeType.REFRESH)
+    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     @JoinColumn(name = "run_id")
     private ConnectorRunEntity run;
 

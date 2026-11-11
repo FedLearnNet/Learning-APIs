@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.api.query;
 
+import bio.cosy.feddb.core.api.query.Lang2QueryDocuments;
 import bio.cosy.feddb.core.api.query.QueryClientResponseDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.base.BaseBo;
@@ -33,6 +34,8 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMapper> {
+
+    private static final String QUERY_COULD_NOT_BE_EVALUATED = "Query could not be evaluated";
 
     @LoggerName("QueryBO")
     Logger logger;
@@ -124,7 +127,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         // Enhance the query with additional information if needed
         // This is a placeholder for any future enhancements
 
-        List<LocalQueryItemDTO> enhanced = query.getQuery().stream()
+        List<LocalQueryItemDTO> enhanced = Lang2QueryDocuments.flattenLeaves(query.getQuery()).stream()
                 .map(q -> {
                     List<SchemaNodeEntity> schemaNodeEntities = builderBO.getSchemaNodesForQueryItem(q.getOntologyId(), q.getDataTypeId());
                     List<LocalSchemaNodeDTO> schemaNodes = schemaNodeMapper.entitiesToDtos(schemaNodeEntities);
@@ -176,9 +179,9 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
             createTransactional(query, message, QueryStatusEnum.REJECTED_EAM_PRE_HARMONIZED);
             return QueryClientResponseDTO.createErrorResponse("Permission denied", queryGlobalUniqueId);
         }
-        allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(query.getQuery(), allowedCohortIds);
+        allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(Lang2QueryDocuments.leavesOf(query), allowedCohortIds);
 
-        if (allowedCohorts.isEmpty()) {
+        if (allowedCohortIds.isEmpty()) {
             String message = "Cohort QueryAbility is rejecting the query";
             logger.warn(message);
             createTransactional(query, message, QueryStatusEnum.REJECTED_EAM_PRE_HARMONIZED);
@@ -214,12 +217,20 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         QueryResultWrapperDTO harmonizedQueryResult;
         try {
             harmonizedQueryResult = runQuery(query, resolvedCohortIds);
-        } catch (Exception e) {
+        } catch (QueryRejectedException e) {
+            logger.warnf("Query rejected: %s", e.getMessage());
             createdLocalQuery.setQueriedCohortIds(new HashSet<>(resolvedCohortIds));
             createdLocalQuery.setStatus(QueryStatusEnum.REJECTED_HARMONIZED);
             createdLocalQuery.setStatusMessage(e.getMessage());
             updateTransactional(createdQueryId, createdLocalQuery);
             return QueryClientResponseDTO.createErrorResponse(e.getMessage(), queryGlobalUniqueId);
+        } catch (Exception e) {
+            logger.error("Query could not be evaluated", e);
+            createdLocalQuery.setQueriedCohortIds(new HashSet<>(resolvedCohortIds));
+            createdLocalQuery.setStatus(QueryStatusEnum.REJECTED_HARMONIZED);
+            createdLocalQuery.setStatusMessage(QUERY_COULD_NOT_BE_EVALUATED);
+            updateTransactional(createdQueryId, createdLocalQuery);
+            return QueryClientResponseDTO.createErrorResponse(QUERY_COULD_NOT_BE_EVALUATED, queryGlobalUniqueId);
         }
         logger.info("Received query result: " + harmonizedQueryResult);
 
@@ -291,14 +302,16 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
                 .map(PermissionDTO::getCohortId)
                 .toList();
         if (allowedCohorts.isEmpty()) {
-            String message = "User " + keycloakId + " is not allowed to query";
-            logger.warn(message);
+            logger.warn("User " + keycloakId + " is not allowed to query");
+            return emptyQueryResult(query);
         }
 
-        allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(query.getQuery(), allowedCohortIds);
-        if (allowedCohorts.isEmpty()) {
-            String message = "Cohort QueryAbility is rejecting the query";
-            logger.warn(message);
+        allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(
+                Lang2QueryDocuments.flattenLeaves(query.getQuery()),
+                allowedCohortIds);
+        if (allowedCohortIds.isEmpty()) {
+            logger.warn("Cohort QueryAbility is rejecting the query");
+            return emptyQueryResult(query);
         }
 
         QueryDTO queryDTO = new QueryDTO();
@@ -309,10 +322,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
             return runQuery(queryDTO, allowedCohortIds);
         } catch (QueryRejectedException e) {
             logger.warnf("Query cannot be evaluated on this node; returning 0 matches: %s", e.getMessage());
-            QueryResultWrapperDTO emptyResult = new QueryResultWrapperDTO();
-            emptyResult.setQueryId(query.getId());
-            emptyResult.setResult(List.of());
-            return emptyResult;
+            return emptyQueryResult(query);
         } catch (Exception e) {
             logger.error("Error while running query: " + e.getMessage(), e);
             return null;
@@ -323,13 +333,19 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     @TransactionConfiguration(timeout = 3600)
     public QueryResultWrapperDTO runQuery(QueryDTO query, List<Long> allowedCohortIds) {
-        String patientMatchSql = queryBuilderBO.buildCountDistinctSql(query);
+        if (allowedCohortIds == null || allowedCohortIds.isEmpty()) {
+            QueryResultWrapperDTO emptyResult = new QueryResultWrapperDTO();
+            emptyResult.setQueryId(query.getId());
+            emptyResult.setResult(List.of());
+            return emptyResult;
+        }
+        String patientMatchSql = queryBuilderBO.buildCountDistinctSql(query, allowedCohortIds);
 
         QueryResultWrapperDTO queryResult = new QueryResultWrapperDTO();
         queryResult.setQueryId(query.getId());
         queryResult.setPatientMatchSql(patientMatchSql);
 
-        List<QueryResultDTO> countsByCohort = ao.findPatientCountsByCohort(patientMatchSql);
+        List<QueryResultDTO> countsByCohort = ao.findPatientCountsByCohort(patientMatchSql, allowedCohortIds);
         List<QueryResultDTO> allowedResults = countsByCohort.stream()
                 .filter(result -> {
                     boolean isAllowed = allowedCohortIds.contains(result.getCohortId());
@@ -344,6 +360,13 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         logger.debugf("Executed patient match SQL: %s", patientMatchSql);
         logger.infof("Query executed successfully: %s", queryResult);
         return queryResult;
+    }
+
+    private QueryResultWrapperDTO emptyQueryResult(final LocalQueryDTO query) {
+        QueryResultWrapperDTO emptyResult = new QueryResultWrapperDTO();
+        emptyResult.setQueryId(query.getId());
+        emptyResult.setResult(List.of());
+        return emptyResult;
     }
 
 }

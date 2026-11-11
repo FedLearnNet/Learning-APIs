@@ -50,7 +50,7 @@ public class DataTypeDAO extends BaseDAO<DataTypeNodeDTO, DataTypeEdgeDTO, DataT
                 .bind("SCHEMA_LABEL", SchemaNodeDTO.nodeLabel())
                 .bind("ONTO_LABEL", OntologyNodeDTO.nodeLabel())
                 .bind("ID_PROP", idPropertyName)
-                .bind("SCHEMA_HAS_DATA_TYPE_REL", InterNodeEdgeLabels.SCHEMA_TO_ONTOLOGY)
+                .bind("SCHEMA_HAS_DATA_TYPE_REL", InterNodeEdgeLabels.SCHEMA_TO_DATA_TYPE)
                 .bind("ONTO_HAS_DATA_TYPE_REL", InterNodeEdgeLabels.DATA_TYPE_TO_ONTOLOGY)
                 .build();
 
@@ -102,7 +102,7 @@ public class DataTypeDAO extends BaseDAO<DataTypeNodeDTO, DataTypeEdgeDTO, DataT
                 .bind("SCHEMA_LABEL", SchemaNodeDTO.nodeLabel())
                 .bind("ONTO_LABEL", OntologyNodeDTO.nodeLabel())
                 .bind("ID_PROP", idPropertyName)
-                .bind("SCHEMA_HAS_DATA_TYPE_REL", InterNodeEdgeLabels.SCHEMA_TO_ONTOLOGY)
+                .bind("SCHEMA_HAS_DATA_TYPE_REL", InterNodeEdgeLabels.SCHEMA_TO_DATA_TYPE)
                 .bind("ONTO_HAS_DATA_TYPE_REL", InterNodeEdgeLabels.DATA_TYPE_TO_ONTOLOGY)
                 .build();
 
@@ -127,7 +127,7 @@ public class DataTypeDAO extends BaseDAO<DataTypeNodeDTO, DataTypeEdgeDTO, DataT
 
         String cypher = CypherTemplate.of("""
                         MATCH (o:${ONTO_LABEL} {${ID_PROP}: $ontology_id})
-                              <-[:${HAS_DATA_TYPE_REL}]-(d:${DATA_LABEL})
+                              -[:${HAS_DATA_TYPE_REL}]->(d:${DATA_LABEL})
                         
                         WHERE $q = ''
                         OR toLower(coalesce(d.name, '')) CONTAINS $q
@@ -148,7 +148,7 @@ public class DataTypeDAO extends BaseDAO<DataTypeNodeDTO, DataTypeEdgeDTO, DataT
                 .bind("SCHEMA_LABEL", SchemaNodeDTO.nodeLabel())
                 .bind("ID_PROP", idPropertyName)
                 .bind("HAS_DATA_TYPE_REL", InterNodeEdgeLabels.DATA_TYPE_TO_ONTOLOGY)
-                .bind("SCHEMA_HAS_DATA_TYPE_REL", InterNodeEdgeLabels.SCHEMA_TO_ONTOLOGY)
+                .bind("SCHEMA_HAS_DATA_TYPE_REL", InterNodeEdgeLabels.SCHEMA_TO_DATA_TYPE)
                 .bind("ONTO_HAS_DATA_TYPE_REL", InterNodeEdgeLabels.DATA_TYPE_TO_ONTOLOGY)
                 .bind("DATA_LABEL", DataTypeNodeDTO.nodeLabel())
                 .build();
@@ -170,7 +170,7 @@ public class DataTypeDAO extends BaseDAO<DataTypeNodeDTO, DataTypeEdgeDTO, DataT
                         LIMIT $limit
                         
                         OPTIONAL MATCH (d)<-[:${HAS_DATA_TYPE_REL}]-(allSchemas:${SCHEMA_LABEL})
-                        OPTIONAL MATCH (d)-[:${ONTOLOGY_TO_DATATYPE_REL}]->(o:${ONTOLOGY_LABEL})
+                        OPTIONAL MATCH (d)<-[:${ONTOLOGY_TO_DATATYPE_REL}]-(o:${ONTOLOGY_LABEL})
                         
                         RETURN
                             d AS node,
@@ -230,7 +230,7 @@ public class DataTypeDAO extends BaseDAO<DataTypeNodeDTO, DataTypeEdgeDTO, DataT
                 .bind("SCHEMA_LABEL", SchemaNodeDTO.nodeLabel())
                 .bind("ONTO_LABEL", OntologyNodeDTO.nodeLabel())
                 .bind("ID_PROP", idPropertyName)
-                .bind("SCHEMA_HAS_DATA_TYPE_REL", InterNodeEdgeLabels.SCHEMA_TO_ONTOLOGY)
+                .bind("SCHEMA_HAS_DATA_TYPE_REL", InterNodeEdgeLabels.SCHEMA_TO_DATA_TYPE)
                 .bind("ONTO_HAS_DATA_TYPE_REL", InterNodeEdgeLabels.DATA_TYPE_TO_ONTOLOGY)
                 .build();
 
@@ -307,7 +307,7 @@ public class DataTypeDAO extends BaseDAO<DataTypeNodeDTO, DataTypeEdgeDTO, DataT
                 .bind("SCHEMA_LABEL", SchemaNodeDTO.nodeLabel())
                 .bind("ONTO_LABEL", OntologyNodeDTO.nodeLabel())
                 .bind("ID_PROP", idPropertyName)
-                .bind("SCHEMA_HAS_DATA_TYPE_REL", InterNodeEdgeLabels.SCHEMA_TO_ONTOLOGY)
+                .bind("SCHEMA_HAS_DATA_TYPE_REL", InterNodeEdgeLabels.SCHEMA_TO_DATA_TYPE)
                 .bind("ONTO_HAS_DATA_TYPE_REL", InterNodeEdgeLabels.DATA_TYPE_TO_ONTOLOGY)
                 .build();
 
@@ -376,7 +376,7 @@ public class DataTypeDAO extends BaseDAO<DataTypeNodeDTO, DataTypeEdgeDTO, DataT
                         
                         WITH d
                         
-                        OPTIONAL MATCH (d)-[or:${DATA_TYPE_TO_ONTOLOGY_REL}]->(:${ONTO_LABEL})
+                        OPTIONAL MATCH (d)<-[or:${DATA_TYPE_TO_ONTOLOGY_REL}]-(:${ONTO_LABEL})
                         DELETE or
                         
                         WITH d
@@ -388,7 +388,7 @@ public class DataTypeDAO extends BaseDAO<DataTypeNodeDTO, DataTypeEdgeDTO, DataT
                         
                         FOREACH (oid IN $ontologyIds |
                             MERGE (o:${ONTO_LABEL} {${ID_PROP}: oid})
-                            MERGE (d)-[:${DATA_TYPE_TO_ONTOLOGY_REL}]->(o)
+                            MERGE (o)-[:${DATA_TYPE_TO_ONTOLOGY_REL}]->(d)
                         )
                         
                         RETURN d

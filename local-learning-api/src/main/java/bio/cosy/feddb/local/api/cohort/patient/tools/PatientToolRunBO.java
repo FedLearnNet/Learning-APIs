@@ -156,6 +156,8 @@ public class PatientToolRunBO
     void launch(Long runId, FederatedAppDetailDTO app, String apiKey, Path input) {
         try {
             uploadInput(runId, input);
+            // The orchestrator has copied the data into the run's input volume, so the local file is no longer needed
+            FileUtils.deleteQuietly(input.toFile());
             logStep(runId, "Starting the app container - the first run pulls the image, which can take a while");
             String containerId = workflowOrchestrator.executeWorkflow(startDTO(runId, app, apiKey), WS_PATH);
             self.get().markStarted(runId, containerId);

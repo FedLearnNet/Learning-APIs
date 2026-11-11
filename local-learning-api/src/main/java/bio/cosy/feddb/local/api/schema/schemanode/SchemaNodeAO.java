@@ -4,6 +4,7 @@ import bio.cosy.feddb.core.api.datamodler.schema.SchemaNodeType;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -17,6 +18,23 @@ public class SchemaNodeAO implements PanacheRepository<SchemaNodeEntity> {
 
     public List<SchemaNodeEntity> findByOntologyAndDatatypeGlobalId(String ontologyId, String datatypeId) {
         return find("ontology.globalId = ?1 AND dataType.globalDataTypeId = ?2", ontologyId, datatypeId).list();
+    }
+
+    public List<SchemaNodeEntity> findByOntologyGlobalIdAndCohortIds(String ontologyId, Collection<Long> cohortIds) {
+        if (cohortIds == null || cohortIds.isEmpty()) {
+            return List.of();
+        }
+        return find("ontology.globalId = ?1 AND cohort.id in ?2", ontologyId, cohortIds).list();
+    }
+
+    public List<SchemaNodeEntity> findByOntologyAndDatatypeGlobalIdAndCohortIds(
+            String ontologyId, String datatypeId, Collection<Long> cohortIds) {
+        if (cohortIds == null || cohortIds.isEmpty()) {
+            return List.of();
+        }
+        return find(
+                "ontology.globalId = ?1 AND dataType.globalDataTypeId = ?2 AND cohort.id in ?3",
+                ontologyId, datatypeId, cohortIds).list();
     }
 
 

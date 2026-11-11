@@ -116,7 +116,7 @@ public interface WorkflowNodeMapper extends BaseMapper<WorkflowNodeDetailDTO, Wo
         dto.setImageName(appVersion.getImageName());
         dto.setOldFCVersion(appVersion.getFederatedApp().getOldFCVersion());
         dto.setSupportsFederatedLearning(appVersion.getFederatedApp().isSupportsFederatedLearning());
-        dto.setIsTrainable(appVersion.getFederatedApp().getType().equals(FederatedAppType.ANALYSIS));
+        dto.setIsTrainable(FederatedAppType.ANALYSIS.equals(appVersion.getFederatedApp().getType()));
     }
 
     @Named("getAppVersion")
