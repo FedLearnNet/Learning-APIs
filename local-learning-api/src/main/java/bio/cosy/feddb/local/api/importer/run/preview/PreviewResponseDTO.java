@@ -12,6 +12,8 @@ import java.util.List;
 public class PreviewResponseDTO {
     private List<String> jsons;
 
+    private List<List<String>> columns;
+
     private List<PreviewStageDTO> stages;
 
     public PreviewResponseDTO(List<String> jsons) {
