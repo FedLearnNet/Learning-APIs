@@ -9,6 +9,7 @@ import bio.cosy.feddb.local.api.learning.request.metrics.RequestRunMetricsBO;
 import bio.cosy.feddb.local.api.query.QueryBO;
 import bio.cosy.feddb.local.api.statistics.request.RequestDataStatisticsBO;
 import bio.cosy.feddb.local.health.WebSocketClientState;
+import bio.cosy.feddb.local.services.orch.ComputingInfoBO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.logging.Log;
@@ -47,6 +48,9 @@ public class WebsocketClient {
 
     @Inject
     ClientManager clientManager;
+
+    @Inject
+    ComputingInfoBO computingInfo;
 
 
     @OnOpen
@@ -114,6 +118,7 @@ public class WebsocketClient {
             if (m.getMessageType().equals(FedDBClientTypeEnum.EXISTING_QUERY)) {
                 QueryDTO query = objectMapper.convertValue(m.getMessage(), QueryDTO.class);
                 QueryClientResponseDTO responseData = queryBO.handleQuery(query);
+                responseData.setSystem(computingInfo.get());
                 FedDBClientDataDTO<QueryClientResponseDTO> response = new FedDBClientDataDTO<>();
                 response.setMessageType(FedDBClientTypeEnum.EXISTING_QUERY);
                 response.setMessage(responseData);

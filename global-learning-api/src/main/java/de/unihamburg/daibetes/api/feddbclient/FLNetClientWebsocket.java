@@ -31,6 +31,7 @@ public class FLNetClientWebsocket {
 
     @OnClose
     public void onClose(WebSocketConnection connection) {
+        handlerBO.removeSystem(connection.id());
         logger.info("Connection closed: " + connection.id());
         observerEmitter.emit(FLNetClientObserverEventDTO.disconnected(connection.id()));
     }

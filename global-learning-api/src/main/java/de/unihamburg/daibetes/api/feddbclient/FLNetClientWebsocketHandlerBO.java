@@ -3,6 +3,9 @@ package de.unihamburg.daibetes.api.feddbclient;
 import bio.cosy.feddb.core.api.query.QueryClientResponseDTO;
 import bio.cosy.feddb.core.api.socket.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import bio.cosy.feddb.core.services.orch.dto.SystemComputingInfoDTO;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingBO;
 import de.unihamburg.daibetes.api.project.training.metrics.RunMetricsRequestBO;
 import de.unihamburg.daibetes.api.query.response.QueryResponseBO;
@@ -16,6 +19,15 @@ import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class FLNetClientWebsocketHandlerBO {
+    private final Map<String, SystemComputingInfoDTO> systems = new ConcurrentHashMap<>();
+
+    public Map<String, SystemComputingInfoDTO> getSystems() {
+        return Map.copyOf(systems);
+    }
+
+    public void removeSystem(String connectionId) {
+        systems.remove(connectionId);
+    }
 
     @Inject
     QueryResponseBO queryResponseBO;
@@ -50,6 +62,10 @@ public class FLNetClientWebsocketHandlerBO {
     @Transactional
     public <T> void handle(FedDBClientDataDTO<T> m, String connectionId) {
         ObjectMapper objectMapper = new ObjectMapper();
+
+        if (m.getMessageType().equals(FedDBClientTypeEnum.SYSTEM_INFO)) {
+            systems.put(connectionId, objectMapper.convertValue(m.getMessage(), SystemComputingInfoDTO.class));
+        }
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.EXISTING_QUERY)) {
             QueryClientResponseDTO query = objectMapper.convertValue(m.getMessage(), QueryClientResponseDTO.class);

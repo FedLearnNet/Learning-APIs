@@ -1,8 +1,10 @@
 package bio.cosy.feddb.local.api.eam;
 
 import bio.cosy.feddb.core.api.socket.FedDBClientDataDTO;
+import bio.cosy.feddb.core.api.socket.FedDBClientTypeEnum;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import bio.cosy.feddb.local.health.WebSocketClientState;
+import bio.cosy.feddb.local.services.orch.ComputingInfoBO;
 import io.quarkus.logging.Log;
 import io.quarkus.oidc.client.Tokens;
 import io.quarkus.runtime.ShutdownEvent;
@@ -17,35 +19,29 @@ import jakarta.enterprise.event.ObservesAsync;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
-import java.time.Instant;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 @ApplicationScoped
 public class ClientManager {
     private static final String AUTHORIZATION_HEADER = "Authorization";
-
+    private final Queue<FedDBClientDataDTO<?>> pendingClientMessages = new ConcurrentLinkedQueue<>();
     @Inject
     FLNetClientConfig config;
-
     @Inject
     Instance<WebSocketConnector<WebsocketClient>> connectors;
-
     @Inject
     WebSocketClientState state;
-
     @Inject
     GlobalAuthManager globalAuthManager;
+    @Inject
+    ComputingInfoBO computingInfo;
 
-    private final Queue<FedDBClientDataDTO<?>> pendingClientMessages = new ConcurrentLinkedQueue<>();
     private WebSocketClientConnection connection;
     private ScheduledExecutorService reconnectExecutor;
     private ScheduledFuture<?> reconnectTask;
@@ -54,6 +50,17 @@ public class ClientManager {
     private boolean isReconnecting = false;
     private int reconnectAttempt = 0;
     private volatile boolean shuttingDown;
+
+    public void sendSystemInfo() {
+        sendSystemInfo(connection);
+    }
+
+    private void sendSystemInfo(WebSocketClientConnection target) {
+        var info = computingInfo.get();
+        if (info != null && target != null && target.isOpen())
+            fireAndForget(new FedDBClientDataDTO<>(FedDBClientTypeEnum.SYSTEM_INFO, info), target);
+    }
+
     void connect() {
         if (shuttingDown) {
             return;
@@ -278,6 +285,7 @@ public class ClientManager {
     }
 
     public void connectionOpened(WebSocketClientConnection connection) {
+        Infrastructure.getDefaultWorkerPool().execute(() -> sendSystemInfo(connection));
         Log.infof("Global WebSocket ready: connectionId=%s, queuedMessages=%d; resetting reconnect attempt",
                 connection.id(), pendingClientMessages.size());
 

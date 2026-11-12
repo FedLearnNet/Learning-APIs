@@ -4,6 +4,7 @@ import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
 import bio.cosy.feddb.core.services.orch.clients.DockerServiceClient;
 import bio.cosy.feddb.core.services.orch.clients.VolumeServiceClient;
 import bio.cosy.feddb.core.services.orch.dto.*;
+import bio.cosy.feddb.local.services.orch.ComputingInfoBO;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -26,6 +27,14 @@ public class OrchApiRelayServiceImpl implements OrchApiRelayService {
     @Inject
     @RestClient
     DockerServiceClient dockerClient;
+
+    @Inject
+    ComputingInfoBO computingInfo;
+
+    @Override
+    public SystemComputingInfoDTO computingInfo() {
+        return computingInfo.get();
+    }
 
     @Override
     public InfoDTO dockerInfo() {

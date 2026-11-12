@@ -56,6 +56,10 @@ public class QueryBO extends BaseBo<QueryDTO, QueryEntity, QueryAO, QueryMapper>
         return mapper.entityToDto(entity.get());
     }
 
+    public QueryEntity findEntityByGlobalUniqueId(String globalUniqueId) {
+        return ao.findByGlobalUniqueID(globalUniqueId).orElseThrow(NotFoundException::new);
+    }
+
     public QueryDetailDTO getDetailById(Long id, String keycloakId) {
         Optional<QueryEntity> entity = ao.findByIdForUser(id, keycloakId);
         if (entity.isEmpty()) {

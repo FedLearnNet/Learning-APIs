@@ -86,7 +86,7 @@ class PipelineBOTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = PipelineRunMode.class, names = {"ALL", "LOCAL_BUILD"})
+    @EnumSource(value = PipelineRunMode.class, names = {"ALL", "BUILD_ONLY", "LOCAL_BUILD"})
     void buildSummaryDoesNotInheritPreviousResults(PipelineRunMode mode) {
         PipelineEntity pipeline = pipeline(PipelineType.MODEL, mode, publishInfo());
         AppPublishInfoDTO current = new AppPublishInfoDTO();

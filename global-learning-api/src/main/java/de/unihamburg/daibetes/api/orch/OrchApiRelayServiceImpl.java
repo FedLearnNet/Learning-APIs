@@ -1,6 +1,7 @@
 package de.unihamburg.daibetes.api.orch;
 
 import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
+import bio.cosy.feddb.core.services.orch.clients.ComputingInfoServiceClient;
 import bio.cosy.feddb.core.services.orch.clients.DockerServiceClient;
 import bio.cosy.feddb.core.services.orch.clients.VolumeServiceClient;
 import bio.cosy.feddb.core.services.orch.dto.*;
@@ -26,6 +27,15 @@ public class OrchApiRelayServiceImpl implements OrchApiRelayService {
     @Inject
     @RestClient
     DockerServiceClient dockerClient;
+
+    @Inject
+    @RestClient
+    ComputingInfoServiceClient computingInfo;
+
+    @Override
+    public SystemComputingInfoDTO computingInfo() {
+        return computingInfo.getInfo();
+    }
 
     @Override
     public InfoDTO dockerInfo() {

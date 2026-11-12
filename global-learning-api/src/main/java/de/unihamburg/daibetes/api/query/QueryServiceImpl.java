@@ -3,6 +3,8 @@ package de.unihamburg.daibetes.api.query;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.query.QueryDetailDTO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
+import de.unihamburg.daibetes.api.query.response.QueryResponseBO;
+import de.unihamburg.daibetes.api.query.response.QueryResponseDTO;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -21,6 +23,14 @@ public class QueryServiceImpl implements QueryService {
 
     @Inject
     QueryBO bo;
+
+    @Inject
+    QueryResponseBO responses;
+
+    @Override
+    public List<QueryResponseDTO> systems(Long id) {
+        return responses.getSystems(id, userIdentity.getKeycloakId());
+    }
 
     @Inject
     @Channel("queries")

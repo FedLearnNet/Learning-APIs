@@ -1,6 +1,8 @@
 package de.unihamburg.daibetes.api.observer;
 
+import bio.cosy.feddb.core.services.orch.dto.SystemComputingInfoDTO;
 import de.unihamburg.daibetes.api.feddbclient.FLNetClientBroadcastBO;
+import de.unihamburg.daibetes.api.feddbclient.FLNetClientWebsocketHandlerBO;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -9,6 +11,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 
 import java.util.List;
+import java.util.Map;
 
 @ApplicationScoped
 public class FLNetClientObserverServiceImpl implements FLNetClientObserverService {
@@ -19,6 +22,14 @@ public class FLNetClientObserverServiceImpl implements FLNetClientObserverServic
 
     @Inject
     FLNetClientBroadcastBO broadcastBO;
+
+    @Inject
+    FLNetClientWebsocketHandlerBO handlerBO;
+
+    @Override
+    public Map<String, SystemComputingInfoDTO> getSystems() {
+        return handlerBO.getSystems();
+    }
 
     @Inject
     @Channel(FLNetClientObserverEmitter.CLIENT_OBSERVER_CHANNEL)

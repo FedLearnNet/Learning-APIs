@@ -26,6 +26,11 @@ public class QueryResponseBO extends BaseBo<QueryResponseDTO, QueryResponseEntit
         return mapper.entitiesToDtos(ao.getAllByUser(keycloakId).stream());
     }
 
+    public List<QueryResponseDTO> getSystems(Long queryId, String keycloakId) {
+        queryBO.getById(queryId, keycloakId);
+        return mapper.entitiesToDtos(ao.list("query.id = ?1 and count > 0 and error is null", queryId).stream());
+    }
+
     public void saveResponse(QueryClientResponseDTO request) {
         QueryResponseDTO dto = mapper.createDtoToDto(request);
         boolean isError = request.getType().equals(FedDBClientResponseType.ERROR);
@@ -33,6 +38,11 @@ public class QueryResponseBO extends BaseBo<QueryResponseDTO, QueryResponseEntit
             dto.setCount(0);
         }
         try {
+            if (!isError && dto.getCount() != null && dto.getCount() > 0) {
+                QueryResponseEntity response = mapper.dtoToEntity(dto);
+                response.setQuery(queryBO.findEntityByGlobalUniqueId(request.getGlobalUniqueQueryId()));
+                ao.persist(response);
+            }
             queryBO.setCount(request.getGlobalUniqueQueryId(), dto.getCount());
             if (isError && dto.getError() != null) {
                 queryBO.setError(request.getGlobalUniqueQueryId(), dto.getError());
