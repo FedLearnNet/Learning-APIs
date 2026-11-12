@@ -11,6 +11,7 @@ import bio.cosy.feddb.core.services.orch.dto.CreateContainerResponseDTO;
 import bio.cosy.feddb.core.services.orch.dto.StartPipelineDTO;
 import de.unihamburg.daibetes.api.app.FederatedAppEntity;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
+import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.build.pipeline.steps.PipelineStepBO;
 import de.unihamburg.daibetes.api.build.pipeline.steps.PipelineStepEntity;
@@ -25,6 +26,7 @@ import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
@@ -64,6 +66,12 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
 
     @Inject
     ModelSubFileBO modelSubFileBO;
+
+    @Inject
+    FederatedAppVersionAO appVersionAO;
+
+    @Inject
+    Event<PipelinePublishEvent> publishEvents;
 
     @Inject
     FLNetConfig config;
@@ -109,6 +117,15 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         }
         if (dto.getRunMode() == PipelineRunMode.LOCAL_BUILD && dto.getPipelineType() != PipelineType.MODEL) {
             throw new BadRequestException("LOCAL_BUILD requires uploaded model files");
+        }
+        if (dto.getRunMode() == PipelineRunMode.ALL) {
+            if (dto.getPipelineType() != PipelineType.APP || dto.getPublishRequest() == null) {
+                throw new BadRequestException("ALL publishes a tool version and requires its publish settings");
+            }
+            if (appVersionAO.findAppIdOfLatestUnpublishedOptional(dto.getAppVersionId()).isEmpty()) {
+                throw new BadRequestException("Only the latest unpublished tool version can be built and published");
+            }
+            pipeline.setPublishRequest(dto.getPublishRequest());
         }
         if (dto.getRunMode() == PipelineRunMode.SCAN_ONLY) {
             String imageName;
@@ -179,7 +196,8 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         StartPipelineDTO startApp = new StartPipelineDTO();
         startApp.setPipelineId(id);
         startApp.setAppImage(config.pipelineBuilderImage().get());
-        startApp.setRunMode(entity.getRunMode());
+        // orch builds and pushes alike for both, publishing happens here
+        startApp.setRunMode(entity.getRunMode() == PipelineRunMode.BUILD_ONLY ? PipelineRunMode.ALL : entity.getRunMode());
         startApp.addEnvironment(toolApiKeyService.issue(Scope.PIPELINE_RUN, id), id, entity.getSecret());
         return startApp;
     }
@@ -351,6 +369,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
 
 
     private void updateOverallPipelineStatus(PipelineEntity pipeline) {
+        boolean succeededBefore = pipeline.getPipelineStatus() == PipelineStatus.SUCCESS;
         boolean hasFailedStep = pipeline.getSteps().stream()
                 .anyMatch(s -> s.getStepStatus() == PipelineStatus.FAILED);
 
@@ -373,6 +392,11 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
             setImageTag(pipeline);
         }
         ao.persist(pipeline);
+        if (succeeded && !succeededBefore && pipeline.getRunMode() == PipelineRunMode.ALL
+                && pipeline.getPublishRequest() != null && pipeline.getAppVersion() != null) {
+            publishEvents.fire(new PipelinePublishEvent(pipeline.getId(), pipeline.getAppVersion().getId(),
+                    pipeline.getPublishRequest()));
+        }
         if (succeeded) {
             toolApiKeyService.revoke(Scope.PIPELINE_RUN, pipeline.getId());
         }

@@ -28,6 +28,16 @@ public class FederatedAppVersionAO implements PanacheRepository<FederatedAppVers
                 .firstResultOptional();
     }
 
+    // app id while the version is still its app's latest unpublished one
+    public Optional<Long> findAppIdOfLatestUnpublishedOptional(Long appVersionId) {
+        return findByIdOptional(appVersionId)
+                .map(version -> version.getFederatedApp().getId())
+                .filter(appId -> findLastVersionByAppIdOptional(appId)
+                        .filter(latest -> latest.getId().equals(appVersionId))
+                        .filter(latest -> latest.getVersionPublishStatus() == PublishStatus.UNPUBLISHED)
+                        .isPresent());
+    }
+
     public List<FederatedAppVersionEntity> listForAudit(String keycloakId, long minAuditCount) {
         return find(
                 "from FederatedAppVersionEntity v " +

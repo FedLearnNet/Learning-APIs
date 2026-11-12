@@ -56,7 +56,7 @@ public class PipelineStepBO extends BaseBo<PipelineStepDTO, PipelineStepEntity, 
     public PipelineDTO createSteps(PipelineDTO dto) {
         ArrayList<PipelineStepDTO> steps = new ArrayList<>();
         List<StepName> stepNames = switch (dto.getRunMode()) {
-            case ALL -> List.of(StepName.PREFLIGHT, StepName.FETCH_CONFIG, StepName.CLONE_REPO,
+            case ALL, BUILD_ONLY -> List.of(StepName.PREFLIGHT, StepName.FETCH_CONFIG, StepName.CLONE_REPO,
                     StepName.FETCH_FILES, StepName.SAST, StepName.BUILD_IMAGE, StepName.SCAN_IMAGE,
                     StepName.MALWARE_CHECK, StepName.RUN_PYTEST, StepName.PUSH_IMAGE, StepName.COLLECT_SUMMARY);
             case LOCAL_BUILD -> List.of(StepName.PREFLIGHT, StepName.FETCH_CONFIG, StepName.FETCH_FILES,
