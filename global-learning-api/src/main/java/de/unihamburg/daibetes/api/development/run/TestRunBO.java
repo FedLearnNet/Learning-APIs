@@ -263,11 +263,11 @@ public class TestRunBO {
                 .orElseThrow(() -> new NotFoundException("Federated test run " + runId + " not found"));
     }
 
-    // Resolve only the id: the lifecycle must load the attempt for the first time with its write
-    // lock, otherwise concurrent reports can make a previously loaded version stale.
+    // Loaded with its write lock: the lifecycle reuses the managed attempt, an unlocked one would stay stale.
     private Long participantAttemptIdOf(Long runId, String participantId) {
-        return attemptAO.findParticipantAttemptIdOptional(runId, participantId)
-                .or(() -> attemptAO.findSelectedTestAttemptIdOptional(runId))
+        return attemptAO.findParticipantAttemptWrite(runId, participantId)
+                .or(() -> attemptAO.findSelectedTestAttemptWrite(runId))
+                .map(ExecutionAttemptEntity::getId)
                 .orElseThrow(() -> new NotFoundException("Federated test run " + runId + " not found"));
     }
 

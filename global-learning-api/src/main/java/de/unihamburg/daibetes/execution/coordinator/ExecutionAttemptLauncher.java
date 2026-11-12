@@ -68,7 +68,7 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
 
     @Override
     protected void beforeClaim(Long attemptId) {
-        attemptAO.findTestStepIdOptional(attemptId).flatMap(stepAO::findByIdWrite)
+        stepAO.findTestStepOfAttemptWrite(attemptId)
                 .filter(step -> !step.hasEnded() && step.getRun().getEngineMode() == TestEngineMode.FEDERATED_RUN)
                 .ifPresent(hostedTests::prepare);
     }

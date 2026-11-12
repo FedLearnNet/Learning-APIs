@@ -79,14 +79,14 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
     @Override
     protected <T> void handleAppMessages(AppMessageWrapperDTO<T> message, Long attemptId, AppRunTypeEnum runType) {
         if (runType == AppRunTypeEnum.FEDERATED_TEST_RUN && message.getType() == AppMessageTypeEnum.FEDERATED_PARTICIPANT_UPDATE) {
-            hostedTests.updateParticipant(attemptId, decode(message.getMessage(), FederatedParticipantUpdateDTO.class));
+            hostedTests.updateParticipantTransactional(attemptId, decode(message.getMessage(), FederatedParticipantUpdateDTO.class));
         } else if (runType == AppRunTypeEnum.FEDERATED_TEST_RUN && message.getType() == AppMessageTypeEnum.FEDERATED_ROUND_MESSAGE) {
-            hostedTests.storeRound(attemptId, decode(message.getMessage(), FederatedRoundMessageCreateDTO.class));
+            hostedTests.storeRoundTransactional(attemptId, decode(message.getMessage(), FederatedRoundMessageCreateDTO.class));
         } else if ((runType == AppRunTypeEnum.FEDERATED_TEST_RUN || runType == AppRunTypeEnum.TEST_RUN)
                 && message.getType() == AppMessageTypeEnum.LOG_METRIC) {
             ExecutionMessageMetricDTO metric = decode(message.getMessage(), ExecutionMessageMetricDTO.class);
             lifecycle.storeMetricTransactional(attemptId, metric);
-            hostedTests.publish(attemptId, AppMessageTypeEnum.LOG_METRIC, metric);
+            hostedTests.publishTransactional(attemptId, AppMessageTypeEnum.LOG_METRIC, metric);
         } else {
             super.handleAppMessages(message, attemptId, runType);
         }
@@ -96,7 +96,7 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
     protected void logMessage(Long attemptId, ExecutionMessageLogDTO log, AppRunTypeEnum runType) {
         super.logMessage(attemptId, log, runType);
         if (runType == AppRunTypeEnum.FEDERATED_TEST_RUN || runType == AppRunTypeEnum.TEST_RUN)
-            hostedTests.publish(attemptId, AppMessageTypeEnum.LOG_MESSAGE, log);
+            hostedTests.publishTransactional(attemptId, AppMessageTypeEnum.LOG_MESSAGE, log);
     }
 
     @Override

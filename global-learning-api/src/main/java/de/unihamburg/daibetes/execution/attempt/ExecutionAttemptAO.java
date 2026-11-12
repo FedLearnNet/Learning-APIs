@@ -1,6 +1,7 @@
 package de.unihamburg.daibetes.execution.attempt;
 
 import bio.cosy.feddb.core.execution.ExecutionPurpose;
+import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.core.execution.attempt.BaseExecutionAttemptAO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import de.unihamburg.daibetes.api.development.run.federated.FederatedParticipantUpdateDTO;
@@ -15,7 +16,6 @@ import java.util.Optional;
 @ApplicationScoped
 public class ExecutionAttemptAO extends BaseExecutionAttemptAO<ExecutionAttemptEntity> {
 
-    /** Attempts of test runs of an app still waiting for its app engine, oldest first. */
     public List<ExecutionAttemptEntity> listPendingTestAttemptsOfApp(Long appId) {
         return list("status = ?1 and step.run.purpose = ?2 and step.federatedAppVersion.federatedApp.id = ?3",
                 Sort.by("id"), RunStatusTypes.PENDING, ExecutionPurpose.TEST, appId);
@@ -27,17 +27,19 @@ public class ExecutionAttemptAO extends BaseExecutionAttemptAO<ExecutionAttemptE
 
     // Only the id, so the experiment of a platform aggregator is locked before its attempt is loaded.
     public Optional<Long> findAggregatorExperimentIdOptional(Long attemptId) {
-        return getEntityManager().createQuery("""
-                        select a.step.run.experiment.id from ExecutionAttemptEntity a
-                        where a.id = ?1 and a.federation.relayConfig is not null
-                        """, Long.class)
-                .setParameter(1, attemptId)
-                .getResultStream()
-                .findFirst();
+        return find("select step.run.experiment.id from ExecutionAttemptEntity where id = ?1 and federation.relayConfig is not null",
+                attemptId).project(Long.class).firstResultOptional();
     }
 
-    public Optional<ExecutionAttemptEntity> findParticipantAttemptOptional(Long runId, String participantId) {
-        return find("step.run.id = ?1 and federation.participant.participantId = ?2", runId, participantId).firstResultOptional();
+    // Only the id is read before the lock, so no unlocked version of the attempt ends up managed.
+    public Optional<ExecutionAttemptEntity> findParticipantAttemptWrite(Long runId, String participantId) {
+        return find("select id from ExecutionAttemptEntity where step.run.id = ?1 and federation.participant.participantId = ?2",
+                runId, participantId).project(Long.class).firstResultOptional().flatMap(this::findByIdWrite);
+    }
+
+    public Optional<ExecutionAttemptEntity> findSelectedTestAttemptWrite(Long runId) {
+        return find("select selectedAttempt.id from ExecutionRunStepEntity where run.id = ?1 and run.purpose = ?2 and run.mode = ?3",
+                runId, ExecutionPurpose.TEST, ExecutionMode.FEDERATED).project(Long.class).firstResultOptional().flatMap(this::findByIdWrite);
     }
 
     public void applyParticipantUpdate(ExecutionAttemptEntity attempt, FederatedParticipantUpdateDTO update) {

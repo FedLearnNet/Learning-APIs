@@ -103,13 +103,12 @@ public class TestRunLauncher {
     // Claims the attempt, for a federated test run every pending participant, so a repeated event starts nothing twice.
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     TestRunLaunchDTO claimTransactional(Long attemptId) {
-        Long stepId = attemptAO.findTestStepIdOptional(attemptId).orElse(null);
-        if (stepId == null) {
-            return null;
-        }
         // Lock before loading any attempt: another participant's launch may already have claimed
         // the whole step. A previously managed attempt would retain its stale PENDING status.
-        ExecutionRunStepEntity step = stepAO.findByIdWrite(stepId).orElseThrow();
+        ExecutionRunStepEntity step = stepAO.findTestStepOfAttemptWrite(attemptId).orElse(null);
+        if (step == null) {
+            return null;
+        }
         Long appId = step.getFederatedAppVersion().getFederatedApp().getId();
         // While a test engine container runs it is the app's only engine, so it serves this run
         runAO.findConnectingEngineOfApp(appId)
