@@ -13,6 +13,7 @@ import bio.cosy.feddb.core.base.BaseBo;
 import de.unihamburg.daibetes.api.feddbclient.FLNetClientBroadcastBO;
 import de.unihamburg.daibetes.api.project.ProjectBO;
 import de.unihamburg.daibetes.api.project.experiment.federated.aggregator.ProjectFederatedExperimentAggregatorBO;
+import de.unihamburg.daibetes.api.project.experiment.federated.aggregator.ProjectFederatedExperimentFlowerAggregatorBO;
 import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantAO;
 import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantBO;
 import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantEntity;
@@ -74,6 +75,9 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
 
     @Inject
     ProjectFederatedExperimentAggregatorBO aggregatorBO;
+
+    @Inject
+    ProjectFederatedExperimentFlowerAggregatorBO flowerAggregatorBO;
 
     @Inject
     @Channel(EXPERIMENT_FED_CHANNEL)
@@ -173,6 +177,16 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
 
     private boolean workflowHasFlowerNode(WorkflowDTO workflow) {
         return workflow.getNodes().stream().anyMatch(WorkflowNodeDetailDTO::isFlowerCommunicator);
+    }
+
+    /**
+     * Whether the given step's workflow node is Flower-tagged - used to pick which aggregator BO
+     * (FL-Net relay-based vs. Flower) owns a step's container, since containerId is a single
+     * generic column shared by both (see ProjectFederatedExperimentStepEntity).
+     */
+    private boolean isFlowerStep(WorkflowDTO workflow, ProjectFederatedExperimentStepEntity step) {
+        WorkflowNodeDetailDTO node = baseWorkflowEngine.findByNodeId(workflow, step.getWorkflowNode().getNodeId());
+        return node != null && node.isFlowerCommunicator();
     }
 
 
@@ -538,11 +552,20 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
             Log.infof("No start node found in workflow for FED experiment ID %d", experiment.getId());
             return;
         }
-        FederatedRelaySetupResult relaySetup;
+        Map<String, FederatedLearningRelayInfoDTO> relayData;
         try {
-            relaySetup = projectFederatedExperimentStepBO.handleRelaySetup(experiment);
-            if (relaySetup.platformRelayInfo() != null) {
-                aggregatorBO.start(experiment, nextNode, relaySetup.platformRelayInfo());
+            if (nextNode.isFlowerCommunicator()) {
+                // Flower's SuperLink is reached directly via its own exposed Fleet API port, not
+                // the Go Relay Server, so none of FL-Net's relay-channel setup applies here -
+                // calling handleRelaySetup() would wrongly stand up an unused FL-Net relay channel.
+                flowerAggregatorBO.start(experiment, nextNode);
+                relayData = null;
+            } else {
+                FederatedRelaySetupResult relaySetup = projectFederatedExperimentStepBO.handleRelaySetup(experiment);
+                if (relaySetup.platformRelayInfo() != null) {
+                    aggregatorBO.start(experiment, nextNode, relaySetup.platformRelayInfo());
+                }
+                relayData = relaySetup.clientRelayData();
             }
         } catch (Exception e) {
             Log.errorf(e, "Relay setup failed for experiment %d (current node %s) - stopping learning with ERROR: %s",
@@ -552,7 +575,6 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
             stopLearning(experiment, ProjectStatus.ERROR);
             return;
         }
-        Map<String, FederatedLearningRelayInfoDTO> relayData = relaySetup.clientRelayData();
         if (relayData == null || relayData.isEmpty()) {
             Log.infof("No relay information required for experiment %d (node %s)",
                     experiment.getId(), nextNode.getNodeId());
@@ -585,7 +607,11 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
         Long experimentId = experiment.getId();
         Long currentStepId = experiment.getCurrentWorkflowNode().getId();
         projectFederatedExperimentStepBO.persistStep(currentStepId, RunStatusTypes.FINISHED);
-        aggregatorBO.stop(currentStepId);
+        if (isFlowerStep(workflow, experiment.getCurrentWorkflowNode())) {
+            flowerAggregatorBO.stop(currentStepId);
+        } else {
+            aggregatorBO.stop(currentStepId);
+        }
         projectFederatedExperimentStepBO.stopRelayRun(currentStepId);
         if (nextNode == null) {
             //FINISHED LEARNING

@@ -43,6 +43,32 @@ public class ProjectFederatedExperimentStepAO extends BaseWorkflowStepAO<Project
         return updated == 1;
     }
 
+    /**
+     * Persists the platform's own Flower aggregator container id for this step. Flower needs no
+     * relay credentials (its SuperLink is reached via its own exposed Fleet API port, not the Go
+     * Relay Server), so unlike setPlatformAggregatorContainerTransactional this never touches
+     * platformRelayInfo. Same terminal-state guard as every sibling mutator.
+     */
+    @Transactional
+    public boolean setFlowerAggregatorContainerTransactional(Long stepId, String containerId) {
+        int updated = update(
+                """
+                        containerId = ?1,
+                        updatedAt = ?2
+                        where id = ?3
+                          and (stepStatus is null or stepStatus not in ?4)
+                        """,
+                containerId,
+                new Date(),
+                stepId,
+                RunStatusTypes.terminalStates()
+        );
+        if (updated > 1) {
+            throw new IllegalStateException("Multiple steps updated for stepId " + stepId);
+        }
+        return updated == 1;
+    }
+
     @Transactional
     public boolean markPlatformAggregatorFinishedTransactional(Long stepId) {
         int updated = update(

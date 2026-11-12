@@ -43,6 +43,10 @@ public class ProjectFederatedExperimentStepBO extends BaseWorkflowStepBO<Project
         return ao.markPlatformAggregatorFinishedTransactional(stepId);
     }
 
+    public boolean setFlowerAggregatorContainer(Long stepId, String containerId) {
+        return ao.setFlowerAggregatorContainerTransactional(stepId, containerId);
+    }
+
     @Inject
     ProjectFederatedExperimentParticipantAO participantAO;
 
