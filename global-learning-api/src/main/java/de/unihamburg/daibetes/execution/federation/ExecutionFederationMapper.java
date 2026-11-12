@@ -1,6 +1,7 @@
 package de.unihamburg.daibetes.execution.federation;
 
 import bio.cosy.feddb.core.execution.message.ExecutionMessageRoundDTO;
+import bio.cosy.feddb.core.execution.run.types.FederatedParticipantType;
 import bio.cosy.feddb.core.execution.run.dto.FederatedRunParticipantDTO;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
 import de.unihamburg.daibetes.api.development.run.federated.FederatedParticipantCreateDTO;
@@ -69,12 +70,21 @@ public interface ExecutionFederationMapper {
             @Mapping(target = "supportFederatedLearning", constant = "true"),
             @Mapping(target = "totalRounds", source = "federation.totalRounds"),
             @Mapping(target = "startAggregator", source = "federation.startAggregator"),
+            @Mapping(target = "aggregatorOnly", expression = "java(isAggregatorOnly(step))"),
             @Mapping(target = "config", source = "federation.config"),
             @Mapping(target = "participants", source = "attempts"),
             @Mapping(target = "federatedAppId", source = "federatedAppVersion.federatedApp.id"),
             @Mapping(target = "federatedAppVersionId", source = "federatedAppVersion.id")
     })
     StartRunDTO stepToFederatedStartRunDTO(ExecutionRunStepEntity step);
+
+    default boolean isAggregatorOnly(ExecutionRunStepEntity step) {
+        return step.getAttempts().stream()
+                .map(attempt -> attempt.getFederation().getParticipant())
+                .anyMatch(participant -> participant.getRole() == FederatedParticipantType.AGGREGATOR
+                        && !participant.isCoordinator()
+                        && (participant.getInputFilePaths() == null || participant.getInputFilePaths().isEmpty()));
+    }
 
     @BeanMapping(ignoreByDefault = true)
     @Mappings({

@@ -344,5 +344,12 @@
                 <eval.excludes></eval.excludes>
             </properties>
         </profile>
+        <profile>
+            <!-- second local dev node (node2/start.sh), keeps target/ of the normal node untouched -->
+            <id>node2</id>
+            <build>
+                <directory>${project.basedir}/target-node2</directory>
+            </build>
+        </profile>
     </profiles>
 </project>

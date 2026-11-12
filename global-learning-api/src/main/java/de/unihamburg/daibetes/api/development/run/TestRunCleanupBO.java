@@ -54,6 +54,7 @@ public class TestRunCleanupBO {
 
     public void closeAllOnDisconnect(Long appId) {
         runAO.listOpenTestRunsOfApp(appId).forEach(run -> {
+            if (run.getEngineMode() != null) return;
             ExecutionRunStepEntity step = run.getSteps().getFirst();
             if (run.getMode() == ExecutionMode.FEDERATED) {
                 endFederatedStep(step, RunStatusTypes.ERROR, DISCONNECTED);

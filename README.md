@@ -29,6 +29,9 @@ cp orch_secrets.env.example orch_secrets.env
 ./mvnw compile quarkus:dev          # live reload, Dev UI at /q/dev/
 ```
 
+Second local node for federated runs (port 8082, own DB and containers): `local-learning-api/node2/start.sh`,
+overrides in `node2/node2.env`.
+
 ## Secrets
 
 Each module reads its secrets from environment variables or a module-local `.env` file (never commit it —

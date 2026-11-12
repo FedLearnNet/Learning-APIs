@@ -144,6 +144,16 @@ public class TestRunSetupBO {
         if (create.getParticipants() == null || create.getParticipants().isEmpty()) {
             throw new BadRequestException("A federated test run needs participants");
         }
+        if (create.getParticipants().stream().anyMatch(p -> p.getParticipantId() == null || p.getParticipantId().isBlank())
+                || create.getParticipants().stream().map(FederatedParticipantCreateDTO::getParticipantId).distinct().count() != create.getParticipants().size()
+                || create.getParticipants().stream().filter(p -> p.getRole() == FederatedParticipantType.AGGREGATOR).count() != 1
+                || create.getParticipants().stream().noneMatch(p -> p.getRole() == FederatedParticipantType.CLIENT)) {
+            throw new BadRequestException("A federated test needs unique participant IDs, one aggregator and at least one client");
+        }
+        if (create.getAggregatorParticipantId() != null && create.getParticipants().stream().noneMatch(p ->
+                p.getRole() == FederatedParticipantType.AGGREGATOR && p.getParticipantId().equals(create.getAggregatorParticipantId()))) {
+            throw new BadRequestException("The aggregator host must be one of the configured participants");
+        }
         ExecutionFederationEntity federation = federationMapper.createDtoToEntity(create);
         ExecutionRunEntity run = workflowExecutionBO.executeSingleTransactional(
                 new ExecutionStartDTO(ExecutionPurpose.TEST, ExecutionMode.FEDERATED, version.getFederatedApp().getName()), null,
@@ -160,6 +170,7 @@ public class TestRunSetupBO {
         List<ExecutionAttemptEntity> attempts = new ArrayList<>();
         for (FederatedParticipantCreateDTO participant : create.getParticipants()) {
             ExecutionParticipantEntity joined = run.addParticipant(federationMapper.createDtoToEntity(participant));
+            joined.setCoordinator(participant.getParticipantId().equals(create.getAggregatorParticipantId()));
             // Before its attempt, which points to it.
             participantAO.persist(joined);
             ExecutionAttemptEntity attempt = stepCoordinator.launchTrial(step, attempts.size(),

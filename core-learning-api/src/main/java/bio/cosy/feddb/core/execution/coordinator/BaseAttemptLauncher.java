@@ -94,13 +94,14 @@ public abstract class BaseAttemptLauncher<
     // Claims the attempt, so a duplicated launch event cannot start a second container.
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     protected Map.Entry<String, StartWorkflowNodeDTO> claimStartTransactional(Long attemptId) {
+        beforeClaim(attemptId);
         Optional<Attempt> locked = attemptAO.findByIdWrite(attemptId);
         if (locked.isEmpty() || locked.get().getStatus() != RunStatusTypes.PENDING) {
             Log.debugf("Ignoring launch of attempt %d, it is gone or already launched", attemptId);
             return null;
         }
         Attempt attempt = locked.get();
-        ExecutionCallback callback = callbacks.get(attempt.getStep().getRun().getPurpose());
+        ExecutionCallback callback = callbackOf(attempt);
         // Without a callback the attempt runs elsewhere, e.g. in the developer's own app engine.
         if (callback == null) {
             return null;
@@ -122,6 +123,13 @@ public abstract class BaseAttemptLauncher<
 
     /** Adjusts the container start, e.g. whether the app uploads its results; nothing by default. */
     protected void customizeStart(Attempt attempt, StartWorkflowNodeDTO start) {
+    }
+
+    protected ExecutionCallback callbackOf(Attempt attempt) {
+        return callbacks.get(attempt.getStep().getRun().getPurpose());
+    }
+
+    protected void beforeClaim(Long attemptId) {
     }
 
     protected String provisionCredential(Attempt attempt, ExecutionCallback callback) {
@@ -161,7 +169,8 @@ public abstract class BaseAttemptLauncher<
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     protected void stageInputsTransactional(Long attemptId) {
-        attemptAO.findByIdOptional(attemptId).ifPresent(this::stageInputs);
+        // Cancellation waits for controller registration, so group cleanup cannot miss a late join.
+        attemptAO.findByIdWrite(attemptId).filter(attempt -> !attempt.hasEnded()).ifPresent(this::stageInputs);
     }
 
     protected void stageInputs(Attempt attempt) {

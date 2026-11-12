@@ -2,6 +2,7 @@ package de.unihamburg.daibetes.api.development.engine;
 
 import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.core.execution.ExecutionPurpose;
+import bio.cosy.feddb.core.execution.ExecutionLocation;
 import bio.cosy.feddb.core.execution.event.ExecutionEventPublisher;
 import bio.cosy.feddb.core.execution.executor.ExecutionStartDTO;
 import bio.cosy.feddb.core.execution.failure.ExecutionFailure;
@@ -16,6 +17,7 @@ import de.unihamburg.daibetes.api.app.FederatedAppAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.development.run.TestRunBO;
+import de.unihamburg.daibetes.api.development.run.federated.HostedFederatedTestBO;
 import de.unihamburg.daibetes.api.development.testembed.TestEmbedConnections;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptAO;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
@@ -69,6 +71,13 @@ public class TestEngineRunBO {
     @Inject
     FederatedAppAO appAO;
 
+    @Inject HostedFederatedTestBO hostedTests;
+
+    public static boolean isRunContainer(ExecutionAttemptEntity attempt) {
+        return attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TEST
+                && attempt.getStep().getRun().getEngineMode() != null;
+    }
+
     @Transactional
     public String bootstrapCredentialTransactional(Long appId, String keycloakId) {
         testRunBO.requireAuthor(appId, keycloakId);
@@ -87,6 +96,17 @@ public class TestEngineRunBO {
                 .filter(FederatedAppVersionEntity::hasImage)
                 .orElseThrow(() -> new BadRequestException("The latest version has no image yet"));
         TestEngineMode mode = create.getMode();
+        if (mode == TestEngineMode.FEDERATED_RUN) {
+            return runMapper.mapRunEntityToDetailDTO(hostedTests.start(version, create.getFederatedTestRun(), keycloakId), false);
+        }
+        if (mode == TestEngineMode.SINGLE_RUN) {
+            if (create.getTestRun() == null) throw new BadRequestException("A single run needs its test run");
+            create.getTestRun().setFederatedAppVersionId(version.getId());
+            ExecutionRunEntity run = runAO.findById(testRunBO.startTestTransactional(appId, create.getTestRun(), keycloakId));
+            run.setEngineMode(mode);
+            run.setLocation(ExecutionLocation.PLATFORM);
+            return runMapper.mapRunEntityToDetailDTO(run, false);
+        }
         if (mode.connects()) {
             if (runAO.findConnectingEngineOfApp(appId).isPresent()) {
                 throw new BadRequestException("A test engine already runs for this tool");
@@ -107,15 +127,6 @@ public class TestEngineRunBO {
         engine.setKeycloakId(keycloakId);
         engine.setEngineMode(mode);
 
-        if (mode == TestEngineMode.SINGLE_RUN) {
-            if (create.getTestRun() == null) {
-                throw new BadRequestException("A single run needs its test run");
-            }
-            create.getTestRun().setFederatedAppVersionId(version.getId());
-            // Stays pending until the engine connects and the launcher hands it over
-            Long runId = testRunBO.startTestTransactional(appId, create.getTestRun(), keycloakId);
-            runAO.findById(runId).setTestEngine(engine);
-        }
         return runMapper.mapRunEntityToDetailDTO(engine, false);
     }
 
@@ -150,10 +161,12 @@ public class TestEngineRunBO {
     @Transactional
     public boolean settleTransactional(Long attemptId, Integer exitCode, boolean timedOut) {
         ExecutionAttemptEntity attempt = attemptAO.findByIdWrite(attemptId).orElse(null);
-        if (attempt == null || attempt.hasEnded() || attempt.getStep().getRun().getPurpose() != ExecutionPurpose.TEST_HOSTING) {
+        if (attempt == null || attempt.hasEnded() || (attempt.getStep().getRun().getPurpose() != ExecutionPurpose.TEST_HOSTING
+                && !isRunContainer(attempt))) {
             return true;
         }
-        boolean selfTest = !attempt.getStep().getRun().getEngineMode().connects();
+        boolean selfTest = attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TEST_HOSTING
+                && !attempt.getStep().getRun().getEngineMode().connects();
         if (exitCode != null) {
             if (selfTest && exitCode == 0) {
                 end(attempt, RunStatusTypes.FINISHED, null, exitCode);
@@ -209,10 +222,11 @@ public class TestEngineRunBO {
     }
 
     @Transactional
-    String findContainerIdTransactional(Long appId, Long runId, String keycloakId) {
+    List<String> findContainerIdsTransactional(Long appId, Long runId, String keycloakId) {
         testRunBO.requireAuthor(appId, keycloakId);
-        return attemptOf(runAO.findEngineOfApp(runId, appId).orElseThrow(NotFoundException::new))
-                .map(ExecutionAttemptEntity::getContainerId).orElse(null);
+        return runAO.findEngineOfApp(runId, appId).orElseThrow(NotFoundException::new).getSteps().stream()
+                .flatMap(step -> step.getAttempts().stream()).map(ExecutionAttemptEntity::getContainerId)
+                .filter(java.util.Objects::nonNull).toList();
     }
 
     @Transactional

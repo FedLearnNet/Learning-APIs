@@ -34,9 +34,9 @@ public class TestRunProgressBO {
     @Inject
     ExecutionFederationMapper federationMapper;
 
-    public ExecutionMessageRoundDTO storeRound(ExecutionAttemptEntity attempt, FederatedRoundMessageCreateDTO create) {
+    public ExecutionMessageRoundDTO storeRound(Long attemptId, FederatedRoundMessageCreateDTO create) {
         ExecutionMessageRoundDTO round = federationMapper.createDtoToRoundDTO(create);
-        lifecycle.storeRoundTransactional(attempt.getId(), round);
+        lifecycle.storeRoundTransactional(attemptId, round);
         return round;
     }
 

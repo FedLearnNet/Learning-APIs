@@ -14,6 +14,11 @@ import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import de.unihamburg.daibetes.api.development.run.federated.HostedFederatedTestBO;
+import de.unihamburg.daibetes.api.development.run.federated.FederatedParticipantUpdateDTO;
+import de.unihamburg.daibetes.api.development.run.federated.FederatedRoundMessageCreateDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
 
 // type = AppConnectionTypesEnum; runId is the attempt the app runs: an analysis or a training on the platform.
 @WebSocket(path = "/execution/{mode}/{runId}/{type}")
@@ -26,6 +31,8 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
 
     @Inject
     ExecutionAttemptLifecycle lifecycle;
+
+    @Inject HostedFederatedTestBO hostedTests;
 
     @OnOpen
     @Blocking
@@ -45,6 +52,7 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
     }
 
     @OnTextMessage
+    @Blocking
     <T> void onMessage(AppMessageWrapperDTO<T> message) {
         consume(connection, message);
     }
@@ -53,17 +61,42 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
     protected AppMessageWrapperDTO<StartRunDTO> startMessageOf(StartRunDTO start) {
         // Only an app joining a relay gets its config, e.g. the platform's aggregator of a training across clinics.
         if (start.getConfig() != null) {
-            return new AppMessageWrapperDTO<>(AppMessageTypeEnum.START_FEDERATED_RUN, start, AppRunTypeEnum.FEDERATED_RUN);
+            return new AppMessageWrapperDTO<>(AppMessageTypeEnum.START_FEDERATED_RUN, start,
+                    start.isDistributedTest() ? AppRunTypeEnum.FEDERATED_TEST_RUN : AppRunTypeEnum.FEDERATED_RUN);
         }
         AppMessageTypeEnum type = lifecycle.predictsTransactional(start.getId())
                 ? AppMessageTypeEnum.START_PREDICTION
                 : AppMessageTypeEnum.START_RUN;
-        return new AppMessageWrapperDTO<>(type, start, AppRunTypeEnum.MODEL_RUN);
+        return new AppMessageWrapperDTO<>(type, start,
+                lifecycle.isTestTransactional(start.getId()) ? AppRunTypeEnum.TEST_RUN : AppRunTypeEnum.MODEL_RUN);
     }
 
     @Override
     protected BaseAttemptLifecycle<?, ?, ?, ?> lifecycle() {
         return lifecycle;
+    }
+
+    @Override
+    protected <T> void handleAppMessages(AppMessageWrapperDTO<T> message, Long attemptId, AppRunTypeEnum runType) {
+        if (runType == AppRunTypeEnum.FEDERATED_TEST_RUN && message.getType() == AppMessageTypeEnum.FEDERATED_PARTICIPANT_UPDATE) {
+            hostedTests.updateParticipant(attemptId, decode(message.getMessage(), FederatedParticipantUpdateDTO.class));
+        } else if (runType == AppRunTypeEnum.FEDERATED_TEST_RUN && message.getType() == AppMessageTypeEnum.FEDERATED_ROUND_MESSAGE) {
+            hostedTests.storeRound(attemptId, decode(message.getMessage(), FederatedRoundMessageCreateDTO.class));
+        } else if ((runType == AppRunTypeEnum.FEDERATED_TEST_RUN || runType == AppRunTypeEnum.TEST_RUN)
+                && message.getType() == AppMessageTypeEnum.LOG_METRIC) {
+            ExecutionMessageMetricDTO metric = decode(message.getMessage(), ExecutionMessageMetricDTO.class);
+            lifecycle.storeMetricTransactional(attemptId, metric);
+            hostedTests.publish(attemptId, AppMessageTypeEnum.LOG_METRIC, metric);
+        } else {
+            super.handleAppMessages(message, attemptId, runType);
+        }
+    }
+
+    @Override
+    protected void logMessage(Long attemptId, ExecutionMessageLogDTO log, AppRunTypeEnum runType) {
+        super.logMessage(attemptId, log, runType);
+        if (runType == AppRunTypeEnum.FEDERATED_TEST_RUN || runType == AppRunTypeEnum.TEST_RUN)
+            hostedTests.publish(attemptId, AppMessageTypeEnum.LOG_MESSAGE, log);
     }
 
     @Override

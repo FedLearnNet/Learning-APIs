@@ -72,7 +72,7 @@ services:
     networks:
       - global-learning-network
   orch-api:
-    image: ghcr.io/fedlearnnet/orchestration-api/orch-api:staging
+    image: ${ORCH_API_IMAGE:-ghcr.io/fedlearnnet/orchestration-api/orch-api:staging}
     user: "0:0"
     ports:
       - '8191:8080'
@@ -127,8 +127,9 @@ services:
     profiles:
       - dev
     environment:
-      RELAY_ADDRESS: relay
-      RELAY_API_PORT: 9140
+      RELAY_ADDRESS_TCP: relay:9141
+      RELAY_TLS_MODE: "off"
+      RELAY_MODE: "dev"
       WORKFLOW_LEARNING_API_WS_ADDRESS: "ws://host.docker.internal:8080"
       LOG_LEVEL_STDOUT: "DEBUG"
     labels:
@@ -147,8 +148,9 @@ services:
     profiles:
       - test
     environment:
-      RELAY_ADDRESS: relay
-      RELAY_API_PORT: 9140
+      RELAY_ADDRESS_TCP: relay:9141
+      RELAY_TLS_MODE: "off"
+      RELAY_MODE: "dev"
       WORKFLOW_LEARNING_API_WS_ADDRESS: "ws://host.docker.internal:8083"
       LOG_LEVEL_STDOUT: "DEBUG"
     labels:

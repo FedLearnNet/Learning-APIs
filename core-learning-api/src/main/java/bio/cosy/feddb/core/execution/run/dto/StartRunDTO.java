@@ -37,4 +37,5 @@ public class StartRunDTO {
     // platform running as aggregator) - tells pyfedappwrap not to build a training app for it.
     private Boolean aggregatorOnly;
     private Integer totalRounds;
+    private boolean distributedTest;
 }

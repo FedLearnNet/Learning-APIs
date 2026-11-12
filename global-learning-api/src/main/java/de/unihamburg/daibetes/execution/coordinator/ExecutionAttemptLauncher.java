@@ -5,6 +5,10 @@ import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
 import bio.cosy.feddb.core.execution.ExecutionPurpose;
 import bio.cosy.feddb.core.execution.coordinator.BaseAttemptLauncher;
 import bio.cosy.feddb.core.execution.coordinator.ExecutionCallback;
+import de.unihamburg.daibetes.api.development.engine.TestEngineMode;
+import de.unihamburg.daibetes.api.development.engine.TestEngineRunBO;
+import de.unihamburg.daibetes.api.development.run.federated.HostedFederatedTestBO;
+import de.unihamburg.daibetes.execution.step.ExecutionRunStepAO;
 import bio.cosy.feddb.core.execution.event.AttemptFinishedEvent;
 import bio.cosy.feddb.core.execution.event.AttemptLaunchEvent;
 import bio.cosy.feddb.core.execution.event.ExecutionChannels;
@@ -44,6 +48,9 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
     @Inject
     FederatedTrainingAggregatorBO aggregatorBO;
 
+    @Inject HostedFederatedTestBO hostedTests;
+    @Inject ExecutionRunStepAO stepAO;
+
     // The apps talk back through the existing BO and websocket of their purpose, an engine like a local one.
     public ExecutionAttemptLauncher() {
         super(Map.of(
@@ -57,6 +64,19 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
         return attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TEST_HOSTING
                 ? testEngineBO.provisionCredential(attempt)
                 : super.provisionCredential(attempt, callback);
+    }
+
+    @Override
+    protected void beforeClaim(Long attemptId) {
+        attemptAO.findTestStepIdOptional(attemptId).flatMap(stepAO::findByIdWrite)
+                .filter(step -> !step.hasEnded() && step.getRun().getEngineMode() == TestEngineMode.FEDERATED_RUN)
+                .ifPresent(hostedTests::prepare);
+    }
+
+    @Override
+    protected ExecutionCallback callbackOf(ExecutionAttemptEntity attempt) {
+        return TestEngineRunBO.isRunContainer(attempt)
+                ? new ExecutionCallback(Scope.EXECUTION_ATTEMPT, "execution/APP") : super.callbackOf(attempt);
     }
 
     @Override
@@ -83,7 +103,9 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
     // The platform's aggregator of a training across clinics reads no data, its controller joins the relay instead.
     @Override
     protected void stageInputs(ExecutionAttemptEntity attempt) {
-        if (FederatedTrainingAggregatorBO.isAggregator(attempt)) {
+        if (HostedFederatedTestBO.isHosted(attempt)) {
+            aggregatorBO.connectController(attempt, attempt.getFederation().getParticipant().getParticipantId());
+        } else if (FederatedTrainingAggregatorBO.isAggregator(attempt)) {
             aggregatorBO.connectController(attempt);
         } else if (attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TRAINING) {
             platformTrainingBO.stageInputs(attempt);
@@ -93,7 +115,8 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
     // An analysis uploads its outputs, a training leaves them in its volume until its step keeps them.
     @Override
     protected void customizeStart(ExecutionAttemptEntity attempt, StartWorkflowNodeDTO start) {
-        start.setEnableRemoteResultSaving(attempt.getStep().getRun().getPurpose() == ExecutionPurpose.ANALYSIS);
+        start.setEnableRemoteResultSaving(attempt.getStep().getRun().getPurpose() == ExecutionPurpose.ANALYSIS
+                || TestEngineRunBO.isRunContainer(attempt));
         if (attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TEST_HOSTING) {
             testEngineBO.customizeStart(attempt, start);
         }

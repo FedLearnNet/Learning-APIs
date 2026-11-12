@@ -48,7 +48,7 @@ public class TestEngineEventsBO {
 
     // ExecutionAttemptLauncher starts the container; watched on a thread of its own, the committed transaction stays behind
     void onAttemptLaunch(@Observes(during = TransactionPhase.AFTER_SUCCESS) AttemptLaunchEvent event) {
-        if (event.getPurpose() == ExecutionPurpose.TEST_HOSTING) {
+        if (event.getPurpose() == ExecutionPurpose.TEST_HOSTING || event.getPurpose() == ExecutionPurpose.TEST) {
             virtualThreads.execute(() -> engineBO.watch(event.getAttemptId()));
         }
     }
@@ -61,8 +61,9 @@ public class TestEngineEventsBO {
 
     void onRunsChanged(@Observes ExecutionRunsChangedEvent event) {
         List<Long> runIds = List.copyOf(event.getRunIds());
-        if (event.getPurpose() == ExecutionPurpose.TEST_HOSTING) {
+        if (event.getPurpose() == ExecutionPurpose.TEST_HOSTING || event.getPurpose() == ExecutionPurpose.TEST) {
             runAO.listByIds(runIds).stream()
+                    .filter(run -> run.getEngineMode() != null)
                     .map(run -> runMapper.mapRunEntityToDetailDTO(run, false))
                     .forEach(run -> {
                         try {
@@ -71,7 +72,8 @@ public class TestEngineEventsBO {
                             Log.debug("Engine run not sent, its stream is closed", e);
                         }
                     });
-        } else if (event.getPurpose() == ExecutionPurpose.TEST) {
+        }
+        if (event.getPurpose() == ExecutionPurpose.TEST) {
             // A single run's engine stops once its test run ended
             virtualThreads.execute(() -> runBO.finishSingleRunEnginesTransactional(runIds));
         }

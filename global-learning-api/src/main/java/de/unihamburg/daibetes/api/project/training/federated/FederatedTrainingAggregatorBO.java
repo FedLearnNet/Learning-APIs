@@ -92,9 +92,15 @@ public class FederatedTrainingAggregatorBO {
      * global server, so it has the request signed by the relay server itself instead of through a clinic's websocket.
      */
     public void connectController(ExecutionAttemptEntity attempt) {
+        connectController(attempt, attempt.getFederation().getRelayConfig().getClientId());
+    }
+
+    public void connectController(ExecutionAttemptEntity attempt, String appKey) {
         FederatedRunConfigDTO relay = attempt.getFederation().getRelayConfig();
+        ControllerStartLearningRequestDTO request = new ControllerStartLearningRequestDTO(relay, attempt.getId());
+        request.setAppKey(appKey);
         String csr;
-        try (Response response = controllerService.startLearning(new ControllerStartLearningRequestDTO(relay, attempt.getId()))) {
+        try (Response response = controllerService.startLearning(request)) {
             if (response.getStatus() != Response.Status.OK.getStatusCode()) {
                 throw new IllegalStateException("controller answered " + response.getStatus() + ": " + response.readEntity(String.class));
             }
@@ -109,7 +115,7 @@ public class FederatedTrainingAggregatorBO {
             throw new IllegalStateException("relay server returned no certificate for attempt " + attempt.getId());
         }
         try (Response response = controllerService.startRelaying(
-                new ControllerStartRelayingRequestDTO(relay.getChannel(), relay.getClientId(), signed.getCertificate()))) {
+                new ControllerStartRelayingRequestDTO(relay.getChannel(), appKey, signed.getCertificate()))) {
             if (response.getStatus() != Response.Status.OK.getStatusCode()) {
                 throw new IllegalStateException("controller answered " + response.getStatus() + " on start-relaying: "
                         + response.readEntity(String.class));

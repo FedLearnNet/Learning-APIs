@@ -1,6 +1,7 @@
 package de.unihamburg.daibetes.api.development.run;
 
 import bio.cosy.feddb.core.execution.ExecutionMode;
+import de.unihamburg.daibetes.api.development.engine.TestEngineRunBO;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
@@ -95,25 +96,27 @@ public class TestRunLauncher {
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     Long findAppIdOfTestAttemptTransactional(Long attemptId) {
         return attemptAO.findTestAttemptOptional(attemptId)
+                .filter(attempt -> !TestEngineRunBO.isRunContainer(attempt))
                 .map(attempt -> attempt.getStep().getFederatedAppVersion().getFederatedApp().getId())
                 .orElse(null);
     }
     // Claims the attempt, for a federated test run every pending participant, so a repeated event starts nothing twice.
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     TestRunLaunchDTO claimTransactional(Long attemptId) {
-        ExecutionAttemptEntity attempt = attemptAO.findTestAttemptOptional(attemptId).orElse(null);
-        if (attempt == null) {
+        Long stepId = attemptAO.findTestStepIdOptional(attemptId).orElse(null);
+        if (stepId == null) {
             return null;
         }
-        ExecutionRunStepEntity step = attempt.getStep();
+        // Lock before loading any attempt: another participant's launch may already have claimed
+        // the whole step. A previously managed attempt would retain its stale PENDING status.
+        ExecutionRunStepEntity step = stepAO.findByIdWrite(stepId).orElseThrow();
         Long appId = step.getFederatedAppVersion().getFederatedApp().getId();
         // While a test engine container runs it is the app's only engine, so it serves this run
         runAO.findConnectingEngineOfApp(appId)
                 .filter(engine -> step.getRun().getTestEngine() == null)
                 .ifPresent(engine -> step.getRun().setTestEngine(engine));
         if (step.getRun().getMode() == ExecutionMode.FEDERATED) {
-            ExecutionRunStepEntity locked = stepAO.findByIdWrite(step.getId()).orElseThrow();
-            List<ExecutionAttemptEntity> pending = locked.getAttempts().stream()
+            List<ExecutionAttemptEntity> pending = step.getAttempts().stream()
                     .filter(participant -> participant.getStatus() == RunStatusTypes.PENDING)
                     .toList();
             if (pending.isEmpty()) {
@@ -124,8 +127,8 @@ public class TestRunLauncher {
             if (step.getRun().getTestEngine() != null) {
                 setupBO.stageOnEngine(step.getRun().getTestEngine(), pending);
             }
-            StartRunDTO start = testRunBO.federatedStartupOfTransactional(locked);
-            withCredential(start, locked.getSelectedAttempt().getId());
+            StartRunDTO start = testRunBO.federatedStartupOfTransactional(step);
+            withCredential(start, step.getSelectedAttempt().getId());
             return new TestRunLaunchDTO(appId,
                     new AppMessageWrapperDTO<>(AppMessageTypeEnum.START_FEDERATED_RUN, start,
                             AppRunTypeEnum.FEDERATED_TEST_RUN));

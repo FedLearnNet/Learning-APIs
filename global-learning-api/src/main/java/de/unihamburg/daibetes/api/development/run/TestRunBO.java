@@ -170,13 +170,13 @@ public class TestRunBO {
 
     @Transactional
     public ExecutionMessageLogDTO storeLogTransactional(Long runId, ExecutionMessageLogDTO log, AppRunTypeEnum runType) {
-        lifecycle.storeLogTransactional(runType.isFederated() ? participantAttemptOf(runId, log.getWorkerId()).getId() : runId, log);
+        lifecycle.storeLogTransactional(runType.isFederated() ? participantAttemptIdOf(runId, log.getWorkerId()) : runId, log);
         return log;
     }
 
     @Transactional
     public ExecutionMessageMetricDTO storeMetricTransactional(Long runId, ExecutionMessageMetricDTO metric, AppRunTypeEnum runType) {
-        lifecycle.storeMetricTransactional(runType.isFederated() ? participantAttemptOf(runId, metric.getWorkerId()).getId() : runId, metric);
+        lifecycle.storeMetricTransactional(runType.isFederated() ? participantAttemptIdOf(runId, metric.getWorkerId()) : runId, metric);
         return metric;
     }
 
@@ -222,12 +222,14 @@ public class TestRunBO {
 
     @Transactional
     public void updateParticipantTransactional(FederatedParticipantUpdateDTO update) {
-        progressBO.updateParticipant(participantAttemptOf(update.getFederatedRunId(), update.getParticipantId()), update);
+        Long attemptId = participantAttemptIdOf(update.getFederatedRunId(), update.getParticipantId());
+        progressBO.updateParticipant(attemptAO.findByIdWrite(attemptId)
+                .orElseThrow(() -> new NotFoundException("Participant attempt " + attemptId + " not found")), update);
     }
 
     @Transactional
     public ExecutionMessageRoundDTO storeRoundMessageTransactional(FederatedRoundMessageCreateDTO create) {
-        return progressBO.storeRound(participantAttemptOf(create.getFederatedRunId(), create.getReportingParticipantId()), create);
+        return progressBO.storeRound(participantAttemptIdOf(create.getFederatedRunId(), create.getReportingParticipantId()), create);
     }
 
     @Transactional
@@ -261,9 +263,12 @@ public class TestRunBO {
                 .orElseThrow(() -> new NotFoundException("Federated test run " + runId + " not found"));
     }
 
-    private ExecutionAttemptEntity participantAttemptOf(Long runId, String participantId) {
-        return attemptAO.findParticipantAttemptOptional(runId, participantId)
-                .orElseGet(() -> federatedStepOf(runId).getSelectedAttempt());
+    // Resolve only the id: the lifecycle must load the attempt for the first time with its write
+    // lock, otherwise concurrent reports can make a previously loaded version stale.
+    private Long participantAttemptIdOf(Long runId, String participantId) {
+        return attemptAO.findParticipantAttemptIdOptional(runId, participantId)
+                .or(() -> attemptAO.findSelectedTestAttemptIdOptional(runId))
+                .orElseThrow(() -> new NotFoundException("Federated test run " + runId + " not found"));
     }
 
     private ExecutionAttemptEntity testAttemptOf(Long attemptId) {
@@ -283,12 +288,13 @@ public class TestRunBO {
             throw new ForbiddenException("Execution identity is required");
         }
         if (federated) {
-            return !testRunOf(appId, id).hasEnded();
+            ExecutionRunEntity run = testRunOf(appId, id);
+            return !run.hasEnded() && run.getEngineMode() == null;
         } else {
             ExecutionAttemptEntity attempt = testAttemptOf(id);
             testRunOf(appId, attempt.getStep().getRun().getId());
             // Ownership is checked even for late reports; an ended execution is simply ignored.
-            return !attempt.hasEnded();
+            return !attempt.hasEnded() && !de.unihamburg.daibetes.api.development.engine.TestEngineRunBO.isRunContainer(attempt);
         }
     }
 }

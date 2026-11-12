@@ -3,7 +3,6 @@ package de.unihamburg.daibetes.api.development.engine;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
-import bio.cosy.feddb.core.services.orch.dto.ContainerLogDTO;
 import bio.cosy.feddb.core.services.orch.dto.ContainerRunDTO;
 import bio.cosy.feddb.core.services.orch.dto.ContainerRunStatus;
 import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
@@ -78,18 +77,19 @@ public class TestEngineBO {
     }
 
     public List<String> listLogs(Long appId, Long runId, String keycloakId) {
-        String containerId = runBO.findContainerIdTransactional(appId, runId, keycloakId);
-        if (containerId == null) {
-            return List.of();
-        }
+        return runBO.findContainerIdsTransactional(appId, runId, keycloakId).stream()
+                .flatMap(containerId -> logsOf(containerId).stream()).toList();
+    }
+
+    private List<String> logsOf(String containerId) {
         try {
             ContainerRunDTO containerRun = containerClient.getRunOfContainer(containerId);
             if (containerRun == null || containerRun.getId() == null) {
                 return List.of();
             }
-            return containerClient.getRunLogs(containerRun.getId()).stream().map(ContainerLogDTO::getLog).toList();
+            return containerClient.getRunLogs(containerRun.getId()).stream().map(log -> "[" + containerId + "] " + log.getLog()).toList();
         } catch (Exception e) {
-            Log.warnf(e, "Failed to load logs of test engine %d", runId);
+            Log.warnf(e, "Failed to load logs of container %s", containerId);
             return List.of();
         }
     }

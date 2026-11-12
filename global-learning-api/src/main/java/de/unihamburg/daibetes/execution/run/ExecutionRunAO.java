@@ -39,9 +39,9 @@ public class ExecutionRunAO extends BaseExecutionRunAO<ExecutionRunEntity> {
 
     // The TEST_HOSTING run connected, or about to connect, as the app's engine; there is at most one
     public Optional<ExecutionRunEntity> findConnectingEngineOfApp(Long appId) {
-        return find("from ExecutionRunEntity r where r.purpose = ?1 and r.status not in ?2 and r.engineMode != ?3 and exists ("
+        return find("from ExecutionRunEntity r where r.purpose = ?1 and r.status not in ?2 and r.engineMode = ?3 and exists ("
                         + "from ExecutionRunStepEntity s where s.run = r and s.federatedAppVersion.federatedApp.id = ?4)",
-                ExecutionPurpose.TEST_HOSTING, RunStatusTypes.terminalStates(), TestEngineMode.SELF_TEST, appId).firstResultOptional();
+                ExecutionPurpose.TEST_HOSTING, RunStatusTypes.terminalStates(), TestEngineMode.ENGINE, appId).firstResultOptional();
     }
 
     public boolean existsOpenSelfTestOfApp(Long appId) {
@@ -51,16 +51,16 @@ public class ExecutionRunAO extends BaseExecutionRunAO<ExecutionRunEntity> {
     }
 
     public List<ExecutionRunEntity> listEnginesOfApp(Long appId) {
-        return list("from ExecutionRunEntity r where r.purpose = ?1 and exists ("
+        return list("from ExecutionRunEntity r where (r.purpose = ?1 or (r.purpose = ?3 and r.engineMode is not null)) and exists ("
                         + "from ExecutionRunStepEntity s where s.run = r and s.federatedAppVersion.federatedApp.id = ?2) "
                         + "order by r.createdAt desc",
-                ExecutionPurpose.TEST_HOSTING, appId);
+                ExecutionPurpose.TEST_HOSTING, appId, ExecutionPurpose.TEST);
     }
 
     public Optional<ExecutionRunEntity> findEngineOfApp(Long runId, Long appId) {
-        return find("from ExecutionRunEntity r where r.id = ?1 and r.purpose = ?2 and exists ("
+        return find("from ExecutionRunEntity r where r.id = ?1 and (r.purpose = ?2 or (r.purpose = ?4 and r.engineMode is not null)) and exists ("
                         + "from ExecutionRunStepEntity s where s.run = r and s.federatedAppVersion.federatedApp.id = ?3)",
-                runId, ExecutionPurpose.TEST_HOSTING, appId).firstResultOptional();
+                runId, ExecutionPurpose.TEST_HOSTING, appId, ExecutionPurpose.TEST).firstResultOptional();
     }
 
     public List<ExecutionRunEntity> listOpenTestRunsOfApp(Long appId) {
