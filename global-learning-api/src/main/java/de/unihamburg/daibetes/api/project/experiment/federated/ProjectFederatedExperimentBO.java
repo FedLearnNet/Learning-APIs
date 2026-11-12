@@ -136,9 +136,17 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
         projectMembershipAO.checkProjectAndUser(projectId, keycloakId);
         projectBO.checkPlatformIsCoordinatorAllowed(Boolean.TRUE.equals(dto.getPlatformIsCoordinator()));
 
-
         ProjectDetailDTO projectDetail = projectBO.getById(projectId);
         WorkflowDTO workflow = workflowBO.getById(projectDetail.getWorkflowId());
+
+        // The aggregator in Flower (Tool/SuperLink bundle) needs its Fleet API port reachable by
+        // clinics' SuperNodes; only the Platform is set up to expose a port like that, so a random
+        // clinic can't host it.
+        if (!Boolean.TRUE.equals(dto.getPlatformIsCoordinator()) && workflowHasFlowerNode(workflow)) {
+            throw new NotAllowedException("This workflow contains a Flower-based tool, which requires the "
+                    + "platform to be the aggregator; random-clinic aggregation is not supported for it.");
+        }
+
         WorkflowEntity clonedWorkflow = workflowBO.cloneWorkflow(workflow);
         String channelId = ProjectFederatedExperimentHelper.createRandomChannelID();
 
@@ -161,6 +169,10 @@ public class ProjectFederatedExperimentBO extends BaseBo<ProjectFederatedExperim
         );
         fedDBClientBroadcastBO.fireLearningQuery(simpleDto);
         return createDto;
+    }
+
+    private boolean workflowHasFlowerNode(WorkflowDTO workflow) {
+        return workflow.getNodes().stream().anyMatch(WorkflowNodeDetailDTO::isFlowerCommunicator);
     }
 
 

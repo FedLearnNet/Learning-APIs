@@ -1,5 +1,6 @@
 package de.unihamburg.daibetes.api.app;
 
+import bio.cosy.feddb.core.api.app.CommunicationEngine;
 import bio.cosy.feddb.core.api.app.FederatedAppType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -23,5 +24,8 @@ public class AppCreateDTO {
     private FederatedAppType type;
 
     private Boolean supportsFederatedLearning;
+
+    @NotNull(message = "Communication engine is required")
+    private CommunicationEngine communicationEngine;
 }
 

@@ -1,5 +1,6 @@
 package bio.cosy.feddb.core.api.workflow.node;
 
+import bio.cosy.feddb.core.api.app.CommunicationEngine;
 import bio.cosy.feddb.core.base.BaseDTO;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -30,6 +31,7 @@ public class WorkflowNodeDTO extends BaseDTO {
     private Boolean oldFCVersion;
     private Boolean supportsFederatedLearning = false;
     private Boolean isTrainable = false;
+    private CommunicationEngine communicationEngine;
 
 
     private boolean hasChildren = false;
@@ -40,5 +42,9 @@ public class WorkflowNodeDTO extends BaseDTO {
 
     public boolean isOldFCVersion() {
         return oldFCVersion != null && oldFCVersion;
+    }
+
+    public boolean isFlowerCommunicator() {
+        return communicationEngine == CommunicationEngine.FLOWER;
     }
 }

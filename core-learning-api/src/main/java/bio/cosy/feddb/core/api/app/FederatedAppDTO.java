@@ -62,6 +62,8 @@ public class FederatedAppDTO extends BaseDTO {
     //OLD FC VERSION
     private Boolean oldFCVersion;
 
+    private CommunicationEngine communicationEngine;
+
     //rating
     private int count;
     private float average;

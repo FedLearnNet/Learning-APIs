@@ -1,5 +1,6 @@
 package de.unihamburg.daibetes.api.app;
 
+import bio.cosy.feddb.core.api.app.CommunicationEngine;
 import bio.cosy.feddb.core.api.app.FederatedAppType;
 import bio.cosy.feddb.core.base.BaseEntity;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorEntity;
@@ -43,6 +44,10 @@ public class FederatedAppEntity extends BaseEntity {
 
     @Column(name = "old_fc_version", nullable = true)
     private Boolean oldFCVersion;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "communication_engine")
+    private CommunicationEngine communicationEngine;
 
     @ManyToMany
     @JoinTable(
