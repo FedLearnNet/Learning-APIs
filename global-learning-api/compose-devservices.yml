@@ -72,7 +72,7 @@ services:
     networks:
       - global-learning-network
   orch-api:
-    image: ${ORCH_API_IMAGE:-ghcr.io/fedlearnnet/orchestration-api/orch-api:staging}
+    image: ghcr.io/fedlearnnet/orchestration-api/orch-api:staging
     user: "0:0"
     ports:
       - '8191:8080'
