@@ -28,7 +28,8 @@ public interface FederatedLearningRequestMapper extends BaseMapper<FederatedLear
             @Mapping(target = "requestPatients", source = "patients", qualifiedByName = "mapPatients"),
             @Mapping(target = "patientCountByCohort", ignore = true),
             @Mapping(target = "cohortDecisions", ignore = true),
-            @Mapping(target = "awaitingCurrentUserDecision", ignore = true)
+            @Mapping(target = "awaitingCurrentUserDecision", ignore = true),
+            @Mapping(target = "platformIsCoordinator", source = "project.platformIsCoordinator")
     })
     FederatedLearningRequestDTO entityToDto(FederatedLearningRequestEntity entity);
 
@@ -38,7 +39,8 @@ public interface FederatedLearningRequestMapper extends BaseMapper<FederatedLear
             @Mapping(target = "requestPatients", ignore = true),
             @Mapping(target = "patientCountByCohort", ignore = true),
             @Mapping(target = "cohortDecisions", ignore = true),
-            @Mapping(target = "awaitingCurrentUserDecision", ignore = true)
+            @Mapping(target = "awaitingCurrentUserDecision", ignore = true),
+            @Mapping(target = "platformIsCoordinator", source = "project.platformIsCoordinator")
     })
     FederatedLearningRequestDTO entityToSummaryDto(FederatedLearningRequestEntity entity);
 

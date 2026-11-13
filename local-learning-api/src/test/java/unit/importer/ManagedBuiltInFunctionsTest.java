@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ManagedBuiltInFunctionsTest {
@@ -30,6 +31,35 @@ class ManagedBuiltInFunctionsTest {
         );
 
         assertEquals("2024-05-17", result.get(0).get("value"));
+    }
+
+    @Test
+    void reformatDateReducesDateToYear() {
+        assertEquals("1975", reformatDate("1975-06-23", "%Y-%m-%d", "%Y"));
+    }
+
+    @Test
+    void reformatDateConvertsLocalNotationToIso() {
+        assertEquals("1975-06-23", reformatDate("23.06.1975", "%d.%m.%Y", "%Y-%m-%d"));
+    }
+
+    @Test
+    void reformatDateReformatsDateTimes() {
+        assertEquals("17.05.2024 13:45", reformatDate("2024-05-17 13:45:00", "%Y-%m-%d %H:%M:%S", "%d.%m.%Y %H:%M"));
+        assertEquals("2024-05-17T13:45", reformatDate("2024-05-17 13:45:00", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d'T'%H:%M"));
+    }
+
+    @Test
+    void reformatDateFallsBackToIsoDateTimeInput() {
+        assertEquals("1975", reformatDate("1975-06-23T08:30:00", "%d.%m.%Y", "%Y"));
+    }
+
+    @Test
+    void reformatDateLeavesUnreadableAndBlankValuesUnchanged() {
+        assertEquals("unknown", reformatDate("unknown", "%Y-%m-%d", "%Y"));
+        assertEquals("1975-06-23", reformatDate("1975-06-23", "%Y-%m-%d", "%Y-%m-%dT%H"));
+        assertEquals("", reformatDate("", "%Y-%m-%d", "%Y"));
+        assertNull(reformatDate(null, "%Y-%m-%d", "%Y"));
     }
 
     @Test
@@ -163,6 +193,20 @@ class ManagedBuiltInFunctionsTest {
         map.put("diag_2", diag2);
         map.put("diag_combined", combined);
         return map;
+    }
+
+    private static Object reformatDate(Object value, String inputFormat, String outputFormat) {
+        List<Map<String, Object>> result = new ReformatDateFunction().apply(
+                List.of(row("value", value)),
+                "value",
+                (Map<String, String>) null,
+                (Map<String, String>) null,
+                Map.of("input_format", inputFormat, "output_format", outputFormat),
+                (String) null,
+                (Long) null,
+                (Long) null
+        );
+        return result.get(0).get("value");
     }
 
     private static Map<String, Object> row(String key, Object value) {

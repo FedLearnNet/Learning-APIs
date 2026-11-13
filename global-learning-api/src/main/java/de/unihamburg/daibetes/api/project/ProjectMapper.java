@@ -101,7 +101,6 @@ public interface ProjectMapper extends BaseMapper<ProjectDetailDTO, ProjectEntit
             @Mapping(target = "status", ignore = true),
             @Mapping(target = "coordinatorHasData", ignore = true),
             @Mapping(target = "isCoordinator", ignore = true),
-            @Mapping(target = "platformIsCoordinator", ignore = true),
             @Mapping(target = "workflowId", ignore = true),
             @Mapping(target = "file", ignore = true),
             @Mapping(target = "globalUniqueQueryId", ignore = true),

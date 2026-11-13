@@ -57,6 +57,11 @@ public class OntologyServiceImpl implements OntologyService {
     }
 
     @Override
+    public Uni<List<OntologyDataTypeDTO>> getSchemaSiblingsWithDataTypes(UUID id) {
+        return ontologyBO.getSchemaSiblingsWithDataTypes(id);
+    }
+
+    @Override
     public Uni<List<OntologyEdgeDTO>> getEdges(UUID id) {
         return ontologyBO.getEdges(id);
     }
