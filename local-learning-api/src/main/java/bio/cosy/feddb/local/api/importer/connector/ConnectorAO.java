@@ -21,6 +21,17 @@ public class ConnectorAO implements PanacheRepository<ConnectorEntity> {
         return find("cohort.id = ?1 and name = ?2", cohortId, name).firstResultOptional();
     }
 
+    /**
+     * Whether another connector already uses {@code name}. Matches exactly, like the unique
+     * constraint on {@code app_connectors.name}, which spans all cohorts.
+     */
+    public boolean existsByNameExcludingId(String name, Long excludeId) {
+        if (excludeId == null) {
+            return count("name", name) > 0;
+        }
+        return count("name = ?1 and id <> ?2", name, excludeId) > 0;
+    }
+
     public List<ConnectorEntity> findByTriggerSourceConnectorId(Long sourceConnectorId) {
         return list("triggerSourceConnectorId", sourceConnectorId);
     }
