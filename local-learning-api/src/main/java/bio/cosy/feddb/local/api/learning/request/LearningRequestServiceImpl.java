@@ -10,10 +10,10 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
-public class FederatedLearningRequestServiceImpl implements FederatedLearningRequestService {
+public class LearningRequestServiceImpl implements LearningRequestService {
 
     @Inject
-    FederatedLearningRequestBO bo;
+    LearningRequestBO bo;
 
     @Inject
     UserIdentity userIdentity;
@@ -23,17 +23,17 @@ public class FederatedLearningRequestServiceImpl implements FederatedLearningReq
 
 
     @Override
-    public PagedResponse<FederatedLearningRequestDTO> list(int pageIndex, int size, FederatedLearningRequestStatus status) {
+    public PagedResponse<LearningRequestDTO> list(int pageIndex, int size, LearningRequestStatus status) {
         String keycloakId = userIdentity.getKeycloakId();
         Page page = Page.of(pageIndex, size);
-        PagedResponse<FederatedLearningRequestDTO> response = bo.list(page, status, keycloakId);
+        PagedResponse<LearningRequestDTO> response = bo.list(page, status, keycloakId);
         response.setResults(response.getResults());
         response.setTotalCount(response.getResults().size());
         return response;
     }
 
     @Override
-    public FederatedLearningRequestDTO retrieve(Long id) {
+    public LearningRequestDTO retrieve(Long id) {
         String keycloakId = userIdentity.getKeycloakId();
         bo.checkForCohortAccess(id, keycloakId);
         return bo.findByIdForUser(id, keycloakId);
@@ -41,7 +41,7 @@ public class FederatedLearningRequestServiceImpl implements FederatedLearningReq
 
     @Override
     @Transactional
-    public FederatedLearningRequestDTO update(Long id, FederatedLearningRequestDTO updateDTO) {
+    public LearningRequestDTO update(Long id, LearningRequestDTO updateDTO) {
         String keycloakId = userIdentity.getKeycloakId();
         bo.checkForCohortAccess(id, keycloakId);
         return bo.update(id, updateDTO, keycloakId);

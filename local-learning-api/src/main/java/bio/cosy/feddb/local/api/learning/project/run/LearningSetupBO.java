@@ -13,9 +13,9 @@ import bio.cosy.feddb.core.execution.run.dto.FederatedRunEnricher;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.local.api.cohort.patient.export.PatientDataExportBO;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectAO;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectEntity;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectAO;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectEntity;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestEntity;
 import bio.cosy.feddb.local.api.workflow.WorkflowBO;
 import bio.cosy.feddb.local.api.workflow.node.WorkflowNodeBO;
 import bio.cosy.feddb.local.api.workflow.node.WorkflowNodeEntity;
@@ -34,10 +34,13 @@ import jakarta.inject.Inject;
 import org.apache.commons.io.FileUtils;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @ApplicationScoped
-public class FederatedLearningSetupBO {
+public class LearningSetupBO {
 
     @Inject
     WorkflowExecutionBO workflowExecutionBO;
@@ -52,7 +55,7 @@ public class FederatedLearningSetupBO {
     ExecutionEventPublisher events;
 
     @Inject
-    FederatedLearningProjectAO projectAO;
+    LearningProjectAO projectAO;
 
     @Inject
     ExecutionFederationAO federationAO;
@@ -72,8 +75,8 @@ public class FederatedLearningSetupBO {
     @Inject
     FLNetClientConfig config;
 
-    public String approve(FederatedLearningRequestEntity request) {
-        FederatedLearningProjectEntity project = request.getProject();
+    public String approve(LearningRequestEntity request) {
+        LearningProjectEntity project = request.getProject();
         if (project.getRun() != null) {
             return project.getRun().getParticipantId();
         }
@@ -85,7 +88,7 @@ public class FederatedLearningSetupBO {
         return run.getParticipantId();
     }
 
-    public ExecutionRunStepEntity startTraining(FederatedLearningProjectEntity project, ExecutionRunEntity run, StartLearningClientRequestDTO request) {
+    public ExecutionRunStepEntity startTraining(LearningProjectEntity project, ExecutionRunEntity run, StartLearningClientRequestDTO request) {
         if (run.getParticipantId().equals(request.getCoordinatorId())) {
             project.setIsCoordinator(true);
         }
@@ -115,13 +118,15 @@ public class FederatedLearningSetupBO {
         FederatedRunEnricher.enrichWithFederatedRelay(start, federation.getConfig(), Boolean.TRUE.equals(federation.getStartAggregator()), false);
     }
 
-    /** Puts the clinic's data into the volume of a step that reads it: the first one or one the workflow feeds. */
+    /**
+     * Puts the clinic's data into the volume of a step that reads it: the first one or one the workflow feeds.
+     */
     public void stageInputs(ExecutionAttemptEntity attempt) {
         ExecutionRunStepEntity step = attempt.getStep();
         if (!readsProjectData(step)) {
             return;
         }
-        FederatedLearningProjectEntity project = projectAO.findByRunId(step.getRun().getId());
+        LearningProjectEntity project = projectAO.findByRunId(step.getRun().getId());
         Path data = exportBO.exportDataForLearning(project.getExportConfig(), project.getQuery().getId(), project.getRequest().getId());
         try {
             inputsOf(step).forEach(input -> orchestrator.uploadFilesToVolume(step.getRun().getId(), attempt.getId(), data, input.getFileName()));
@@ -160,4 +165,5 @@ public class FederatedLearningSetupBO {
     private List<ToolInputConfigDTO> inputsOf(ExecutionRunStepEntity step) {
         return workflowNodeBO.toDetailDto(step.getWorkflowNode()).getAppInputConfig();
     }
+
 }

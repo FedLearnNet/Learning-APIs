@@ -7,35 +7,35 @@ import bio.cosy.feddb.core.api.app.config.ToolConfigsDTO;
 import bio.cosy.feddb.core.api.app.config.ToolInputConfigDTO;
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.project.ProjectStatus;
+import bio.cosy.feddb.core.api.socket.LearningClientSyncResponseDTO;
 import bio.cosy.feddb.core.api.socket.LearningQueryClientResponseDTO;
 import bio.cosy.feddb.core.api.socket.ProjectFederatedExperimentForLocalDTO;
+import bio.cosy.feddb.core.api.socket.StartLearningClientRequestDTO;
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.api.workflow.connection.WorkflowConnectionDTO;
 import bio.cosy.feddb.core.api.workflow.connection.WorkflowConnectionStatics;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
+import bio.cosy.feddb.core.execution.orchestrator.OrchestratorGateway;
 import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
+import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.local.api.cohort.patient.export.PatientDataExportBO;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningAO;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningDTO;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningEntity;
 import bio.cosy.feddb.local.api.eam.WebsocketSender;
-import bio.cosy.feddb.core.api.socket.LearningClientSyncResponseDTO;
-import bio.cosy.feddb.core.api.socket.StartLearningClientRequestDTO;
-import bio.cosy.feddb.core.execution.orchestrator.OrchestratorGateway;
-import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectAO;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectEntity;
-import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningRunBO;
-import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptLifecycle;
-import bio.cosy.feddb.local.execution.run.ExecutionRunAO;
-import bio.cosy.feddb.local.execution.run.ExecutionRunBO;
-import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectAO;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectEntity;
+import bio.cosy.feddb.local.api.learning.project.run.LearningRunBO;
 import bio.cosy.feddb.local.api.learning.request.*;
 import bio.cosy.feddb.local.api.query.LocalQueryDTO;
 import bio.cosy.feddb.local.api.query.QueryBO;
 import bio.cosy.feddb.local.api.query.QueryResultDTO;
 import bio.cosy.feddb.local.api.query.QueryResultWrapperDTO;
+import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptLifecycle;
+import bio.cosy.feddb.local.execution.run.ExecutionRunAO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunBO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
 import bio.cosy.feddb.local.services.GlobalAPIStoreService;
 import bio.cosy.feddb.local.services.KeycloakService;
 import io.quarkus.narayana.jta.QuarkusTransaction;
@@ -63,22 +63,22 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @QuarkusTest
-@TestHTTPEndpoint(FederatedLearningRequestService.class)
+@TestHTTPEndpoint(LearningRequestService.class)
 class FederatedLearningRequestE2ETest {
 
     private static final String SEEDED_QUERY_GLOBAL_ID = "1e427196-9827-43fd-ae22-fc0f511694a9";
 
     @Inject
-    FederatedLearningRequestBO requestBO;
+    LearningRequestBO requestBO;
 
     @Inject
-    FederatedLearningRequestAO requestAO;
+    LearningRequestAO requestAO;
 
     @Inject
-    FederatedLearningRunBO federatedLearningRunBO;
+    LearningRunBO learningRunBO;
 
     @Inject
-    FederatedLearningProjectAO projectAO;
+    LearningProjectAO projectAO;
 
     @Inject
     ExecutionRunAO runAO;
@@ -134,9 +134,9 @@ class FederatedLearningRequestE2ETest {
 
         assertTrue(response.isEmpty());
 
-        FederatedLearningRequestEntity created = requestAO.findByGlobalFLExperimentUniqueId(globalExperimentId)
+        LearningRequestEntity created = requestAO.findByGlobalFLExperimentUniqueId(globalExperimentId)
                 .orElseThrow();
-        assertEquals(FederatedLearningRequestStatus.PENDING, created.getStatus());
+        assertEquals(LearningRequestStatus.PENDING, created.getStatus());
         assertNotNull(created.getProject());
         assertFalse(created.getPatients().isEmpty());
 
@@ -157,11 +157,11 @@ class FederatedLearningRequestE2ETest {
         String globalExperimentId = "approve-" + UUID.randomUUID();
         requestBO.handleLearningRequest(buildIncomingRequest(globalExperimentId, false));
 
-        FederatedLearningRequestEntity pending = requestAO.findByGlobalFLExperimentUniqueId(globalExperimentId)
+        LearningRequestEntity pending = requestAO.findByGlobalFLExperimentUniqueId(globalExperimentId)
                 .orElseThrow();
 
-        FederatedLearningRequestDTO update = new FederatedLearningRequestDTO();
-        update.setStatus(FederatedLearningRequestStatus.APPROVED);
+        LearningRequestDTO update = new LearningRequestDTO();
+        update.setStatus(LearningRequestStatus.APPROVED);
         update.setModelCanBePublic(false);
 
         given()
@@ -205,8 +205,8 @@ class FederatedLearningRequestE2ETest {
         PatientLearningDTO selected = new PatientLearningDTO();
         selected.setId(keptId);
 
-        FederatedLearningRequestDTO update = new FederatedLearningRequestDTO();
-        update.setStatus(FederatedLearningRequestStatus.APPROVED);
+        LearningRequestDTO update = new LearningRequestDTO();
+        update.setStatus(LearningRequestStatus.APPROVED);
         update.setModelCanBePublic(true);
         update.setRequestPatients(List.of(selected));
 
@@ -234,8 +234,8 @@ class FederatedLearningRequestE2ETest {
                 .orElseThrow()
                 .getId());
 
-        FederatedLearningRequestDTO update = new FederatedLearningRequestDTO();
-        update.setStatus(FederatedLearningRequestStatus.REJECTED);
+        LearningRequestDTO update = new LearningRequestDTO();
+        update.setStatus(LearningRequestStatus.REJECTED);
 
         given()
                 .contentType(ContentType.JSON)
@@ -271,10 +271,10 @@ class FederatedLearningRequestE2ETest {
         String globalExperimentId = "run-" + UUID.randomUUID();
         requestBO.handleLearningRequest(buildIncomingRequest(globalExperimentId, true));
 
-        FederatedLearningRequestEntity pending = requestAO.findByGlobalFLExperimentUniqueId(globalExperimentId)
+        LearningRequestEntity pending = requestAO.findByGlobalFLExperimentUniqueId(globalExperimentId)
                 .orElseThrow();
-        FederatedLearningRequestDTO approval = new FederatedLearningRequestDTO();
-        approval.setStatus(FederatedLearningRequestStatus.APPROVED);
+        LearningRequestDTO approval = new LearningRequestDTO();
+        approval.setStatus(LearningRequestStatus.APPROVED);
         approval.setModelCanBePublic(true);
 
         given()
@@ -295,7 +295,7 @@ class FederatedLearningRequestE2ETest {
         when(gateway.startWorkflow(any(), anyString())).thenReturn("container-123");
         when(exportBO.exportDataForLearning(any(), anyLong(), anyLong())).thenReturn(inputFile);
 
-        LearningClientSyncResponseDTO started = federatedLearningRunBO.handleStartLearningRequestTransactional(
+        LearningClientSyncResponseDTO started = learningRunBO.handleStartLearningRequestTransactional(
                 new StartLearningClientRequestDTO(globalExperimentId, null, true)).orElseThrow();
         assertEquals(ProjectStatus.INIT, started.getStepStatus());
 
@@ -310,7 +310,7 @@ class FederatedLearningRequestE2ETest {
         lifecycle.finish(attemptId, finish);
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            assertEquals(FederatedLearningRequestStatus.COMPLETED, loadRequestStatus(globalExperimentId));
+            assertEquals(LearningRequestStatus.COMPLETED, loadRequestStatus(globalExperimentId));
             assertEquals(RunStatusTypes.FINISHED, inTransaction(() -> runAO.findById(runId).getStatus()));
         });
         verify(workflowOrchestrator).filesOf(runId, attemptId);
@@ -321,7 +321,7 @@ class FederatedLearningRequestE2ETest {
     }
 
     private ExecutionRunEntity runOf(String globalExperimentId) {
-        return projectAO.findByRequestIdOptional(globalExperimentId).map(FederatedLearningProjectEntity::getRun).orElseThrow();
+        return projectAO.findByRequestIdOptional(globalExperimentId).map(LearningProjectEntity::getRun).orElseThrow();
     }
 
     private ProjectFederatedExperimentForLocalDTO buildIncomingRequest(String globalExperimentId,
@@ -401,7 +401,7 @@ class FederatedLearningRequestE2ETest {
         return wrapper;
     }
 
-    private FederatedLearningRequestStatus loadRequestStatus(String globalExperimentId) {
+    private LearningRequestStatus loadRequestStatus(String globalExperimentId) {
         return QuarkusTransaction.requiringNew().call(() -> requestAO.findByGlobalFLExperimentUniqueId(globalExperimentId)
                 .orElseThrow()
                 .getStatus());

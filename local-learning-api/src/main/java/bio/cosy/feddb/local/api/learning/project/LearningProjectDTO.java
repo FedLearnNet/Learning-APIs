@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FederatedLearningProjectDTO {
+public class LearningProjectDTO {
 
     private ProjectDetailDTO project;
     // This clinic's run of the training, once it was approved.

@@ -9,7 +9,7 @@ import bio.cosy.feddb.core.execution.run.dto.UpdateRunDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolBO;
 import bio.cosy.feddb.local.api.importer.run.ConnectorAppRunBO;
-import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningRunBO;
+import bio.cosy.feddb.local.api.learning.project.run.LearningRunBO;
 import bio.cosy.feddb.local.execution.message.ExecutionMessageAO;
 import bio.cosy.feddb.local.execution.message.ExecutionMessageEntity;
 import io.quarkus.logging.Log;
@@ -24,7 +24,7 @@ public class ExecutionAttemptLifecycle extends BaseAttemptLifecycle<ExecutionAtt
         ExecutionMessageEntity, ExecutionMessageAO> {
 
     @Inject
-    FederatedLearningRunBO federatedLearningRunBO;
+    LearningRunBO learningRunBO;
 
     @Inject
     ConnectorAppRunBO connectorAppRunBO;
@@ -57,7 +57,9 @@ public class ExecutionAttemptLifecycle extends BaseAttemptLifecycle<ExecutionAtt
                 .orElse(true);
     }
 
-    /** An app that waits to be started connected; the step across clinics then counts it as ready. */
+    /**
+     * An app that waits to be started connected; the step across clinics then counts it as ready.
+     */
     @Transactional
     public void markConnectedTransactional(Long attemptId) {
         UpdateRunDTO update = new UpdateRunDTO();
@@ -93,7 +95,7 @@ public class ExecutionAttemptLifecycle extends BaseAttemptLifecycle<ExecutionAtt
     protected void customizeStartup(ExecutionAttemptEntity attempt, StartRunDTO start) {
         super.customizeStartup(attempt, start);
         if (attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TRAINING) {
-            federatedLearningRunBO.customizeStartup(attempt, start);
+            learningRunBO.customizeStartup(attempt, start);
         }
     }
 }

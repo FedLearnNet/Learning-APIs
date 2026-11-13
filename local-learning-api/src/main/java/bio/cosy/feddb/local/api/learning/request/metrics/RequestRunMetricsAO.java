@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.learning.request.metrics;
 
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestStatus;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestStatus;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -14,7 +14,7 @@ import java.util.UUID;
 @ApplicationScoped
 public class RequestRunMetricsAO implements PanacheRepository<RequestRunMetricsEntity> {
 
-    public List<RequestRunMetricsEntity> list(Page page, FederatedLearningRequestStatus status) {
+    public List<RequestRunMetricsEntity> list(Page page, LearningRequestStatus status) {
         StringBuilder query = new StringBuilder();
         Map<String, Object> params = new HashMap<>();
         if (status != null) {

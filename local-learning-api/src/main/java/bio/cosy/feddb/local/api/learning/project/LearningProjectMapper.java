@@ -10,7 +10,7 @@ import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 
 @Mapper(config = QuarkusMappingConfig.class)
-public interface FederatedLearningProjectMapper extends BaseMapper<ProjectDetailDTO, FederatedLearningProjectEntity> {
+public interface LearningProjectMapper extends BaseMapper<ProjectDetailDTO, LearningProjectEntity> {
 
 
     @Mappings({
@@ -22,7 +22,7 @@ public interface FederatedLearningProjectMapper extends BaseMapper<ProjectDetail
             @Mapping(target = "file", ignore = true),
             @Mapping(target = "globalUniqueQueryId", source = "query.globalQueryId")
     })
-    ProjectDetailDTO entityToDto(FederatedLearningProjectEntity entity);
+    ProjectDetailDTO entityToDto(LearningProjectEntity entity);
 
     @Mappings({
             @Mapping(target = "query", source = "queryId", qualifiedByName = "toQuery"),
@@ -32,7 +32,7 @@ public interface FederatedLearningProjectMapper extends BaseMapper<ProjectDetail
             // Set from the learning request, it belongs to the experiment, not the project.
             @Mapping(target = "platformIsCoordinator", ignore = true)
     })
-    FederatedLearningProjectEntity dtoToEntity(ProjectDetailDTO sourceCode);
+    LearningProjectEntity dtoToEntity(ProjectDetailDTO sourceCode);
 
 
     @Named("toQuery")

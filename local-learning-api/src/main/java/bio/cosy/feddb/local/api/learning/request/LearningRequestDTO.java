@@ -16,9 +16,9 @@ import java.util.Map;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class FederatedLearningRequestDTO extends BaseDTO {
+public class LearningRequestDTO extends BaseDTO {
     private String globalFLExperimentUniqueId;
-    private FederatedLearningRequestStatus status;
+    private LearningRequestStatus status;
 
     private Boolean modelNeedToBePublic;
     private Boolean modelCanBePublic;
@@ -36,10 +36,6 @@ public class FederatedLearningRequestDTO extends BaseDTO {
     private List<FederatedLearningRequestCohortDTO> cohortDecisions;
 
     private boolean awaitingCurrentUserDecision;
-
-    public Map<Long, Long> getPatientCountByCohort() {
-        return patientCountByCohort == null ? null : Map.copyOf(patientCountByCohort);
-    }
 
     public void setPatientCountByCohort(final Map<Long, Long> patientCountByCohort) {
         this.patientCountByCohort = patientCountByCohort == null

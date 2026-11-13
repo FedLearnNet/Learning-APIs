@@ -2,7 +2,7 @@ package bio.cosy.feddb.local.api.statistics.request;
 
 import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.local.api.cohort.permission.PermissionDTO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestStatus;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestStatus;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -27,7 +27,7 @@ public interface RequestDataStatisticsService {
     PagedResponse<RequestDataStatisticsDTO> list(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("page_size") @DefaultValue("20") int size,
-            @QueryParam("status") FederatedLearningRequestStatus status,
+            @QueryParam("status") LearningRequestStatus status,
             @QueryParam("patient_id") Long patientId);
 
     @GET

@@ -1,14 +1,11 @@
-package bio.cosy.feddb.local.api.learning.project.run;
+package bio.cosy.feddb.local.api.learning.project.run.federated;
 
-import bio.cosy.feddb.core.execution.event.ExecutionEventPublisher;
 import bio.cosy.feddb.core.execution.failure.ExecutionFailure;
-import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.services.controller.ControllerStopLearningRequestDTO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestBO;
+import bio.cosy.feddb.local.api.learning.project.run.LearningCleanupBO;
 import bio.cosy.feddb.local.execution.federation.ExecutionFederationAO;
 import bio.cosy.feddb.local.execution.federation.ExecutionFederationEntity;
 import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
-import bio.cosy.feddb.local.execution.run.WorkflowExecutionBO;
 import bio.cosy.feddb.local.services.controller.LocalControllerLearningService;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -18,19 +15,10 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 @ApplicationScoped
-public class FederatedLearningCleanupBO {
-
-    @Inject
-    WorkflowExecutionBO workflowExecutionBO;
+public class FederatedLearningCleanupBO extends LearningCleanupBO {
 
     @Inject
     ExecutionFederationAO federationAO;
-
-    @Inject
-    ExecutionEventPublisher events;
-
-    @Inject
-    FederatedLearningRequestBO requestBO;
 
     @Inject
     @RestClient
@@ -38,18 +26,12 @@ public class FederatedLearningCleanupBO {
 
     public void stopTraining(ExecutionRunEntity run) {
         stopControllerRuns(run);
-        workflowExecutionBO.stopTransactional(run.getId());
-    }
-
-    public void finishTraining(ExecutionRunEntity run, String globalId) {
-        finishRun(run, RunStatusTypes.FINISHED, null);
-        requestBO.finishLearning(globalId);
+        super.stopTraining(run);
     }
 
     public void failTraining(ExecutionRunEntity run, ExecutionFailure failure, String globalId) {
         stopControllerRuns(run);
-        finishRun(run, RunStatusTypes.ERROR, failure);
-        requestBO.stopLearning(globalId);
+        super.stopTraining(run);
     }
 
     // Never throws: a controller that cannot be reached must not break the training, its run stays open.
@@ -78,13 +60,5 @@ public class FederatedLearningCleanupBO {
 
     private void stopControllerRuns(ExecutionRunEntity run) {
         federationAO.listOpenControllerRuns(run.getId()).forEach(this::stopController);
-    }
-
-    private void finishRun(ExecutionRunEntity run, RunStatusTypes status, ExecutionFailure failure) {
-        if (run.hasEnded()) {
-            return;
-        }
-        run.end(status, failure);
-        events.runFinished(run.getId(), status);
     }
 }

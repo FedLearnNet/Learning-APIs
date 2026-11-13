@@ -16,17 +16,17 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Path("/learning/requests")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Tag(name = "FederatedLearningRequest", description = "Service for managing FederatedLearningRequests")
-public interface FederatedLearningRequestService {
+@Tag(name = "LearningRequest", description = "Service for managing LearningRequests")
+public interface LearningRequestService {
 
     @GET
-    @Operation(summary = "List all FederatedLearningRequests",
-            description = "Returns a paginated, filterable list of FederatedLearningRequests")
-    @APIResponse(responseCode = "200", description = "List of FederatedLearningRequest")
-    PagedResponse<FederatedLearningRequestDTO> list(
+    @Operation(summary = "List all LearningRequests",
+            description = "Returns a paginated, filterable list of LearningRequests")
+    @APIResponse(responseCode = "200", description = "List of LearningRequest")
+    PagedResponse<LearningRequestDTO> list(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("page_size") @DefaultValue("20") int size,
-            @QueryParam("status") FederatedLearningRequestStatus status);
+            @QueryParam("status") LearningRequestStatus status);
 
     @GET
     @Path("/{id}")
@@ -36,7 +36,7 @@ public interface FederatedLearningRequestService {
                     schema = @Schema(implementation = PermissionDTO.class)))
     @APIResponse(responseCode = "404", description = "FederatedLearningRequest not found")
     @Transactional
-    FederatedLearningRequestDTO retrieve(@PathParam("id") Long id);
+    LearningRequestDTO retrieve(@PathParam("id") Long id);
 
 
     @PUT
@@ -46,9 +46,9 @@ public interface FederatedLearningRequestService {
     @APIResponse(responseCode = "400", description = "Invalid data")
     @APIResponse(responseCode = "404", description = "FederatedLearningRequest not found")
     @Transactional
-    FederatedLearningRequestDTO update(
+    LearningRequestDTO update(
             @PathParam("id") Long id,
-            @Valid FederatedLearningRequestDTO updateDTO);
+            @Valid LearningRequestDTO updateDTO);
 
     @DELETE
     @Path("/{id}")

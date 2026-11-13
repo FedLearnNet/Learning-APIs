@@ -19,26 +19,26 @@ import org.jboss.resteasy.reactive.RestStreamElementType;
 @Path("/learning/projects")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Tag(name = "FederatedLearningProjects", description = "Service for managing FederatedLearningProjects")
-public interface FederatedLearningProjectService {
+@Tag(name = "LearningProjects", description = "Service for managing LearningProjects")
+public interface LearningProjectService {
 
     @GET
-    @Operation(summary = "List all FederatedLearningProjects which have started training",
-            description = "Returns a paginated, filterable list of FederatedLearningProjects")
-    @APIResponse(responseCode = "200", description = "List of FederatedLearningProjects")
-    PagedResponse<FederatedLearningProjectDTO> list(
+    @Operation(summary = "List all LearningProjects which have started training",
+            description = "Returns a paginated, filterable list of LearningProjects")
+    @APIResponse(responseCode = "200", description = "List of LearningProjects")
+    PagedResponse<LearningProjectDTO> list(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("page_size") @DefaultValue("20") int size);
 
     @GET
     @Path("/{id}")
-    @Operation(summary = "Retrieve a single FederatedLearningProjects", description = "Returns a single FederatedLearningProjects by its id")
-    @APIResponse(responseCode = "200", description = "FederatedLearningProjects found",
+    @Operation(summary = "Retrieve a single LearningProjects", description = "Returns a single LearningProjects by its id")
+    @APIResponse(responseCode = "200", description = "LearningProjects found",
             content = @Content(mediaType = MediaType.APPLICATION_JSON,
                     schema = @Schema(implementation = PermissionDTO.class)))
-    @APIResponse(responseCode = "404", description = "FederatedLearningProjects not found")
+    @APIResponse(responseCode = "404", description = "LearningProjects not found")
     @Transactional
-    FederatedLearningProjectDTO retrieve(@PathParam("id") Long id);
+    LearningProjectDTO retrieve(@PathParam("id") Long id);
 
     @GET
     @Path("{id}/export")

@@ -6,9 +6,10 @@ import bio.cosy.feddb.core.execution.run.dto.FederatedRunConfigDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.services.controller.ControllerStartRelayingRequestDTO;
 import bio.cosy.feddb.local.api.eam.WebsocketSender;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectAO;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectEntity;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectAO;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectEntity;
+import bio.cosy.feddb.local.api.learning.project.run.federated.FederatedLearningProgressBO;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestEntity;
 import bio.cosy.feddb.local.api.workflow.node.WorkflowNodeEntity;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptEntity;
@@ -55,7 +56,7 @@ class FederatedLearningProgressBOTest {
         FederatedLearningProgressBO bo = new FederatedLearningProgressBO();
         bo.federationAO = mock(ExecutionFederationAO.class);
         bo.stepAO = mock(ExecutionRunStepAO.class);
-        bo.projectAO = mock(FederatedLearningProjectAO.class);
+        bo.projectAO = mock(LearningProjectAO.class);
         bo.lifecycle = mock(ExecutionAttemptLifecycle.class);
         bo.websocketSender = mock(WebsocketSender.class);
         bo.controllerService = mock(LocalControllerLearningService.class);
@@ -66,9 +67,9 @@ class FederatedLearningProgressBOTest {
         ExecutionRunEntity run = new ExecutionRunEntity();
         run.setId(RUN_ID);
         run.setParticipantId(CLINIC);
-        FederatedLearningRequestEntity request = new FederatedLearningRequestEntity();
-        request.setGlobalFLExperimentUniqueId(EXPERIMENT);
-        FederatedLearningProjectEntity project = new FederatedLearningProjectEntity();
+        LearningRequestEntity request = new LearningRequestEntity();
+        request.setGlobalExperimentUniqueId(EXPERIMENT);
+        LearningProjectEntity project = new LearningProjectEntity();
         project.setRequest(request);
         project.setRun(run);
         when(bo.projectAO.findByRequestIdOptional(EXPERIMENT)).thenReturn(Optional.of(project));
@@ -128,7 +129,7 @@ class FederatedLearningProgressBOTest {
     void signedCertificateIsPassedToTheController() {
         FederatedLearningProgressBO bo = progressBO();
 
-        bo.handleSigned(signed());
+        bo.handleSignedTransactional(signed());
 
         // The app key of the controller run is the relay client id.
         verify(bo.controllerService).startRelaying(new ControllerStartRelayingRequestDTO(CHANNEL, CLIENT, "signed-cert"));
@@ -141,8 +142,8 @@ class FederatedLearningProgressBOTest {
         FederatedLearningProgressBO bo = progressBO();
 
         // E.g. the answers to the first and to a retried request both arrive.
-        bo.handleSigned(signed());
-        bo.handleSigned(signed());
+        bo.handleSignedTransactional(signed());
+        bo.handleSignedTransactional(signed());
 
         verify(bo.controllerService, times(1)).startRelaying(any());
     }
@@ -153,21 +154,21 @@ class FederatedLearningProgressBOTest {
 
         RelayCertSignResponseDTO otherClinic = signed();
         otherClinic.setUniqueRandomClinicId("clinic-b");
-        bo.handleSigned(otherClinic);
+        bo.handleSignedTransactional(otherClinic);
 
         RelayCertSignResponseDTO otherExperiment = signed();
         otherExperiment.setGlobalUniqueExperimentId("experiment-unknown");
         when(bo.projectAO.findByRequestIdOptional("experiment-unknown")).thenReturn(Optional.empty());
-        bo.handleSigned(otherExperiment);
+        bo.handleSignedTransactional(otherExperiment);
 
         RelayCertSignResponseDTO otherNode = signed();
         otherNode.setCurrentNodeId("node-2");
         when(bo.stepAO.findByNodeId(RUN_ID, "node-2")).thenReturn(Optional.empty());
-        bo.handleSigned(otherNode);
+        bo.handleSignedTransactional(otherNode);
 
         RelayCertSignResponseDTO otherClient = signed();
         otherClient.setClientId("ffffffffffffffff");
-        bo.handleSigned(otherClient);
+        bo.handleSignedTransactional(otherClient);
 
         verify(bo.controllerService, never()).startRelaying(any());
         verify(bo.lifecycle, never()).updateTransactional(any(), any());
@@ -179,11 +180,11 @@ class FederatedLearningProgressBOTest {
         FederatedLearningProgressBO bo = progressBO();
 
         step.setStatus(RunStatusTypes.STOPPED);
-        bo.handleSigned(signed());
+        bo.handleSignedTransactional(signed());
 
         step.setStatus(RunStatusTypes.RUNNING);
         federation.setRelayStopped(true);
-        bo.handleSigned(signed());
+        bo.handleSignedTransactional(signed());
 
         verify(bo.controllerService, never()).startRelaying(any());
     }
@@ -194,7 +195,7 @@ class FederatedLearningProgressBOTest {
         RelayCertSignResponseDTO refused = RelayCertSignResponseDTO.createErrorResponse(
                 new RelayCertSignRequestDTO(EXPERIMENT, CLINIC, NODE, CLIENT, CSR), "refused");
 
-        bo.handleSigned(refused);
+        bo.handleSignedTransactional(refused);
 
         verify(bo.controllerService, never()).startRelaying(any());
         verifyStepFailed(bo);
@@ -205,7 +206,7 @@ class FederatedLearningProgressBOTest {
         FederatedLearningProgressBO bo = progressBO();
         when(bo.controllerService.startRelaying(any())).thenReturn(Response.serverError().build());
 
-        bo.handleSigned(signed());
+        bo.handleSignedTransactional(signed());
 
         verifyStepFailed(bo);
     }
@@ -215,7 +216,7 @@ class FederatedLearningProgressBOTest {
         FederatedLearningProgressBO bo = progressBO();
         when(bo.controllerService.startRelaying(any())).thenThrow(new WebApplicationException(400));
 
-        bo.handleSigned(signed());
+        bo.handleSignedTransactional(signed());
 
         verifyStepFailed(bo);
     }

@@ -5,42 +5,34 @@ import bio.cosy.feddb.core.api.project.ProjectStatus;
 import bio.cosy.feddb.core.api.socket.LearningClientStopRequestDTO;
 import bio.cosy.feddb.core.api.socket.LearningClientSyncRequestDTO;
 import bio.cosy.feddb.core.api.socket.LearningClientSyncResponseDTO;
-import bio.cosy.feddb.core.api.socket.RelayCertSignResponseDTO;
 import bio.cosy.feddb.core.api.socket.StartLearningClientRequestDTO;
+import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectAO;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectEntity;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectAO;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectEntity;
+import bio.cosy.feddb.local.api.learning.project.run.federated.FederatedLearningCleanupBO;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestEntity;
 import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptAO;
 import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptEntity;
 import bio.cosy.feddb.local.execution.run.ExecutionRunAO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
 import bio.cosy.feddb.local.execution.step.ExecutionRunStepEntity;
 import io.quarkus.logging.Log;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-@ApplicationScoped
-public class FederatedLearningRunBO {
+public abstract class LearningRunBO {
 
     @Inject
-    FederatedLearningSetupBO setupBO;
+    LearningSetupBO setupBO;
 
     @Inject
-    FederatedLearningProgressBO progressBO;
-
-    @Inject
-    FederatedLearningCleanupBO cleanupBO;
-
-    @Inject
-    FederatedLearningProjectAO projectAO;
+    LearningProjectAO projectAO;
 
     @Inject
     ExecutionRunAO runAO;
@@ -48,15 +40,26 @@ public class FederatedLearningRunBO {
     @Inject
     ExecutionAttemptAO attemptAO;
 
-    public String approve(FederatedLearningRequestEntity request) {
+    @Inject
+    FederatedLearningCleanupBO federatedCleanupBO;
+
+    @Inject
+    LearningProgressBO progressBO;
+
+    @Inject
+    LearningCleanupBO cleanupBO;
+
+    public String approve(LearningRequestEntity request) {
         return setupBO.approve(request);
     }
 
-    /** The platform starts the training: the app of the first step starts and waits. */
+    /**
+     * The platform starts the training: the app of the first step starts and waits.
+     */
     @Transactional
     public Optional<LearningClientSyncResponseDTO> handleStartLearningRequestTransactional(StartLearningClientRequestDTO request) {
         String globalId = request.getGlobalUniqueLearningExperimentId();
-        Optional<FederatedLearningProjectEntity> found = projectOf(globalId);
+        Optional<LearningProjectEntity> found = projectOf(globalId);
         if (found.isEmpty()) {
             Log.errorf("No training %s to start", globalId);
             return Optional.of(LearningClientSyncResponseDTO.createErrorResponse("Experiment not found", globalId));
@@ -69,11 +72,13 @@ public class FederatedLearningRunBO {
         return Optional.of(response);
     }
 
-    /** The platform starts the current step on all clinics, or moves them to the next one. */
+    /**
+     * The platform starts the current step on all clinics, or moves them to the next one.
+     */
     @Transactional
     public Optional<LearningClientSyncResponseDTO> handleNextStepTransactional(LearningClientSyncRequestDTO request) {
         String globalId = request.getGlobalUniqueLearningExperimentId();
-        Optional<FederatedLearningProjectEntity> found = projectOf(globalId);
+        Optional<LearningProjectEntity> found = projectOf(globalId);
         if (found.isEmpty()) {
             Log.errorf("No training %s to move on", globalId);
             return Optional.of(LearningClientSyncResponseDTO.createErrorResponse("Experiment not found", globalId));
@@ -88,7 +93,10 @@ public class FederatedLearningRunBO {
 
     @Transactional
     public void stopLearningTransactional(LearningClientStopRequestDTO request) {
-        projectOf(request.getGlobalUniqueLearningExperimentId()).map(FederatedLearningProjectEntity::getRun).ifPresent(cleanupBO::stopTraining);
+        projectOf(request.getGlobalUniqueLearningExperimentId())
+                .map(LearningProjectEntity::getRun).ifPresent(r ->
+                        getCleanupBO(r.getMode()).stopTraining(r)
+                );
     }
 
     public void customizeStartup(ExecutionAttemptEntity attempt, StartRunDTO start) {
@@ -109,17 +117,6 @@ public class FederatedLearningRunBO {
         progressBO.uploadModel(attemptId, model);
     }
 
-    @Transactional
-    public void handleSignedTransactional(RelayCertSignResponseDTO response) {
-        progressBO.handleSigned(response);
-    }
-
-    @Transactional
-    public void retryPendingTransactional() {
-        progressBO.retryPending(Instant.now());
-    }
-
-
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void reportStatusTransactional(Long attemptId, RunStatusTypes status) {
         ExecutionAttemptEntity attempt = attemptAO.findByIdWrite(attemptId).orElse(null);
@@ -128,24 +125,37 @@ public class FederatedLearningRunBO {
         }
         ExecutionRunStepEntity step = attempt.getStep();
         ExecutionRunEntity run = step.getRun();
-        String globalId = projectAO.findByRunId(run.getId()).getRequest().getGlobalFLExperimentUniqueId();
+        String globalId = projectAO.findByRunId(run.getId()).getRequest().getGlobalExperimentUniqueId();
         if (RunStatusTypes.isFinalStatus(status)) {
-            cleanupBO.stopController(step.getFederation());
+            if (run.getMode().equals(ExecutionMode.FEDERATED)) {
+                cleanUpFL(step);
+            }
             progressBO.endStep(step, attempt);
             if (status == RunStatusTypes.FINISHED && run.getStepsInExecutionOrder().getLast() == step) {
-                cleanupBO.finishTraining(run, globalId);
+                getCleanupBO(run.getMode()).finishTraining(run, globalId);
             } else if (status == RunStatusTypes.ERROR) {
-                cleanupBO.failTraining(run, attempt.getFailure(), globalId);
+                getCleanupBO(run.getMode()).failTraining(run, attempt.getFailure(), globalId);
             }
         }
         progressBO.reportStatus(run, step, status, globalId);
     }
 
-    private Optional<FederatedLearningProjectEntity> projectOf(String globalId) {
+    private Optional<LearningProjectEntity> projectOf(String globalId) {
         return projectAO.findByRequestIdOptional(globalId).filter(project -> project.getRun() != null);
     }
 
     private ExecutionRunEntity lockRun(ExecutionRunEntity run) {
         return runAO.findByIdWrite(run.getId()).orElseThrow();
+    }
+
+    public void cleanUpFL(ExecutionRunStepEntity step) {
+        federatedCleanupBO.stopController(step.getFederation());
+    }
+
+    public LearningCleanupBO getCleanupBO(ExecutionMode mode) {
+        if (mode.equals(ExecutionMode.FEDERATED)) {
+            return federatedCleanupBO;
+        }
+        return cleanupBO;
     }
 }

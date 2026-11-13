@@ -3,7 +3,7 @@ package bio.cosy.feddb.local.api.learning.request.metrics;
 import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.local.api.auth.UserIdentity;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestStatus;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestStatus;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -21,7 +21,7 @@ public class RequestRunMetricsServiceImpl implements RequestRunMetricsService {
     CohortMemberAuthBO cohortMemberAuthBO;
 
     @Override
-    public PagedResponse<RequestRunMetricsDTO> list(int page, int size, FederatedLearningRequestStatus status) {
+    public PagedResponse<RequestRunMetricsDTO> list(int page, int size, LearningRequestStatus status) {
         PagedResponse<RequestRunMetricsDTO> response = bo.list(Page.of(page, size), status);
         String keycloakId = userIdentity.getKeycloakId();
         response.setResults(response.getResults().stream()

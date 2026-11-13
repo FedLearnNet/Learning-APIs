@@ -9,9 +9,9 @@ import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningBO;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningDTO;
 import bio.cosy.feddb.local.api.eam.WebsocketSender;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectBO;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectEntity;
-import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningRunBO;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectBO;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectEntity;
+import bio.cosy.feddb.local.api.learning.project.run.LearningRunBO;
 import bio.cosy.feddb.local.api.learning.request.cohort.FederatedLearningRequestCohortBO;
 import bio.cosy.feddb.local.api.learning.request.cohort.FederatedLearningRequestCohortDTO;
 import bio.cosy.feddb.local.api.learning.request.cohort.FederatedLearningRequestCohortStatus;
@@ -37,7 +37,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestDTO, FederatedLearningRequestEntity, FederatedLearningRequestAO, FederatedLearningRequestMapper> {
+public class LearningRequestBO extends BaseBo<LearningRequestDTO, LearningRequestEntity, LearningRequestAO, LearningRequestMapper> {
 
     @Inject
     QueryBO queryBO;
@@ -49,13 +49,13 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
     PatientLearningBO patientLearningBO;
 
     @Inject
-    FederatedLearningProjectBO projectBO;
+    LearningProjectBO projectBO;
 
     @Inject
     WebsocketSender websocketSender;
 
     @Inject
-    FederatedLearningRunBO federatedLearningRunBO;
+    LearningRunBO learningRunBO;
 
     @Inject
     PrivacyBO privacyBO;
@@ -66,31 +66,31 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
     @Inject
     FederatedLearningRequestCohortBO cohortDecisionBO;
 
-    public PagedResponse<FederatedLearningRequestDTO> list(Page page, FederatedLearningRequestStatus status, String keycloakId) {
-        List<FederatedLearningRequestDTO> found = ao.list(page, status).stream()
+    public PagedResponse<LearningRequestDTO> list(Page page, LearningRequestStatus status, String keycloakId) {
+        List<LearningRequestDTO> found = ao.list(page, status).stream()
                 .filter(entity -> hasCohortSearchAccess(getInvolvedCohortIds(entity), keycloakId))
                 .map(entity -> toSummaryDto(entity, keycloakId))
-                .filter(dto -> dto.getStatus() != FederatedLearningRequestStatus.PENDING
+                .filter(dto -> dto.getStatus() != LearningRequestStatus.PENDING
                         || dto.isAwaitingCurrentUserDecision())
                 .toList();
         return new PagedResponse<>(found, page.index, page.size);
     }
 
-    public FederatedLearningRequestDTO findById(Long id) {
+    public LearningRequestDTO findById(Long id) {
         return getById(id);
     }
 
-    public FederatedLearningRequestDTO findByIdForUser(Long id, String keycloakId) {
-        FederatedLearningRequestEntity entity = ao.findByIdOptional(id)
+    public LearningRequestDTO findByIdForUser(Long id, String keycloakId) {
+        LearningRequestEntity entity = ao.findByIdOptional(id)
                 .orElseThrow(() -> new NotFoundException("FederatedLearningRequest not found"));
         return toDetailDto(entity, keycloakId);
     }
 
-    public List<SearchResultDTO<FederatedLearningRequestDTO>> search(String query, String keycloakId) {
+    public List<SearchResultDTO<LearningRequestDTO>> search(String query, String keycloakId) {
         return ao.listAll().stream()
                 .filter(entity -> hasCohortSearchAccess(getInvolvedCohortIds(entity), keycloakId))
                 .map(entity -> toSummaryDto(entity, keycloakId))
-                .filter(dto -> dto.getStatus() != FederatedLearningRequestStatus.PENDING
+                .filter(dto -> dto.getStatus() != LearningRequestStatus.PENDING
                         || dto.isAwaitingCurrentUserDecision())
                 .map(dto -> {
                     String title = "Training request " + dto.getGlobalFLExperimentUniqueId();
@@ -101,11 +101,11 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
                 .toList();
     }
 
-    private Set<Long> getPatientCohortIds(FederatedLearningRequestEntity entity) {
+    private Set<Long> getPatientCohortIds(LearningRequestEntity entity) {
         return patientLearningBO.getCohortIdsForRequests(List.of(entity.getId()));
     }
 
-    private Set<Long> getInvolvedCohortIds(FederatedLearningRequestEntity entity) {
+    private Set<Long> getInvolvedCohortIds(LearningRequestEntity entity) {
         return cohortDecisionBO.getCohortIds(entity.getId());
     }
 
@@ -114,9 +114,9 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
                 .anyMatch(cohortId -> cohortMemberAuthBO.isMember(cohortId, keycloakId));
     }
 
-    private FederatedLearningRequestDTO toSummaryDto(FederatedLearningRequestEntity entity,
-                                                     String keycloakId) {
-        FederatedLearningRequestDTO dto = mapper.entityToSummaryDto(entity);
+    private LearningRequestDTO toSummaryDto(LearningRequestEntity entity,
+                                            String keycloakId) {
+        LearningRequestDTO dto = mapper.entityToSummaryDto(entity);
         Set<Long> patientCohortScope = applyCohortScope(dto, entity, keycloakId);
         dto.setRequestPatients(List.of());
         dto.setPatientCountByCohort(
@@ -124,9 +124,9 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
         return dto;
     }
 
-    private FederatedLearningRequestDTO toDetailDto(FederatedLearningRequestEntity entity,
-                                                    String keycloakId) {
-        FederatedLearningRequestDTO dto = mapper.entityToDto(entity);
+    private LearningRequestDTO toDetailDto(LearningRequestEntity entity,
+                                           String keycloakId) {
+        LearningRequestDTO dto = mapper.entityToDto(entity);
         Set<Long> patientCohortScope = applyCohortScope(dto, entity, keycloakId);
         if (dto.getRequestPatients() != null) {
             dto.setRequestPatients(dto.getRequestPatients().stream()
@@ -141,8 +141,8 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
      *
      * @return cohort ids used to scope patients or patient counts for this user
      */
-    private Set<Long> applyCohortScope(FederatedLearningRequestDTO dto,
-                                       FederatedLearningRequestEntity entity,
+    private Set<Long> applyCohortScope(LearningRequestDTO dto,
+                                       LearningRequestEntity entity,
                                        String keycloakId) {
         Set<Long> accessibleCohortIds = getInvolvedCohortIds(entity).stream()
                 .filter(cohortId -> cohortMemberAuthBO.isMember(cohortId, keycloakId))
@@ -156,7 +156,7 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
         dto.setAwaitingCurrentUserDecision(
                 decisions.stream().anyMatch(FederatedLearningRequestCohortDTO::isDecidableByCurrentUser));
 
-        if (entity.getStatus() == FederatedLearningRequestStatus.PENDING) {
+        if (entity.getStatus() == LearningRequestStatus.PENDING) {
             return cohortDecisionBO.getDecidableCohortIds(entity.getId(), keycloakId);
         }
         return accessibleCohortIds;
@@ -169,7 +169,7 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
     }
 
     public Set<Long> getCohortIds(Long id) {
-        FederatedLearningRequestEntity entity = ao.findByIdOptional(id)
+        LearningRequestEntity entity = ao.findByIdOptional(id)
                 .orElseThrow(() -> new NotFoundException("FederatedLearningRequest not found"));
         Set<Long> decisionCohorts = getInvolvedCohortIds(entity);
         return decisionCohorts.isEmpty() ? getPatientCohortIds(entity) : decisionCohorts;
@@ -223,10 +223,10 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
     @Transactional
     public Long createTransactional(LocalQueryDTO query, ProjectFederatedExperimentForLocalDTO requestLearning,
                                     QueryResultWrapperDTO harmonizedQueryResult) {
-        FederatedLearningRequestDTO requestLearningDTO = new FederatedLearningRequestDTO();
-        requestLearningDTO.setStatus(FederatedLearningRequestStatus.PENDING);
+        LearningRequestDTO requestLearningDTO = new LearningRequestDTO();
+        requestLearningDTO.setStatus(LearningRequestStatus.PENDING);
         requestLearningDTO.setGlobalFLExperimentUniqueId(requestLearning.getGlobalUniqueId());
-        FederatedLearningRequestEntity entity = mapper.dtoToEntity(requestLearningDTO);
+        LearningRequestEntity entity = mapper.dtoToEntity(requestLearningDTO);
 
         entity.setName(requestLearning.getName());
         entity.setDescription(requestLearning.getDescription());
@@ -235,7 +235,7 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
 
         ao.persist(entity);
 
-        FederatedLearningProjectEntity project = projectBO.createForRequest(
+        LearningProjectEntity project = projectBO.createForRequest(
                 query.getId(), entity, requestLearning.getProjectVersion(), requestLearning.getWorkflow());
         project.setPlatformIsCoordinator(requestLearning.getPlatformIsCoordinator());
         entity.setProject(project);
@@ -248,7 +248,7 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
     public Set<Long> initCohortDecisionsTransactional(Long id, String platformUserId,
                                                       int certificationLevel,
                                                       boolean needsInternetAccess) {
-        FederatedLearningRequestEntity entity = ao.findByIdOptional(id)
+        LearningRequestEntity entity = ao.findByIdOptional(id)
                 .orElseThrow(() -> new NotFoundException("FederatedLearningRequest not found"));
         Set<Long> cohortIds = patientLearningBO.getCohortIdsForRequests(List.of(id));
         if (cohortIds.isEmpty()) {
@@ -259,21 +259,21 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
     }
 
 
-    public FederatedLearningRequestDTO update(Long id, FederatedLearningRequestDTO updateDTO,
-                                              String keycloakId) {
-        FederatedLearningRequestStatus requested = updateDTO.getStatus();
-        if (requested != FederatedLearningRequestStatus.APPROVED
-                && requested != FederatedLearningRequestStatus.REJECTED) {
+    public LearningRequestDTO update(Long id, LearningRequestDTO updateDTO,
+                                     String keycloakId) {
+        LearningRequestStatus requested = updateDTO.getStatus();
+        if (requested != LearningRequestStatus.APPROVED
+                && requested != LearningRequestStatus.REJECTED) {
             throw new IllegalArgumentException("A training request can only be approved or rejected");
         }
 
-        FederatedLearningRequestEntity entity = ao.findByIdOptional(id)
+        LearningRequestEntity entity = ao.findByIdOptional(id)
                 .orElseThrow(() -> new NotFoundException("FederatedLearningRequest not found"));
 
-        if (entity.getStatus() != FederatedLearningRequestStatus.PENDING) {
+        if (entity.getStatus() != LearningRequestStatus.PENDING) {
             throw new IllegalArgumentException("Status has already been changed");
         }
-        if (requested == FederatedLearningRequestStatus.APPROVED
+        if (requested == LearningRequestStatus.APPROVED
                 && Boolean.TRUE.equals(entity.getModelNeedToBePublic())
                 && Boolean.FALSE.equals(updateDTO.getModelCanBePublic())) {
             throw new IllegalArgumentException("The model of this request needs to be public");
@@ -285,7 +285,7 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
         }
 
         FederatedLearningRequestCohortStatus decision =
-                requested == FederatedLearningRequestStatus.APPROVED
+                requested == LearningRequestStatus.APPROVED
                         ? FederatedLearningRequestCohortStatus.APPROVED
                         : FederatedLearningRequestCohortStatus.REJECTED;
 
@@ -328,15 +328,15 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
     }
 
     private void notifyAcceptedPatients(Long id, long patientCount, Boolean modelCanBePublic) {
-        FederatedLearningRequestEntity entity = ao.findByIdForUpdate(id)
+        LearningRequestEntity entity = ao.findByIdForUpdate(id)
                 .orElseThrow(() -> new NotFoundException("FederatedLearningRequest not found"));
         if (Boolean.FALSE.equals(modelCanBePublic)) {
             entity.setModelCanBePublic(false);
         }
 
-        String globalId = entity.getGlobalFLExperimentUniqueId();
+        String globalId = entity.getGlobalExperimentUniqueId();
         int count = privacyBO.modifyQueryCount(patientCount).intValue();
-        String clinicId = federatedLearningRunBO.approve(entity);
+        String clinicId = learningRunBO.approve(entity);
         Log.infof("Notify accepted patients for request %s: count=%d (raw=%d), clinic=%s",
                 id, count, patientCount, clinicId);
         websocketSender.sendLearningClientResponse(count, globalId, clinicId, entity.getModelCanBePublic());
@@ -355,19 +355,19 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
     }
 
     private void applyModelCanBePublicVeto(Long id) {
-        FederatedLearningRequestEntity entity = ao.findByIdForUpdate(id)
+        LearningRequestEntity entity = ao.findByIdForUpdate(id)
                 .orElseThrow(() -> new NotFoundException("FederatedLearningRequest not found"));
         entity.setModelCanBePublic(false);
     }
 
     private void resolveRequestStatus(Long id, Boolean modelCanBePublic) {
-        FederatedLearningRequestEntity entity = ao.findByIdForUpdate(id)
+        LearningRequestEntity entity = ao.findByIdForUpdate(id)
                 .orElseThrow(() -> new NotFoundException("FederatedLearningRequest not found"));
 
         if (Boolean.FALSE.equals(modelCanBePublic)) {
             entity.setModelCanBePublic(false);
         }
-        if (entity.getStatus() != FederatedLearningRequestStatus.PENDING
+        if (entity.getStatus() != LearningRequestStatus.PENDING
                 || cohortDecisionBO.hasPending(id)
                 || cohortDecisionBO.getCohortIds(id).isEmpty()) {
             return;
@@ -375,11 +375,11 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
 
         long remainingPatients = patientLearningBO.countForRequest(id);
         if (!cohortDecisionBO.hasApproved(id) || remainingPatients == 0) {
-            entity.setStatus(FederatedLearningRequestStatus.REJECTED);
+            entity.setStatus(LearningRequestStatus.REJECTED);
             return;
         }
 
-        entity.setStatus(FederatedLearningRequestStatus.APPROVED);
+        entity.setStatus(LearningRequestStatus.APPROVED);
         entity.setModelCanBePublic(!Boolean.FALSE.equals(entity.getModelCanBePublic()));
     }
 
@@ -395,21 +395,21 @@ public class FederatedLearningRequestBO extends BaseBo<FederatedLearningRequestD
 
     public List<String> findApprovedAndRunningIds() {
         return ao.findApprovedAndRunning().stream()
-                .map(FederatedLearningRequestEntity::getGlobalFLExperimentUniqueId)
+                .map(LearningRequestEntity::getGlobalExperimentUniqueId)
                 .toList();
     }
 
     @Transactional
     public void finishLearning(String globalUniqueQueryId) {
-        updateLearningStatus(globalUniqueQueryId, FederatedLearningRequestStatus.COMPLETED);
+        updateLearningStatus(globalUniqueQueryId, LearningRequestStatus.COMPLETED);
     }
 
     @Transactional
     public void stopLearning(String globalUniqueQueryId) {
-        updateLearningStatus(globalUniqueQueryId, FederatedLearningRequestStatus.STOPPED);
+        updateLearningStatus(globalUniqueQueryId, LearningRequestStatus.STOPPED);
     }
 
-    private void updateLearningStatus(String globalUniqueQueryId, FederatedLearningRequestStatus status) {
+    private void updateLearningStatus(String globalUniqueQueryId, LearningRequestStatus status) {
         if (!ao.updateStatusTransactional(globalUniqueQueryId, status)) {
             throw new NotFoundException("FederatedLearningRequest not found");
         }

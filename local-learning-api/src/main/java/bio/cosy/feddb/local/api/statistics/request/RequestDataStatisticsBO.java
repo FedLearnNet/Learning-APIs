@@ -10,7 +10,7 @@ import bio.cosy.feddb.local.api.cohort.patient.PatientEntity;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.query.QueryPatientEntity;
 import bio.cosy.feddb.local.api.cohort.permission.PermissionBO;
 import bio.cosy.feddb.local.api.eam.WebsocketSender;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestStatus;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestStatus;
 import bio.cosy.feddb.local.api.notification.WebsocketClientNotificationBO;
 import bio.cosy.feddb.local.api.privacy.PrivacyStatisticsBO;
 import bio.cosy.feddb.local.api.query.QueryAO;
@@ -96,7 +96,7 @@ public class RequestDataStatisticsBO extends BaseBo<RequestDataStatisticsDTO, Re
         }
 
         if (hasAutoAccessForAll) {
-            entity.setStatus(FederatedLearningRequestStatus.APPROVED);
+            entity.setStatus(LearningRequestStatus.APPROVED);
             entity.setVerifiedOn(new Date());
             ao.persist(entity);
             if (responseStillNeeded) {
@@ -123,7 +123,7 @@ public class RequestDataStatisticsBO extends BaseBo<RequestDataStatisticsDTO, Re
         ao.find("requestId = ?1", requestId)
                 .firstResultOptional()
                 .ifPresent(entity -> {
-                    entity.setStatus(FederatedLearningRequestStatus.APPROVED);
+                    entity.setStatus(LearningRequestStatus.APPROVED);
                     entity.setVerifiedOn(new Date());
                     ao.persist(entity);
                     notifyStatisticsRequestStatusUpdate(entity);
@@ -174,7 +174,7 @@ public class RequestDataStatisticsBO extends BaseBo<RequestDataStatisticsDTO, Re
 
     public PagedResponse<RequestDataStatisticsDTO> list(
             Page page,
-            FederatedLearningRequestStatus status) {
+            LearningRequestStatus status) {
 
         List<RequestDataStatisticsEntity> foundEntity = status == null
                 ? ao.list(page)
@@ -185,7 +185,7 @@ public class RequestDataStatisticsBO extends BaseBo<RequestDataStatisticsDTO, Re
 
     public PagedResponse<RequestDataStatisticsDTO> list(
             Page page,
-            FederatedLearningRequestStatus status,
+            LearningRequestStatus status,
             Long patientId) {
 
         List<RequestDataStatisticsEntity> foundEntity = status == null
@@ -231,14 +231,14 @@ public class RequestDataStatisticsBO extends BaseBo<RequestDataStatisticsDTO, Re
         Optional<RequestDataStatisticsEntity> entityOptional = ao.findByIdOptional(id);
         if (entityOptional.isPresent()) {
             RequestDataStatisticsEntity entity = entityOptional.get();
-            if (!entity.getStatus().equals(FederatedLearningRequestStatus.PENDING)) {
+            if (!entity.getStatus().equals(LearningRequestStatus.PENDING)) {
                 throw new IllegalArgumentException("Status has already been changed");
             }
             entity.setStatus(updateDTO.getStatus());
             entity.setVerifiedOn(new Date());
             entity.setVerifiedByKeycloakId(keycloakId);
             ao.persist(entity);
-            if (entity.getStatus().equals(FederatedLearningRequestStatus.APPROVED)) {
+            if (entity.getStatus().equals(LearningRequestStatus.APPROVED)) {
                 notifyStatisticsRequestStatusUpdate(entity);
             }
             return mapper.entityToDto(entity);

@@ -1,7 +1,7 @@
 package bio.cosy.feddb.local.execution.coordinator;
 
-import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.api.app.FederatedAppDetailDTO;
+import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
 import bio.cosy.feddb.core.execution.ExecutionPurpose;
 import bio.cosy.feddb.core.execution.coordinator.BaseAttemptLauncher;
@@ -14,7 +14,7 @@ import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolBO;
-import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningRunBO;
+import bio.cosy.feddb.local.api.learning.project.run.LearningRunBO;
 import bio.cosy.feddb.local.api.workflow.WorkflowBO;
 import bio.cosy.feddb.local.api.workflow.node.WorkflowNodeBO;
 import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptAO;
@@ -51,7 +51,7 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
     PatientToolBO patientToolBO;
 
     @Inject
-    FederatedLearningRunBO federatedLearningRunBO;
+    LearningRunBO learningRunBO;
 
     @Inject
     WorkflowOrchestrator workflowOrchestrator;
@@ -98,7 +98,7 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
     protected void stageInputs(ExecutionAttemptEntity attempt) {
         switch (attempt.getStep().getRun().getPurpose()) {
             case PROCESSING -> patientToolBO.stageInput(attempt);
-            case TRAINING -> federatedLearningRunBO.stageInputs(attempt);
+            case TRAINING -> learningRunBO.stageInputs(attempt);
             default -> {
             }
         }

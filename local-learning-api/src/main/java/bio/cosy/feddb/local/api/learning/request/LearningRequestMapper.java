@@ -5,8 +5,8 @@ import bio.cosy.feddb.core.base.BaseMapper;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningDTO;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningEntity;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningMapper;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectEntity;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectMapper;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectEntity;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectMapper;
 import bio.cosy.feddb.local.helper.QuarkusMappingConfig;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -18,9 +18,9 @@ import java.util.List;
 import java.util.Set;
 
 @Mapper(config = QuarkusMappingConfig.class)
-public interface FederatedLearningRequestMapper extends BaseMapper<FederatedLearningRequestDTO, FederatedLearningRequestEntity> {
+public interface LearningRequestMapper extends BaseMapper<LearningRequestDTO, LearningRequestEntity> {
 
-    FederatedLearningProjectMapper projectAppMapper = Mappers.getMapper(FederatedLearningProjectMapper.class);
+    LearningProjectMapper projectAppMapper = Mappers.getMapper(LearningProjectMapper.class);
     PatientLearningMapper projectLearningMapper = Mappers.getMapper(PatientLearningMapper.class);
 
     @Mappings({
@@ -31,7 +31,7 @@ public interface FederatedLearningRequestMapper extends BaseMapper<FederatedLear
             @Mapping(target = "awaitingCurrentUserDecision", ignore = true),
             @Mapping(target = "platformIsCoordinator", source = "project.platformIsCoordinator")
     })
-    FederatedLearningRequestDTO entityToDto(FederatedLearningRequestEntity entity);
+    LearningRequestDTO entityToDto(LearningRequestEntity entity);
 
     @Named("toSummary")
     @Mappings({
@@ -42,7 +42,7 @@ public interface FederatedLearningRequestMapper extends BaseMapper<FederatedLear
             @Mapping(target = "awaitingCurrentUserDecision", ignore = true),
             @Mapping(target = "platformIsCoordinator", source = "project.platformIsCoordinator")
     })
-    FederatedLearningRequestDTO entityToSummaryDto(FederatedLearningRequestEntity entity);
+    LearningRequestDTO entityToSummaryDto(LearningRequestEntity entity);
 
     @Mappings({
             @Mapping(target = "description", ignore = true),
@@ -51,10 +51,10 @@ public interface FederatedLearningRequestMapper extends BaseMapper<FederatedLear
             @Mapping(target = "project", ignore = true),
             @Mapping(target = "patients", ignore = true)
     })
-    FederatedLearningRequestEntity dtoToEntity(FederatedLearningRequestDTO sourceCode);
+    LearningRequestEntity dtoToEntity(LearningRequestDTO sourceCode);
 
     @Named("mapProject")
-    default ProjectDetailDTO mapProject(FederatedLearningProjectEntity project) {
+    default ProjectDetailDTO mapProject(LearningProjectEntity project) {
         if (project == null) {
             return null;
         }

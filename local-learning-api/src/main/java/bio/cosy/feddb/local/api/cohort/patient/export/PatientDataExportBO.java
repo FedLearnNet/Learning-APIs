@@ -12,7 +12,7 @@ import bio.cosy.feddb.local.api.cohort.patient.dataentry.PatientDataEntryExportD
 import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolBO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
 import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunType;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectBO;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectBO;
 import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.smallrye.mutiny.Uni;
@@ -32,7 +32,7 @@ public class PatientDataExportBO {
     PatientAO patientAO;
 
     @Inject
-    FederatedLearningProjectBO projectBO;
+    LearningProjectBO projectBO;
 
     @Inject
     PatientDataEntryBO patientDataEntryBO;

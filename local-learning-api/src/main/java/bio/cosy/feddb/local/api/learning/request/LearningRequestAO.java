@@ -9,10 +9,10 @@ import jakarta.transaction.Transactional;
 import java.util.*;
 
 @ApplicationScoped
-public class FederatedLearningRequestAO implements PanacheRepository<FederatedLearningRequestEntity> {
+public class LearningRequestAO implements PanacheRepository<LearningRequestEntity> {
 
-    public List<FederatedLearningRequestEntity> list(
-            Page page, FederatedLearningRequestStatus status) {
+    public List<LearningRequestEntity> list(
+            Page page, LearningRequestStatus status) {
 
         StringBuilder queryBuilder = new StringBuilder();
         Map<String, Object> parameters = new HashMap<>();
@@ -25,26 +25,26 @@ public class FederatedLearningRequestAO implements PanacheRepository<FederatedLe
         return find(queryBuilder.toString(), parameters).page(page).list();
     }
 
-    public List<FederatedLearningRequestEntity> findApprovedAndRunning() {
+    public List<LearningRequestEntity> findApprovedAndRunning() {
         return find("status = ?1 or status = ?2 ORDER BY id DESC",
-                FederatedLearningRequestStatus.APPROVED, FederatedLearningRequestStatus.RUNNING).list();
+                LearningRequestStatus.APPROVED, LearningRequestStatus.RUNNING).list();
     }
 
     /**
      * Locks the request so concurrent cohort decisions cannot both finalize it.
      */
-    public Optional<FederatedLearningRequestEntity> findByIdForUpdate(Long id) {
+    public Optional<LearningRequestEntity> findByIdForUpdate(Long id) {
         return find("id = ?1", id)
                 .withLock(LockModeType.PESSIMISTIC_WRITE)
                 .firstResultOptional();
     }
 
-    public Optional<FederatedLearningRequestEntity> findByGlobalFLExperimentUniqueId(String globalFLExperimentUniqueId) {
+    public Optional<LearningRequestEntity> findByGlobalFLExperimentUniqueId(String globalFLExperimentUniqueId) {
         return find("globalFLExperimentUniqueId", globalFLExperimentUniqueId).firstResultOptional();
     }
 
     @Transactional
-    public boolean updateStatusTransactional(String globalFLExperimentUniqueId, FederatedLearningRequestStatus status) {
+    public boolean updateStatusTransactional(String globalFLExperimentUniqueId, LearningRequestStatus status) {
         int updated = update(
                 """
                         status = ?1,

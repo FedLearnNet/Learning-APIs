@@ -1,9 +1,9 @@
 package bio.cosy.feddb.local.api.information;
 
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestBO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestDTO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestStatus;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestBO;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestDTO;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestStatus;
 import bio.cosy.feddb.local.api.learning.request.metrics.RequestRunMetricsBO;
 import bio.cosy.feddb.local.api.learning.request.metrics.RequestRunMetricsDTO;
 import bio.cosy.feddb.local.api.notification.NotificationBO;
@@ -22,7 +22,7 @@ public class UserInformationServiceBO {
     NotificationBO notificationBO;
 
     @Inject
-    FederatedLearningRequestBO federatedLearningRequestBO;
+    LearningRequestBO federatedLearningRequestBO;
 
     @Inject
     RequestDataStatisticsBO requestDataStatisticsBO;
@@ -43,14 +43,14 @@ public class UserInformationServiceBO {
     }
 
     private Long countOpenTrainingRequests(String keycloakId) {
-        return federatedLearningRequestBO.list(ALL_PENDING, FederatedLearningRequestStatus.PENDING, keycloakId)
+        return federatedLearningRequestBO.list(ALL_PENDING, LearningRequestStatus.PENDING, keycloakId)
                 .getResults().stream()
-                .filter(FederatedLearningRequestDTO::isAwaitingCurrentUserDecision)
+                .filter(LearningRequestDTO::isAwaitingCurrentUserDecision)
                 .count();
     }
 
     private Long countOpenStatisticsRequests(String keycloakId) {
-        return requestDataStatisticsBO.list(ALL_PENDING, FederatedLearningRequestStatus.PENDING).getResults().stream()
+        return requestDataStatisticsBO.list(ALL_PENDING, LearningRequestStatus.PENDING).getResults().stream()
                 .filter(dto -> canAccessStatisticsRequest(dto, keycloakId))
                 .count();
     }
@@ -61,7 +61,7 @@ public class UserInformationServiceBO {
     }
 
     private Long countOpenMetricsRequests(String keycloakId) {
-        return requestRunMetricsBO.list(ALL_PENDING, FederatedLearningRequestStatus.PENDING).getResults().stream()
+        return requestRunMetricsBO.list(ALL_PENDING, LearningRequestStatus.PENDING).getResults().stream()
                 .map(RequestRunMetricsDTO::getId)
                 .filter(id -> requestRunMetricsBO.getCohortIds(id).stream()
                         .allMatch(cohortId -> cohortMemberAuthBO.isMember(cohortId, keycloakId)))

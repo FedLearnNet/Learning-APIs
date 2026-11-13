@@ -11,7 +11,7 @@ import bio.cosy.feddb.local.api.cohort.patient.export.PatientDataExportBO;
 import bio.cosy.feddb.local.execution.message.ExecutionMessageAO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunMapper;
 import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestEntity;
 import bio.cosy.feddb.local.api.query.QueryAO;
 import bio.cosy.feddb.local.api.search.SearchResultDTO;
 import bio.cosy.feddb.local.api.search.SearchResultType;
@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class FederatedLearningProjectBO extends BaseBo<ProjectDetailDTO, FederatedLearningProjectEntity, FederatedLearningProjectAO, FederatedLearningProjectMapper> {
+public class LearningProjectBO extends BaseBo<ProjectDetailDTO, LearningProjectEntity, LearningProjectAO, LearningProjectMapper> {
 
     @Inject
     WorkflowBO workflowBO;
@@ -49,17 +49,17 @@ public class FederatedLearningProjectBO extends BaseBo<ProjectDetailDTO, Federat
     @Inject
     ExecutionMessageAO messageAO;
 
-    public PagedResponse<FederatedLearningProjectDTO> list(Page page) {
-        List<FederatedLearningProjectEntity> foundEntities = ao.list(page);
+    public PagedResponse<LearningProjectDTO> list(Page page) {
+        List<LearningProjectEntity> foundEntities = ao.list(page);
         if (foundEntities.isEmpty()) {
             return new PagedResponse<>(page.index, page.size);
         }
-        List<FederatedLearningProjectDTO> found = foundEntities.stream()
+        List<LearningProjectDTO> found = foundEntities.stream()
                 .map(e -> {
                     final ProjectDetailDTO project = mapper.entityToDto(e);
                     final ExecutionRunDTO run = e.getRun() != null ? runMapper.mapRunEntityToDTO(e.getRun(), false) : null;
                     final Long workflowId = project.getWorkflowId();
-                    return new FederatedLearningProjectDTO(project, run, workflowId);
+                    return new LearningProjectDTO(project, run, workflowId);
                 }).toList();
 
         return new PagedResponse<>(found, page.index, page.size);
@@ -93,7 +93,7 @@ public class FederatedLearningProjectBO extends BaseBo<ProjectDetailDTO, Federat
                 .toList();
     }
 
-    private Set<Long> getCohortIds(FederatedLearningProjectEntity project) {
+    private Set<Long> getCohortIds(LearningProjectEntity project) {
         if (project.getRequest() != null && project.getRequest().getPatients() != null) {
             return project.getRequest().getPatients().stream()
                     .map(patientLearning -> patientLearning.getPatient().getCohort().getId())
@@ -112,17 +112,17 @@ public class FederatedLearningProjectBO extends BaseBo<ProjectDetailDTO, Federat
                 .allMatch(cohortId -> cohortMemberAuthBO.isMember(cohortId, keycloakId));
     }
 
-    public FederatedLearningProjectDTO getProjectDetailById(Long id) {
+    public LearningProjectDTO getProjectDetailById(Long id) {
         return ao.findByIdOptional(id).map(e -> {
             final ProjectDetailDTO project = mapper.entityToDto(e);
             final ExecutionRunDTO run = e.getRun() != null ? runMapper.mapRunEntityToDTO(e.getRun(), false) : null;
             final Long workflowId = project.getWorkflowId();
-            return new FederatedLearningProjectDTO(project, run, workflowId);
+            return new LearningProjectDTO(project, run, workflowId);
         }).orElseThrow(() -> new NotFoundException("Project with id " + id + " not found"));
     }
 
     public Set<Long> getCohortIds(Long id) {
-        FederatedLearningProjectEntity project = ao.findByIdOptional(id)
+        LearningProjectEntity project = ao.findByIdOptional(id)
                 .orElseThrow(() -> new NotFoundException("Project with id " + id + " not found"));
         if (project.getRequest() != null && project.getRequest().getPatients() != null) {
             return project.getRequest().getPatients().stream()
@@ -137,8 +137,8 @@ public class FederatedLearningProjectBO extends BaseBo<ProjectDetailDTO, Federat
         return Set.of();
     }
 
-    public FederatedLearningProjectEntity createForRequest(Long queryId, FederatedLearningRequestEntity request, ProjectDetailDTO projectVersion, WorkflowDTO workflow) {
-        FederatedLearningProjectEntity entity = mapper.dtoToEntity(projectVersion);
+    public LearningProjectEntity createForRequest(Long queryId, LearningRequestEntity request, ProjectDetailDTO projectVersion, WorkflowDTO workflow) {
+        LearningProjectEntity entity = mapper.dtoToEntity(projectVersion);
         entity.setId(null);
         entity.setQuery(queryAO.findById(queryId));
         entity.setRequest(request);
@@ -148,7 +148,7 @@ public class FederatedLearningProjectBO extends BaseBo<ProjectDetailDTO, Federat
     }
 
     public Path exportForLearning(Long projectId){
-        FederatedLearningProjectEntity project = ao.findByIdOptional(projectId)
+        LearningProjectEntity project = ao.findByIdOptional(projectId)
                 .orElseThrow(() -> new NotFoundException("Project with id " + projectId + " not found"));
         Long requestId = project.getRequest().getId();
         Long queryId = project.getQuery().getId();

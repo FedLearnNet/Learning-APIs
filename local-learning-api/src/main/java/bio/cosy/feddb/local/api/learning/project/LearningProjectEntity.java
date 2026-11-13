@@ -2,8 +2,9 @@ package bio.cosy.feddb.local.api.learning.project;
 
 import bio.cosy.feddb.core.api.project.PatientDataExportConfigDTO;
 import bio.cosy.feddb.core.base.BaseEntity;
+import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestEntity;
 import bio.cosy.feddb.local.api.query.QueryEntity;
 import bio.cosy.feddb.local.api.workflow.WorkflowEntity;
 import jakarta.persistence.*;
@@ -24,7 +25,7 @@ import java.util.Date;
         })
 @Getter
 @Setter
-public class FederatedLearningProjectEntity extends BaseEntity {
+public class LearningProjectEntity extends BaseEntity {
 
     @Column(name = "verified_on")
     private Date verifiedOn;
@@ -50,6 +51,9 @@ public class FederatedLearningProjectEntity extends BaseEntity {
     @Column(name = "is_coordinator", columnDefinition = "boolean default false")
     private Boolean isCoordinator;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "execution_mode", length = 20, nullable = false)
+    private ExecutionMode executionMode = ExecutionMode.FEDERATED;
 
     @ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "query_id")
@@ -61,7 +65,7 @@ public class FederatedLearningProjectEntity extends BaseEntity {
 
     @OneToOne
     @JoinColumn(name = "request_id", nullable = false)
-    private FederatedLearningRequestEntity request;
+    private LearningRequestEntity request;
 
     // This clinic's run of the training, set up once it was approved.
     @OneToOne

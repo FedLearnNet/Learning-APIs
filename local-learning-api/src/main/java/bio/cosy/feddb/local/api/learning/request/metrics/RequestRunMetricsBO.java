@@ -10,11 +10,11 @@ import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
 import bio.cosy.feddb.local.api.cohort.permission.PermissionBO;
 import bio.cosy.feddb.local.api.eam.WebsocketSender;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectAO;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectEntity;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectAO;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectEntity;
 import bio.cosy.feddb.local.execution.message.ExecutionMessageAO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestStatus;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestStatus;
 import bio.cosy.feddb.local.api.notification.WebsocketClientNotificationBO;
 import bio.cosy.feddb.local.api.search.SearchResultDTO;
 import bio.cosy.feddb.local.api.search.SearchResultType;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 public class RequestRunMetricsBO extends BaseBo<RequestRunMetricsDTO, RequestRunMetricsEntity, RequestRunMetricsAO, RequestRunMetricsMapper> {
 
     @Inject
-    FederatedLearningProjectAO projectAO;
+    LearningProjectAO projectAO;
 
     @Inject
     CohortMemberAuthBO cohortMemberAuthBO;
@@ -63,7 +63,7 @@ public class RequestRunMetricsBO extends BaseBo<RequestRunMetricsDTO, RequestRun
             Log.infof("Run-metrics request received but feature is disabled. Ignoring request %s", request.getGlobalRequestId());
             return;
         }
-        Optional<FederatedLearningProjectEntity> projectOpt = projectAO.findByRequestIdOptional(request.getGlobalExperimentUniqueId());
+        Optional<LearningProjectEntity> projectOpt = projectAO.findByRequestIdOptional(request.getGlobalExperimentUniqueId());
         if (projectOpt.isEmpty()) {
             Log.errorf("Project for experiment %s not found — ignoring run-metrics request", request.getGlobalExperimentUniqueId());
             return;
@@ -80,7 +80,7 @@ public class RequestRunMetricsBO extends BaseBo<RequestRunMetricsDTO, RequestRun
         Set<Long> cohortIds = getCohortIds(entity);
         if (hasAutoMetricsAccessForAll(request.getKeycloakId(), cohortIds)) {
             Log.infof("Run-metrics auto access for user %s on request %s — auto-approving", request.getKeycloakId(), request.getGlobalRequestId());
-            entity.setStatus(FederatedLearningRequestStatus.APPROVED);
+            entity.setStatus(LearningRequestStatus.APPROVED);
             entity.setVerifiedOn(new Date());
             ao.persist(entity);
             sendMetricsResponse(entity);
@@ -96,7 +96,7 @@ public class RequestRunMetricsBO extends BaseBo<RequestRunMetricsDTO, RequestRun
         return cohortIds.stream().allMatch(cohortId -> permissionBO.hasAutoMetricsAccess(keycloakId, cohortId));
     }
 
-    public PagedResponse<RequestRunMetricsDTO> list(Page page, FederatedLearningRequestStatus status) {
+    public PagedResponse<RequestRunMetricsDTO> list(Page page, LearningRequestStatus status) {
         List<RequestRunMetricsEntity> entities = ao.list(page, status);
         List<RequestRunMetricsDTO> dtos = mapper.entitiesToDtos(entities);
         return new PagedResponse<>(dtos, page.index, page.size);
@@ -129,7 +129,7 @@ public class RequestRunMetricsBO extends BaseBo<RequestRunMetricsDTO, RequestRun
             dto.setProjectId(entity.getProject().getId());
             dto.setProjectName(entity.getProject().getName());
             if (entity.getProject().getRequest() != null) {
-                dto.setExperimentGlobalUniqueId(entity.getProject().getRequest().getGlobalFLExperimentUniqueId());
+                dto.setExperimentGlobalUniqueId(entity.getProject().getRequest().getGlobalExperimentUniqueId());
             }
         }
         return dto;
@@ -162,7 +162,7 @@ public class RequestRunMetricsBO extends BaseBo<RequestRunMetricsDTO, RequestRun
         RequestRunMetricsEntity entity = ao.findByIdOptional(id)
                 .orElseThrow(() -> new NotFoundException("RequestRunMetrics not found: " + id));
 
-        if (!entity.getStatus().equals(FederatedLearningRequestStatus.PENDING)) {
+        if (!entity.getStatus().equals(LearningRequestStatus.PENDING)) {
             throw new IllegalArgumentException("Status has already been decided");
         }
         entity.setStatus(updateDTO.getStatus());
@@ -170,14 +170,14 @@ public class RequestRunMetricsBO extends BaseBo<RequestRunMetricsDTO, RequestRun
         entity.setVerifiedByKeycloakId(keycloakId);
         ao.persist(entity);
 
-        if (entity.getStatus().equals(FederatedLearningRequestStatus.APPROVED)) {
+        if (entity.getStatus().equals(LearningRequestStatus.APPROVED)) {
             sendMetricsResponse(entity);
         }
         return mapper.entityToDto(entity);
     }
 
     private void sendMetricsResponse(RequestRunMetricsEntity entity) {
-        FederatedLearningProjectEntity project = entity.getProject();
+        LearningProjectEntity project = entity.getProject();
         ExecutionRunEntity run = project.getRun();
         if (run == null) {
             Log.errorf("No run found for project %d — cannot send metrics", project.getId());
@@ -192,7 +192,7 @@ public class RequestRunMetricsBO extends BaseBo<RequestRunMetricsDTO, RequestRun
                 .collect(Collectors.toList());
 
         RunMetricsResponseClientDTO response = new RunMetricsResponseClientDTO();
-        response.setGlobalExperimentUniqueId(project.getRequest().getGlobalFLExperimentUniqueId());
+        response.setGlobalExperimentUniqueId(project.getRequest().getGlobalExperimentUniqueId());
         response.setRandomClinicId(run.getParticipantId());
         response.setRequestId(entity.getGlobalRequestId());
         response.setMetrics(metrics);

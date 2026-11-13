@@ -5,7 +5,7 @@ import bio.cosy.feddb.local.api.cohort.CohortEntity;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberTypes;
 import bio.cosy.feddb.local.api.cohort.permission.PermissionBO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestEntity;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -35,7 +35,7 @@ public class FederatedLearningRequestCohortBO {
      *
      * @return cohort ids that still need a manual decision
      */
-    public Set<Long> initForRequest(FederatedLearningRequestEntity request,
+    public Set<Long> initForRequest(LearningRequestEntity request,
                                     Set<Long> cohortIds,
                                     String platformUserId,
                                     int certificationLevel,

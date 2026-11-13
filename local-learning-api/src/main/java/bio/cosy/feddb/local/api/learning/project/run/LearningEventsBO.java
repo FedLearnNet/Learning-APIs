@@ -17,10 +17,10 @@ import org.eclipse.microprofile.reactive.messaging.Channel;
 import java.util.concurrent.ExecutorService;
 
 @ApplicationScoped
-public class FederatedLearningEventsBO {
+public class LearningEventsBO {
 
     @Inject
-    FederatedLearningRunBO runBO;
+    LearningRunBO runBO;
 
     @Inject
     @VirtualThreads
@@ -31,19 +31,30 @@ public class FederatedLearningEventsBO {
     Multi<ExecutionRunDTO> runChanges;
 
     void reportAttempts(@Observes StartupEvent event) {
-        runChanges.select().where(run -> run.getPurpose() == ExecutionPurpose.TRAINING && run.getMode() == ExecutionMode.FEDERATED)
-                .onItem().transformToIterable(run -> run.getSteps().stream().flatMap(step -> step.getAttempts().stream()).toList())
-                .select().distinct(attempt -> attempt.getId() + ":" + attempt.getStatus())
+        runChanges.select().where(run -> run.getPurpose() == ExecutionPurpose.TRAINING &&
+                        (run.getMode() == ExecutionMode.FEDERATED || run.getMode() == ExecutionMode.TRE))
+                .onItem().transformToIterable(run -> run.getSteps().stream()
+                        .flatMap(step -> step.getAttempts().stream())
+                        .map(attempt -> new AttemptReport(attempt.getId(), attempt.getStatus(), run.getMode()))
+                        .toList())
+                .select().distinct(attempt -> attempt.id() + ":" + attempt.status())
                 .emitOn(virtualThreads)
-                .subscribe().with(attempt -> report(attempt.getId(), attempt.getStatus()),
+                .subscribe().with(attempt -> report(attempt.id(), attempt.status(), attempt.mode()),
                         failure -> Log.errorf(failure, "Attempts of trainings are no longer reported to the platform"));
     }
 
-    private void report(Long attemptId, RunStatusTypes status) {
+    private void report(Long attemptId, RunStatusTypes status, ExecutionMode mode) {
         try {
-            runBO.reportStatusTransactional(attemptId, status);
+            if (mode.equals(ExecutionMode.FEDERATED)) {
+                runBO.reportStatusTransactional(attemptId, status);
+            } else if (mode.equals(ExecutionMode.TRE)) {
+                runBO.reportStatusTransactional(attemptId, status);
+            }
         } catch (RuntimeException e) {
             Log.errorf(e, "Could not report attempt %d to the platform", attemptId);
         }
+    }
+
+    private record AttemptReport(Long id, RunStatusTypes status, ExecutionMode mode) {
     }
 }

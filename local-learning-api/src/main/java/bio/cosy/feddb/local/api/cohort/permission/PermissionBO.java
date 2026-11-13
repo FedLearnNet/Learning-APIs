@@ -50,65 +50,34 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
         return mapper.entitiesToDtos(ao.isAllowedToQuery(userId));
     }
 
-    /**
-     * Returns true if the user has auto-training access for <b>every</b> given cohort. A learning
-     * request covers all cohorts matched by its query at once, so a single cohort without
-     * auto-training access is enough to send the whole request to manual approval.
-     * A cohort counts as granted when at least one of its active permissions allows it; a cohort
-     * without any matching permission is never granted.
-     * userId must exactly match the stored permission value as validated by the global system.
-     * Permissions without a userId apply globally.
-     * null or NONE denies access; ALL allows it. CERTIFIED_APPS requires certificationLevel > 0.
-     */
-    public boolean hasAutoTrainingAccess(String userId, Set<Long> cohortIds, int certificationLevel,
-                                         boolean needsInternetAccess) {
-        if (cohortIds.isEmpty()) return true;
-        if (needsInternetAccess) {
-            Log.infof("Auto-training access denied for user %s: the workflow needs internet access", userId);
-            return false;
-        }
-
-        Set<Long> grantedCohortIds = ao.getActivePermissionsForCohorts(userId, cohortIds).stream()
-                .filter(p -> grantsAutoTraining(p.getAutoTrainingAccess(), certificationLevel))
-                .map(p -> p.getCohort().getId())
-                .collect(Collectors.toSet());
-
-        if (grantedCohortIds.containsAll(cohortIds)) {
-            Log.infof("Auto-training access granted for user %s on all cohorts %s (certificationLevel=%d)",
-                    userId, cohortIds, certificationLevel);
-            return true;
-        }
-
-        Set<Long> missing = new HashSet<>(cohortIds);
-        missing.removeAll(grantedCohortIds);
-        Log.infof("Auto-training access denied for user %s: cohorts %s of %s require manual approval "
-                        + "(certificationLevel=%d)", userId, missing, cohortIds, certificationLevel);
-        return false;
-    }
-
-    private boolean grantsAutoTraining(AutoTrainingAccess access, int certificationLevel) {
+    public boolean grantsAutoTraining(AutoTrainingAccess access, int certificationLevel) {
         if (access == AutoTrainingAccess.ALL) return true;
         if (access == AutoTrainingAccess.CERTIFIED_APPS) return certificationLevel > 0;
         return false; // null or NONE
     }
 
-    /**
-     * Returns true if the user has training access for the given cohort. A training request can
-     * span cohorts with different settings, so every cohort is evaluated on its own instead of
-     * letting one permissive cohort approve the whole request.
-     */
-    public boolean hasAutoTrainingAccessForCohort(String userId, Long cohortId,
-                                                  int certificationLevel,
-                                                  boolean needsInternetAccess) {
-        if (cohortId == null || needsInternetAccess) {
+    public boolean grantsFederatedAutoTrainingAccess(List<PermissionDTO> permissions, int certificationLevel,
+                                                     boolean needsInternetAccess) {
+        if (permissions == null || permissions.isEmpty() || needsInternetAccess) {
             return false;
         }
-        return ao.getActivePermissionsForCohort(userId, cohortId).stream().anyMatch(p -> {
-            AutoTrainingAccess access = p.getAutoTrainingAccess();
-            if (access == AutoTrainingAccess.ALL) return true;
-            if (access == AutoTrainingAccess.CERTIFIED_APPS) return certificationLevel > 0;
-            return false; // null or NONE
-        });
+        return permissions.stream().anyMatch(p -> grantsAutoTraining(p.getFederatedAutoTrainingAccess(), certificationLevel));
+    }
+
+    public boolean grantsSPEAutoTrainingAccess(List<PermissionDTO> permissions, int certificationLevel,
+                                               boolean needsInternetAccess) {
+        if (permissions == null || permissions.isEmpty() || needsInternetAccess) {
+            return false;
+        }
+        return permissions.stream().anyMatch(p -> grantsAutoTraining(p.getSpeAutoTrainingAccess(), certificationLevel));
+    }
+
+    public List<PermissionDTO> getActivePermissionsForCohort(String userId, Long cohortId) {
+        if (cohortId == null) {
+            return new ArrayList<>();
+        }
+        List<PermissionEntity> permissions = ao.getActivePermissionsForCohort(userId, cohortId);
+        return mapper.entitiesToDtos(permissions);
     }
 
     /**
@@ -154,8 +123,8 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
         cohortExists(permission);
 
         if (config.cohort().deactivateAutomaticCohortPermission().learning()
-                && permission.getAutoTrainingAccess() != null
-                && permission.getAutoTrainingAccess() != AutoTrainingAccess.NONE
+                && permission.getFederatedAutoTrainingAccess() != null
+                && permission.getFederatedAutoTrainingAccess() != AutoTrainingAccess.NONE
         ) {
             Log.warnf("Automatic training access is deactivated in the configuration, cannot create permission with training access");
             throw new NotAllowedException("Automatic training access is deactivated in the configuration, " +
@@ -190,7 +159,7 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
 
     public void setDefault(PermissionDTO permission, FLNetClientConfig.DefaultCohortPermission permissionConfig) {
         permission.setUserId(permissionConfig.globalUserId().orElse(null));
-        permission.setAutoTrainingAccess(permissionConfig.autoTrainingAccess());
+        permission.setFederatedAutoTrainingAccess(permissionConfig.autoTrainingAccess());
         permission.setAutoStatisticsAccess(permissionConfig.autoStatisticsAccess());
         permission.setAutoMetricsAccess(permissionConfig.autoMetricsAccess());
         permission.setIsAllowedToQuery(permissionConfig.isAllowedToQuery());
@@ -200,7 +169,7 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
 
     public void setDefault(PermissionEntity permission, FLNetClientConfig.DefaultCohortPermission permissionConfig) {
         permission.setUserId(permissionConfig.globalUserId().orElse(null));
-        permission.setAutoTrainingAccess(permissionConfig.autoTrainingAccess());
+        permission.setFederatedAutoTrainingAccess(permissionConfig.autoTrainingAccess());
         permission.setAutoStatisticsAccess(permissionConfig.autoStatisticsAccess());
         permission.setAutoMetricsAccess(permissionConfig.autoMetricsAccess());
         permission.setIsAllowedToQuery(permissionConfig.isAllowedToQuery());
@@ -223,7 +192,7 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
         setDefault(permission, permissionConfig);
 
         if (config.cohort().deactivateAutomaticCohortPermission().learning()) {
-            permission.setAutoTrainingAccess(AutoTrainingAccess.NONE);
+            permission.setFederatedAutoTrainingAccess(AutoTrainingAccess.NONE);
         }
         if (config.cohort().deactivateAutomaticCohortPermission().metrics()) {
             permission.setAutoMetricsAccess(AutoMetricsAccess.NONE);

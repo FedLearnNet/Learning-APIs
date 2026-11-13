@@ -11,7 +11,6 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -47,7 +46,7 @@ public class PermissionValidityTest {
         p.setIsAllowedToQuery(true);
         p.setQueryRetryTime(3);
         p.setQuerySampleThreshold(100);
-        p.setAutoTrainingAccess(AutoTrainingAccess.ALL);
+        p.setFederatedAutoTrainingAccess(AutoTrainingAccess.ALL);
         p.setValidFrom(validFrom);
         p.setValidUntil(validUntil);
         return p;

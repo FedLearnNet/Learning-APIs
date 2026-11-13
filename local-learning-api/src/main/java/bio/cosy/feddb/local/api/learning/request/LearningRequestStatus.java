@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.learning.request;
 
-public enum FederatedLearningRequestStatus {
+public enum LearningRequestStatus {
     PENDING,
     APPROVED,
     RUNNING,

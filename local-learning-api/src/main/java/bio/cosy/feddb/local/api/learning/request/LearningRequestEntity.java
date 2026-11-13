@@ -2,7 +2,7 @@ package bio.cosy.feddb.local.api.learning.request;
 
 import bio.cosy.feddb.core.base.BaseEntity;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningEntity;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectEntity;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,16 +12,16 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.util.Set;
 
 @Entity
-@Table(name = "federated_learning_request")
+@Table(name = "learning_request")
 @Getter
 @Setter
-public class FederatedLearningRequestEntity extends BaseEntity {
+public class LearningRequestEntity extends BaseEntity {
 
     @Column(name = "platform_user_id", length = 255, nullable = false)
     private String platformUserId;
 
     @Column(name = "global_request_id", nullable = false)
-    private String globalFLExperimentUniqueId;
+    private String globalExperimentUniqueId;
 
     @Column(name = "name", length = 255, nullable = false)
     private String name;
@@ -40,10 +40,10 @@ public class FederatedLearningRequestEntity extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
-    private FederatedLearningRequestStatus status = FederatedLearningRequestStatus.PENDING;
+    private LearningRequestStatus status = LearningRequestStatus.PENDING;
 
     @OneToOne(mappedBy = "request", cascade = CascadeType.ALL)
-    private FederatedLearningProjectEntity project;
+    private LearningProjectEntity project;
 
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
     @OnDelete(action = OnDeleteAction.CASCADE)

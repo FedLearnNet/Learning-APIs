@@ -11,13 +11,13 @@ import java.util.List;
 import java.util.Optional;
 
 @ApplicationScoped
-public class FederatedLearningProjectAO implements PanacheRepository<FederatedLearningProjectEntity> {
+public class LearningProjectAO implements PanacheRepository<LearningProjectEntity> {
 
-    public Optional<FederatedLearningProjectEntity> findByRequestIdOptional(String id) {
+    public Optional<LearningProjectEntity> findByRequestIdOptional(String id) {
         return find("request.globalFLExperimentUniqueId", id).firstResultOptional();
     }
 
-    public List<FederatedLearningProjectEntity> list(Page page) {
+    public List<LearningProjectEntity> list(Page page) {
         return find("run IS NOT NULL ORDER BY id DESC").page(page).list();
     }
 
@@ -39,11 +39,11 @@ public class FederatedLearningProjectAO implements PanacheRepository<FederatedLe
         return updated == 1;
     }
 
-    public FederatedLearningProjectEntity findByRunId(Long runId) {
+    public LearningProjectEntity findByRunId(Long runId) {
         return find("run.id", runId).firstResult();
     }
 
-    public List<FederatedLearningProjectEntity> listWithRun() {
+    public List<LearningProjectEntity> listWithRun() {
         return list("run is not null");
     }
 }

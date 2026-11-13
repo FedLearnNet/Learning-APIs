@@ -1,8 +1,8 @@
 package bio.cosy.feddb.local.api.learning.request.metrics;
 
 import bio.cosy.feddb.core.base.BaseEntity;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectEntity;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestStatus;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectEntity;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,9 +33,9 @@ public class RequestRunMetricsEntity extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
-    private FederatedLearningRequestStatus status = FederatedLearningRequestStatus.PENDING;
+    private LearningRequestStatus status = LearningRequestStatus.PENDING;
 
     @ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "project_id", nullable = false)
-    private FederatedLearningProjectEntity project;
+    private LearningProjectEntity project;
 }

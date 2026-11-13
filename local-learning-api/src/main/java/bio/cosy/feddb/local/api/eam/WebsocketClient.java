@@ -3,8 +3,9 @@ package bio.cosy.feddb.local.api.eam;
 import bio.cosy.feddb.core.api.query.QueryClientResponseDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.socket.*;
-import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningRunBO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestBO;
+import bio.cosy.feddb.local.api.learning.project.run.LearningRunBO;
+import bio.cosy.feddb.local.api.learning.project.run.federated.FederatedLearningProgressBO;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestBO;
 import bio.cosy.feddb.local.api.learning.request.metrics.RequestRunMetricsBO;
 import bio.cosy.feddb.local.api.query.QueryBO;
 import bio.cosy.feddb.local.api.statistics.request.RequestDataStatisticsBO;
@@ -32,10 +33,13 @@ public class WebsocketClient {
     QueryBO queryBO;
 
     @Inject
-    FederatedLearningRequestBO federatedLearningRequestBO;
+    LearningRequestBO federatedLearningRequestBO;
 
     @Inject
-    FederatedLearningRunBO federatedLearningRunBO;
+    LearningRunBO learningRunBO;
+
+    @Inject
+    FederatedLearningProgressBO federatedLearningProgressBO;
 
     @Inject
     WebSocketClientState state;
@@ -154,7 +158,7 @@ public class WebsocketClient {
             if (m.getMessageType().equals(FedDBClientTypeEnum.START_LEARNING)) {
                 StartLearningClientRequestDTO startLearning = objectMapper.convertValue(m.getMessage(), StartLearningClientRequestDTO.class);
 
-                Optional<LearningClientSyncResponseDTO> responseData = federatedLearningRunBO.handleStartLearningRequestTransactional(startLearning);
+                Optional<LearningClientSyncResponseDTO> responseData = learningRunBO.handleStartLearningRequestTransactional(startLearning);
                 if (responseData.isPresent()) {
                     FedDBClientDataDTO<LearningClientSyncResponseDTO> response = new FedDBClientDataDTO<>();
                     response.setMessageType(FedDBClientTypeEnum.UPDATE_LEARNING);
@@ -166,7 +170,7 @@ public class WebsocketClient {
             if (m.getMessageType().equals(FedDBClientTypeEnum.UPDATE_LEARNING)) {
                 LearningClientSyncRequestDTO startLearning = objectMapper.convertValue(m.getMessage(), LearningClientSyncRequestDTO.class);
 
-                Optional<LearningClientSyncResponseDTO> responseData = federatedLearningRunBO.handleNextStepTransactional(startLearning);
+                Optional<LearningClientSyncResponseDTO> responseData = learningRunBO.handleNextStepTransactional(startLearning);
                 if (responseData.isPresent()) {
                     FedDBClientDataDTO<LearningClientSyncResponseDTO> response = new FedDBClientDataDTO<>();
                     response.setMessageType(FedDBClientTypeEnum.UPDATE_LEARNING);
@@ -179,7 +183,7 @@ public class WebsocketClient {
             }
             if (m.getMessageType().equals(FedDBClientTypeEnum.STOP_LEARNING)) {
                 LearningClientStopRequestDTO stopLearning = objectMapper.convertValue(m.getMessage(), LearningClientStopRequestDTO.class);
-                federatedLearningRunBO.stopLearningTransactional(stopLearning);
+                learningRunBO.stopLearningTransactional(stopLearning);
                 return sendCurrentLearnings();
             }
             if (m.getMessageType().equals(FedDBClientTypeEnum.RUN_METRICS)) {
@@ -189,7 +193,7 @@ public class WebsocketClient {
             }
             if (m.getMessageType().equals(FedDBClientTypeEnum.RELAY_CERT)) {
                 RelayCertSignResponseDTO response = objectMapper.convertValue(m.getMessage(), RelayCertSignResponseDTO.class);
-                federatedLearningRunBO.handleSignedTransactional(response);
+                federatedLearningProgressBO.handleSignedTransactional(response);
                 return noResponse();
             }
         } catch (Exception e) {
