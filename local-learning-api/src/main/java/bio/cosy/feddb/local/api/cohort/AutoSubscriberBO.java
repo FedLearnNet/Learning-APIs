@@ -111,7 +111,14 @@ public class AutoSubscriberBO {
                         try {
                             allSucceeded &= runSubscribe(entry.getKey(), entry.getValue());
                         } catch (Throwable throwable) {
-                            Log.errorf(throwable, "AutoSubscribe '%s' failed: %s", entry.getKey(), throwable.getMessage());
+                            if (throwable instanceof SchemaNotAvailableException) {
+                                Log.warnf("AutoSubscribe '%s': %s, retrying every %ds (max %d attempts)",
+                                        entry.getKey(), throwable.getMessage(),
+                                        SCHEMA_RETRY_INTERVAL_SECONDS, SCHEMA_RETRY_MAX_ATTEMPTS);
+                                pendingGroups.put(entry.getKey(), new PendingGroup(entry.getValue(), 0));
+                            } else {
+                                Log.errorf(throwable, "AutoSubscribe '%s' failed: %s", entry.getKey(), throwable.getMessage());
+                            }
                             allSucceeded = false;
                         }
                     }
