@@ -283,7 +283,8 @@ public class FederatedAppCreateImportBO {
             }
             return Optional.of(resolved);
         } catch (Exception e) {
-            Log.warnf(e, "Could not verify official registry image for tool %s; importing its definition without build information", slug);
+            Log.warnf("Could not verify official registry image for tool %s; importing its definition without build information: %s",
+                    slug, e.getMessage());
             return Optional.empty();
         }
     }

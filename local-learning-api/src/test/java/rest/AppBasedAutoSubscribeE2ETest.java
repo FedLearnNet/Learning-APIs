@@ -67,6 +67,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -185,8 +186,10 @@ public class AppBasedAutoSubscribeE2ETest {
         QuarkusMock.installMockForType(schemaMock, GlobalSchemaSubscriptionService.class, RestClient.LITERAL);
 
         extractorApp = new ExtractorAppStub();
-        QuarkusMock.installMockForType(extractorApp, ContainerServiceClient.class, RestClient.LITERAL);
-        QuarkusMock.installMockForType(extractorApp, WorkflowServiceClient.class, RestClient.LITERAL);
+        QuarkusMock.installMockForType(mock(ContainerServiceClient.class, delegatesTo(extractorApp)),
+                ContainerServiceClient.class, RestClient.LITERAL);
+        QuarkusMock.installMockForType(mock(WorkflowServiceClient.class, delegatesTo(extractorApp)),
+                WorkflowServiceClient.class, RestClient.LITERAL);
     }
 
     @Test
@@ -330,7 +333,8 @@ public class AppBasedAutoSubscribeE2ETest {
      * image would do — read its API key and attempt id from the container environment, then post its
      * declared outputs back to the run's upload endpoint.
      */
-    private static class ExtractorAppStub implements ContainerServiceClient, WorkflowServiceClient {
+    // Not implementing the clients: Quarkus would serve their @Path methods and the two share /container/workflow
+    static class ExtractorAppStub {
 
         private static final String IDS_MAPPING_CSV = """
                 admission_type_id,description
@@ -342,7 +346,6 @@ public class AppBasedAutoSubscribeE2ETest {
         final CountDownLatch started = new CountDownLatch(1);
         final List<String> startedImages = new CopyOnWriteArrayList<>();
 
-        @Override
         public CreateContainerResponseDTO startContainer(StartAppDTO createDTO,
                                                          boolean changeUrl,
                                                          boolean sendConsoleLog,
@@ -351,7 +354,6 @@ public class AppBasedAutoSubscribeE2ETest {
             return start(createDTO.getAppImage(), createDTO.getEnvironments());
         }
 
-        @Override
         public CreateContainerResponseDTO startWorkflow(StartWorkflowNodeDTO createDTO,
                                                         boolean changeUrl,
                                                         String path,
@@ -434,57 +436,46 @@ public class AppBasedAutoSubscribeE2ETest {
                     .findFirst();
         }
 
-        @Override
         public Response cleanupWorkflow(String containerId, boolean cleanup) {
             return Response.ok().build();
         }
 
-        @Override
         public Response cleanupWorkflow(String containerId, boolean cleanup, boolean runInBackground) {
             return Response.ok().build();
         }
 
-        @Override
         public Response cleanupWorkflowStep(String appId, boolean cleanup, boolean runInBackground) {
             return Response.ok().build();
         }
 
-        @Override
         public List<ContainerDTO> list() {
             return List.of();
         }
 
-        @Override
         public ContainerDTO get(String id) {
             return null;
         }
 
-        @Override
         public Multi<String> getLogsStream(String id) {
             return Multi.createFrom().empty();
         }
 
-        @Override
         public List<ContainerRunDTO> listRuns() {
             return List.of();
         }
 
-        @Override
         public ContainerRunDTO getRun(Long id) {
             return null;
         }
 
-        @Override
         public ContainerRunDTO getRunOfContainer(String containerId) {
             return null;
         }
 
-        @Override
         public List<ContainerLogDTO> getRunLogs(Long id) {
             return List.of();
         }
 
-        @Override
         public CreateContainerResponseDTO startPipeline(StartPipelineDTO createDTO,
                                                         boolean changeUrl,
                                                         String path,
@@ -492,12 +483,10 @@ public class AppBasedAutoSubscribeE2ETest {
             throw new UnsupportedOperationException("not used by the extractor path");
         }
 
-        @Override
         public List<ContainerDTO> listFeatureCloud() {
             return List.of();
         }
 
-        @Override
         public Response cleanupContainers(List<String> containerIds, boolean cleanup) {
             return Response.ok().build();
         }

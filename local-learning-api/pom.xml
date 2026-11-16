@@ -16,7 +16,7 @@
         <org.projectlombok.binding.version>0.2.0</org.projectlombok.binding.version>
         <keycloak.version>26.6.1</keycloak.version>
         <e2e.excludes>**/*E2ETest.java</e2e.excludes><!-- Skip E2E tests by default -->
-        <eval.excludes>**/eval/*Test.java</eval.excludes><!-- Skip report-generating evaluation tests by default -->
+        <eval.excludes>**/eval/**/*Test.java</eval.excludes><!-- Skip report-generating evaluation tests by default -->
     </properties>
 
     <dependencyManagement>
