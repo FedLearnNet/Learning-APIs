@@ -2,6 +2,7 @@ package bio.cosy.feddb.local.api.importer.run.preview.cache;
 
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
+import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadSettingsDTO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,12 +29,22 @@ public class ConnectorPreviewTransformationCacheBO extends BaseBo<
     public static final int SOURCE_STEP = 0;
 
     public String sourceFingerprint(ConnectorConfigDTO config) {
-        return hash(List.of(
+        List<String> parts = new ArrayList<>(List.of(
                 String.valueOf(config.getCohortId()),
                 json(config.getInputConfig()),
                 json(config.getMergeConfig()),
                 json(config.getPivotConfig()),
                 json(config.getFileInfo())));
+        // Preview settings only count when they differ from the defaults, so existing entries and the
+        // cache a connector run warms (default settings) keep matching the default wizard preview.
+        int previewRows = config.previewRowsOrDefault();
+        if (previewRows != ConnectorFileUploadSettingsDTO.DEFAULT_PREVIEW_ROWS) {
+            parts.add("previewRows=" + previewRows);
+        }
+        if (config.previewNonEmptyOrDefault()) {
+            parts.add("previewNonEmpty=true");
+        }
+        return hash(parts);
     }
 
 

@@ -17,6 +17,7 @@ import bio.cosy.feddb.local.api.importer.files.read.TableReadSpec;
 import bio.cosy.feddb.local.api.importer.files.read.TabularFileReaderBO;
 import bio.cosy.feddb.local.api.importer.files.table.SheetMergePlan;
 import bio.cosy.feddb.local.api.importer.files.table.TableData;
+import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadSettingsDTO;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
 import bio.cosy.feddb.local.api.importer.run.ConnectorAppOutputDTO;
 import bio.cosy.feddb.local.api.importer.run.ConnectorAppRunBO;
@@ -337,6 +338,17 @@ public class ConnectorExtractBO {
                         "Stored preview data is unavailable; upload or re-analyze the file first"
                 );
             }
+            if (storedPreviewTooShort(sourceTables, request.getLimit())) {
+                // Uploaded before samples grew past ten rows: read the first rows from the file instead.
+                ResolvedFileInput input = self.get().loadFileTransactional(fileSettings, request.getCohortId());
+                return fileHandlerBO.getFirstTableData(
+                        input.file(),
+                        TableReadSpec.of(input.parsingSettings(), request.getLimit(), true),
+                        request.getMergeConfig(),
+                        request.getPivotConfig(),
+                        request.getUploadInfo()
+                );
+            }
             if (request.getUploadInfo() == null || request.getUploadInfo().isEmpty()) {
                 return fileHandlerBO.getFirstPreviewTableData(
                         sourceTables,
@@ -366,6 +378,19 @@ public class ConnectorExtractBO {
         );
     }
 
+
+    /**
+     * Whether a stored sample is the ten-row sample of a file uploaded before the preview could show
+     * more rows, while the request asks for more than that.
+     */
+    static boolean storedPreviewTooShort(Map<String, TableSample> sourceTables, Integer limit) {
+        if (limit == null || limit <= ConnectorFileUploadSettingsDTO.DEFAULT_PREVIEW_ROWS
+                || sourceTables == null || sourceTables.isEmpty()) {
+            return false;
+        }
+        TableSample first = sourceTables.values().iterator().next();
+        return first != null && first.getRows().size() == ConnectorFileUploadSettingsDTO.DEFAULT_PREVIEW_ROWS;
+    }
 
     public TableData loadFromApp(AppBasedUploadSettingsDTO appSettings,
                                  Long cohortId,
