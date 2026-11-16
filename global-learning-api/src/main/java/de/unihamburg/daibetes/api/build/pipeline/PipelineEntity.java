@@ -4,6 +4,7 @@ import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
 import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
 import bio.cosy.feddb.core.api.pipeline.PipelineRunMode;
 import bio.cosy.feddb.core.base.BaseEntity;
+import de.unihamburg.daibetes.api.app.version.FederatedAppPublishDTO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.build.pipeline.steps.PipelineStepEntity;
 import de.unihamburg.daibetes.api.model.sub.ModelSubEntity;
@@ -33,7 +34,12 @@ public class PipelineEntity extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "run_mode", length = 32, nullable = false)
-    private PipelineRunMode runMode = PipelineRunMode.ALL;
+    private PipelineRunMode runMode = PipelineRunMode.BUILD_ONLY;
+
+    // publish settings of an ALL run
+    @Column(name = "publish_request", columnDefinition = "json")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private FederatedAppPublishDTO publishRequest;
 
     private String secret;
 

@@ -21,6 +21,7 @@ import de.unihamburg.daibetes.dto.URLDTO;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
@@ -266,6 +267,21 @@ public class FederatedAppBO extends BaseBo<FederatedAppDTO, FederatedAppEntity, 
         if (!authorBO.isUserAuthor(keycloakId, appId)) {
             throw new ForbiddenException();
         }
+        return publishLatestVersion(appId, publishDTO);
+    }
+
+    // a build-and-publish pipeline was authorized on creation; skipped if a newer version exists by now
+    @Transactional
+    public void publishBuiltVersionTransactional(Long appVersionId, FederatedAppPublishDTO publishDTO) {
+        Optional<Long> appId = versionAO.findAppIdOfLatestUnpublishedOptional(appVersionId);
+        if (appId.isEmpty()) {
+            Log.warnf("Version %d is no longer the latest unpublished one, not publishing it", appVersionId);
+            return;
+        }
+        publishLatestVersion(appId.get(), publishDTO);
+    }
+
+    private FederatedAppDetailDTO publishLatestVersion(Long appId, FederatedAppPublishDTO publishDTO) {
         FederatedAppDetailDTO detail = getById(appId);
         FederatedAppVersionDTO newVersion = this.versionBO.publishTransactional(appId, publishDTO);
         mapper.setAppVersion(detail, newVersion);

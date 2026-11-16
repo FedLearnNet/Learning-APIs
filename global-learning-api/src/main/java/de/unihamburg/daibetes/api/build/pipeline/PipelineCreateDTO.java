@@ -1,6 +1,8 @@
 package de.unihamburg.daibetes.api.build.pipeline;
 
 import bio.cosy.feddb.core.api.pipeline.PipelineRunMode;
+import de.unihamburg.daibetes.api.app.version.FederatedAppPublishDTO;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -10,7 +12,11 @@ public class PipelineCreateDTO {
     private PipelineType pipelineType;
 
     @NotNull
-    private PipelineRunMode runMode = PipelineRunMode.ALL;
+    private PipelineRunMode runMode = PipelineRunMode.BUILD_ONLY;
+
+    // required for ALL, applied once the build succeeded
+    @Valid
+    private FederatedAppPublishDTO publishRequest;
 
     private Boolean autoStart = false;
     private Long modelSubId;
