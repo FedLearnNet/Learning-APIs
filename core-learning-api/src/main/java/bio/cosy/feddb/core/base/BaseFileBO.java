@@ -178,6 +178,13 @@ public abstract class BaseFileBO<Dto extends BaseDTO, Entity extends BaseFileEnt
         ao.delete(entity);
     }
 
+    public void deleteWithStoredFile(Entity entity) {
+        ao.delete(entity);
+        if (entity.getLargeObjectId() != null) {
+            deleteStoredFile(entity.getLargeObjectId());
+        }
+    }
+
     public void deleteStoredFile(Long objectId) {
         fileStoreAO.deleteStoredFile(objectId);
     }

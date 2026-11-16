@@ -32,9 +32,6 @@ public class WorkflowNodeEntity extends BaseWorkflowNodeEntity {
     @Column(name = "global_model_sub_id")
     private Long modelSubId;
 
-    @Column(name = "old_fc_version", nullable = true)
-    private Boolean oldFCVersion = false;
-
     @ColumnDefault("false")
     @Column(name = "supports_federated_learning")
     private Boolean supportsFederatedLearning = false;
@@ -50,11 +47,6 @@ public class WorkflowNodeEntity extends BaseWorkflowNodeEntity {
 
     @OneToMany(mappedBy = "outputNode", cascade = CascadeType.ALL)
     private Set<WorkflowConnectionEntity> outComingConnections = new HashSet<>();
-
-    @Override
-    public boolean isOldFCVersion() {
-        return oldFCVersion != null && oldFCVersion;
-    }
 
     /**
      * Must be overridden: the base class hardcodes {@code return false}, and Lombok generates

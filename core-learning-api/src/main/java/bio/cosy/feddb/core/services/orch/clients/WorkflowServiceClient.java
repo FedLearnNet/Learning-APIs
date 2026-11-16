@@ -5,9 +5,11 @@ import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 
 @Path("/container/workflow")
+@RegisterRestClient(configKey = "orch-docker-service")
 @Produces("application/json")
 @Consumes("application/json")
 public interface WorkflowServiceClient {

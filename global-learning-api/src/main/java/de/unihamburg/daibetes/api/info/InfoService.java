@@ -17,7 +17,9 @@ public interface InfoService {
 
     @GET
     @PermitAll
-    @Operation(summary = "Platform information", description = "Public. Also used by the Clients to detect a newer Platform version")
+    @Operation(summary = "Platform information",
+            description = "Public. Also used by the Clients to detect a newer Platform version "
+                    + "and to wait for the startup imports of the Platform and its data modeler")
     @APIResponse(responseCode = "200", description = "Platform information")
     InfoDTO getInfo();
 }

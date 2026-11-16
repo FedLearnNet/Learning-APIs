@@ -1,3 +1,4 @@
+# NODE_* placeholders: unset for the normal node, set by node2/node2.env for a second local node
 services:
   local-learning-api-db:
     image: postgres:18
@@ -11,7 +12,7 @@ services:
       - local-learning-api-db-volume:/var/lib/postgresql
     command: [ "postgres", "-c", "config_file=/etc/postgresql/postgresql.conf" ]
     ports:
-      - "5432:5432"
+      - "${NODE_DB_PORT:-5432}:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U user -d local-learning-management" ]
       interval: 5s
@@ -28,22 +29,29 @@ services:
     image: ghcr.io/fedlearnnet/orchestration-api/orch-api:staging
     user: "0:0"
     ports:
-      - '8091:8080'
+      - '${NODE_ORCH_PORT:-8091}:8080'
     env_file:
       - orch_secrets.env
     environment:
       QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://local-learning-api-db:5432/local-learning-management
       QUARKUS_DATASOURCE_USERNAME: user
       QUARKUS_DATASOURCE_PASSWORD: password
+      # Keep orchestration migrations separate from the learning API's schema and dev resets.
+      QUARKUS_FLYWAY_SCHEMAS: orch
+      QUARKUS_HIBERNATE_ORM_DATABASE_DEFAULT_SCHEMA: orch
       QUARKUS_LOG_CONSOLE_JSON_ENABLED: false
-      CONTAINER_HOST_OVERRIDE: host.docker.internal
-      CONTAINER_NETWORK_CONTROLLER:  local-learning-controller:8001
-      CONTAINER_NETWORK_NAMES: local-learning-network
-      CONTAINER_NETWORK_ALWAYS_BRIDGE: "true"
-      QUARKUS_LOG_CATEGORY_"bio.cosy.featurecloud"_LEVEL: DEBUG
+      # Tool images built by the global dev stack are pulled by the shared Docker daemon.
       ORCH_DOCKER__PRIVATE__REGISTRY_URL: localhost:5001
+      # Registry HTTP requests originate inside this container, on a separate Compose network.
+      ORCH_DOCKER__PRIVATE__REGISTRY_API_URL: http://host.docker.internal:5001
       ORCH_DOCKER__PRIVATE__REGISTRY_USERNAME: ""
       ORCH_DOCKER__PRIVATE__REGISTRY_PASSWORD: ""
+      CONTAINER_HOST_OVERRIDE: host.docker.internal
+      CONTAINER_NETWORK_CONTROLLER: ${NODE_CONTROLLER_NAME:-local-learning-controller}:8001
+      CONTAINER_NETWORK_NAMES: ${NODE_NETWORK:-local-learning-network}
+      CONTAINER_NETWORK_ALWAYS_BRIDGE: "true"
+      CONTAINER_FILE_TRANSFER_VOLUME_NAME: ${NODE_ORCH_VOLUME:-orch-data}
+      QUARKUS_LOG_CATEGORY_"bio.cosy.featurecloud"_LEVEL: DEBUG
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - orch-data:/mnt/input:rw
@@ -51,23 +59,21 @@ services:
       local-learning-api-db:
         condition: service_healthy
     labels:
-      # Change to `true` to disable waiting for ports
-      io.quarkus.devservices.compose.wait_for.ports.disable: true
-      # Or set a custom timeout for port waiting
-      #io.quarkus.devservices.compose.wait_for.ports.timeout: "30s"
+      # Connector tools cannot start until orch-api has migrated its schema and opened its port.
+      io.quarkus.devservices.compose.wait_for.ports.timeout: "120s"
     networks:
       - local-learning-network
   controller:
     image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller:staging
-    container_name: local-learning-controller
+    container_name: ${NODE_CONTROLLER_NAME:-local-learning-controller}
     ports:
-      - '8092:8000'
+      - '${NODE_CONTROLLER_PORT:-8092}:8000'
     environment:
       RELAY_ADDRESS_TCP: "host.docker.internal:9161"
       RELAY_TRUST_CERTIFICATE: "true"
       RELAY_TLS_MODE: "off"
       RELAY_MODE: "dev"
-      WORKFLOW_LEARNING_API_WS_ADDRESS: "ws://host.docker.internal:8081"
+      WORKFLOW_LEARNING_API_WS_ADDRESS: "ws://host.docker.internal:${NODE_HTTP_PORT:-8081}"
       LOG_LEVEL_STDOUT: "DEBUG"
     labels:
       # Change to `true` to disable waiting for ports
@@ -110,11 +116,11 @@ services:
 volumes:
   local-learning-api-db-volume:
   orch-data:
-    name: "orch-data"
+    name: "${NODE_ORCH_VOLUME:-orch-data}"
   neo4j-data:
   neo4j-import:
 
 networks:
   local-learning-network:
-    name: "local-learning-network"
+    name: "${NODE_NETWORK:-local-learning-network}"
     driver: bridge

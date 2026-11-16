@@ -55,6 +55,11 @@ public interface QueryService {
     @Transactional
     QueryDetailDTO retrieve(@PathParam("id") Long id);
 
+    @GET
+    @Path("/{id}/systems")
+    @Transactional
+    List<de.unihamburg.daibetes.api.query.response.QueryResponseDTO> systems(@PathParam("id") Long id);
+
     @POST
     @Operation(summary = "Create a new Query")
     @APIResponse(responseCode = "201", description = "Query created",

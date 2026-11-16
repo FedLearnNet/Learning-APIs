@@ -1,7 +1,7 @@
 package bio.cosy.feddb.local.api.statistics.request;
 
 import bio.cosy.feddb.core.base.BaseEntity;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestStatus;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestStatus;
 import bio.cosy.feddb.local.api.query.QueryEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -33,7 +33,7 @@ public class RequestDataStatisticsEntity extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
-    private FederatedLearningRequestStatus status = FederatedLearningRequestStatus.PENDING;
+    private LearningRequestStatus status = LearningRequestStatus.PENDING;
 
     @ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "query_id")

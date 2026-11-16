@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.api.importer.transformer;
 
 import bio.cosy.feddb.core.base.BaseDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -25,7 +26,14 @@ public class ConnectorTransformerDTO extends BaseDTO {
     // For remote app execution
     private Long appVersionId;
     private String appImage;
+    private String appSlug;
     private LinkedHashMap<String, Object> hyperparams;
 
     private Long connectorId;
+
+    @JsonIgnore
+    public boolean isAppBased() {
+        return appImage != null && !appImage.isBlank()
+                || appSlug != null && !appSlug.isBlank();
+    }
 }

@@ -14,11 +14,10 @@ public class DataAnalysisFileDTO extends BaseAuthDTO {
     private Long dataAnalysisId;
     private FileDTO file;
 
-    // Optional association to a prediction
     private String outputName;
     private String inputName;
-    private Long predictionId;
-    private Long workflowStepId;
+    // Optional association to the execution attempt that read or wrote the file
+    private Long attemptId;
 
 
     @JsonIgnore

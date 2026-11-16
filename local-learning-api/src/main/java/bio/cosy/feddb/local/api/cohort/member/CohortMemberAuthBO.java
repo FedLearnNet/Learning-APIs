@@ -24,7 +24,7 @@ public class CohortMemberAuthBO {
                 .flatMap(cohort -> getMemberType(cohort, keycloakId));
     }
 
-    public Set<Long> getMemberCohortIds(String keycloakId) {
+    public Set<Long> memberCohortIdsOf(String keycloakId) {
         return cohortAO.listAll().stream()
                 .filter(cohort -> isMember(cohort, keycloakId))
                 .map(CohortEntity::getId)

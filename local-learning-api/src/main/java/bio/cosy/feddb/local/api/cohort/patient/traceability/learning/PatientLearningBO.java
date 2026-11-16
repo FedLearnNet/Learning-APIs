@@ -2,8 +2,8 @@ package bio.cosy.feddb.local.api.cohort.patient.traceability.learning;
 
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.base.PagedResponse;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestBO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestBO;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestEntity;
 import bio.cosy.feddb.local.api.query.QueryResultWrapperDTO;
 import io.quarkus.logging.Log;
 import io.quarkus.panache.common.Page;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class PatientLearningBO extends BaseBo<PatientLearningDTO, PatientLearningEntity, PatientLearningAO, PatientLearningMapper> {
 
     @Inject
-    FederatedLearningRequestBO requestBO;
+    LearningRequestBO requestBO;
 
     public PagedResponse<PatientLearningDTO> list(
             Page page, Long internalCohortId, Long internalPatientId, Long requestId,
@@ -32,7 +32,7 @@ public class PatientLearningBO extends BaseBo<PatientLearningDTO, PatientLearnin
         return new PagedResponse<>(found, page.index, page.size);
     }
 
-    public void initPatientList(Long queryId, FederatedLearningRequestEntity request, QueryResultWrapperDTO requeried) {
+    public void initPatientList(Long queryId, LearningRequestEntity request, QueryResultWrapperDTO requeried) {
         String patientMatchSql = requeried == null ? null : requeried.getPatientMatchSql();
         if (patientMatchSql == null || patientMatchSql.isBlank()) {
             Log.warn("No patient match SQL for query " + queryId + ", learning patient list stays empty.");

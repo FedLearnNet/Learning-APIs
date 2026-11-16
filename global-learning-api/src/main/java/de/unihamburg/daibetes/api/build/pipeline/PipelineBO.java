@@ -1,15 +1,17 @@
 package de.unihamburg.daibetes.api.build.pipeline;
 
 import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
-import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
 import bio.cosy.feddb.core.api.pipeline.PipelineRunMode;
+import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
+import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
 import bio.cosy.feddb.core.services.orch.dto.CreateContainerResponseDTO;
 import bio.cosy.feddb.core.services.orch.dto.StartPipelineDTO;
 import de.unihamburg.daibetes.api.app.FederatedAppEntity;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
+import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.build.pipeline.steps.PipelineStepBO;
 import de.unihamburg.daibetes.api.build.pipeline.steps.PipelineStepEntity;
@@ -18,13 +20,13 @@ import de.unihamburg.daibetes.api.model.access.ModelAccessBO;
 import de.unihamburg.daibetes.api.model.sub.ModelSubEntity;
 import de.unihamburg.daibetes.api.model.sub.file.ModelSubFileBO;
 import de.unihamburg.daibetes.config.FLNetConfig;
-import de.unihamburg.daibetes.services.OrchContainerServiceClient;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
@@ -48,7 +50,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
 
     @Inject
     @RestClient
-    OrchContainerServiceClient containerClient;
+    ContainerServiceClient containerClient;
 
     @Inject
     ToolApiKeyService toolApiKeyService;
@@ -64,6 +66,12 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
 
     @Inject
     ModelSubFileBO modelSubFileBO;
+
+    @Inject
+    FederatedAppVersionAO appVersionAO;
+
+    @Inject
+    Event<PipelinePublishEvent> publishEvents;
 
     @Inject
     FLNetConfig config;
@@ -110,6 +118,15 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         if (dto.getRunMode() == PipelineRunMode.LOCAL_BUILD && dto.getPipelineType() != PipelineType.MODEL) {
             throw new BadRequestException("LOCAL_BUILD requires uploaded model files");
         }
+        if (dto.getRunMode() == PipelineRunMode.ALL) {
+            if (dto.getPipelineType() != PipelineType.APP || dto.getPublishRequest() == null) {
+                throw new BadRequestException("ALL publishes a tool version and requires its publish settings");
+            }
+            if (appVersionAO.findAppIdOfLatestUnpublishedOptional(dto.getAppVersionId()).isEmpty()) {
+                throw new BadRequestException("Only the latest unpublished tool version can be built and published");
+            }
+            pipeline.setPublishRequest(dto.getPublishRequest());
+        }
         if (dto.getRunMode() == PipelineRunMode.SCAN_ONLY) {
             String imageName;
             if (dto.getPipelineType() == PipelineType.MODEL) {
@@ -126,7 +143,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
                 throw new BadRequestException("SCAN_ONLY requires an existing image");
             }
         }
-        PipelineDTO created = setPipelineEntityCreated(pipeline);
+        PipelineDTO created = setPipelineEntityCreatedTransactional(pipeline);
         if (dto.getAutoStart()) {
             return start(created.getId());
         }
@@ -135,7 +152,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
 
     // For the initial creation of the entity before the pipeline is started
     @Transactional
-    public PipelineDTO setPipelineEntityCreated(PipelineDTO dto) {
+    public PipelineDTO setPipelineEntityCreatedTransactional(PipelineDTO dto) {
         return stepBO.createSteps(create(dto));
     }
 
@@ -149,22 +166,9 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         return start(id);
     }
 
+    // Orch may pull the builder image first, so its call stays outside any transaction
     public PipelineDTO start(Long id) {
-        if (config.pipelineBuilderImage().isEmpty()) {
-            throw new IllegalStateException("Pipeline builder image is not configured");
-        }
-        String builderImage = config.pipelineBuilderImage().get();
-        Optional<PipelineEntity> entityOptional = ao.findByIdOptional(id);
-        if (entityOptional.isEmpty()) {
-            throw new NotFoundException(String.format("Property with the ID %s not found", id));
-        }
-        PipelineEntity entity = entityOptional.get();
-        String apiKey = toolApiKeyService.issue(Scope.PIPELINE_RUN, id);
-        StartPipelineDTO startApp = new StartPipelineDTO();
-        startApp.setPipelineId(id);
-        startApp.setAppImage(builderImage);
-        startApp.setRunMode(entity.getRunMode());
-        startApp.addEnvironment(apiKey, id, entity.getSecret());
+        StartPipelineDTO startApp = loadStartRequestTransactional(id);
         Log.info("Starting container for pipeline " + id);
         CreateContainerResponseDTO resp;
         try {
@@ -179,11 +183,27 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         if (containerId == null) {
             throw new IllegalStateException("Failed to start container for pipeline " + id);
         }
-        return setPipelineEntityRunning(id, containerId);
+        return setPipelineEntityRunningTransactional(id, containerId);
     }
 
     @Transactional
-    public PipelineDTO setPipelineEntityRunning(Long id, String containerId) {
+    public StartPipelineDTO loadStartRequestTransactional(Long id) {
+        if (config.pipelineBuilderImage().isEmpty()) {
+            throw new IllegalStateException("Pipeline builder image is not configured");
+        }
+        PipelineEntity entity = ao.findByIdOptional(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Property with the ID %s not found", id)));
+        StartPipelineDTO startApp = new StartPipelineDTO();
+        startApp.setPipelineId(id);
+        startApp.setAppImage(config.pipelineBuilderImage().get());
+        // orch builds and pushes alike for both, publishing happens here
+        startApp.setRunMode(entity.getRunMode() == PipelineRunMode.BUILD_ONLY ? PipelineRunMode.ALL : entity.getRunMode());
+        startApp.addEnvironment(toolApiKeyService.issue(Scope.PIPELINE_RUN, id), id, entity.getSecret());
+        return startApp;
+    }
+
+    @Transactional
+    public PipelineDTO setPipelineEntityRunningTransactional(Long id, String containerId) {
         PipelineEntity entity = ao.findByIdOptional(id, LockModeType.PESSIMISTIC_WRITE)
                 .orElseThrow(() -> new NotFoundException(String.format("Pipeline with ID %s not found", id)));
         entity.setContainerId(containerId);
@@ -349,6 +369,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
 
 
     private void updateOverallPipelineStatus(PipelineEntity pipeline) {
+        boolean succeededBefore = pipeline.getPipelineStatus() == PipelineStatus.SUCCESS;
         boolean hasFailedStep = pipeline.getSteps().stream()
                 .anyMatch(s -> s.getStepStatus() == PipelineStatus.FAILED);
 
@@ -371,6 +392,11 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
             setImageTag(pipeline);
         }
         ao.persist(pipeline);
+        if (succeeded && !succeededBefore && pipeline.getRunMode() == PipelineRunMode.ALL
+                && pipeline.getPublishRequest() != null && pipeline.getAppVersion() != null) {
+            publishEvents.fire(new PipelinePublishEvent(pipeline.getId(), pipeline.getAppVersion().getId(),
+                    pipeline.getPublishRequest()));
+        }
         if (succeeded) {
             toolApiKeyService.revoke(Scope.PIPELINE_RUN, pipeline.getId());
         }
@@ -496,7 +522,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         return updated;
     }
 
-    public Optional<byte[]> getFilesForPipeline(Long id, String secret) {
+    public Optional<byte[]> loadFilesForPipeline(Long id, String secret) {
         Optional<PipelineEntity> entityOptional = ao.findByIdAndSecretOptional(id, secret, LockModeType.PESSIMISTIC_READ);
         if (entityOptional.isEmpty()) {
             throw new NotFoundException(String.format("Property with the ID %s not found", id));

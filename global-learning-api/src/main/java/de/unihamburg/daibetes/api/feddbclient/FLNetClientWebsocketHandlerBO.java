@@ -3,10 +3,11 @@ package de.unihamburg.daibetes.api.feddbclient;
 import bio.cosy.feddb.core.api.query.QueryClientResponseDTO;
 import bio.cosy.feddb.core.api.socket.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentBO;
-import de.unihamburg.daibetes.api.project.experiment.federated.metrics.RunMetricsRequestBO;
-import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantBO;
-import de.unihamburg.daibetes.api.project.experiment.federated.participants.ProjectFederatedExperimentParticipantEntity;
+import bio.cosy.feddb.core.services.orch.dto.SystemComputingInfoDTO;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingBO;
+import de.unihamburg.daibetes.api.project.training.result.RunResultRequestBO;
 import de.unihamburg.daibetes.api.query.response.QueryResponseBO;
 import de.unihamburg.daibetes.api.query.statistics.DataStatisticsResponseBO;
 import io.quarkus.arc.log.LoggerName;
@@ -18,6 +19,15 @@ import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class FLNetClientWebsocketHandlerBO {
+    private final Map<String, SystemComputingInfoDTO> systems = new ConcurrentHashMap<>();
+
+    public Map<String, SystemComputingInfoDTO> getSystems() {
+        return Map.copyOf(systems);
+    }
+
+    public void removeSystem(String connectionId) {
+        systems.remove(connectionId);
+    }
 
     @Inject
     QueryResponseBO queryResponseBO;
@@ -26,13 +36,10 @@ public class FLNetClientWebsocketHandlerBO {
     DataStatisticsResponseBO dataStatisticsResponseBO;
 
     @Inject
-    RunMetricsRequestBO runMetricsRequestBO;
+    RunResultRequestBO runMetricsRequestBO;
 
     @Inject
-    ProjectFederatedExperimentBO projectFederatedExperimentBO;
-
-    @Inject
-    ProjectFederatedExperimentParticipantBO projectFederatedExperimentParticipantBO;
+    FederatedTrainingBO federatedTrainingBO;
 
     @Inject
     FLNetClientBroadcastBO broadcastBO;
@@ -56,10 +63,14 @@ public class FLNetClientWebsocketHandlerBO {
     public <T> void handle(FedDBClientDataDTO<T> m, String connectionId) {
         ObjectMapper objectMapper = new ObjectMapper();
 
+        if (m.getMessageType().equals(FedDBClientTypeEnum.SYSTEM_INFO)) {
+            systems.put(connectionId, objectMapper.convertValue(m.getMessage(), SystemComputingInfoDTO.class));
+        }
+
         if (m.getMessageType().equals(FedDBClientTypeEnum.EXISTING_QUERY)) {
             QueryClientResponseDTO query = objectMapper.convertValue(m.getMessage(), QueryClientResponseDTO.class);
             Log.infof("Received query response from %s", query);
-            queryResponseBO.saveResponse(query);
+            queryResponseBO.saveResponse(query, connectionId);
         }
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.DATA_STATISTICS)) {
@@ -69,7 +80,7 @@ public class FLNetClientWebsocketHandlerBO {
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.LEARNING_QUERY)) {
             LearningQueryClientResponseDTO query = objectMapper.convertValue(m.getMessage(), LearningQueryClientResponseDTO.class);
-            projectFederatedExperimentBO.updateCount(
+            federatedTrainingBO.acceptTransactional(
                     query.getGlobalFLExperimentUniqueId(),
                     query.getCount(),
                     query.getUniqueRandomClinicId(),
@@ -79,10 +90,7 @@ public class FLNetClientWebsocketHandlerBO {
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.UPDATE_LEARNING)) {
             LearningClientSyncResponseDTO response = objectMapper.convertValue(m.getMessage(), LearningClientSyncResponseDTO.class);
-            ProjectFederatedExperimentParticipantEntity participant = projectFederatedExperimentParticipantBO.updateStatus(response);
-            if (participant != null) {
-                projectFederatedExperimentBO.updateStepAndNotify(participant);
-            }
+            federatedTrainingBO.updateTransactional(response);
         }
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.CURRENT_LEARNINGS)) {

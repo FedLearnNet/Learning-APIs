@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.api.importer.run.preview;
 
+import bio.cosy.feddb.local.api.importer.files.table.ColumnNames;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
 import bio.cosy.feddb.local.api.importer.extract.ConnectorExtractBO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadSettingsDTO;
@@ -92,7 +93,7 @@ public class ConnectorPreviewBO {
             throw new BadRequestException("There is no transformation step " + stepIndex + " to run");
         }
         ConnectorTransformerDTO transformer = transformers.get(stepIndex - 1);
-        if (!isAppBased(transformer)) {
+        if (!transformer.isAppBased()) {
             throw new BadRequestException("Transformation step " + stepIndex + " is not app based");
         }
 
@@ -132,7 +133,7 @@ public class ConnectorPreviewBO {
         for (int index = 0; index < upTo; index++) {
             ConnectorTransformerDTO transformer = transformers.get(index);
             int stepIndex = index + 1;
-            boolean appBased = isAppBased(transformer);
+            boolean appBased = transformer.isAppBased();
             fingerprint = cacheBO.stageFingerprint(fingerprint, transformer);
             Optional<ConnectorPreviewTransformationCacheStage> cached = blockedBy == null
                     ? cacheBO.find(connectorId, stepIndex, fingerprint)
@@ -145,7 +146,7 @@ public class ConnectorPreviewBO {
                         cached.get().getCachedAt(), stage.getRows(), appBased, false, null);
             } else if (appBased && appRunner != null && blockedBy == null) {
                 List<Map<String, Object>> rows = appRunner.apply(transformer, stage.getRows());
-                List<String> columns = columnsOf(stage.getColumns(), rows);
+                List<String> columns = ColumnNames.withRowColumns(stage.getColumns(), rows);
                 storeAppStage(connectorId, stepIndex, transformer, fingerprint, rows, columns);
                 stage = new ConnectorPreviewTransformationStageData(rows, columns, stage.getProfiles());
             } else if (appBased) {
@@ -166,7 +167,7 @@ public class ConnectorPreviewBO {
                 List<Map<String, Object>> rows =
                         transformerBO.applyBuiltInTransformation(transformer, stage.getRows(), patientIdColumn);
                 stage = new ConnectorPreviewTransformationStageData(
-                        rows, columnsOf(stage.getColumns(), rows), stage.getProfiles());
+                        rows, ColumnNames.withRowColumns(stage.getColumns(), rows), stage.getProfiles());
                 if (blockedBy == null) {
                     cacheBO.store(connectorId, stepIndex, transformer.getId(), fingerprint,
                             limitPreviewRows(rows), stage.getColumns());
@@ -196,7 +197,7 @@ public class ConnectorPreviewBO {
 
     private void addTable(PreviewResponseDTO response, ConnectorPreviewTransformationStageData stage) {
         response.getJsons().add(render(stage));
-        response.getColumns().add(columnsOf(List.of(), limitPreviewRows(stage.getRows())));
+        response.getColumns().add(ColumnNames.withRowColumns(List.of(), limitPreviewRows(stage.getRows())));
     }
 
     private String render(ConnectorPreviewTransformationStageData stage) {
@@ -223,20 +224,10 @@ public class ConnectorPreviewBO {
                 appBased, requiresRun, blockedByStep));
     }
 
-    private static List<String> columnsOf(List<String> columns, List<Map<String, Object>> rows) {
-        LinkedHashSet<String> all = new LinkedHashSet<>(columns == null ? List.of() : columns);
-        rows.forEach(row -> all.addAll(row.keySet()));
-        return new ArrayList<>(all);
-    }
-
     private static List<String> columnsOf(ConnectorPreviewTransformationCacheStage cached,
                                           ConnectorPreviewTransformationStageData stage) {
         List<String> columns = cached.getColumns();
         return columns == null || columns.isEmpty() ? stage.getColumns() : columns;
-    }
-
-    static boolean isAppBased(ConnectorTransformerDTO transformer) {
-        return transformer != null && transformer.getAppImage() != null && !transformer.getAppImage().isBlank();
     }
 
     private static int size(List<ConnectorTransformerDTO> transformers) {
@@ -365,7 +356,7 @@ public class ConnectorPreviewBO {
             return false;
         }
         return transformers.stream()
-                .filter(transformer -> transformer.getAppImage() == null || transformer.getAppImage().isBlank())
+                .filter(transformer -> !transformer.isAppBased())
                 .anyMatch(transformer -> functionRunnerBO.mode(transformer) == FunctionExecutionMode.PATIENT);
     }
 

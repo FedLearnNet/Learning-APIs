@@ -7,7 +7,7 @@ import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.project.ProjectStatus;
 import bio.cosy.feddb.core.base.BaseBo;
 import de.unihamburg.daibetes.api.file.FileBO;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
+import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipAO;
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipBO;
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipDTO;
@@ -23,6 +23,7 @@ import jakarta.ws.rs.core.Response;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -92,7 +93,7 @@ public class ProjectBO extends BaseBo<ProjectDetailDTO, ProjectEntity, ProjectAO
             throw new NotFoundException("Project not found");
         }
         List<ProjectStatus> statusList = projectEntity.getExperiments().stream()
-                .map(ProjectFederatedExperimentEntity::getExperimentStatus).toList();
+                .map(ExecutionExperimentEntity::getStatus).toList();
 
         if (statusList.contains(ProjectStatus.RUNNING) || statusList.contains(ProjectStatus.PREPARE)) {
             throw new NotAllowedException("Project is running");
@@ -161,6 +162,14 @@ public class ProjectBO extends BaseBo<ProjectDetailDTO, ProjectEntity, ProjectAO
     public TabularSchemaDTO createExportConfigSchema(Long id, String keycloakId) {
         ProjectDetailDTO currentDto = get(id, keycloakId);
         return exportConfigUtilsBO.createSchema(currentDto.getExportConfig());
+    }
+
+    public LinkedHashMap<String, Object> dummyTrainingInputsOf(Long id, Long appVersionId) {
+        return exportConfigUtilsBO.dummyTrainingInputsOf(appVersionId, getById(id).getExportConfig());
+    }
+
+    public String exportTestCsvOf(Long id, Integer amount, String keycloakId) {
+        return exportConfigUtilsBO.testCsvOf(get(id, keycloakId).getExportConfig(), amount);
     }
 
     public Response generateExportConfigTestCsv(Long id, Integer amount, String keycloakId) {

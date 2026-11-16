@@ -27,6 +27,7 @@ public interface GlobalAPIStoreService {
             @QueryParam("showUncertified") @DefaultValue("true") boolean showUncertified,
             @QueryParam("hideWorkflow") @DefaultValue("false") boolean hideWorkflow,
             @QueryParam("onlyTrainedAnalysis") @DefaultValue("false") boolean onlyTrainedAnalysis,
+            @QueryParam("onlyWithImage") @DefaultValue("false") boolean onlyWithImage,
             @QueryParam("sort") @DefaultValue("name:asc") String sort,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size

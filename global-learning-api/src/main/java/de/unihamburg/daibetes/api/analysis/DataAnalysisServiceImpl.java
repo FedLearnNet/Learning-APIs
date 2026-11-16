@@ -4,19 +4,17 @@ import bio.cosy.feddb.core.api.file.FileRenameDTO;
 import bio.cosy.feddb.core.api.model.workflow.DataAnalysisDetailDTO;
 import bio.cosy.feddb.core.api.model.workflow.DataAnalysisFileDTO;
 import bio.cosy.feddb.core.api.model.workflow.ModelWorkflowDTO;
-import bio.cosy.feddb.core.api.run.AppRunTypeEnum;
 import de.unihamburg.daibetes.api.analysis.file.DataAnalysisFileBO;
 import de.unihamburg.daibetes.api.analysis.report.DataAnalysisReportRendererBO;
-import de.unihamburg.daibetes.api.analysis.worklfow.DataAnalysisWorkflowRunBO;
-import de.unihamburg.daibetes.api.analysis.worklfow.DataAnalysisWorkflowRunDTO;
+import de.unihamburg.daibetes.api.analysis.run.DataAnalysisExecutionBO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
+import de.unihamburg.daibetes.api.analysis.run.DataAnalysisRunDTO;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
-import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 @ApplicationScoped
@@ -31,7 +29,7 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
     DataAnalysisFileBO modelWorkflowFileBO;
 
     @Inject
-    DataAnalysisWorkflowRunBO workflowRunBO;
+    DataAnalysisExecutionBO executionBO;
 
     @Inject
     DataAnalysisReportRendererBO reportRendererBO;
@@ -49,9 +47,9 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
     }
 
     @Override
-    public DataAnalysisWorkflowRunDTO retrieveWorkflowExperiment(Long id, Long experimentId) {
+    public DataAnalysisRunDTO retrieveWorkflowExperiment(Long id, Long experimentId) {
         String keycloakId = userIdentity.getKeycloakId();
-        return workflowRunBO.findById(id, experimentId, keycloakId);
+        return executionBO.findRunTransactional(id, experimentId, keycloakId);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package bio.cosy.feddb.core.api.project;
 
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 
 import java.util.Arrays;
 import java.util.List;
@@ -73,7 +73,8 @@ public enum ProjectStatus {
 
     public static ProjectStatus fromRunStatusTypes(RunStatusTypes runStatus) {
         return switch (runStatus) {
-            case PENDING, INITIALIZED, STARTED -> READY;
+            case PENDING, INITIALIZED -> INIT;
+            case STARTED -> READY;
             case RUNNING -> RUNNING;
             case FINISHED -> FINISHED;
             case STOPPED -> STOPPED;

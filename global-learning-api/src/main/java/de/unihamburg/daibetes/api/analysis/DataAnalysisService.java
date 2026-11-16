@@ -4,7 +4,7 @@ import bio.cosy.feddb.core.api.file.FileRenameDTO;
 import bio.cosy.feddb.core.api.model.workflow.DataAnalysisDetailDTO;
 import bio.cosy.feddb.core.api.model.workflow.DataAnalysisFileDTO;
 import bio.cosy.feddb.core.api.model.workflow.ModelWorkflowDTO;
-import de.unihamburg.daibetes.api.analysis.worklfow.DataAnalysisWorkflowRunDTO;
+import de.unihamburg.daibetes.api.analysis.run.DataAnalysisRunDTO;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -46,11 +46,11 @@ public interface DataAnalysisService {
 
     @GET
     @Path("/{id}/experiment/{experimentId}")
-    @Operation(summary = "Retrieve a single model data analysis workflow experiment")
+    @Operation(summary = "Retrieve a run of the data analysis with its steps and attempts")
     @APIResponse(responseCode = "200", description = "ModelWorkflowDetailDTO found")
     @APIResponse(responseCode = "404", description = "ModelWorkflowDetailDTO not found")
     @Transactional
-    DataAnalysisWorkflowRunDTO retrieveWorkflowExperiment(@PathParam("id") Long id, @PathParam("experimentId") Long experimentId);
+    DataAnalysisRunDTO retrieveWorkflowExperiment(@PathParam("id") Long id, @PathParam("experimentId") Long experimentId);
 
     @DELETE
     @Path("/{id}")

@@ -3,6 +3,7 @@ package rest.helper;
 import bio.cosy.feddb.local.api.cohort.permission.AutoMetricsAccess;
 import bio.cosy.feddb.local.api.cohort.permission.AutoStatisticsAccess;
 import bio.cosy.feddb.local.api.cohort.permission.AutoTrainingAccess;
+import bio.cosy.feddb.local.api.cohort.permission.TrainingAccess;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 
 import java.io.File;
@@ -100,6 +101,16 @@ public final class AutoSubscribeTestHelper {
 
                     @Override
                     public AutoTrainingAccess autoTrainingAccess() {
+                        return AutoTrainingAccess.ALL;
+                    }
+
+                    @Override
+                    public TrainingAccess treTrainingAccess() {
+                        return TrainingAccess.ENABLED;
+                    }
+
+                    @Override
+                    public AutoTrainingAccess treAutoTrainingAccess() {
                         return AutoTrainingAccess.ALL;
                     }
 

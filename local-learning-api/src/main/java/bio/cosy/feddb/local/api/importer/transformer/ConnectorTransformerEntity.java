@@ -46,6 +46,9 @@ public class ConnectorTransformerEntity extends BaseEntity {
     @Column(name = "app_image", length = 1000)
     private String appImage;
 
+    @Column(name = "app_slug", length = 255)
+    private String appSlug;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "hyperparams", columnDefinition = "jsonb")
     private Map<String, Object> hyperparams;
@@ -65,6 +68,7 @@ public class ConnectorTransformerEntity extends BaseEntity {
                 && Objects.equals(column, other.column)
                 && Objects.equals(appVersionId, other.appVersionId)
                 && Objects.equals(appImage, other.appImage)
+                && Objects.equals(appSlug, other.appSlug)
                 && mapsEqual(inputMapping, other.inputMapping)
                 && mapsEqual(returnMapping, other.returnMapping)
                 && mapsEqual(hyperparams, other.hyperparams);

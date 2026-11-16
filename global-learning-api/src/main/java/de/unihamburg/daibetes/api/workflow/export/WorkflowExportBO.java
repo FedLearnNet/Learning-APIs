@@ -2,6 +2,7 @@ package de.unihamburg.daibetes.api.workflow.export;
 
 import bio.cosy.feddb.core.api.app.PublishStatus;
 import bio.cosy.feddb.core.autoimport.AutoImportPathHandler;
+import bio.cosy.feddb.core.autoimport.OnParseError;
 import de.unihamburg.daibetes.api.workflow.WorkflowAO;
 import de.unihamburg.daibetes.api.workflow.WorkflowEntity;
 import de.unihamburg.daibetes.api.workflow.connection.WorkflowConnectionBO;
@@ -69,17 +70,26 @@ public class WorkflowExportBO {
             Log.infof("No workflows to import");
             return;
         }
+        int failed = 0;
         for (WorkflowExportDTO export : toImport) {
             try {
                 importWorkflowTransactional(export);
             } catch (Exception e) {
+                failed++;
                 Log.warnf("Failed to import workflow %s: %s", export.getName(), e.getMessage());
             }
+        }
+        if (failed > 0) {
+            throw new IllegalStateException("Workflow import failed for " + failed + " item(s); see preceding errors");
         }
     }
 
     @Transactional
     public void importWorkflowTransactional(WorkflowExportDTO workflow) {
+        if (workflowAO.findByNameAndOwner(workflow.getName(), workflow.getKeycloakId()).isPresent()) {
+            Log.infof("Workflow %s already exists for owner %s, preserving it", workflow.getName(), workflow.getKeycloakId());
+            return;
+        }
         WorkflowEntity entity = workflowExportMapper.dtoToEntity(workflow);
         workflowAO.persist(entity);
         Set<WorkflowNodeEntity> nodes = workflow.getNodes()
@@ -97,7 +107,7 @@ public class WorkflowExportBO {
 
 
     public List<WorkflowExportDTO> readWorkflows() {
-        return autoImportPathHandler.loadAll(IMPORT_NAME, flnet.workflowImports(), WorkflowExportDTO.class);
+        return autoImportPathHandler.loadAll(IMPORT_NAME, flnet.workflowImports(), WorkflowExportDTO.class, OnParseError.FAIL);
     }
 
     private String nameToFileName(String name) {

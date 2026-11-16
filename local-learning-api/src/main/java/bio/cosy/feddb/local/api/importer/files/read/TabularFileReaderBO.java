@@ -94,7 +94,7 @@ public class TabularFileReaderBO extends TableReaderSupport {
     }
 
 
-    public TableData getTableData(
+    public TableData buildTableData(
             Map<String, TableData> tables,
             SheetMergeResultDTO mergeConfig,
             PivotConfigDTO pivotConfig,
@@ -145,7 +145,7 @@ public class TabularFileReaderBO extends TableReaderSupport {
                 "preview sample (1/1)", uploadInfo);
     }
 
-    public TableData getMergedPreviewTableData(
+    public TableData readMergedPreviewTableData(
             File file,
             FileParsingSettingsDTO settings,
             Integer maxRows,

@@ -4,19 +4,29 @@ import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadInfoDTO;
 import bio.cosy.feddb.local.api.importer.files.table.ColumnNames;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorValueMappingConfigDTO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerEntity;
+import io.quarkus.logging.Log;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class ConnectorHelper {
 
+    public static List<Map<String, Object>> mergeRows(List<Map<String, Object>> sent, List<Map<String, Object>> returned,
+                                                      ConnectorTransformerDTO transformer) {
+        if (returned.size() != sent.size()) {
+            Log.debugf("App transformer '%s' returned %d row(s) for %d sent; taking its rows as they are",
+                    transformer.getAppImage(), returned.size(), sent.size());
+            return new ArrayList<>(returned);
+        }
+        List<Map<String, Object>> merged = new ArrayList<>(sent.size());
+        for (int index = 0; index < sent.size(); index++) {
+            Map<String, Object> row = new LinkedHashMap<>(sent.get(index));
+            row.putAll(returned.get(index));
+            merged.add(row);
+        }
+        return merged;
+    }
 
     public static List<String> filterOurUnsuedColumns(
             ConnectorEntity connectorEntity,
@@ -151,7 +161,9 @@ public class ConnectorHelper {
         return List.copyOf(columns);
     }
 
-    /** Configured source UID column per table participating in a merge. */
+    /**
+     * Configured source UID column per table participating in a merge.
+     */
     private static Map<String, String> mergeColumns(ConnectorEntity connector) {
         if (connector == null
                 || connector.getMergeConfig() == null

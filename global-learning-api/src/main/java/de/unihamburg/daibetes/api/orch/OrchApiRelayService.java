@@ -22,6 +22,10 @@ import java.util.List;
         "Orch-API is intended for internal use and should not be exposed to external clients. " +
         "It is designed to facilitate communication with the Docker orchestration service, providing access to container, run, and volume management functionalities.")
 public interface OrchApiRelayService {
+    @GET
+    @Path("info/computing")
+    SystemComputingInfoDTO computingInfo();
+
     // ---- Docker ----
     @GET
     @Path("docker/info")

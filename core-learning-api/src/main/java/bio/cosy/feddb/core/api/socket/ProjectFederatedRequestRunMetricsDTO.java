@@ -13,4 +13,5 @@ public class ProjectFederatedRequestRunMetricsDTO {
     private String keycloakId;
     private String globalExperimentUniqueId;
     private UUID globalRequestId;
+    private RunResultRequestType type = RunResultRequestType.METRICS;
 }

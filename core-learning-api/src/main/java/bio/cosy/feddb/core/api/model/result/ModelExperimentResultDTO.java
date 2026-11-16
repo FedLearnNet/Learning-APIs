@@ -25,4 +25,9 @@ public class ModelExperimentResultDTO {
     @RestForm("clinicId")
     @PartType(MediaType.TEXT_PLAIN)
     private String clinicId;
+
+    // TRE: outputs of this workflow node, none for a model.
+    @RestForm("nodeId")
+    @PartType(MediaType.TEXT_PLAIN)
+    private String nodeId;
 }

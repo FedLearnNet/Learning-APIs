@@ -4,7 +4,7 @@ import bio.cosy.feddb.core.api.project.PatientExportFeatureDTO;
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.project.SelectedDataIdsDTO;
 import bio.cosy.feddb.core.base.BaseBo;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectBO;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectBO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeNestedDTO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaRootNodeDTO;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class SchemaNodeBO extends BaseBo<LocalSchemaNodeDTO, SchemaNodeEntity, SchemaNodeAO, SchemaNodeMapper> {
 
     @Inject
-    FederatedLearningProjectBO federatedLearningProjectBO;
+    LearningProjectBO federatedLearningProjectBO;
 
     public List<LocalSchemaNodeDTO> getSchemaNodesForCohort(Long internalPatientId) {
         return mapper.entitiesToDtos(ao.getSchemaNodesForCohort(internalPatientId));

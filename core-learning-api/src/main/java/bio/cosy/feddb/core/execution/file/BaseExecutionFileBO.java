@@ -1,0 +1,154 @@
+package bio.cosy.feddb.core.execution.file;
+
+import bio.cosy.feddb.core.api.file.FileDTO;
+import bio.cosy.feddb.core.base.BaseBo;
+import bio.cosy.feddb.core.base.BaseFileBO;
+import bio.cosy.feddb.core.base.BaseFileEntity;
+import bio.cosy.feddb.core.execution.attempt.BaseExecutionAttemptEntity;
+import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
+import io.quarkus.logging.Log;
+import jakarta.inject.Inject;
+import org.apache.commons.io.FilenameUtils;
+import org.jboss.resteasy.reactive.multipart.FileUpload;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
+
+public abstract class BaseExecutionFileBO<
+        DTO extends BaseExecutionFileDTO,
+        Attempt extends BaseExecutionAttemptEntity<?, ?>,
+        F extends BaseFileEntity,
+        FileBO extends BaseFileBO<FileDTO, F, ?, ?>,
+        Entity extends BaseExecutionFileEntity<Attempt, F>,
+        AO extends BaseExecutionFileAO<Entity>,
+        Mapper extends BaseExecutionFileMapper<DTO, Entity>>
+        extends BaseBo<DTO, Entity, AO, Mapper> {
+
+    @Inject
+    protected FileBO fileBO;
+
+    private final Supplier<Entity> newEntity;
+
+    protected BaseExecutionFileBO(Supplier<Entity> newEntity) {
+        this.newEntity = newEntity;
+    }
+
+    protected abstract String ownerOf(Attempt attempt);
+
+    public F storeFile(Attempt attempt, FileUpload upload) {
+        return storeFile(upload, ownerOf(attempt));
+    }
+
+    public F storeFile(FileUpload upload, String keycloakId) {
+        return fileBO.createEntity(new FileDTO(), keycloakId, upload);
+    }
+
+    public File loadFile(F file) {
+        return fileBO.loadFile(file);
+    }
+
+    public List<DTO> linkFiles(Attempt attempt, Map<String, F> files, ExecutionFileDirection direction) {
+        List<DTO> inputs = new ArrayList<>();
+        files.forEach((name, file) -> {
+            DTO input = createLink(attempt, file, name, direction);
+            input.setContent(loadFile(file));
+            inputs.add(input);
+        });
+        return inputs;
+    }
+
+    public List<DTO> linkInput(Attempt attempt, Map<String, F> files) {
+        return linkFiles(attempt, files, ExecutionFileDirection.INPUT);
+    }
+
+    public List<DTO> linkOutput(Attempt attempt, Map<String, F> files) {
+        return linkFiles(attempt, files, ExecutionFileDirection.OUTPUT);
+    }
+
+    public LinkedHashMap<String, String> inputFilePathsOf(Long attemptId) {
+        LinkedHashMap<String, String> paths = new LinkedHashMap<>();
+        listForAttempt(attemptId, ExecutionFileDirection.INPUT)
+                .forEach(input -> paths.put(input.getName(), input.getFileNameWithExtension()));
+        return paths;
+    }
+
+    public Map<String, File> loadForAttempt(Long attemptId, ExecutionFileDirection direction) {
+        Map<String, File> loaded = new LinkedHashMap<>();
+        ao.listForAttempt(attemptId, direction)
+                .forEach(linked -> loaded.putIfAbsent(mapper.entityToDto(linked).getFileNameWithExtension(), loadFile(linked.getFile())));
+        return loaded;
+    }
+
+    public List<DTO> addOutputs(Attempt attempt, List<FileUpload> uploads) {
+        List<DTO> outputs = new ArrayList<>();
+        for (FileUpload upload : uploads) {
+            String name = Optional.ofNullable(AppRunUploadData.keyOf(upload)).orElse(upload.fileName());
+            try {
+                F storedFile = storeFile(attempt, upload);
+                DTO created = createLink(attempt, storedFile, name, ExecutionFileDirection.OUTPUT);
+                outputs.add(created);
+            } catch (RuntimeException e) {
+                Log.errorf(e, "Could not store output %s of attempt %d", name, attempt.getId());
+            }
+        }
+        return outputs;
+    }
+
+    public void keepOutputs(Attempt attempt, AppRunUploadData upload) {
+        if (attempt.hasEnded()) {
+            throw new IllegalStateException("Execution has ended");
+        }
+        // Fail the upload if any artifact cannot be stored; do not acknowledge partial results.
+        for (FileUpload file : upload.getFilesNullsafe()) {
+            F stored = storeFile(attempt, file);
+            createLink(attempt, stored, AppRunUploadData.keyOf(file), ExecutionFileDirection.OUTPUT);
+        }
+        if (upload.getMeta() != null) {
+            attempt.setMeta(upload.getMeta());
+        }
+    }
+
+    public List<DTO> storeAndLinkFiles(Attempt attempt, List<File> files, ExecutionFileDirection direction) {
+        Map<String, F> stored = new LinkedHashMap<>();
+        files.forEach(file -> stored.putIfAbsent(FilenameUtils.getBaseName(file.getName()),
+                fileBO.createEntity(new FileDTO(), ownerOf(attempt), file, file.getName())));
+        return linkFiles(attempt, stored, direction);
+    }
+
+    public Map<String, File> loadForRun(Long runId, ExecutionFileDirection direction) {
+        Map<String, File> loaded = new LinkedHashMap<>();
+        ao.listForRun(runId, direction).forEach(linked -> loaded.putIfAbsent(linked.getFile().getFileName(), loadFile(linked.getFile())));
+        return loaded;
+    }
+
+    public void deleteForRun(Long runId, ExecutionFileDirection direction) {
+        ao.listForRun(runId, direction).forEach(linked -> {
+            F file = linked.getFile();
+            ao.delete(linked);
+            fileBO.deleteWithStoredFile(file);
+        });
+    }
+
+    public List<DTO> listForAttempt(Long attemptId, ExecutionFileDirection direction) {
+        return mapper.entitiesToDtos(ao.listForAttempt(attemptId, direction));
+    }
+
+    public List<DTO> listForRun(Long runId, ExecutionFileDirection direction) {
+        return mapper.entitiesToDtos(ao.listForRun(runId, direction));
+    }
+
+    private DTO createLink(Attempt attempt, F file, String name, ExecutionFileDirection direction) {
+        Entity entity = newEntity.get();
+        entity.setAttempt(attempt);
+        entity.setFile(file);
+        entity.setName(name);
+        entity.setDirection(direction);
+        ao.persist(entity);
+        return mapper.entityToDto(entity);
+    }
+}

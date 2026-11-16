@@ -6,6 +6,8 @@ import bio.cosy.feddb.core.api.file.FileRenameDTO;
 import bio.cosy.feddb.core.api.file.FileResult;
 import bio.cosy.feddb.core.api.file.analytics.FileProfile;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
+import io.quarkus.security.UnauthorizedException;
+import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -25,6 +27,9 @@ public class FileServiceImpl implements FileService {
 
     @Inject
     UserIdentity userIdentity;
+
+    @Inject
+    SecurityIdentity identity;
 
     @Override
     @Transactional
@@ -98,14 +103,15 @@ public class FileServiceImpl implements FileService {
     @Override
     @Transactional
     public Response downloadFile(Long id, String secret) {
-        String keycloakId = userIdentity.getKeycloakId();
-
         FileResult fileResult;
 
         if (StringUtils.isNotEmpty(secret)) {
             fileResult = bo.loadFileSecret(id, secret);
         } else {
-            fileResult = bo.loadFile(id, keycloakId);
+            if (identity.isAnonymous()) {
+                throw new UnauthorizedException();
+            }
+            fileResult = bo.loadFile(id, userIdentity.getKeycloakId());
         }
 
         File file = fileResult.file();

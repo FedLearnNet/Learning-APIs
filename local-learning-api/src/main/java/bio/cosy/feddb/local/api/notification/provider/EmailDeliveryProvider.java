@@ -3,11 +3,15 @@ package bio.cosy.feddb.local.api.notification.provider;
 import bio.cosy.feddb.core.api.notification.NotificationBaseDTO;
 import bio.cosy.feddb.core.api.notification.NotificationDeliveryProvider;
 import bio.cosy.feddb.local.services.KeycloakService;
+import io.quarkus.logging.Log;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import java.util.Optional;
 
 @ApplicationScoped
 public class EmailDeliveryProvider implements NotificationDeliveryProvider {
@@ -18,10 +22,17 @@ public class EmailDeliveryProvider implements NotificationDeliveryProvider {
     @Inject
     Mailer mailer;
 
+    @ConfigProperty(name = "quarkus.mailer.from")
+    Optional<String> sender;
+
     @Override
     public void deliver(NotificationBaseDTO delivery) {
         if (delivery == null) {
             throw new IllegalArgumentException("Notification delivery must not be null");
+        }
+        if (sender.filter(StringUtils::isNotBlank).isEmpty()) {
+            Log.debugf("No mail for notification %s: quarkus.mailer.from is not set", delivery.getId());
+            return;
         }
 
         String recipientMail = keycloakService.getById(delivery.getRecipientUserId()).getEmail();

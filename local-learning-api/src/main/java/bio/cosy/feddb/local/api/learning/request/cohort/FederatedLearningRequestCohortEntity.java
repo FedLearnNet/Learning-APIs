@@ -2,7 +2,7 @@ package bio.cosy.feddb.local.api.learning.request.cohort;
 
 import bio.cosy.feddb.core.base.BaseEntity;
 import bio.cosy.feddb.local.api.cohort.CohortEntity;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +23,7 @@ public class FederatedLearningRequestCohortEntity extends BaseEntity {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "request_id", nullable = false)
-    private FederatedLearningRequestEntity request;
+    private LearningRequestEntity request;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "cohort_id", nullable = false)

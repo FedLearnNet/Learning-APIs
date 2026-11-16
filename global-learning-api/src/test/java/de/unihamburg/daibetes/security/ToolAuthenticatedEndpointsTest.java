@@ -226,7 +226,7 @@ class ToolAuthenticatedEndpointsTest {
         String concretePath() {
             return pathTemplate
                     .replace("{type}", "app")
-                    .replace("{mode}", "prediction")
+                    .replace("{mode}", "APP")
                     .replaceAll("\\{[^}]+}", "42");
         }
 

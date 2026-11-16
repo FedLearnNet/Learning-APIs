@@ -1,5 +1,7 @@
 package de.unihamburg.daibetes;
 
+import bio.cosy.feddb.core.api.info.StartupImportState;
+import de.unihamburg.daibetes.api.info.StartupImportsBO;
 import de.unihamburg.daibetes.api.ontology.OntologyDAO;
 import de.unihamburg.daibetes.api.umls.importer.UmlsStartupHandler;
 import de.unihamburg.daibetes.autoimport.AutoImportHandler;
@@ -22,6 +24,9 @@ public class Startup {
     @Inject
     AutoImportHandler autoImportHandler;
 
+    @Inject
+    StartupImportsBO startupImportsBO;
+
     void onStartup(@Observes @Priority(Integer.MAX_VALUE) StartupEvent event) {
         // The JSON imports don't need UMLS, so they run first and the schemas are available right
         // away. Whether UMLS is imported is decided before them, as they add ontology nodes themselves.
@@ -31,8 +36,14 @@ public class Startup {
                         .onFailure().recoverWithNull()
                         .chain(() -> umlsStartupHandler.importOnStartup(!hadNodes)))
                 .subscribe().with(
-                        ignored -> Log.info("Datamodeler startup imports completed"),
-                        error -> Log.errorf(error, "Datamodeler startup imports failed: %s", error.getMessage())
+                        ignored -> {
+                            startupImportsBO.setState(StartupImportState.READY);
+                            Log.info("Datamodeler startup imports completed");
+                        },
+                        error -> {
+                            startupImportsBO.setState(StartupImportState.FAILED);
+                            Log.errorf(error, "Datamodeler startup imports failed: %s", error.getMessage());
+                        }
                 );
     }
 }
