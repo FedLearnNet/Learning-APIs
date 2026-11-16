@@ -248,7 +248,7 @@ public class FederatedTrainingSetupBO {
         broadcastBO.sendAfterCommit("Setup of step " + next.getId(), () -> broadcastBO.nextStepLearning(globalUniqueId, nodeId, workflowNodeId));
     }
 
-    // TRE: every clinic still gets its start, just without a relay.
+    // TRE or an app without federated learning: every clinic still gets its start, just without a relay.
     private Map<String, FederatedLearningRelayInfoDTO> withoutRelay(ExecutionRunEntity run) {
         Map<String, FederatedLearningRelayInfoDTO> clinics = new HashMap<>();
         run.getParticipants().forEach(participant -> clinics.put(participant.getParticipantId(), null));
@@ -303,7 +303,7 @@ public class FederatedTrainingSetupBO {
         }
         if (!appVersion.getFederatedApp().isSupportsFederatedLearning()) {
             Log.infof("App version %d of step %d needs no relay run", appVersion.getId(), step.getId());
-            return new RelaySetup(Collections.emptyMap(), null);
+            return new RelaySetup(withoutRelay(run), null);
         }
         boolean v1 = Boolean.TRUE.equals(appVersion.getFederatedApp().getOldFCVersion());
         RelayServerAppVersions version = v1 ? RelayServerAppVersions.v1 : RelayServerAppVersions.v2;
