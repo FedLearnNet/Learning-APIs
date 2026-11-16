@@ -1,6 +1,5 @@
 package bio.cosy.feddb.local.api.search;
 
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -13,7 +12,6 @@ import java.util.List;
 @Path("search")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
 @Tag(name = "SchemaService", description = "Service for searching generally")
 public interface SearchService {
     @GET

@@ -3,7 +3,7 @@ package eval.agent.etl.transform;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerContainerBO;
-import bio.cosy.feddb.local.api.importer.transformer.session.AppTransformerSessionBO;
+import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import eval.agent.etl.transform.judge.TransformerWriterJudge;
 import eval.agent.etl.transform.judge.TransformerWriterPrompt;

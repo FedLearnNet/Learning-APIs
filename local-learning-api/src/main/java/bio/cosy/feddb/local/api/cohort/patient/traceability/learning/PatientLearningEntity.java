@@ -2,7 +2,7 @@ package bio.cosy.feddb.local.api.cohort.patient.traceability.learning;
 
 import bio.cosy.feddb.core.base.BaseEntity;
 import bio.cosy.feddb.local.api.cohort.patient.PatientEntity;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,5 +23,5 @@ public class PatientLearningEntity extends BaseEntity {
 
     @ManyToOne(cascade = {CascadeType.REFRESH})
     @JoinColumn(name = "request_id", nullable = false)
-    private FederatedLearningRequestEntity request;
+    private LearningRequestEntity request;
 }

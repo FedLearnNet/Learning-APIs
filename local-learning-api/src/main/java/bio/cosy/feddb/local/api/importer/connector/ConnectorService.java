@@ -6,7 +6,6 @@ import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationBulkReque
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO;
 import bio.cosy.feddb.local.api.importer.validation.PreviewValidationRequestDTO;
 import bio.cosy.feddb.local.api.importer.validation.PreviewValidationResponseDTO;
-import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -30,7 +29,6 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Connector", description = "Service for managing connectors")
-@Authenticated
 public interface ConnectorService {
 
     @GET
@@ -171,18 +169,18 @@ public interface ConnectorService {
     );
 
 
-        @POST
-        @Path("/{id}/run")
-        @Operation(summary = "Run a connector")
-        @APIResponses({
-                        @APIResponse(responseCode = "201", description = "Run created successfully"),
-                        @APIResponse(responseCode = "400", description = "Invalid data"),
-                        @APIResponse(responseCode = "404", description = "Connector not found")
-        })
-        Multi<ConnectorRunDTO> runConnector(
-                        @PathParam("id") @Parameter(description = "Connector ID", required = true) Long id,
-                        @QueryParam("delete-existing-patients") @DefaultValue("false") @Parameter(description = "Controls whether all existing patients are deleted before import.", in = ParameterIn.QUERY) boolean deleteExistingPatients,
-                        @QueryParam("dry") @DefaultValue("false") @Parameter(description = "Dry run mode", in = ParameterIn.QUERY) boolean dry);
+    @POST
+    @Path("/{id}/run")
+    @Operation(summary = "Run a connector")
+    @APIResponses({
+            @APIResponse(responseCode = "201", description = "Run created successfully"),
+            @APIResponse(responseCode = "400", description = "Invalid data"),
+            @APIResponse(responseCode = "404", description = "Connector not found")
+    })
+    Multi<ConnectorRunDTO> runConnector(
+            @PathParam("id") @Parameter(description = "Connector ID", required = true) Long id,
+            @QueryParam("delete-existing-patients") @DefaultValue("false") @Parameter(description = "Controls whether all existing patients are deleted before import.", in = ParameterIn.QUERY) boolean deleteExistingPatients,
+            @QueryParam("dry") @DefaultValue("false") @Parameter(description = "Dry run mode", in = ParameterIn.QUERY) boolean dry);
 
     @POST
     @Path("/preview")

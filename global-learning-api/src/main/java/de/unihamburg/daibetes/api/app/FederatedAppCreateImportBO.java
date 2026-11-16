@@ -5,6 +5,7 @@ import bio.cosy.feddb.core.api.app.FederatedAppAuthorDTO;
 import bio.cosy.feddb.core.api.app.FederatedAppDetailDTO;
 import bio.cosy.feddb.core.api.app.FederatedAppVersionDTO;
 import bio.cosy.feddb.core.api.app.PublishStatus;
+import bio.cosy.feddb.core.services.orch.clients.DockerServiceClient;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorEntity;
 import de.unihamburg.daibetes.api.app.config.FederatedAppConfigBO;
@@ -14,7 +15,6 @@ import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.build.pipeline.ToolImportBuildBO;
 import de.unihamburg.daibetes.config.FLNetConfig;
 import de.unihamburg.daibetes.config.ToolImportBuildingOnStart;
-import de.unihamburg.daibetes.services.OrchDockerServiceClient;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -23,9 +23,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -60,10 +66,15 @@ public class FederatedAppCreateImportBO {
 
     @Inject
     @RestClient
-    OrchDockerServiceClient dockerClient;
+    DockerServiceClient dockerClient;
+
+    private static final int REGISTRY_CHECK_PARALLELISM = 8;
+
+    // Registry checks of a running import; one orch call per tool inside the import took about a second each
+    private final Map<String, Optional<String>> verifiedImages = new ConcurrentHashMap<>();
 
     @Transactional
-    public void createExternal(FederatedAppDetailDTO external) {
+    public void createExternalTransactional(FederatedAppDetailDTO external) {
         if (!hasRequiredFields(external)) {
             return;
         }
@@ -122,12 +133,17 @@ public class FederatedAppCreateImportBO {
     }
 
     private void importAuthors(FederatedAppDetailDTO external, FederatedAppEntity entity) {
-        if (external.getAuthors() == null) {
-            return;
-        }
         Set<String> authorIds = entity.getAuthors() == null ? new HashSet<>() : entity.getAuthors().stream()
                 .map(FederatedAppAuthorEntity::getKeycloakId)
                 .collect(Collectors.toSet());
+        String defaultOwner = config.toolImports().owner();
+        if (authorIds.add(defaultOwner)) {
+            authorBO.create(entity, defaultOwner);
+        }
+        if (external.getAuthors() == null) {
+            Log.warnf("No authors found for external app %s, only owner %s will be added", external.getName(), defaultOwner);
+            return;
+        }
         for (FederatedAppAuthorDTO author : external.getAuthors()) {
             if (author == null || StringUtils.isBlank(author.getKeycloakId()) || !authorIds.add(author.getKeycloakId())) {
                 continue;
@@ -194,6 +210,18 @@ public class FederatedAppCreateImportBO {
         return versionOverridden;
     }
 
+    /**
+     * Retains publish metadata only for an image verified in the official registry, resolving it from
+     * the tool slug and commit hash when available, or otherwise using the supplied image name.
+     * Returns {@code null} when the import policy is {@code ALWAYS}, when importing a new version under
+     * {@code IF_NOT_EXISTS_IN_STORE}, or when the image cannot be verified (including registry errors).
+     *
+     * @param imageName fallback image reference when no commit hash is available
+     * @param publishInfo imported or stored metadata, possibly {@code null}
+     * @param slug tool slug used to resolve the official image for a commit
+     * @param existingVersion stored version, or {@code null} for a newly imported version
+     * @return metadata for the verified image, or {@code null} to discard the build information
+     */
     private AppPublishInfoDTO preparePublishInfo(String imageName, AppPublishInfoDTO publishInfo, String slug,
                                                 FederatedAppVersionEntity existingVersion) {
         ToolImportBuildingOnStart mode = config.toolImports().buildOnImport();
@@ -201,15 +229,11 @@ public class FederatedAppCreateImportBO {
                 || (mode == ToolImportBuildingOnStart.IF_NOT_EXISTS_IN_STORE && existingVersion == null)) {
             return null;
         }
-        String resolved;
-        try {
-            resolved = publishInfo != null && StringUtils.isNotBlank(publishInfo.getCommitHash())
-                    ? dockerClient.resolveToolImage(slug, publishInfo.getCommitHash()) : imageName;
-            if (StringUtils.isBlank(resolved) || !dockerClient.imageExistsInRegistry(resolved)) {
-                return null;
-            }
-        } catch (Exception e) {
-            Log.warnf(e, "Could not verify official registry image for tool %s; importing its definition without build information", slug);
+        String commitHash = publishInfo == null ? null : publishInfo.getCommitHash();
+        String key = registryKeyOf(slug, commitHash, imageName);
+        Optional<String> verified = verifiedImages.get(key);
+        String resolved = (verified != null ? verified : verifyRegistryImage(slug, commitHash, imageName)).orElse(null);
+        if (resolved == null) {
             return null;
         }
         if (existingVersion != null && resolved.equals(existingVersion.getImageName()) && existingVersion.getPublishInfo() != null) {
@@ -224,6 +248,48 @@ public class FederatedAppCreateImportBO {
             publishInfo.setVulnerabilityScanResult(null);
         }
         return publishInfo;
+    }
+
+    // Checks the registry for every version of the tools in parallel, outside the import's transaction
+    public void prefetchRegistryImages(List<FederatedAppDetailDTO> tools) {
+        if (config.toolImports().buildOnImport() == ToolImportBuildingOnStart.ALWAYS) {
+            return;
+        }
+        Map<String, Runnable> checks = new LinkedHashMap<>();
+        tools.stream()
+                .filter(tool -> tool != null && tool.getVersions() != null)
+                .forEach(tool -> tool.getVersions().stream().filter(Objects::nonNull).forEach(version -> {
+                    String commitHash = version.getPublishInfo() == null ? null : version.getPublishInfo().getCommitHash();
+                    String key = registryKeyOf(tool.getSlug(), commitHash, version.getImageName());
+                    checks.putIfAbsent(key, () -> verifiedImages.put(key,
+                            verifyRegistryImage(tool.getSlug(), commitHash, version.getImageName())));
+                }));
+        try (ExecutorService pool = Executors.newFixedThreadPool(REGISTRY_CHECK_PARALLELISM)) {
+            checks.values().forEach(pool::submit);
+        }
+        Log.infof("Checked %d tool images in the registry", checks.size());
+    }
+
+    public void clearRegistryImages() {
+        verifiedImages.clear();
+    }
+
+    // The official image for the commit, or the given image name, if the registry has it
+    private Optional<String> verifyRegistryImage(String slug, String commitHash, String imageName) {
+        try {
+            String resolved = StringUtils.isNotBlank(commitHash) ? dockerClient.resolveToolImage(slug, commitHash) : imageName;
+            if (StringUtils.isBlank(resolved) || !dockerClient.imageExistsInRegistry(resolved)) {
+                return Optional.empty();
+            }
+            return Optional.of(resolved);
+        } catch (Exception e) {
+            Log.warnf(e, "Could not verify official registry image for tool %s; importing its definition without build information", slug);
+            return Optional.empty();
+        }
+    }
+
+    private static String registryKeyOf(String slug, String commitHash, String imageName) {
+        return StringUtils.isNotBlank(commitHash) ? "commit:" + slug + "@" + commitHash : "image:" + imageName;
     }
 
     private boolean overrideVersion(FederatedAppVersionDTO version, FederatedAppVersionEntity existingVersion,

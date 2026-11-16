@@ -1,14 +1,9 @@
 package de.unihamburg.daibetes.api.analysis.run;
 
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisCreatePredictionDTO;
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisPredictionDTO;
 import bio.cosy.feddb.core.api.model.prediction.DataAnalysisRunModesEnum;
-import bio.cosy.feddb.core.api.model.prediction.DataAnalysisStopPredictionDTO;
-import bio.cosy.feddb.core.api.run.AppRunUploadData;
+import bio.cosy.feddb.core.execution.orchestrator.DataAnalysisCreatePredictionDTO;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisBO;
 import de.unihamburg.daibetes.api.analysis.file.DataAnalysisFileBO;
-import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionBO;
-import de.unihamburg.daibetes.api.analysis.worklfow.step.DataAnalysisWorkflowRunStepBO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Multi;
@@ -29,57 +24,35 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
     UserIdentity userIdentity;
 
     @Inject
-    DataAnalysisRunBO dataAnalysisRunBO;
+    DataAnalysisExecutionBO executionBO;
 
     @Inject
-    DataAnalysisWorkflowRunStepBO workflowRunStepBO;
+    DataAnalysisRunResultBO resultBO;
+
+    @Inject
+    DataAnalysisFileBO fileBO;
 
     @Inject
     DataAnalysisBO dataAnalysisBO;
 
     @Inject
-    DataAnalysisPredictionBO dataAnalysisPredictionBO;
-
-    @Inject
-    DataAnalysisFileBO dataAnalysisFileBO;
-
-    @Inject
     @Channel(DATA_ANALYSIS_RUN_CHANNEL)
-    Multi<DataAnalysisPredictionDTO> processInfo;
-
+    Multi<DataAnalysisRunDTO> runChanges;
 
     @Override
-    public Multi<DataAnalysisPredictionDTO> createDataAnalysisRun(DataAnalysisCreatePredictionDTO data) {
-        String keycloakId = userIdentity.getKeycloakId();
-        Log.info("Keycloak ID: " + keycloakId);
-        Uni.createFrom().item(() -> dataAnalysisRunBO.startModel(data, keycloakId))
-                .runSubscriptionOn(Infrastructure.getDefaultExecutor())
-                .subscribe().with(result -> {
-                });
-        return filterCurrentStream(keycloakId);
+    public Multi<DataAnalysisRunDTO> createDataAnalysisRun(DataAnalysisCreatePredictionDTO data) {
+        return startAndSubscribe(null, data);
     }
 
     @Override
-    public Multi<DataAnalysisPredictionDTO> getDataAnalysisRun(Long id) {
-        String keycloakId = userIdentity.getKeycloakId();
-
-        return Uni.createFrom().item(() -> dataAnalysisPredictionBO.getById(id, keycloakId)) // blocking
-                .runSubscriptionOn(Infrastructure.getDefaultExecutor())
-                .onItem().transformToMulti(current -> {
-                    Multi<DataAnalysisPredictionDTO> first = Multi.createFrom().item(current);
-                    if (current != null && current.isFinished()) {
-                        return first;
-                    }
-                    return Multi.createBy().concatenating().streams(first, filterCurrentStream(id));
-                });
+    public Multi<DataAnalysisRunDTO> getDataAnalysisRun(Long runId) {
+        return subscribe(runId, userIdentity.getKeycloakId());
     }
 
     @Override
     @Transactional
-    public DataAnalysisPredictionDTO stopRun(Long dataAnalysisId, Long id, DataAnalysisStopPredictionDTO dto) {
-        String keycloakId = userIdentity.getKeycloakId();
-        Log.info("Keycloak ID: " + keycloakId);
-        return dataAnalysisBO.stopRun(dataAnalysisId, id, dto, keycloakId);
+    public DataAnalysisRunDTO stopRun(Long dataAnalysisId, Long runId) {
+        return dataAnalysisBO.stopRun(dataAnalysisId, runId, userIdentity.getKeycloakId());
     }
 
     @Override
@@ -92,42 +65,15 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
     }
 
     @Override
-    public Multi<DataAnalysisPredictionDTO> createDataAnalysisWorkflowRun(Long dataAnalysisId, DataAnalysisCreatePredictionDTO data) {
-        String keycloakId = userIdentity.getKeycloakId();
-        Log.info("Keycloak ID: " + keycloakId);
-        Uni.createFrom().item(() -> dataAnalysisBO.createModelRun(dataAnalysisId, data, keycloakId))
-                .runSubscriptionOn(Infrastructure.getDefaultExecutor())
-                .subscribe().with(result -> {
-                });
-        return filterCurrentStream(keycloakId);
-    }
-
-    @Override
-    public Multi<DataAnalysisPredictionDTO> getDataAnalysisWorkflowRun(Long dataAnalysisId, Long workflowId) {
-        return filterCurrentStream(dataAnalysisId, workflowId);
-    }
-
-    @Override
-    public Response uploadOutput(DataAnalysisRunModesEnum mode, Long runId, AppRunUploadData req) {
-        String keycloakId = userIdentity.getKeycloakId();
-        if (mode.equals(DataAnalysisRunModesEnum.WORKFLOW)) {
-            workflowRunStepBO.uploadOutput(runId, req, keycloakId);
-        } else {
-            dataAnalysisRunBO.uploadOutput(runId, req, keycloakId);
-        }
-        return Response.status(Response.Status.CREATED).entity(null).build();
+    public Multi<DataAnalysisRunDTO> createDataAnalysisWorkflowRun(Long dataAnalysisId, DataAnalysisCreatePredictionDTO data) {
+        return startAndSubscribe(dataAnalysisId, data);
     }
 
     @Override
     @Transactional
     public Response downloadOutput(DataAnalysisRunModesEnum mode, String containerId) {
         String keycloakId = userIdentity.getKeycloakId();
-        byte[] result = null;
-        if (mode.equals(DataAnalysisRunModesEnum.PREDICTION)) {
-            result = dataAnalysisPredictionBO.downloadOutput(keycloakId, containerId);
-        } else {
-            result = workflowRunStepBO.downloadOutput(keycloakId, containerId);
-        }
+        byte[] result = fileBO.downloadOutputTransactional(containerId, keycloakId);
 
         String filename = "result-" + containerId + "-files.zip";
         return Response.ok(result, "application/zip")
@@ -141,7 +87,7 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
     @Transactional
     public Response downloadWorkflowOutput(Long experimentId) {
         String keycloakId = userIdentity.getKeycloakId();
-        byte[] result = dataAnalysisFileBO.downloadOutputForWorkflow(experimentId, keycloakId);
+        byte[] result = fileBO.downloadOutputForRun(experimentId, keycloakId);
 
         String filename = "result-workflow" + experimentId + "-files.zip";
         return Response.ok(result, "application/zip")
@@ -151,21 +97,19 @@ public class DataAnalysisRunServiceImpl implements DataAnalysisRunService {
                 .build();
     }
 
-    private Multi<DataAnalysisPredictionDTO> filterCurrentStream(Long id) {
-        return processInfo
-                .filter(p -> p.getId() != null && p.getId().equals(id));
+    private Multi<DataAnalysisRunDTO> startAndSubscribe(Long dataAnalysisId, DataAnalysisCreatePredictionDTO data) {
+        String keycloakId = userIdentity.getKeycloakId();
+        return Uni.createFrom().item(() -> executionBO.startTransactional(dataAnalysisId, data, keycloakId))
+                .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
+                .onItem().transformToMulti(runId -> subscribe(runId, keycloakId));
     }
 
-    private Multi<DataAnalysisPredictionDTO> filterCurrentStream(String keycloakId) {
-        return processInfo
-                .filter(p -> p.getKeycloakId() != null && p.getKeycloakId().equals(keycloakId));
-    }
-
-    private Multi<DataAnalysisPredictionDTO> filterCurrentStream(Long dataAnalysisId, Long workflowId) {
-        return processInfo.filter(p ->
-                p.getWorkflowId() != null
-                        && p.getWorkflowId().equals(workflowId)
-                        && p.getDataAnalysisId() != null
-                        && p.getDataAnalysisId().equals(dataAnalysisId));
+    private Multi<DataAnalysisRunDTO> subscribe(Long runId, String keycloakId) {
+        Multi<DataAnalysisRunDTO> changes = runChanges
+                .filter(run -> runId.equals(run.getId()) && keycloakId.equals(run.getKeycloakId()));
+        Multi<DataAnalysisRunDTO> current = Uni.createFrom().item(() -> resultBO.findRunByIdTransactional(runId, keycloakId, false))
+                .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
+                .toMulti();
+        return Multi.createBy().merging().streams(changes, current);
     }
 }

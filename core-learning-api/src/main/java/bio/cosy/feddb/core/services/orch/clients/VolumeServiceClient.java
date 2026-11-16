@@ -7,10 +7,12 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 import java.util.List;
 
 @Path("/volume")
+@RegisterRestClient(configKey = "orch-docker-service")
 @Produces("application/json")
 @Consumes("application/json")
 public interface VolumeServiceClient {

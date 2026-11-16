@@ -1,6 +1,5 @@
 package de.unihamburg.daibetes.agent.embedding;
 
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -18,8 +17,6 @@ import java.util.List;
 @Path("/embeddings")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "Embeddings", description = "Service for testing embeddings")
 public interface EmbeddingService {
 

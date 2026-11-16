@@ -1,4 +1,4 @@
 package bio.cosy.feddb.core.security;
 
-record Grant(Target target) {
+record Grant(Target target, Long executionId) {
 }

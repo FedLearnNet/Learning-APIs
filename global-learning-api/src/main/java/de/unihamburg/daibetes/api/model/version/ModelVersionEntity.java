@@ -3,8 +3,7 @@ package de.unihamburg.daibetes.api.model.version;
 import de.unihamburg.daibetes.api.model.ModelEntity;
 import bio.cosy.feddb.core.api.model.ModelPublishStatus;
 import de.unihamburg.daibetes.api.model.sub.ModelSubEntity;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
-import de.unihamburg.daibetes.api.runs.experiment.ExperimentEntity;
+import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
 import bio.cosy.feddb.core.base.BaseStoreVersionEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -22,7 +21,7 @@ public class ModelVersionEntity extends BaseStoreVersionEntity {
     @Enumerated(EnumType.STRING)
     private ModelPublishStatus publishStatus = ModelPublishStatus.PRIVATE;
 
-    @ManyToOne(cascade = CascadeType.REFRESH)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
     @JoinColumn(name = "model_id", nullable = false)
     private ModelEntity model;
 
@@ -35,15 +34,15 @@ public class ModelVersionEntity extends BaseStoreVersionEntity {
     //TRAINING
     /*@ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "federated_training_id")
-    private ExperimentEntity federatedExperiment; */
+    private ExecutionExperimentEntity federatedExperiment; */
 
-    @ManyToOne(cascade = CascadeType.REFRESH)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
     @JoinColumn(name = "experiment_id")
-    private ExperimentEntity experiment;
+    private ExecutionExperimentEntity experiment;
 
-    @ManyToOne(cascade = CascadeType.REFRESH)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
     @JoinColumn(name = "federated_experiment_id")
-    private ProjectFederatedExperimentEntity federatedExperiment;
+    private ExecutionExperimentEntity federatedExperiment;
 
     @OneToMany(mappedBy = "modelVersion", cascade = CascadeType.ALL)
     private Set<ModelSubEntity> subModels;

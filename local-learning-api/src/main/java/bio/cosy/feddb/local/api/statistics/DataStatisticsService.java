@@ -1,7 +1,6 @@
 package bio.cosy.feddb.local.api.statistics;
 
 import bio.cosy.feddb.local.api.cohort.permission.PermissionDTO;
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -14,8 +13,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Path("/datastatistics")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "DataStatistics", description = "Service for managing RequestDataStatistics")
 public interface DataStatisticsService {
 

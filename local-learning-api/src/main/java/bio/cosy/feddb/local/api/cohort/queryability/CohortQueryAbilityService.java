@@ -1,6 +1,5 @@
 package bio.cosy.feddb.local.api.cohort.queryability;
 
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -17,8 +16,6 @@ import java.util.List;
 @Path("/cohort/{cohortId}/queryability")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "Cohort", description = "Service for managing CohortQueryabilities")
 public interface CohortQueryAbilityService {
 

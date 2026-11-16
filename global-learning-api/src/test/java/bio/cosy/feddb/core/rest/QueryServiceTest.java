@@ -1,5 +1,6 @@
 package bio.cosy.feddb.core.rest;
 
+import bio.cosy.feddb.core.api.query.Lang2QueryDocuments;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.query.QueryItemDTO;
 import bio.cosy.feddb.core.rest.helper.RestAssuredConfigUtil;
@@ -59,7 +60,7 @@ public class QueryServiceTest {
         updatedItem.setOntologyId("updated-ontology");
         updatedItem.setDataTypeId("updated-datatype");
         updatedItem.setOperator(List.of());
-        baseQuery.setQuery(List.of(updatedItem));
+        baseQuery.setQuery(Lang2QueryDocuments.andGroup(updatedItem));
 
         QueryDTO updated = given()
                 .contentType(ContentType.JSON)
@@ -132,7 +133,7 @@ public class QueryServiceTest {
             QueryCreateDTO createDTO = new QueryCreateDTO();
             createDTO.setName("Project-safe query");
             createDTO.setDescription("Used to verify project merge isolation");
-            createDTO.setQuery(List.of());
+            createDTO.setQuery(Lang2QueryDocuments.andGroup());
             QueryDTO query = queryBO.create(createDTO, "test");
 
             QueryEntity queryEntity = queryAO.findById(query.getId());

@@ -1,9 +1,13 @@
 package bio.cosy.feddb.core.api.query;
 
 import bio.cosy.feddb.core.api.socket.FedDBClientResponseType;
+import bio.cosy.feddb.core.execution.ExecutionMode;
+import bio.cosy.feddb.core.services.orch.dto.SystemComputingInfoDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -13,7 +17,13 @@ public class QueryClientResponseDTO {
     private String globalUniqueQueryId;
     private Long count;
     private String error;
+    private SystemComputingInfoDTO system;
+    private Set<ExecutionMode> supportedModes;
 
+
+    public QueryClientResponseDTO(FedDBClientResponseType type, String globalUniqueQueryId, Long count, String error) {
+        this(type, globalUniqueQueryId, count, error, null, null);
+    }
 
     public static QueryClientResponseDTO createErrorResponse(String errorMessage, String globalUniqueQueryId) {
         QueryClientResponseDTO dto = new QueryClientResponseDTO();

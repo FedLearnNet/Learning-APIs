@@ -14,7 +14,7 @@ import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerEntity;
 import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerStatus;
 import bio.cosy.feddb.local.api.importer.transformer.code.save.CodeTransformerImageSaveBO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
-import bio.cosy.feddb.local.services.orch.OrchContainerServiceClient;
+import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
 import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.smallrye.mutiny.Multi;
@@ -49,7 +49,7 @@ public class PipelineBO extends BasePipelineBO<PipelineDTO, PipelineEntity, Pipe
 
     @Inject
     @RestClient
-    OrchContainerServiceClient containerClient;
+    ContainerServiceClient containerClient;
 
     @Inject
     FLNetClientConfig config;

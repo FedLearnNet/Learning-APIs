@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.api.orch;
 
+import bio.cosy.feddb.core.security.Roles;
 import bio.cosy.feddb.core.services.orch.dto.*;
 import io.smallrye.mutiny.Multi;
 import jakarta.annotation.security.RolesAllowed;
@@ -14,13 +15,17 @@ import org.jboss.resteasy.reactive.RestStreamElementType;
 import java.util.List;
 
 @Path("/admin/orch/relay")
-@RolesAllowed({"Admin"})
+@RolesAllowed(Roles.ADMIN)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Relay", description = "⚠️ Relay facade to internal Docker orchestration API. For documentation, refer to the original API. Only GET endpoints are available here. " +
         "Orch-API is intended for internal use and should not be exposed to external clients. " +
         "It is designed to facilitate communication with the Docker orchestration service, providing access to container, run, and volume management functionalities.")
 public interface OrchApiRelayService {
+    @GET
+    @Path("info/computing")
+    SystemComputingInfoDTO computingInfo();
+
     // ---- Docker ----
     @GET
     @Path("docker/info")

@@ -11,6 +11,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @ApplicationScoped
@@ -41,7 +42,8 @@ public class AuditBO {
             AuditFieldEnum sortField,
             SortDirectionEnum sortDirection,
             List<String> searchTerms,
-            List<AuditFieldEnum> searchFields) {
+            List<AuditFieldEnum> searchFields,
+            Collection<Long> cohortIds) {
 
         // Validate input parameters
         validateParameters(cohortId, page, size, sortField, sortDirection);
@@ -49,8 +51,10 @@ public class AuditBO {
         // Parse and validate search criteria
         List<AuditSearchCriteriaDTO> searchCriteria = parseAndValidateSearchCriteria(searchTerms, searchFields);
 
-        // Always add cohort ID as a search criteria to ensure proper filtering
-        //TODO AFTER USER<-> COHORT SYSTEM IS AVAILABLE addCohortSearchCriteria(searchCriteria, cohortId);
+        // only cohorts the caller is a member of (see AuditServiceImpl)
+        if (cohortIds.isEmpty()) {
+            return new PagedResponse<>(List.of(), page, size, 0);
+        }
 
         // Build sort criteria
         AuditSortCriteriaDTO sortCriteria = buildSortCriteria(sortField, sortDirection);
@@ -63,10 +67,11 @@ public class AuditBO {
                 searchCriteria,
                 firstResult,
                 size,
-                sortCriteria
+                sortCriteria,
+                cohortIds
         ).stream().map(PatientDataTraceabilityLogDto::new).toList();
 
-        long totalCount = auditAO.countAuditChanges(searchCriteria);
+        long totalCount = auditAO.countAuditChanges(searchCriteria, cohortIds);
 
         return new PagedResponse<>(results, page, size, totalCount);
     }
@@ -203,27 +208,6 @@ public class AuditBO {
                 .filter(AuditFieldEnum::isSearchable)
                 .map(Enum::name)
                 .collect(java.util.stream.Collectors.joining(", "));
-    }
-
-    /**
-     * Adds the cohort ID as a mandatory search criteria to ensure proper filtering.
-     * This method ensures that all audit queries are automatically filtered by the given cohort.
-     *
-     * @param searchCriteria The existing list of search criteria
-     * @param cohortId       The cohort ID to add as a filter
-     */
-    private void addCohortSearchCriteria(List<AuditSearchCriteriaDTO> searchCriteria, Long cohortId) {
-        // Check if cohort criteria already exists to avoid duplicates
-        boolean cohortCriteriaExists = searchCriteria.stream()
-                .anyMatch(criteria -> AuditFieldEnum.COHORT_ID.equals(criteria.getSearchType()));
-
-        if (!cohortCriteriaExists) {
-            AuditSearchCriteriaDTO cohortCriteria = new AuditSearchCriteriaDTO(cohortId.toString(), AuditFieldEnum.COHORT_ID);
-            searchCriteria.add(cohortCriteria);
-            Log.debug("Added cohort ID search criteria: " + cohortId);
-        } else {
-            Log.debug("Cohort ID search criteria already exists, skipping addition");
-        }
     }
 
     /**

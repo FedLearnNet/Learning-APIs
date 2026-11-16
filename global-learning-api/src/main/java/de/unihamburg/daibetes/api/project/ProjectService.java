@@ -3,7 +3,6 @@ package de.unihamburg.daibetes.api.project;
 import bio.cosy.feddb.core.api.app.config.TabularSchemaDTO;
 import bio.cosy.feddb.core.api.project.ProjectDTO;
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -25,8 +24,6 @@ import java.util.List;
 @Path("/project")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "Project", description = "Service for managing project operations")
 public interface ProjectService {
 
@@ -47,6 +44,12 @@ public interface ProjectService {
     @APIResponse(responseCode = "400", description = "Invalid data")
     @Transactional
     public Response create(@RequestBody @Valid ProjectCreateDTO createDTO);
+
+    @GET
+    @Path("/platform-aggregator-supported")
+    @Operation(summary = "Returns whether this platform deployment supports running the FL aggregator on the platform itself.")
+    @APIResponse(responseCode = "200", description = "Platform aggregator capability flag")
+    public boolean isPlatformAggregatorSupported();
 
     @GET
     @Path("/{id}")

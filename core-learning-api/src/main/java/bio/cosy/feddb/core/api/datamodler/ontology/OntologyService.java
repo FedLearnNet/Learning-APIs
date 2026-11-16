@@ -1,5 +1,7 @@
 package bio.cosy.feddb.core.api.datamodler.ontology;
 
+import bio.cosy.feddb.core.security.Roles;
+import jakarta.annotation.security.RolesAllowed;
 import bio.cosy.feddb.core.base.PagedResponse;
 import io.smallrye.mutiny.Uni;
 import jakarta.ws.rs.*;
@@ -34,7 +36,6 @@ public interface OntologyService {
                     description = "List of ontologies"
             )
     })
-        // @RolesAllowed({"ontology-read", "ontology-write"})
     Uni<PagedResponse<OntologyNodeDTO>> list(
             @Parameter(
                     name = "search",
@@ -63,7 +64,6 @@ public interface OntologyService {
             )
     })
     @Path("embedding/search")
-        // @RolesAllowed({"ontology-read", "ontology-write"})
     Uni<List<OntologySearchResponseDTO>> searchEmbedding(
             @Parameter(
                     name = "search",
@@ -101,6 +101,7 @@ public interface OntologyService {
 
 
     @POST
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Operation(summary = "Create a new ontology", description = "Creates a new ontology. In the edges only give either the target or source ontology ID. The given ontology will then be linked accordingly.")
     @APIResponses({
             @APIResponse(
@@ -114,7 +115,6 @@ public interface OntologyService {
             ),
     })
     @ResponseStatus(CREATED)
-        // @RolesAllowed({"ontology-create"})
     Uni<OntologyDTO> create(
             @Parameter(
                     description = "Payload for creating an ontology",
@@ -196,6 +196,25 @@ public interface OntologyService {
     );
 
     @GET
+    @Path("/{id}/schema-siblings")
+    @Operation(
+            summary = "Get ontology-datatype pairs used in the same schema",
+            description = "Retrieves every ontology-datatype pair defined on a node of the root schema(s) the given "
+                    + "ontology is used in (the given ontology included)."
+    )
+    @APIResponses({
+            @APIResponse(
+                    responseCode = "200",
+                    description = "List of ontology-datatype pairs (empty list if the ontology is not used in any schema or not found)",
+                    content = @Content(schema = @Schema(implementation = OntologyDataTypeDTO.class, type = SchemaType.ARRAY))
+            )
+    })
+    Uni<List<OntologyDataTypeDTO>> getSchemaSiblingsWithDataTypes(
+            @Parameter(description = "Ontology ID", required = true)
+            @PathParam("id") UUID id
+    );
+
+    @GET
     @Path("/{id}/edges")
     @Operation(
             summary = "Get edges ontologies",
@@ -233,6 +252,7 @@ public interface OntologyService {
 
 
     @PUT
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Path("/{id}")
     @Operation(summary = "Update an ontology", description = "Updates an existing ontology (full update).")
     @APIResponses({
@@ -257,6 +277,7 @@ public interface OntologyService {
 
 
     @DELETE
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Path("/{id}")
     @Operation(summary = "Delete an ontology", description = "Deletes an ontology.")
     @APIResponses({

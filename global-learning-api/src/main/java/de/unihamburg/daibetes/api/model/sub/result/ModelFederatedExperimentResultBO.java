@@ -13,21 +13,26 @@ import de.unihamburg.daibetes.api.model.access.ModelAccessBO;
 import de.unihamburg.daibetes.api.model.sub.ModelSubBO;
 import de.unihamburg.daibetes.api.model.sub.file.ModelSubFileBO;
 import de.unihamburg.daibetes.api.model.version.ModelVersionBO;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentAO;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
-import io.quarkus.logging.Log;
+import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentAO;
+import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
+import bio.cosy.feddb.core.execution.event.ExecutionEventPublisher;
+import bio.cosy.feddb.core.execution.file.ExecutionFileDirection;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
+import de.unihamburg.daibetes.execution.file.ExecutionFileBO;
+import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @ApplicationScoped
 public class ModelFederatedExperimentResultBO {
 
     @Inject
-    ProjectFederatedExperimentAO projectFederatedExperimentAO;
+    ExecutionExperimentAO experimentAO;
 
     @Inject
     ModelBO modelBO;
@@ -50,6 +55,12 @@ public class ModelFederatedExperimentResultBO {
     @Inject
     ModelSubFileBO modelSubFileBO;
 
+    @Inject
+    ExecutionFileBO executionFileBO;
+
+    @Inject
+    ExecutionEventPublisher events;
+
     public ModelSubDTO uploadResults(ModelExperimentResultDTO dto, String keycloakId) {
         if (dto.getFiles() == null || dto.getFiles().isEmpty()) {
             throw new BadRequestException("No files uploaded");
@@ -59,10 +70,10 @@ public class ModelFederatedExperimentResultBO {
             throw new BadRequestException("App Version ID must be provided");
         }
 
-        ProjectFederatedExperimentEntity experiment = findExperiment(dto.getGlobalFLExperimentUniqueId(), dto.getClinicId());
-        if (Boolean.FALSE.equals(experiment.getModelCanBePublic())) {
-            Log.warnf("Model of experiment %s cannot be public", experiment.getGlobalUniqueId());
-            throw new BadRequestException("Model of experiment " + experiment.getGlobalUniqueId() + " cannot be public");
+        ExecutionExperimentEntity experiment = findExperiment(dto.getGlobalFLExperimentUniqueId(), dto.getClinicId());
+        if (dto.getNodeId() != null) {
+            keepOutputs(experiment, dto);
+            return null;
         }
         FederatedAppVersionDTO appVersion = federatedAppVersionBO.getById(appVersionId);
         Long appId = appVersion.getFederatedAppId();
@@ -71,6 +82,24 @@ public class ModelFederatedExperimentResultBO {
 
         modelSubFileBO.create(dto, subVersion.getId(), keycloakId);
         return subVersion;
+    }
+
+    // TRE: the outputs a clinic released belong to its attempt of the step, once.
+    private void keepOutputs(ExecutionExperimentEntity experiment, ModelExperimentResultDTO dto) {
+        ExecutionAttemptEntity attempt = experiment.getRuns().stream()
+                .flatMap(run -> run.getStepsInExecutionOrder().stream())
+                .filter(step -> step.getWorkflowNode() != null && dto.getNodeId().equals(step.getWorkflowNode().getNodeId()))
+                .map(ExecutionRunStepEntity::getSelectedAttempt)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("No step " + dto.getNodeId() + " in experiment " + experiment.getId()));
+        if (attempt.getExecutionFiles().stream().anyMatch(file -> file.getDirection() == ExecutionFileDirection.OUTPUT)) {
+            return;
+        }
+        if (executionFileBO.addOutputs(attempt, dto.getFiles()).isEmpty()) {
+            throw new BadRequestException("None of the outputs could be stored");
+        }
+        events.attemptUpdated(attempt.getId());
     }
 
     public ModelSubDTO createModel(Long appId, Long appVersionId, Long experimentId) {
@@ -89,16 +118,18 @@ public class ModelFederatedExperimentResultBO {
     }
 
 
-    public ProjectFederatedExperimentEntity findExperiment(String globalUniqueExperimentId, String clinicId) {
+    public ExecutionExperimentEntity findExperiment(String globalUniqueExperimentId, String clinicId) {
         if (globalUniqueExperimentId == null || clinicId == null || clinicId.isBlank()) {
             throw new BadRequestException("Experiment ID and Clinic ID must be provided");
         }
-        Optional<ProjectFederatedExperimentEntity> entityOptional = projectFederatedExperimentAO.findByGlobalUniqueID(globalUniqueExperimentId);
+        Optional<ExecutionExperimentEntity> entityOptional = experimentAO.findByGlobalUniqueIdOptional(globalUniqueExperimentId);
         if (entityOptional.isEmpty()) {
             throw new NotFoundException("No experiment found with ID: " + globalUniqueExperimentId);
         }
-        ProjectFederatedExperimentEntity entity = entityOptional.get();
-        if (!entity.getCoordinator().getUniqueRandomClinicId().equals(clinicId)) {
+        ExecutionExperimentEntity entity = entityOptional.get();
+        boolean coordinator = entity.getRuns().stream().flatMap(run -> run.getParticipants().stream())
+                .anyMatch(participant -> participant.isCoordinator() && clinicId.equals(participant.getParticipantId()));
+        if (!coordinator) {
             throw new BadRequestException("Clinic ID does not match");
         }
         return entity;

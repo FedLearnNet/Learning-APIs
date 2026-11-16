@@ -1,7 +1,6 @@
 package bio.cosy.feddb.local.api.cohort.patient.traceability.query;
 
 import bio.cosy.feddb.core.base.PagedResponse;
-import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -11,8 +10,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Path("/patients/query")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "PatientService", description = "Service for managing Patient Services")
 public interface QueryPatientService {
     @GET

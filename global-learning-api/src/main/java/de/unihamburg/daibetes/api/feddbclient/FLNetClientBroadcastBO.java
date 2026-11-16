@@ -2,6 +2,7 @@ package de.unihamburg.daibetes.api.feddbclient;
 
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.socket.*;
+import bio.cosy.feddb.core.execution.helper.AfterCommitTask;
 import de.unihamburg.daibetes.api.observer.FLNetClientObserverEmitter;
 import de.unihamburg.daibetes.api.observer.FLNetClientObserverEventDTO;
 import io.quarkus.arc.log.LoggerName;
@@ -10,6 +11,7 @@ import io.quarkus.websockets.next.OpenConnections;
 import jakarta.annotation.Nullable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 import org.jboss.logging.Logger;
 
 import java.util.List;
@@ -32,13 +34,20 @@ public class FLNetClientBroadcastBO {
     @Inject
     FLNetClientObserverEmitter observerEmitter;
 
+    @Inject
+    TransactionSynchronizationRegistry transactions;
+
     @LoggerName("FedDBClientBroadcast")
     Logger logger;
 
     private static final String ENDPOINT_ID = FLNetClientWebsocket.class.getName();
 
-
     private final Map<String, Set<String>> learningConnectionMap = new ConcurrentHashMap<>();
+
+    /** Sends once the current transaction committed; a change rolled back never reaches the clinics. */
+    public void sendAfterCommit(String what, Runnable send) {
+        transactions.registerInterposedSynchronization(new AfterCommitTask(what, send));
+    }
 
     /**
      * Associates a WebSocket connection with a specific learning experiment.
@@ -74,29 +83,6 @@ public class FLNetClientBroadcastBO {
         }
         learningConnectionMap.remove(connectionId);
         logger.infof("Removed learning connection for ConnectionId: %s", connectionId);
-    }
-
-    /**
-     * Removes a specific experiment association from a WebSocket connection.
-     * If this was the last experiment for the connection, the connection entry is removed entirely.
-     *
-     * @param connectionId The unique identifier of the WebSocket connection
-     * @param experimentId The identifier of the experiment to remove
-     */
-    public void removeLearningExperiment(String connectionId, String experimentId) {
-        if (connectionId == null || experimentId == null) {
-            logger.warnf("ConnectionId or ExperimentId is null. ConnectionId: %s, ExperimentId: %s", connectionId, experimentId);
-            return;
-        }
-        Set<String> experiments = learningConnectionMap.get(connectionId);
-        if (experiments != null) {
-            experiments.remove(experimentId);
-            logger.infof("Removed experiment %d from connection %s", experimentId, connectionId);
-            if (experiments.isEmpty()) {
-                learningConnectionMap.remove(connectionId);
-                logger.infof("Removed connection %s as no experiments remain", connectionId);
-            }
-        }
     }
 
     /**
@@ -151,14 +137,15 @@ public class FLNetClientBroadcastBO {
      * Broadcasts a learning experiment configuration to all connected clients.
      * Initiates the setup phase of a federated learning experiment across all participants.
      *
-     * @param experiment The experiment configuration to be distributed
+     * @param experiment   The experiment configuration to be distributed
+     * @param connectionId The only client to ask, all if null
      */
-    public void fireLearningQuery(ProjectFederatedExperimentForLocalDTO experiment) {
+    public void fireLearningQuery(ProjectFederatedExperimentForLocalDTO experiment, @Nullable String connectionId) {
         logger.infof("Firing learning query for experiment: %s", experiment);
         FedDBClientDataDTO<ProjectFederatedExperimentForLocalDTO> fedDBClientDataDTO = new FedDBClientDataDTO<>(
                 FedDBClientTypeEnum.LEARNING_QUERY, experiment);
 
-        sendMessageToAll(fedDBClientDataDTO);
+        sendMessageToAll(fedDBClientDataDTO, connectionId);
     }
 
     /**
@@ -261,9 +248,7 @@ public class FLNetClientBroadcastBO {
                     FedDBClientTypeEnum.UPDATE_LEARNING, startLearningClientRequestDTO);
             sendMessageToExperiment(fedDBClientDataDTO, globalUniqueExperimentId);
         }
-
     }
-
 
     /**
      * Stops the learning process for a federated experiment.
@@ -330,8 +315,13 @@ public class FLNetClientBroadcastBO {
      * @param message The message to be broadcast to all connections
      */
     private void sendMessageToAll(FedDBClientDataDTO<?> message) {
+        sendMessageToAll(message, null);
+    }
+
+    private void sendMessageToAll(FedDBClientDataDTO<?> message, @Nullable String connectionId) {
         logger.infof("Broadcasting message to all connections: %s", message);
-        connections.findByEndpointId(ENDPOINT_ID)
+        connections.findByEndpointId(ENDPOINT_ID).stream()
+                .filter(c -> connectionId == null || c.id().equals(connectionId))
                 .forEach(c -> {
                     try {
                         c.sendTextAndAwait(message);
@@ -345,7 +335,6 @@ public class FLNetClientBroadcastBO {
                     }
                 });
     }
-
 
     /**
      * Retrieves a list of all active connection IDs.
@@ -374,6 +363,4 @@ public class FLNetClientBroadcastBO {
                     }
                 });
     }
-
-
 }

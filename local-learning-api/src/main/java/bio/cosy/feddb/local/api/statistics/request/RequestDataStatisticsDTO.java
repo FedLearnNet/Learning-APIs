@@ -1,7 +1,7 @@
 package bio.cosy.feddb.local.api.statistics.request;
 
 import bio.cosy.feddb.core.base.BaseDTO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestStatus;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestStatus;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -19,7 +19,7 @@ public class RequestDataStatisticsDTO extends BaseDTO {
 
     private String verifiedByKeycloakId;
 
-    private FederatedLearningRequestStatus status = FederatedLearningRequestStatus.PENDING;
+    private LearningRequestStatus status = LearningRequestStatus.PENDING;
 
     private UUID requestId;
 

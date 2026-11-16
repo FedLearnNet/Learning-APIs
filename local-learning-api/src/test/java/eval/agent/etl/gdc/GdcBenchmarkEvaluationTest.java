@@ -1,7 +1,7 @@
 package eval.agent.etl.gdc;
 
 import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerContainerBO;
-import bio.cosy.feddb.local.api.importer.transformer.session.AppTransformerSessionBO;
+import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
 import eval.agent.etl.gdc.pipeline.MatchingBenchmarkRunner;
 import eval.agent.etl.gdc.setting.GdcStudies;
 import eval.agent.etl.transform.setting.TransformerWriterEvaluationProfile;

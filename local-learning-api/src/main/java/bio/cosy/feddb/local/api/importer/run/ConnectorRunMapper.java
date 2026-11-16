@@ -18,7 +18,6 @@ public interface ConnectorRunMapper extends BaseMapper<ConnectorRunDTO, Connecto
     @Mappings({
             @Mapping(target = "cohort.id", source = "cohortId"),
             @Mapping(target = "connector.id", source = "connectorId"),
-            @Mapping(target = "steps", ignore = true),
             @Mapping(target = "errorLogs", ignore = true),
             @Mapping(target = "messages", ignore = true)
     })

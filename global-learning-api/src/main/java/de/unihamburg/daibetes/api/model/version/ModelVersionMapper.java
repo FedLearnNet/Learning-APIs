@@ -5,8 +5,7 @@ import bio.cosy.feddb.core.base.BaseMapper;
 import bio.cosy.feddb.core.api.model.ModelSubDTO;
 import de.unihamburg.daibetes.api.model.sub.ModelSubEntity;
 import de.unihamburg.daibetes.api.model.sub.ModelSubMapper;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
-import de.unihamburg.daibetes.api.runs.experiment.ExperimentEntity;
+import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
@@ -43,27 +42,27 @@ public interface ModelVersionMapper extends BaseMapper<ModelVersionDTO, ModelVer
     ModelVersionEntity dtoToEntity(ModelVersionDTO dto);
 
     @Named("mapExperiment")
-    default ExperimentEntity mapExperiment(Long experimentId) {
+    default ExecutionExperimentEntity mapExperiment(Long experimentId) {
         if (experimentId == null) {
             return null;
         }
-        ExperimentEntity experiment = new ExperimentEntity();
+        ExecutionExperimentEntity experiment = new ExecutionExperimentEntity();
         experiment.setId(experimentId);
         return experiment;
     }
 
     @Named("mapFedExperiment")
-    default ProjectFederatedExperimentEntity mapFedExperiment(Long experimentId) {
+    default ExecutionExperimentEntity mapFedExperiment(Long experimentId) {
         if (experimentId == null) {
             return null;
         }
-        ProjectFederatedExperimentEntity experiment = new ProjectFederatedExperimentEntity();
+        ExecutionExperimentEntity experiment = new ExecutionExperimentEntity();
         experiment.setId(experimentId);
         return experiment;
     }
 
     @Named("mapExperimentId")
-    default Long mapExperimentId(ExperimentEntity experiment) {
+    default Long mapExperimentId(ExecutionExperimentEntity experiment) {
         if (experiment == null) {
             return null;
         }
@@ -71,7 +70,7 @@ public interface ModelVersionMapper extends BaseMapper<ModelVersionDTO, ModelVer
     }
 
     @Named("mapFedExperimentId")
-    default Long mapFedExperimentId(ProjectFederatedExperimentEntity experiment) {
+    default Long mapFedExperimentId(ExecutionExperimentEntity experiment) {
         if (experiment == null) {
             return null;
         }

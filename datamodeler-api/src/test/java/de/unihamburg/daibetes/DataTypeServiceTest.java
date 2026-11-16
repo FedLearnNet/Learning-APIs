@@ -1,5 +1,7 @@
 package de.unihamburg.daibetes;
 
+import bio.cosy.feddb.core.security.Roles;
+import io.quarkus.test.security.TestSecurity;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypes;
 import bio.cosy.feddb.core.api.datamodler.datatype.DummyDataRequestDTO;
@@ -25,6 +27,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
 @QuarkusTest
+@TestSecurity(user = "test-modeler", roles = {Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DataTypeServiceTest {
 

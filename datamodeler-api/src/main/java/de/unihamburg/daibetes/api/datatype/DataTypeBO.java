@@ -38,10 +38,12 @@ public class DataTypeBO {
 
     public Uni<PagedResponse<DataTypeNodeDTO>> list(UUID ontologyId, int page, int pageSize, String search) {
         if (ontologyId == null) {
-            return dataTypeDAO.getAll(page, pageSize, search)
-                    .onItem().transform(el -> (DataTypeNodeDTO) el)
-                    .collect().asList()
-                    .onItem().transform(list -> new PagedResponse<>(list, page, pageSize, list.size()));
+            return dataTypeDAO.getAllPaged(page, pageSize, search)
+                    .onItem().transform(paged -> new PagedResponse<>(
+                            paged.getResults().stream().map(el -> (DataTypeNodeDTO) el).toList(),
+                            paged.getPage(),
+                            paged.getPageSize(),
+                            paged.getTotalCount()));
         }
         return dataTypeDAO.getAllByOntology(ontologyId, search)
                 .onItem().transform(el -> (DataTypeNodeDTO) el)

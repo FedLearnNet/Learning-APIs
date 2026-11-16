@@ -3,7 +3,6 @@ package bio.cosy.feddb.local.api.cohort.patient.traceability.crud;
 import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.core.base.sort.SortDirectionEnum;
 import bio.cosy.feddb.local.api.cohort.CohortService;
-import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -16,7 +15,6 @@ import java.util.List;
 @Path(AuditService.PATH)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
 @Tag(name = "PatientAuditService", description = "Service for managing Patient  Audits Services")
 public interface AuditService {
     String PATH = CohortService.PATH + "/logs";

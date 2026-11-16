@@ -1,11 +1,13 @@
 package bio.cosy.feddb.local.api.learning.request.cohort;
 
+import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.local.api.cohort.CohortAO;
 import bio.cosy.feddb.local.api.cohort.CohortEntity;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberTypes;
 import bio.cosy.feddb.local.api.cohort.permission.PermissionBO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestEntity;
+import bio.cosy.feddb.local.api.cohort.permission.PermissionDTO;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestEntity;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -35,9 +37,10 @@ public class FederatedLearningRequestCohortBO {
      *
      * @return cohort ids that still need a manual decision
      */
-    public Set<Long> initForRequest(FederatedLearningRequestEntity request,
+    public Set<Long> initForRequest(LearningRequestEntity request,
                                     Set<Long> cohortIds,
                                     String platformUserId,
+                                    ExecutionMode mode,
                                     int certificationLevel,
                                     boolean needsInternetAccess) {
         for (Long cohortId : cohortIds) {
@@ -47,11 +50,14 @@ public class FederatedLearningRequestCohortBO {
             FederatedLearningRequestCohortEntity decision = new FederatedLearningRequestCohortEntity();
             decision.setRequest(request);
             decision.setCohort(cohort);
-            boolean autoApproved = permissionBO.hasAutoTrainingAccessForCohort(
-                    platformUserId, cohortId, certificationLevel, needsInternetAccess);
-            decision.setStatus(autoApproved
-                    ? FederatedLearningRequestCohortStatus.APPROVED
-                    : FederatedLearningRequestCohortStatus.PENDING);
+            List<PermissionDTO> permissions = permissionBO.getActivePermissionsForCohort(platformUserId, cohortId);
+            if (permissions.stream().noneMatch(p -> permissionBO.allowsTraining(p, mode))) {
+                decision.setStatus(FederatedLearningRequestCohortStatus.REJECTED);
+            } else if (permissionBO.grantsAutoTrainingAccess(permissions, mode, certificationLevel, needsInternetAccess)) {
+                decision.setStatus(FederatedLearningRequestCohortStatus.APPROVED);
+            } else {
+                decision.setStatus(FederatedLearningRequestCohortStatus.PENDING);
+            }
             ao.persist(decision);
             Log.infof("Training request %s cohort %s initialised as %s",
                     request.getId(), cohortId, decision.getStatus());
@@ -78,6 +84,13 @@ public class FederatedLearningRequestCohortBO {
     public Set<Long> getPendingCohortIds(Long requestId) {
         return ao.findByRequest(requestId).stream()
                 .filter(d -> d.getStatus() == FederatedLearningRequestCohortStatus.PENDING)
+                .map(d -> d.getCohort().getId())
+                .collect(Collectors.toSet());
+    }
+
+    public Set<Long> getRejectedCohortIds(Long requestId) {
+        return ao.findByRequest(requestId).stream()
+                .filter(d -> d.getStatus() == FederatedLearningRequestCohortStatus.REJECTED)
                 .map(d -> d.getCohort().getId())
                 .collect(Collectors.toSet());
     }

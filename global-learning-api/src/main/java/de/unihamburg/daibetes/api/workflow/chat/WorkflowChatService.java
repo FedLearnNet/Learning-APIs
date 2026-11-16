@@ -1,11 +1,14 @@
 package de.unihamburg.daibetes.api.workflow.chat;
 
+import io.quarkus.security.Authenticated;
 import io.quarkus.websockets.next.*;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
 
+// default-roles-allowed covers not WebSockets)
+@Authenticated
 @SessionScoped
 @WebSocket(path = "workflow/{workflowId}/chat")
 public class WorkflowChatService {

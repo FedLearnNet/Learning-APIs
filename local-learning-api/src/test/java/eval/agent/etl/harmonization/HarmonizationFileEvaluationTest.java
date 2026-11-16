@@ -11,7 +11,7 @@ import bio.cosy.feddb.local.api.harmonization.HarmonizationTargetBO;
 import bio.cosy.feddb.local.api.harmonization.HarmonizationTargetDTO;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerContainerBO;
-import bio.cosy.feddb.local.api.importer.transformer.session.AppTransformerSessionBO;
+import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import com.fasterxml.jackson.core.type.TypeReference;
 import eval.agent.etl.harmonization.judge.HarmonizationFileReviews;

@@ -5,12 +5,13 @@ import bio.cosy.feddb.local.api.importer.connector.ConnectorAO;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorEntity;
 import bio.cosy.feddb.local.api.importer.functions.FunctionRunnerBO;
 import bio.cosy.feddb.local.api.importer.run.message.ConnectorRunMessagesAO;
-import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepAO;
+import bio.cosy.feddb.local.execution.step.ExecutionRunStepAO;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -25,6 +26,8 @@ public class ConnectorTransformerBO extends BaseBo<
         ConnectorTransformerAO,
         ConnectorTransformerMapper> {
 
+    public static final Duration APP_OUTPUT_TIMEOUT = Duration.ofMinutes(5);
+
     @Inject
     ConnectorAO connectorAO;
 
@@ -32,7 +35,7 @@ public class ConnectorTransformerBO extends BaseBo<
     FunctionRunnerBO functionRunnerBO;
 
     @Inject
-    ConnectorRunStepAO runStepAO;
+    ExecutionRunStepAO runStepAO;
 
     @Inject
     ConnectorRunMessagesAO runMessagesAO;

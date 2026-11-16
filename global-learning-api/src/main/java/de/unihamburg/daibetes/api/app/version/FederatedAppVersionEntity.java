@@ -8,7 +8,6 @@ import de.unihamburg.daibetes.api.app.audit.ToolAuditEntity;
 import de.unihamburg.daibetes.api.app.config.hyperparam.FederatedAppHyperParamConfigEntity;
 import de.unihamburg.daibetes.api.app.config.input.FederatedAppInputConfigEntity;
 import de.unihamburg.daibetes.api.app.config.output.FederatedAppOutputConfigEntity;
-import de.unihamburg.daibetes.api.runs.test.TestRunEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -65,8 +64,6 @@ public class FederatedAppVersionEntity extends BaseStoreVersionEntity {
     private String longDescription;
 
 
-    @OneToMany(mappedBy = "federatedAppVersion", cascade = CascadeType.ALL)
-    private Set<TestRunEntity> testRuns;
 
     @OneToMany(mappedBy = "federatedAppVersion", cascade = CascadeType.ALL)
     private Set<FederatedAppOutputConfigEntity> outputConfig;

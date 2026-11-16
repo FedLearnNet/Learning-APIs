@@ -1,7 +1,9 @@
 package bio.cosy.feddb.core.api.datamodler.schema;
 
 import bio.cosy.feddb.core.base.PagedResponse;
+import bio.cosy.feddb.core.security.Roles;
 import io.smallrye.mutiny.Uni;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -21,8 +23,6 @@ import java.util.UUID;
 
 import static org.jboss.resteasy.reactive.RestResponse.StatusCode.CREATED;
 
-// import jakarta.annotation.security.RolesAllowed;
-
 @Path("/schemas")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -41,7 +41,6 @@ public interface SchemaService {
                     content = @Content(schema = @Schema(implementation = SchemaNodeDTO.class, type = SchemaType.ARRAY))
             )
     })
-        // @RolesAllowed({"schema-read", "schema-write"})
     Uni<PagedResponse<SchemaNodeDTO>> list(
             @Parameter(
                     name = "page",
@@ -77,6 +76,7 @@ public interface SchemaService {
     );
 
     @POST
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Operation(
             summary = "Create a new schema node",
             description = "Creates a new schema node."
@@ -93,7 +93,6 @@ public interface SchemaService {
             )
     })
     @ResponseStatus(CREATED)
-        // @RolesAllowed({"schema-create"})
     Uni<SchemaNodeDTO> create(
             @Parameter(
                     description = "Payload for creating a schema node",
@@ -103,6 +102,7 @@ public interface SchemaService {
     );
 
     @POST
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Path("/head")
     @Operation(
             summary = "Create a new schema head node",
@@ -123,7 +123,7 @@ public interface SchemaService {
     Uni<SchemaNodeDTO> createHead(
             @Parameter(
                     description = "Payload for creating a schema head node")
-            @Valid  SchemaNodeDTO dto
+            @Valid SchemaNodeDTO dto
     );
 
     @GET
@@ -215,6 +215,7 @@ public interface SchemaService {
     );
 
     @PUT
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Path("/{id}")
     @Operation(
             summary = "Update a schema node",
@@ -239,11 +240,12 @@ public interface SchemaService {
             @Parameter(description = "Schema ID", required = true)
             @PathParam("id") UUID id,
             @Parameter(description = "Updated schema payload", required = true)
-            @Valid  SchemaNodeDTO dto
+            @Valid SchemaNodeDTO dto
     );
 
 
     @DELETE
+    @RolesAllowed({Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
     @Path("/{id}")
     @Operation(
             summary = "Delete a schema node",

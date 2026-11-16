@@ -15,7 +15,6 @@ import java.util.UUID;
 @Path("/query")
 @Produces("application/json")
 @Consumes("application/json")
-//@RolesAllowed("admin")
 @Tag(name = "Query", description = "Service for Query generation operations")
 public interface QueryService {
 
@@ -32,7 +31,6 @@ public interface QueryService {
                     description = "Paginated UMLS search results"
             )
     })
-        // @RolesAllowed({"umls-read", "ontology-write"})
     Uni<List<QueryConfigDTO>> getQueryableNodes(
             @Parameter(
                     name = "ontology-ids",

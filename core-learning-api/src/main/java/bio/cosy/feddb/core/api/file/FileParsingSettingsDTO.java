@@ -28,6 +28,10 @@ public class FileParsingSettingsDTO {
     @NotNull
     private Boolean firstSheetOnly = true;
 
+    public FileParsingSettingsDTO(FileParsingType fileType) {
+        this.fileType = fileType;
+    }
+
     public static FileParsingSettingsDTO forFileName(String fileName) {
         String name = fileName == null ? "" : fileName.toLowerCase(Locale.ROOT);
         FileParsingSettingsDTO settings = new FileParsingSettingsDTO();

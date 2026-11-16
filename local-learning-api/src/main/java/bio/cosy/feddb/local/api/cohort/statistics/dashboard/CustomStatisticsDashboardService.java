@@ -1,6 +1,5 @@
 package bio.cosy.feddb.local.api.cohort.statistics.dashboard;
 
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -15,7 +14,6 @@ import java.util.List;
 @Path(CustomStatisticsDashboardService.PATH)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
 @Tag(name = "CustomStatisticsDashboard",
         description = "Manage user-named tabs/dashboards that group custom statistics for a cohort")
 public interface CustomStatisticsDashboardService {

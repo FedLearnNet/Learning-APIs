@@ -8,8 +8,6 @@ import jakarta.ws.rs.core.Response;
 @Path("/model/result")
 @Produces("application/json")
 @Consumes("application/json")
-//@RolesAllowed("admin")
-//@Authenticated TODO LATER
 public interface ModelExperimentResultBaseService {
 
     @POST

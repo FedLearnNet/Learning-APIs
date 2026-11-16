@@ -7,12 +7,11 @@ import bio.cosy.feddb.core.api.project.ProjectDTO;
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.base.BaseBo;
-import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionAO;
+import de.unihamburg.daibetes.api.analysis.run.DataAnalysisExecutionBO;
 import de.unihamburg.daibetes.api.model.access.ModelAccessBO;
 import de.unihamburg.daibetes.api.model.sub.file.ModelSubFileBO;
 import de.unihamburg.daibetes.api.project.ProjectMapper;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentEntity;
-import de.unihamburg.daibetes.api.project.experiment.federated.ProjectFederatedExperimentMapper;
+import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
 import de.unihamburg.daibetes.api.query.QueryAO;
 import de.unihamburg.daibetes.api.query.QueryEntity;
 import de.unihamburg.daibetes.api.query.QueryMapper;
@@ -24,7 +23,6 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Optional;
 
-
 @ApplicationScoped
 public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, ModelSubMapper> {
 
@@ -32,13 +30,10 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
     ModelAccessBO accessBO;
 
     @Inject
-    DataAnalysisPredictionAO modelPredictionAO;
+    DataAnalysisExecutionBO dataAnalysisExecutionBO;
 
     @Inject
     ModelSubFileBO modelSubFileBO;
-
-    @Inject
-    ProjectFederatedExperimentMapper federatedExperimentMapper;
 
     @Inject
     ProjectMapper projectMapper;
@@ -62,20 +57,20 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
     }
 
     private Optional<FederatedModelSubDetailDataDTO> createFederatedData(ModelSubEntity modelSub) {
-        ProjectFederatedExperimentEntity experiment = modelSub.getFederatedExperiment();
+        ExecutionExperimentEntity experiment = modelSub.getFederatedExperiment();
         if (experiment == null) {
             return Optional.empty();
         }
 
-        ProjectDTO project = getProjectSnapshot(experiment);
+        ProjectDTO project = projectSnapshotOf(experiment);
         FederatedModelSubDetailDataDTO federatedData = new FederatedModelSubDetailDataDTO();
         federatedData.setProject(project);
         federatedData.setQuery(getRedactedQuerySnapshot(project, experiment).orElse(null));
         return Optional.of(federatedData);
     }
 
-    private ProjectDTO getProjectSnapshot(ProjectFederatedExperimentEntity experiment) {
-        ProjectDetailDTO snapshot = federatedExperimentMapper.jsonStringToProject(experiment.getProjectVersion());
+    private ProjectDTO projectSnapshotOf(ExecutionExperimentEntity experiment) {
+        ProjectDetailDTO snapshot = experiment.getProjectVersion();
         ProjectDTO project = snapshot != null ? snapshot : projectMapper.entityToSimpleDTO(experiment.getProject());
 
         // Uploaded source files are not needed for traceability and may contain private metadata.
@@ -84,7 +79,7 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
     }
 
     private Optional<QueryDTO> getRedactedQuerySnapshot(ProjectDTO project,
-                                                         ProjectFederatedExperimentEntity experiment) {
+                                                         ExecutionExperimentEntity experiment) {
         QueryEntity query = null;
         if (project.getQueryId() != null) {
             query = queryAO.findByIdOptional(project.getQueryId()).orElse(null);
@@ -134,7 +129,6 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
         return mapper.entityToDto(entity);
     }
 
-
     public ModelSubDTO update(bio.cosy.feddb.core.api.model.ModelSubDataDTO dto, Long modelVersionId) {
         Optional<ModelSubEntity> entity = ao.findByModelVersionAndEx(modelVersionId, dto.getRunId());
         if (entity.isEmpty()) {
@@ -175,26 +169,12 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
         throw new NotFoundException("ModelSub not found (no rights)");
     }
 
-    public ModelSubDTO findBySubIdOrModelVersionId(Long modelSubId, Long modelVersionId, String keycloakId) {
-        Optional<ModelSubEntity> entity;
-        if (modelSubId != null) {
-            entity = ao.findByIdOptional(modelSubId);
-        } else {
-            entity = ao.findByRunModelVersionId(modelVersionId);
-        }
-        if (entity.isEmpty()) {
-            throw new NotFoundException("ModelSub not found");
-        }
-        return mapper.entityToDto(entity.get());
-    }
-
-
     public ModelSubDTO selectModel(Long modelSubId, String keycloakId) {
         ModelSubDTO modelSubDTO = getByRunId(modelSubId, keycloakId);
         if (modelSubDTO.getStatus() != ModelSubStatus.TRAINED) {
             throw new NotFoundException("You can only select a trained model");
         }
-        modelPredictionAO.deleteByRunId(modelSubDTO.getModelVersionId(), modelSubId);
+        dataAnalysisExecutionBO.deleteRunsOfSubModelTransactional(modelSubId);
         ao.deleteByRunId(modelSubDTO.getModelVersionId(), modelSubId);
         return modelSubDTO;
     }

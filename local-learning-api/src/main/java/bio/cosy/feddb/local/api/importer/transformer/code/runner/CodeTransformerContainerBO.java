@@ -2,7 +2,7 @@ package bio.cosy.feddb.local.api.importer.transformer.code.runner;
 
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerLogDTO;
-import bio.cosy.feddb.local.api.importer.transformer.session.AppTransformerSessionBO;
+import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import io.quarkus.scheduler.Scheduled;
 import io.quarkus.websockets.next.WebSocketConnection;
@@ -27,7 +27,7 @@ public class CodeTransformerContainerBO {
     private volatile CodeTransformerRunnerStatus status = CodeTransformerRunnerStatus.STOPPED;
     private volatile String error;
     private Long sessionId;
-    private volatile Long stepId;
+    private volatile Long attemptId;
     private Instant lastUsed;
 
     @Inject
@@ -41,7 +41,8 @@ public class CodeTransformerContainerBO {
     }
 
     public WebSocketConnection connection(String keycloakId) {
-        return sessionBO.connection(start(keycloakId));
+        Long session = start(keycloakId);
+        return sessionBO.connection(session, runner());
     }
 
     public synchronized Long start(String keycloakId) {
@@ -52,10 +53,10 @@ public class CodeTransformerContainerBO {
         status = CodeTransformerRunnerStatus.STARTING;
         error = null;
         log("Starting the code runner " + image());
-        ConnectorTransformerDTO runner = new ConnectorTransformerDTO();
-        runner.setAppImage(image());
         try {
-            sessionId = sessionBO.openPreview(runner, keycloakId, step -> stepId = step.getId());
+            sessionId = sessionBO.openPreview(runner(), keycloakId, run -> {
+            });
+            attemptId = sessionBO.attemptIdOf(sessionId);
             status = CodeTransformerRunnerStatus.RUNNING;
             log("The code runner is ready");
             return sessionId;
@@ -71,14 +72,14 @@ public class CodeTransformerContainerBO {
         if (sessionId != null) {
             sessionBO.close(sessionId);
             sessionId = null;
-            stepId = null;
+            attemptId = null;
             status = CodeTransformerRunnerStatus.STOPPED;
             log("The code runner was stopped");
         }
     }
 
-    public void log(Long runId, String message) {
-        if (runId != null && runId.equals(stepId) && message != null && !message.isBlank()) {
+    public void log(Long fromAttemptId, String message) {
+        if (fromAttemptId != null && fromAttemptId.equals(attemptId) && message != null && !message.isBlank()) {
             log(message);
         }
     }
@@ -93,6 +94,12 @@ public class CodeTransformerContainerBO {
             log("Stopping the code runner after " + IDLE_TIMEOUT.toMinutes() + " idle minutes");
             stop();
         }
+    }
+
+    private ConnectorTransformerDTO runner() {
+        ConnectorTransformerDTO runner = new ConnectorTransformerDTO();
+        runner.setAppImage(image());
+        return runner;
     }
 
     private String image() {

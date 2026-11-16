@@ -3,14 +3,7 @@ package bio.cosy.feddb.local.api.datamodeler;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.datamodler.ontology.OntologyNodeDTO;
 import bio.cosy.feddb.core.base.PagedResponse;
-import io.quarkus.security.Authenticated;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -20,7 +13,6 @@ import java.util.UUID;
 @Path(DataModelForwardService.PATH)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
 @Tag(name = "Data Model Forward", description = "Forwards selected data modeler queries through the local API")
 public interface DataModelForwardService {
     String PATH = "/datamodeler";

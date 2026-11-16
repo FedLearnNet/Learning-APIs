@@ -2,9 +2,7 @@ package bio.cosy.feddb.local.api.statistics.request;
 
 import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.local.api.cohort.permission.PermissionDTO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestDTO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestStatus;
-import io.quarkus.security.Authenticated;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestStatus;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -19,8 +17,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Path("/datastatistics/requests")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "DataStatistics", description = "Service for managing RequestDataStatistics")
 public interface RequestDataStatisticsService {
 
@@ -31,7 +27,7 @@ public interface RequestDataStatisticsService {
     PagedResponse<RequestDataStatisticsDTO> list(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("page_size") @DefaultValue("20") int size,
-            @QueryParam("status") FederatedLearningRequestStatus status,
+            @QueryParam("status") LearningRequestStatus status,
             @QueryParam("patient_id") Long patientId);
 
     @GET

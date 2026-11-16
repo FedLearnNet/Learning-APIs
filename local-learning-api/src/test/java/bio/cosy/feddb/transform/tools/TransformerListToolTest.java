@@ -43,7 +43,7 @@ class TransformerListToolTest {
         PagedResponse<StoreDTO> page = new PagedResponse<>();
         page.setResults(List.of(entry));
         page.setTotalCount(1);
-        when(storeService.list(any(), anyList(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean(), anyString(), anyInt(), anyInt()))
+        when(storeService.list(any(), anyList(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyString(), anyInt(), anyInt()))
                 .thenReturn(page);
         when(storeService.getAppsByVersions(List.of(7L))).thenReturn(List.of(icdGrouper()));
     }

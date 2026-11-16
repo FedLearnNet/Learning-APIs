@@ -1,0 +1,223 @@
+{
+  "name" : "one-hot-encoding",
+  "uniqueAppId" : "8c2e7e45-1b6a-4c6b-9b3e-1c8c2d6b7a10",
+  "slug" : "one-hot-encoding",
+  "type" : "PRE_PROCESSING",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://github.com/FedLearnNet/tool-one-hot-encoding",
+  "authors" : [ {
+    "keycloakId" : "admin"
+  } ],
+  "versions" : [ {
+    "appVersion" : "1.0.0",
+    "publishHash" : "126c354d331a07abd93bbb0d42c28dbcb42c1d14",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "shortDescription" : "Converts categorical table columns into one-hot encoded numeric features.",
+    "longDescription" : "# one-hot-encoding\n\nConverts categorical table columns into one-hot encoded numeric features.\n\n## Runtime inputs\n\nSupply input files according to the schemas in `app.yml`.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `features` | CSV | Input CSV table. Optional first column named 'id' (kept as identifier). Other columns can be numeric or categorical. |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `encoded` | CSV | One-hot encoded CSV (same rows; additional dummy columns). |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `columns` | `` | Comma-separated list of columns to one-hot encode. If empty, all object/category/bool columns are encoded. |\n| `drop_first` | `0` | If true, drop the first category per feature (k-1 dummies). |\n| `bool_to_number` | `1` | If true, convert boolean columns to numeric 0/1 instead of one-hot encoding them. |\n| `dummy_na` | `0` | If true, create a dedicated dummy column for NaN values in encoded columns. |\n| `handle_unknown` | `ignore` | How to handle unknown categories. Kept for consistency; pandas.get_dummies encodes categories present in the input. |\n| `prefix_sep` | `__` | Separator between column name and category in generated dummy column names. |\n| `keep_original` | `1` | If true, keep original categorical columns in addition to dummy columns. |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-one-hot-encoding .`.\n",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "default" : "",
+        "description" : "Comma-separated list of columns to one-hot encode. If empty, all object/category/bool columns are encoded.",
+        "name" : "columns",
+        "options" : [ ],
+        "type" : "STRING",
+        "variableName" : "columns",
+        "mode" : "BOTH"
+      }, {
+        "default" : "0",
+        "description" : "If true, drop the first category per feature (k-1 dummies).",
+        "name" : "drop_first",
+        "options" : [ ],
+        "type" : "BOOLEAN",
+        "variableName" : "drop_first",
+        "mode" : "BOTH"
+      }, {
+        "default" : "1",
+        "description" : "If true, convert boolean columns to numeric 0/1 instead of one-hot encoding them.",
+        "name" : "bool_to_number",
+        "options" : [ ],
+        "type" : "BOOLEAN",
+        "variableName" : "bool_to_number",
+        "mode" : "BOTH"
+      }, {
+        "default" : "0",
+        "description" : "If true, create a dedicated dummy column for NaN values in encoded columns.",
+        "name" : "dummy_na",
+        "options" : [ ],
+        "type" : "BOOLEAN",
+        "variableName" : "dummy_na",
+        "mode" : "BOTH"
+      }, {
+        "default" : "ignore",
+        "description" : "How to handle unknown categories. Kept for consistency; pandas.get_dummies encodes categories present in the input.",
+        "name" : "handle_unknown",
+        "options" : [ "ignore", "error" ],
+        "type" : "CATEGORICAL",
+        "variableName" : "handle_unknown",
+        "mode" : "BOTH"
+      }, {
+        "default" : "__",
+        "description" : "Separator between column name and category in generated dummy column names.",
+        "name" : "prefix_sep",
+        "options" : [ ],
+        "type" : "STRING",
+        "variableName" : "prefix_sep",
+        "mode" : "BOTH"
+      }, {
+        "default" : "1",
+        "description" : "If true, keep original categorical columns in addition to dummy columns.",
+        "name" : "keep_original",
+        "options" : [ ],
+        "type" : "BOOLEAN",
+        "variableName" : "keep_original",
+        "mode" : "BOTH"
+      } ],
+      "input" : [ {
+        "description" : "Input CSV table. Optional first column named 'id' (kept as identifier). Other columns can be numeric or categorical.",
+        "hasHeader" : true,
+        "name" : "features",
+        "required" : true,
+        "tabularSchema" : {
+          "allowOnlyNumbers" : false,
+          "prohibitedNulls" : false
+        },
+        "type" : "CSV",
+        "variableName" : "features",
+        "mode" : "BOTH"
+      } ],
+      "output" : [ {
+        "description" : "One-hot encoded CSV (same rows; additional dummy columns).",
+        "name" : "encoded",
+        "required" : false,
+        "type" : "CSV",
+        "variableName" : "encoded",
+        "mode" : "BOTH"
+      } ]
+    },
+    "publishInfo" : {
+      "commitHash" : "126c354d331a07abd93bbb0d42c28dbcb42c1d14",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-one-hot-encoding/blob/126c354d331a07abd93bbb0d42c28dbcb42c1d14/data/README.md", "https://github.com/FedLearnNet/tool-one-hot-encoding/blob/126c354d331a07abd93bbb0d42c28dbcb42c1d14/data/iris.csv", "https://github.com/FedLearnNet/tool-one-hot-encoding/blob/126c354d331a07abd93bbb0d42c28dbcb42c1d14/data/iris_encoded.csv" ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "localhost:5001/flnet/tools/one-hot-encoding:126c354d331a07abd93bbb0d42c28dbcb42c1d14",
+        "success" : false,
+        "summary" : {
+          "critical" : 0,
+          "high" : 1,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 1
+        },
+        "rawReport" : {
+          "lang-pkgs-python-pkg" : [ {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 8.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "ghsa" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              },
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:L"
+              },
+              "bitnami" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:2b6dee70431b6e642bcb551f9e6728b2929954536cff91eb38686afc59f4600b"
+            },
+            "PkgID" : "setuptools@70.3.0",
+            "Title" : "setuptools: Path Traversal Vulnerability in setuptools PackageIndex",
+            "CweIDs" : [ "CWE-22" ],
+            "Status" : "fixed",
+            "PkgName" : "setuptools",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-5rjg-fvgr-3xxf" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:13578", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/9/ALSA-2025-13578.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
+            "Fingerprint" : "sha256:98af7467eee98ee30b2aabdc24e0afe2b9bfdacdf12592109f6b00d978a2774a",
+            "FixedVersion" : "78.1.1",
+            "PkgIdentifier" : {
+              "UID" : "c5eccaa7d8e0c308",
+              "PURL" : "pkg:pypi/setuptools@70.3.0",
+              "BOMRef" : "pkg:pypi/setuptools@70.3.0"
+            },
+            "PublishedDate" : "2025-05-17T16:15:19.11Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 2,
+              "ghsa" : 3,
+              "azure" : 3,
+              "rocky" : 2,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "bitnami" : 3,
+              "oracle-oval" : 2
+            },
+            "VulnerabilityID" : "CVE-2025-47273",
+            "InstalledVersion" : "70.3.0",
+            "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
+          } ]
+        },
+        "startedAt" : "2026-11-10T09:41:17.195+00:00",
+        "finishedAt" : "2026-11-10T09:42:56.453+00:00"
+      },
+      "sastScanResult" : {
+        "tool" : "opengrep",
+        "version" : "1.33.1",
+        "target" : "/app/repo",
+        "success" : true,
+        "complete" : true,
+        "scannedFiles" : 3,
+        "summary" : {
+          "error" : 0,
+          "warning" : 0,
+          "info" : 0,
+          "unknown" : 0
+        },
+        "findings" : [ ],
+        "errors" : [ ],
+        "rawReport" : {
+          "paths" : {
+            "scanned" : [ "/app/repo/app.py", "/app/repo/example_test.py", "/app/repo/main.py" ]
+          },
+          "errors" : [ ],
+          "results" : [ ],
+          "version" : "1.33.1",
+          "skipped_rules" : [ ],
+          "interfile_languages_used" : [ ]
+        },
+        "startedAt" : "2026-11-10T09:40:57.881+00:00",
+        "finishedAt" : "2026-11-10T09:41:00.142+00:00"
+      },
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ],
+        "startedAt" : "2026-11-10T09:42:56.582+00:00",
+        "finishedAt" : "2026-11-10T09:43:12.553+00:00"
+      },
+      "imageName" : "one-hot-encoding:126c354d331a07abd93bbb0d42c28dbcb42c1d14"
+    },
+    "imageName" : "one-hot-encoding:126c354d331a07abd93bbb0d42c28dbcb42c1d14"
+  } ],
+  "icon" : "https://pandas.pydata.org/static/img/pandas_white.svg"
+}

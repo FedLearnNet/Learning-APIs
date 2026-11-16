@@ -3,6 +3,7 @@ package bio.cosy.feddb.core.api.socket;
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.base.BaseAuthDTO;
+import bio.cosy.feddb.core.execution.ExecutionMode;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -16,6 +17,8 @@ public class ProjectFederatedExperimentForLocalDTO extends BaseAuthDTO {
     private String name;
     private String description;
     private Boolean modelNeedToBePublic;
+    private Boolean platformIsCoordinator;
+    private ExecutionMode mode = ExecutionMode.FEDERATED;
 
     private ProjectDetailDTO projectVersion;
     private WorkflowDTO workflow;

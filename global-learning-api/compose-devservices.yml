@@ -1,4 +1,54 @@
 services:
+  datamodeler-api:
+    image: ghcr.io/fedlearnnet/learning-apis/datamodeler-api:staging
+    profiles:
+      - dev
+    ports:
+      - "127.0.0.1:8086:8080"
+    environment:
+      QUARKUS_NEO4J_URI: bolt://datamodeler-db:7687
+      QUARKUS_NEO4J_AUTHENTICATION_USERNAME: neo4j
+      QUARKUS_NEO4J_AUTHENTICATION_PASSWORD: password
+      QUARKUS_OIDC_AUTH_SERVER_URL: https://staging.featurecloud.ai/feddb/global-auth/realms/FederatedDB_Global
+      QUARKUS_OIDC_TOKEN_ISSUER: https://staging.featurecloud.ai/feddb/global-auth/realms/FederatedDB_Global
+      QUARKUS_OIDC_TOKEN_AUDIENCE: ""
+      UMLS_AUTO_IMPORT_ENABLED: false
+      EMBEDDING_ENABLED: false
+      FLNET_ONTOLOGY_IMPORTS_ENABLED: true
+      FLNET_DATATYPE_IMPORTS_ENABLED: true
+      FLNET_SCHEMA_IMPORTS_ENABLED: true
+    volumes:
+      - ../datamodeler-api/src/main/resources/datamodeler-imports:/data/datamodeler-imports:ro
+    depends_on:
+      datamodeler-db:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-fsS", "http://localhost:8080/q/health/ready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    labels:
+      io.quarkus.devservices.compose.wait_for.ports.timeout: "180s"
+    networks:
+      - global-learning-network
+
+  datamodeler-db:
+    image: neo4j:2026.09.0
+    profiles:
+      - dev
+    environment:
+      NEO4J_AUTH: neo4j/password
+    volumes:
+      - datamodeler-db:/data
+    healthcheck:
+      test: [ "CMD-SHELL", "cypher-shell -u neo4j -p password 'RETURN 1' || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - global-learning-network
+
   global-learning-api-db:
     image: pgvector/pgvector:pg18
     environment:
@@ -37,6 +87,7 @@ services:
       QUARKUS_LOG_CONSOLE_JSON_ENABLED: false
       CONTAINER_HOST_OVERRIDE: host.docker.internal
       CONTAINER_NETWORK_NAMES: global-learning-network
+      CONTAINER_NETWORK_ALWAYS_BRIDGE: true
       CONTAINER_NETWORK_CONTROLLER: global-learning-controller:8001
       CONTAINER_FILE_TRANSFER_VOLUME_NAME: global-orch-data
       QUARKUS_LOG_CATEGORY_"bio.cosy.featurecloud"_LEVEL: DEBUG
@@ -46,7 +97,8 @@ services:
       ORCH_DOCKER__PRIVATE__REGISTRY_API_URL: http://registry:5000
       ORCH_DOCKER__PRIVATE__REGISTRY_USERNAME: ""
       ORCH_DOCKER__PRIVATE__REGISTRY_PASSWORD: ""
-      PIPELINE_IMAGE_PREFIX: localhost:5001/flnet/tool-build-pipeline
+      PIPELINE_IMAGE_PREFIX: ghcr.io/fedlearnnet/tool-build-pipeline/pipeline
+      PIPELINE_IMAGE_TAG: staging
       PIPELINE_DOCKER_REGISTRY: localhost:5001
       PIPELINE_DOCKER_GROUP: flnet/tools
       PIPELINE_DOCKER_LOGIN: false
@@ -62,22 +114,22 @@ services:
       registry:
         condition: service_healthy
     labels:
-      # Change to `true` to disable waiting for ports
-      io.quarkus.devservices.compose.wait_for.ports.disable: true
-      # Or set a custom timeout for port waiting
-      #io.quarkus.devservices.compose.wait_for.ports.timeout: "30s"
+      # Wait for the port so tool imports on startup can reach orch
+      #io.quarkus.devservices.compose.wait_for.ports.disable: true
+      io.quarkus.devservices.compose.wait_for.ports.timeout: "120s"
     networks:
       - global-learning-network
   controller:
     image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller:staging
-    container_name: global-learning-controller
+    container_name: ${CONTROLLER_NAME:-global-learning-controller}
     ports:
       - '8192:8000'
     profiles:
       - dev
     environment:
-      RELAY_ADDRESS: relay
-      RELAY_API_PORT: 9140
+      RELAY_ADDRESS_TCP: relay:9141
+      RELAY_TLS_MODE: "off"
+      RELAY_MODE: "dev"
       WORKFLOW_LEARNING_API_WS_ADDRESS: "ws://host.docker.internal:8080"
       LOG_LEVEL_STDOUT: "DEBUG"
     labels:
@@ -90,14 +142,15 @@ services:
 
   controller-test:
     image: ghcr.io/fedlearnnet/federated-learning-communication-api/controller:staging
-    container_name: global-learning-controller
+    container_name: ${CONTROLLER_NAME:-global-learning-controller}
     ports:
       - '8192:8000'
     profiles:
       - test
     environment:
-      RELAY_ADDRESS: relay
-      RELAY_API_PORT: 9140
+      RELAY_ADDRESS_TCP: relay:9141
+      RELAY_TLS_MODE: "off"
+      RELAY_MODE: "dev"
       WORKFLOW_LEARNING_API_WS_ADDRESS: "ws://host.docker.internal:8083"
       LOG_LEVEL_STDOUT: "DEBUG"
     labels:
@@ -137,6 +190,7 @@ volumes:
   global-learning-api-db-volume:
   global-orch-data:
     name: "global-orch-data"
+  datamodeler-db:
   registry-data:
 
 networks:

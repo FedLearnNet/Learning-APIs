@@ -1,7 +1,6 @@
 package de.unihamburg.daibetes.api.store.rating;
 
 import bio.cosy.feddb.core.api.store.StoreRatingDTO;
-import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -16,8 +15,6 @@ import java.util.List;
 @Path("store/ratings")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "Store", description = "Service for managing store Rating")
 public interface StoreRatingRatingService {
 

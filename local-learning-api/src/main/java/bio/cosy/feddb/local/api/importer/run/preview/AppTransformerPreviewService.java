@@ -1,6 +1,5 @@
 package bio.cosy.feddb.local.api.importer.run.preview;
 
-import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
@@ -21,7 +20,6 @@ import org.jboss.resteasy.reactive.RestStreamElementType;
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "App Based Transformer",
         description = "Runs one app-based transformation step over the preview sample and streams its progress")
-@Authenticated
 public interface AppTransformerPreviewService {
 
     @POST

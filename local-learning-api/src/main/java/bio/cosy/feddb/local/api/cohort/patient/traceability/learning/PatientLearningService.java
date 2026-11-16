@@ -1,7 +1,6 @@
 package bio.cosy.feddb.local.api.cohort.patient.traceability.learning;
 
 import bio.cosy.feddb.core.base.PagedResponse;
-import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -14,8 +13,6 @@ import java.util.List;
 @Path("/patients/learning")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
-//@RolesAllowed("admin")
 @Tag(name = "PatientService", description = "Service for managing Patient Services")
 public interface PatientLearningService {
 

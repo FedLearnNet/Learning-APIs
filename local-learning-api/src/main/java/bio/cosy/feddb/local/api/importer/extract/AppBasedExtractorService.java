@@ -1,6 +1,5 @@
 package bio.cosy.feddb.local.api.importer.extract;
 
-import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
@@ -21,7 +20,6 @@ import org.jboss.resteasy.reactive.RestStreamElementType;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "App Based Extractor", description = "Triggers an app based extractor and streams updates as Server-Sent Events")
-@Authenticated
 public interface AppBasedExtractorService {
 
     @POST

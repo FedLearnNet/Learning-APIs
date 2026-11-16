@@ -11,4 +11,5 @@ public class UserInformationDTO {
     private Long openTrainingRequests;
     private Long openStatisticsRequests;
     private Long openMetricsRequests;
+    private Long openOutputRequests;
 }

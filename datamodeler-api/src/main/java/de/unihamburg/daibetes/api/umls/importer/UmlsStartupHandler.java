@@ -36,8 +36,11 @@ public class UmlsStartupHandler {
      * If no nodes exist and auto-import is enabled, starts UMLS import
      * followed by automatic embedding — composed as a non-blocking reactive pipeline.
      * Started by {@link de.unihamburg.daibetes.Startup}.
+     *
+     * @param force skip the check for existing ontology nodes, for callers that checked the
+     *              database themselves (Startup does so before the JSON imports add nodes)
      */
-    public Uni<Void> importOnStartup() {
+    public Uni<Void> importOnStartup(boolean force) {
         if (!umlsConfig.autoImport().enabled()) {
             Log.info("UMLS auto-import disabled");
             return Uni.createFrom().voidItem();
@@ -61,13 +64,14 @@ public class UmlsStartupHandler {
 
         Log.info("Scheduling UMLS startup pipeline...");
 
-        return ontologyDAO.hasNodes()
+        Uni<Boolean> hasNodesCheck = force ? Uni.createFrom().item(false) : ontologyDAO.hasNodes();
+        return hasNodesCheck
                 .chain(hasNodes -> {
                     if (hasNodes) {
                         Log.info("Ontology nodes found in database, skipping auto-import");
                         return Uni.createFrom().<Void>nullItem();
                     }
-                    Log.infof("No ontology nodes found, starting UMLS import with files: %s, %s", mrconso, mrrel);
+                    Log.infof("Starting UMLS import with files: %s, %s", mrconso, mrrel);
                     return umlsImportBO.importUmls(mrconso, mrrel)
                             .invoke(summary -> Log.infof("UMLS import completed: %s", summary))
                             .chain(ignored -> {

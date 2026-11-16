@@ -8,11 +8,9 @@ import bio.cosy.feddb.core.api.model.workflow.DataAnalysisFileDTO;
 import de.unihamburg.daibetes.agent.anlysis.bots.ResultAnalyzer;
 import de.unihamburg.daibetes.agent.anlysis.pojo.FileResultAnalyzer;
 import de.unihamburg.daibetes.agent.anlysis.pojo.ResultAnalyzerHyperParam;
-import de.unihamburg.daibetes.api.analysis.DataAnalysisBO;
 import de.unihamburg.daibetes.api.analysis.file.DataAnalysisFileBO;
 import de.unihamburg.daibetes.api.analysis.file.DataAnalysisFileEntity;
-import de.unihamburg.daibetes.api.analysis.prediction.DataAnalysisPredictionBO;
-import de.unihamburg.daibetes.api.analysis.worklfow.step.DataAnalysisWorkflowRunStepBO;
+import de.unihamburg.daibetes.api.analysis.run.DataAnalysisRunResultBO;
 import de.unihamburg.daibetes.api.app.FederatedAppBO;
 import de.unihamburg.daibetes.api.file.FileBO;
 import dev.langchain4j.data.image.Image;
@@ -32,19 +30,13 @@ import java.util.Optional;
 public class DataAnalysisLLMBO {
 
     @Inject
-    DataAnalysisBO bo;
-
-    @Inject
     ResultAnalyzer resultAnalyzer;
 
     @Inject
     DataAnalysisFileBO modelWorkflowFileBO;
 
     @Inject
-    DataAnalysisPredictionBO dataAnalysisPredictionBO;
-
-    @Inject
-    DataAnalysisWorkflowRunStepBO dataAnalysisWorkflowRunStepBO;
+    DataAnalysisRunResultBO runResultBO;
 
     @Inject
     FederatedAppBO appBO;
@@ -58,11 +50,8 @@ public class DataAnalysisLLMBO {
         FileContentDTO fileContent = modelWorkflowFileBO.getFileContent(fileEntity);
 
         DataAnalysisPredictionDTO prediction = null;
-        if (fileEntity.getPrediction() != null) {
-            prediction = dataAnalysisPredictionBO.getById(fileEntity.getPrediction().getId());
-        }
-        if (fileEntity.getWorkflowStep() != null) {
-            prediction = dataAnalysisWorkflowRunStepBO.getResult(fileEntity.getWorkflowStep().getId());
+        if (fileEntity.getAttempt() != null) {
+            prediction = runResultBO.resultOfAttemptTransactional(fileEntity.getAttempt().getId()).orElse(null);
         }
         if (prediction == null || prediction.getAppVersionId() == null) {
             Log.infof("No associated app found for file %d in data analysis %d, performing raw file analysis", fileId, id);
@@ -128,7 +117,6 @@ public class DataAnalysisLLMBO {
             }
             return new ResultAnalyzerHyperParam(h.getName(), value, h.getDescription());
         }).toList();
-
     }
 
     private List<ResultAnalyzerHyperParam> getInputs(FederatedAppDetailDTO app,
@@ -154,6 +142,5 @@ public class DataAnalysisLLMBO {
             }
             return new ResultAnalyzerHyperParam(h.getName(), value, h.getDescription());
         }).toList();
-
     }
 }

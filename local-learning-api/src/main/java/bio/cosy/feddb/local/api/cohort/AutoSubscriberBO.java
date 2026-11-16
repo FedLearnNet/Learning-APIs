@@ -13,21 +13,53 @@ import bio.cosy.feddb.local.api.importer.run.ConnectorRunBO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.runtime.TransactionConfiguration;
+import io.quarkus.oidc.client.OidcClientException;
+import io.quarkus.scheduler.Scheduled;
+import io.quarkus.scheduler.Scheduler;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.WebApplicationException;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
 public class AutoSubscriberBO {
+
+    // When the platform and the client start together the global schema may only appear after a
+    // while, so groups whose schema is not available yet are retried on a timer.
+    private static final int SCHEMA_RETRY_MAX_ATTEMPTS = 20;
+    private static final int SCHEMA_RETRY_INTERVAL_SECONDS = 15;
+    private static final String SCHEMA_RETRY_JOB = "auto-subscribe-schema-retry";
+
+    private record PendingGroup(FLNetClientConfig.AutoSubscribeGroupConfig config, int attempts) {
+    }
+
+    /**
+     * Subscribing to the global schema failed because it does not exist (yet) or the global
+     * platform is not reachable; the group is worth retrying.
+     */
+    public static class SchemaNotAvailableException extends RuntimeException {
+        SchemaNotAvailableException(String globalSchemaId, Throwable cause) {
+            super("Schema " + globalSchemaId + " not available: " + cause.getMessage(), cause);
+        }
+    }
+
+    private final Map<String, PendingGroup> pendingGroups = new ConcurrentHashMap<>();
+
+    @Inject
+    Scheduler scheduler;
 
     @Inject
     CohortBO cohortBO;
@@ -68,6 +100,10 @@ public class AutoSubscriberBO {
         // transactions insert the same ontology.global_id and deadlock in PostgreSQL,
         // failing whichever group loses the race. Sequential subscription lets the
         // second group find what the first one created.
+        //
+        // Groups whose schema is not available on the global platform yet are retried by a
+        // scheduled job, which is only registered after this pass so that it keeps the
+        // subscriptions sequential as well. The returned Uni completes after the first pass.
         return Uni.createFrom().emitter(emitter ->
                 Infrastructure.getDefaultExecutor().execute(() -> {
                     boolean allSucceeded = true;
@@ -75,10 +111,12 @@ public class AutoSubscriberBO {
                         try {
                             allSucceeded &= runSubscribe(entry.getKey(), entry.getValue());
                         } catch (Throwable throwable) {
-                            Log.errorf("AutoSubscribe '%s' failed: %s", entry.getKey(), throwable.getMessage(),
-                                    throwable);
+                            Log.errorf(throwable, "AutoSubscribe '%s' failed: %s", entry.getKey(), throwable.getMessage());
                             allSucceeded = false;
                         }
+                    }
+                    if (!pendingGroups.isEmpty()) {
+                        scheduleSchemaRetry();
                     }
                     emitter.complete(allSucceeded);
                 }));
@@ -90,10 +128,80 @@ public class AutoSubscriberBO {
                     try {
                         emitter.complete(runSubscribe(name, groupConfig));
                     } catch (Throwable throwable) {
-                        Log.errorf("AutoSubscribe '%s' failed: %s", name, throwable.getMessage(), throwable);
+                        Log.errorf(throwable, "AutoSubscribe '%s' failed: %s", name, throwable.getMessage());
                         emitter.complete(false);
                     }
                 }));
+    }
+
+    private synchronized void scheduleSchemaRetry() {
+        if (scheduler.getScheduledJob(SCHEMA_RETRY_JOB) != null) {
+            return;
+        }
+        scheduler.newJob(SCHEMA_RETRY_JOB)
+                .setInterval(SCHEMA_RETRY_INTERVAL_SECONDS + "s")
+                .setDelayed(SCHEMA_RETRY_INTERVAL_SECONDS + "s")
+                .setConcurrentExecution(Scheduled.ConcurrentExecution.SKIP)
+                .setTask(executionContext -> retryPendingGroups())
+                .schedule();
+    }
+
+    /**
+     * Retries the pending groups one after another; SKIP on the job keeps ticks from overlapping.
+     */
+    void retryPendingGroups() {
+        for (Map.Entry<String, PendingGroup> entry : Map.copyOf(pendingGroups).entrySet()) {
+            String name = entry.getKey();
+            PendingGroup pending = entry.getValue();
+            int attempt = pending.attempts() + 1;
+            try {
+                runSubscribe(name, pending.config());
+                pendingGroups.remove(name);
+            } catch (Throwable throwable) {
+                if (!(throwable instanceof SchemaNotAvailableException)) {
+                    Log.errorf("AutoSubscribe '%s' failed: %s", name, throwable.getMessage(), throwable);
+                    pendingGroups.remove(name);
+                } else if (attempt >= SCHEMA_RETRY_MAX_ATTEMPTS) {
+                    Log.errorf("AutoSubscribe '%s': schema %s still not available after %d retries, giving up",
+                            name, pending.config().globalSchemaId(), attempt);
+                    pendingGroups.remove(name);
+                } else {
+                    Log.infof("AutoSubscribe '%s': schema %s not available yet, retry %d/%d",
+                            name, pending.config().globalSchemaId(), attempt, SCHEMA_RETRY_MAX_ATTEMPTS);
+                    pendingGroups.put(name, new PendingGroup(pending.config(), attempt));
+                }
+            }
+        }
+        unscheduleSchemaRetryIfDone();
+    }
+
+    private synchronized void unscheduleSchemaRetryIfDone() {
+        if (pendingGroups.isEmpty()) {
+            scheduler.unscheduleJob(SCHEMA_RETRY_JOB);
+            Log.info("AutoSubscribe: no groups left waiting for their schema, stopped retrying");
+        }
+    }
+
+    /**
+     * The global platform answers 404 until the schema exists, and is unreachable or answers 5xx
+     * while it is still starting; its Keycloak may not accept the global login yet either
+     * (OidcClientException). Anything else is a real failure and is not retried.
+     */
+    private static boolean isSchemaNotYetAvailable(Throwable throwable) {
+        for (Throwable t = throwable; t != null; t = t.getCause()) {
+            if (t instanceof NotFoundException || t instanceof ProcessingException
+                    || t instanceof OidcClientException || t instanceof ConnectException) {
+                return true;
+            }
+            if (t instanceof WebApplicationException wae && wae.getResponse() != null
+                    && wae.getResponse().getStatus() >= 500) {
+                return true;
+            }
+            if (t.getCause() == t) {
+                break;
+            }
+        }
+        return false;
     }
 
     @ActivateRequestContext
@@ -113,7 +221,15 @@ public class AutoSubscriberBO {
     public ConnectorDTO prepareSubscription(String name,
                                             FLNetClientConfig.AutoSubscribeGroupConfig groupConfig,
                                             String keycloakId) {
-        Long cohortId = ensureCohort(name, groupConfig, keycloakId);
+        Long cohortId;
+        try {
+            cohortId = ensureCohort(name, groupConfig, keycloakId);
+        } catch (RuntimeException e) {
+            if (isSchemaNotYetAvailable(e)) {
+                throw new SchemaNotAvailableException(groupConfig.globalSchemaId(), e);
+            }
+            throw e;
+        }
 
         return groupConfig.connectorPath()
                 .map(connectorPath -> ensureConnector(name, groupConfig, cohortId, connectorPath, keycloakId))
@@ -207,30 +323,34 @@ public class AutoSubscriberBO {
         if (connector != null) {
             Log.infof("AutoSubscribe '%s': reusing existing connector %d for cohort %d", name, connector.getId(),
                     cohortId);
-            return connector;
+        } else {
+            connector = createConnector(name, cohortId, connectorPath, keycloakId);
         }
-
-        connector = createConnector(name, groupConfig, cohortId, connectorPath, keycloakId);
         if (connector == null) {
-            return null;
+            throw new IllegalStateException("AutoSubscribe '" + name + "': connector import returned no connector");
         }
+        attachConfiguredFile(name, groupConfig, cohortId, connector, keycloakId);
         Log.infof("AutoSubscribe '%s': using connector %d (%d steps) for cohort %d ", name, connector.getId(),
-                connector.getTransformer().size(), cohortId);
+                connector.getTransformer() == null ? 0 : connector.getTransformer().size(), cohortId);
         return connector;
     }
 
     private ConnectorDTO createConnector(String name,
-                                         FLNetClientConfig.AutoSubscribeGroupConfig groupConfig,
                                          Long cohortId,
                                          String connectorPath,
                                          String keycloakId) {
         Log.infof("AutoSubscribe '%s': loading connector from %s", name, connectorPath);
-        ConnectorDTO connector = connectorBO.importFromRemoteUrl(connectorPath, cohortId, keycloakId, name);
-        if (connector == null) {
-            Log.warnf("AutoSubscribe '%s': connector import returned no connector", name);
-            return null;
-        }
+        return connectorBO.importFromRemoteUrl(connectorPath, cohortId, keycloakId, name);
+    }
 
+    private void attachConfiguredFile(String name,
+                                      FLNetClientConfig.AutoSubscribeGroupConfig groupConfig,
+                                      Long cohortId,
+                                      ConnectorDTO connector,
+                                      String keycloakId) {
+        if (connector.getInputConfig() instanceof FileUploadSettingsDTO settings && settings.getFileId() != null) {
+            return;
+        }
         groupConfig.etlDataPath().ifPresent(etlDataPath -> {
             if (etlDataPath.isBlank()) {
                 return;
@@ -240,16 +360,14 @@ public class AutoSubscriberBO {
                         name, etlDataPath);
                 return;
             }
-            File etlFile = null;
+            File etlFile;
             try {
                 etlFile = ResourceLoader.loadAsFile(etlDataPath);
             } catch (IOException e) {
-                Log.warnf("AutoSubscribe '%s': failed to load etl-data-path %s: %s", name, etlDataPath, e.getMessage());
-                return;
+                throw new IllegalStateException("AutoSubscribe '" + name + "': failed to load etl-data-path " + etlDataPath, e);
             }
             if (!etlFile.exists()) {
-                Log.warnf("AutoSubscribe '%s': etl-data-path %s does not exist", name, etlDataPath);
-                return;
+                throw new IllegalStateException("AutoSubscribe '" + name + "': etl-data-path does not exist: " + etlDataPath);
             }
             ConnectorFilesDTO uploaded = uploadBO.uploadFileForCohort(
                     cohortId,
@@ -263,7 +381,5 @@ public class AutoSubscriberBO {
             Log.infof("AutoSubscribe '%s': attached file %d to connector %d",
                     name, uploaded.getId(), connector.getId());
         });
-
-        return connector;
     }
 }

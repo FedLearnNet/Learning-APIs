@@ -5,7 +5,7 @@ import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerEntity;
 import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerStatus;
 import bio.cosy.feddb.local.api.pipeline.PipelineBO;
 import bio.cosy.feddb.local.api.pipeline.PipelineDTO;
-import bio.cosy.feddb.local.services.orch.OrchDockerServiceClient;
+import bio.cosy.feddb.core.services.orch.clients.DockerServiceClient;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -22,7 +22,7 @@ public class CodeTransformerImageSaveBO {
 
     @Inject
     @RestClient
-    OrchDockerServiceClient dockerClient;
+    DockerServiceClient dockerClient;
 
     @Inject
     ConnectorTransformerAO connectorTransformerAO;

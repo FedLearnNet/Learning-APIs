@@ -57,7 +57,7 @@ public class StoreBO {
 
     public PagedResponse<StoreDTO> list(String keycloakId, String search, List<String> appTypes, List<String> tags,
                                         Integer minRating, boolean showUncertified, boolean hideWorkflow,
-                                        boolean onlyTrainedAnalysis,
+                                        boolean onlyTrainedAnalysis, boolean onlyWithImage,
                                         String sort, Page page) {
         List<StoreDTO> allItems = list(keycloakId, hideWorkflow);
         List<StoreDTO> filteredItems = allItems.stream()
@@ -66,6 +66,7 @@ public class StoreBO {
                     ModelDTO model = e.getModel();
                     WorkflowDTO workflow = e.getWorkflow();
                     if (!filterOnlyTrainedAnalysis(app, model, workflow, onlyTrainedAnalysis)) return false;
+                    if (!filterOnlyWithImage(app, model, workflow, onlyWithImage)) return false;
                     if (!filterSearch(app, model, workflow, search)) return false;
                     if (!filterAppType(app, model, workflow, appTypes)) return false;
                     if (!filterPrivacyTechniques(app, model, workflow, tags)) return false;
@@ -125,11 +126,24 @@ public class StoreBO {
             return workflow.getNodes().stream().anyMatch(n -> {
                 FederatedAppDTO appNode = n.getAppDetail();
                 ModelDTO modelNode = n.getModelDetail();
-                return filterAppType(appNode, modelNode, null, appTypes);
+                return filterAppType(appNode, modelNode, null, filter);
             });
+        }
+        if (app.getType() == null) {
+            return false;
         }
         String appType = app.getType().toString().toLowerCase();
         return filter.contains(appType);
+    }
+
+    public boolean filterOnlyWithImage(FederatedAppDTO app, ModelDTO model, WorkflowDTO workflow, boolean filter) {
+        if (!filter || model != null) {
+            return true;
+        }
+        if (workflow != null) {
+            return workflow.getNodes().stream().allMatch(n -> StringUtils.isNotBlank(n.getImageName()));
+        }
+        return app == null || app.hasImage();
     }
 
     public boolean filterOnlyTrainedAnalysis(FederatedAppDTO app, ModelDTO model, WorkflowDTO workflow, boolean filter) {
@@ -145,7 +159,7 @@ public class StoreBO {
         if (app == null) {
             return true;
         }
-        return app.getType().equals(FederatedAppType.ANALYSIS);
+        return FederatedAppType.ANALYSIS.equals(app.getType());
     }
 
     public boolean filterMinRating(FederatedAppDTO app, WorkflowDTO workflow, Integer minRating) {

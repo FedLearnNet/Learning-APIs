@@ -22,6 +22,10 @@ public class ToolApiKeyService {
     private final Map<Target, String> activeKeys = new HashMap<>();
 
     public synchronized String issue(Scope scope, Long runId) {
+        return issue(scope, runId, scope == Scope.PIPELINE_RUN ? null : runId);
+    }
+
+    public synchronized String issue(Scope scope, Long runId, Long executionId) {
         if (scope == null || runId == null) {
             throw new IllegalArgumentException("Tool API-key scope and run ID are required");
         }
@@ -30,11 +34,8 @@ public class ToolApiKeyService {
         String apiKey = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
         String fingerprint = fingerprint(apiKey);
         Target target = new Target(scope, runId);
-        String previousFingerprint = activeKeys.put(target, fingerprint);
-        if (previousFingerprint != null) {
-            grants.remove(previousFingerprint);
-        }
-        grants.put(fingerprint, new Grant(target));
+        revokeFingerprint(activeKeys.put(target, fingerprint));
+        grants.put(fingerprint, new Grant(target, executionId));
         return apiKey;
     }
 
@@ -58,11 +59,7 @@ public class ToolApiKeyService {
 
     public synchronized void revoke(String apiKey) {
         if (apiKey != null && !apiKey.isBlank()) {
-            String fingerprint = fingerprint(apiKey);
-            Grant grant = grants.remove(fingerprint);
-            if (grant != null) {
-                activeKeys.remove(grant.target(), fingerprint);
-            }
+            revokeFingerprint(fingerprint(apiKey));
         }
     }
 
@@ -70,10 +67,28 @@ public class ToolApiKeyService {
         if (scope == null || runId == null) {
             return;
         }
-        Target target = new Target(scope, runId);
-        String fingerprint = activeKeys.remove(target);
-        if (fingerprint != null) {
-            grants.remove(fingerprint);
+        revokeFingerprint(activeKeys.get(new Target(scope, runId)));
+    }
+
+    public synchronized void revokeExecution(Long executionId) {
+        if (executionId == null) {
+            return;
+        }
+        var owned = grants.entrySet().stream()
+                .filter(entry -> executionId.equals(entry.getValue().executionId()))
+                .map(Map.Entry::getKey).toList();
+        owned.forEach(this::revokeFingerprint);
+    }
+
+    public synchronized boolean isExecutionOwned(Scope scope, Long runId) {
+        Grant grant = grants.get(activeKeys.get(new Target(scope, runId)));
+        return grant != null && grant.executionId() != null;
+    }
+
+    private void revokeFingerprint(String fingerprint) {
+        Grant grant = grants.remove(fingerprint);
+        if (grant != null) {
+            activeKeys.remove(grant.target(), fingerprint);
         }
     }
 

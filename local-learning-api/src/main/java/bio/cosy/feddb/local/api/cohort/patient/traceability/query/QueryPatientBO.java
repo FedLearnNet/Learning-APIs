@@ -20,10 +20,12 @@ public class QueryPatientBO extends BaseBo<QueryPatientDTO, QueryPatientEntity, 
     QueryAO queryAO;
 
     public PagedResponse<QueryPatientDTO> list(
-            Page page, Long internalCohortId, Long internalPatientId, Long queryId) {
-
+            Page page, Long internalCohortId, Long internalPatientId, Long queryId, Collection<Long> cohortIds) {
+        if (cohortIds.isEmpty()) {
+            return new PagedResponse<>(List.of(), page.index, page.size);
+        }
         List<QueryPatientEntity> foundEntity = ao.list(page, internalCohortId,
-                internalPatientId, queryId);
+                internalPatientId, queryId, cohortIds);
         List<QueryPatientDTO> found = mapper.entitiesToDtos(foundEntity);
         return new PagedResponse<>(found, page.index, page.size);
     }

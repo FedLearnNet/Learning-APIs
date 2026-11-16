@@ -1,8 +1,8 @@
 package bio.cosy.feddb.local.api.learning.request.metrics;
 
+import bio.cosy.feddb.core.api.socket.RunResultRequestType;
 import bio.cosy.feddb.core.base.PagedResponse;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestStatus;
-import io.quarkus.security.Authenticated;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestStatus;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -14,7 +14,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Path("/metrics/requests")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
 @Tag(name = "RunMetricsRequest", description = "Service for managing local run-metrics requests from the global coordinator")
 public interface RequestRunMetricsService {
 
@@ -24,7 +23,8 @@ public interface RequestRunMetricsService {
     PagedResponse<RequestRunMetricsDTO> list(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("page_size") @DefaultValue("20") int size,
-            @QueryParam("status") FederatedLearningRequestStatus status);
+            @QueryParam("status") LearningRequestStatus status,
+            @QueryParam("type") @DefaultValue("METRICS") RunResultRequestType type);
 
     @GET
     @Path("/{id}")

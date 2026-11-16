@@ -1,7 +1,6 @@
 package bio.cosy.feddb.local.api.importer.load;
 
 import bio.cosy.feddb.core.api.datamodler.schema.SchemaNodeType;
-import bio.cosy.feddb.local.api.cohort.CohortBO;
 import bio.cosy.feddb.local.api.cohort.CohortEntity;
 import bio.cosy.feddb.local.api.cohort.patient.PatientAO;
 import bio.cosy.feddb.local.api.cohort.patient.PatientEntity;
@@ -29,8 +28,6 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ConnectorLoadPatientBO {
-    @Inject
-    CohortBO cohortBO;
 
     @Inject
     SchemaNodeAO schemaNodeAO;
@@ -229,7 +226,7 @@ public class ConnectorLoadPatientBO {
      * dry run reports how many patients would be created and how many updated.
      */
     @Transactional
-    public void dryRunPatient(
+    public void dryRunPatientTransactional(
             @Nonnull ConnectorLoadPatient patient,
             @Nonnull ConnectorRunDTO run) {
         updateStatistics(run, 1, BulkImportStatisticsTypeEnum.RECEIVED_ENTITIES);

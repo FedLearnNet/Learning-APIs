@@ -5,14 +5,12 @@ import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 import io.smallrye.config.WithName;
 
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
 //Intended for all custom properties with a "flnet" prefix
-
-//@StaticInitSafe
+//BFF is here: bio.cosy.feddb.core.security.bff.BffConfig
 @ConfigMapping(prefix = "flnet")
 public interface FLNetConfig {
 
@@ -29,19 +27,19 @@ public interface FLNetConfig {
     @WithName("workflow-imports")
     ToolImportConfig workflowImports();
 
+    // Tool, workflow and store imports run after startup instead of delaying it
+    @WithName("startup.background-imports")
+    @WithDefault("true")
+    boolean backgroundStartupImports();
+
     @WithName("create-vector-extension-on-startup")
     @WithDefault("true")
     boolean createVectorExtensionOnStartup();
 
     Ingestor ingestor();
 
-    GitLabConfig gitlab();
-
     @WithName("federated-learning")
     FederatedLearningConfig federatedLearning();
-
-    @WithName("feddb-client")
-    FedDBClientConfig feddbClient();
 
     @WithName("pipeline.builder.image")
     Optional<String> pipelineBuilderImage();
@@ -54,6 +52,41 @@ public interface FLNetConfig {
     Long auditMinAcceptanceAmount();
 
     DataAnalysisConfig dataAnalysis();
+
+    @WithName("test-engine")
+    TestEngineConfig testEngine();
+
+    interface TestEngineConfig {
+        // A container that neither connected nor, as a self-test, exited by then fails
+        @WithDefault("10M")
+        Duration startTimeout();
+
+        FederatedTestConfig federated();
+    }
+
+    interface FederatedTestConfig {
+        // Federated test runs use the platform's relay and controller instead of simulating them in the engine
+        @WithDefault("true")
+        boolean useDockerizedController();
+
+        @WithDefault("http://relay:9140/")
+        String relayUrl();
+
+        @WithDefault("http://controller:8000/")
+        String controllerOrchUrl();
+
+        @WithDefault("http://controller:8001/")
+        String controllerCommUrl();
+    }
+
+    RuntimeConfig runtime();
+
+    interface RuntimeConfig {
+        // Shows the platform's own share of a run's time next to the app's.
+        @WithName("overhead.enabled")
+        @WithDefault("false")
+        boolean overheadEnabled();
+    }
 
     interface DataAnalysisConfig {
 
@@ -109,6 +142,9 @@ public interface FLNetConfig {
 
     interface ToolImportConfig extends FLNetConfigPaths {
 
+        @WithDefault("admin")
+        String owner();
+
         @WithDefault("false")
         boolean createUnpublishedVersion();
 
@@ -117,6 +153,24 @@ public interface FLNetConfig {
 
         @WithDefault("IF_NOT_EXISTS_IN_REGISTRY")
         ToolImportBuildingOnStart buildOnImport();
+
+        @WithDefault("true")
+        @WithName("remove-image-on-build-failure")
+        boolean removeImageOnBuildFailure();
+
+        // Only tools with these names or slugs are built on import, all others are imported without a build
+        @WithName("build-only")
+        Optional<List<String>> buildOnly();
+
+        // Imported tool builds running at the same time
+        @WithDefault("3")
+        @WithName("build-parallelism")
+        int buildParallelism();
+
+        // Writes the build information of a successful import build back into the tool JSON
+        @WithDefault("false")
+        @WithName("replace-build-info")
+        boolean replaceBuildInfo();
 
     }
 
@@ -130,37 +184,21 @@ public interface FLNetConfig {
 
     }
 
-    interface GitLabConfig {
-        @WithName("issue.token")
-        String issueToken();
-
-        @WithName("issue.project-id")
-        @WithDefault("9")
-        int issueProjectId();
-    }
-
     interface FederatedLearningConfig {
 
         @WithDefault("3")
         @WithName("participants.minamount")
         int participantsMinAmount();
 
-        @WithDefault("0")
+        @WithDefault("100")
         @WithName("participants.mindatacount")
         int participantsMinDataCount();
+
+        @WithDefault("false")
+        @WithName("platform-aggregator.enabled")
+        boolean platformAggregatorEnabled();
     }
 
-    interface FedDBClientConfig {
-
-        AuthConfig auth();
-    }
-
-    interface AuthConfig {
-
-        @WithName("enable")
-        @WithDefault("true")
-        boolean enabled();
-    }
 
     ObserverConfig observer();
 

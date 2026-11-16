@@ -5,7 +5,6 @@ import bio.cosy.feddb.core.api.pipeline.PipelineCallbackService;
 import bio.cosy.feddb.core.api.pipeline.PipelineRunInfoDTO;
 import bio.cosy.feddb.core.api.pipeline.PipelineStatusUpdateDTO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
-import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -15,7 +14,6 @@ import jakarta.ws.rs.core.Response;
 import java.util.List;
 
 @ApplicationScoped
-@Authenticated
 public class PipelineServiceImpl implements PipelineService {
 
     @Inject

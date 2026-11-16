@@ -1,7 +1,9 @@
 package bio.cosy.feddb.local;
 
+import bio.cosy.feddb.core.api.info.StartupImportState;
 import bio.cosy.feddb.local.api.cohort.AutoSubscriberBO;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorScheduleBO;
+import bio.cosy.feddb.local.api.info.PlatformStartupBO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.StartupEvent;
@@ -19,6 +21,9 @@ public class Startup {
     AutoSubscriberBO autoSubscriberBO;
 
     @Inject
+    PlatformStartupBO platformStartupBO;
+
+    @Inject
     ConnectorScheduleBO connectorScheduleBO;
 
     public void onStartup(@Observes StartupEvent event) {
@@ -27,8 +32,11 @@ public class Startup {
 
             if (Boolean.TRUE.equals(config.autoSubscribe().enabled())) {
                 Log.info("AutoSubscribe is enabled, subscribing to FLNet groups in the background");
-                // Fire-and-forget: each group runs on its own worker thread, so startup is not blocked.
-                autoSubscriberBO.subscribeToFLNet(config.autoSubscribe().groups())
+                // Fire-and-forget: waits for the Platform imports, then each group runs on a worker thread,
+                // so startup is not blocked.
+                platformStartupBO.awaitStartupImports()
+                        .invoke(this::logPlatformState)
+                        .chain(() -> autoSubscriberBO.subscribeToFLNet(config.autoSubscribe().groups()))
                         .subscribe().with(
                                 success -> Log.infof("AutoSubscribe finished, allSucceeded=%s", success),
                                 failure -> Log.errorf("AutoSubscribe failed: %s", failure.getMessage(), failure)
@@ -42,6 +50,15 @@ public class Startup {
         } catch (Exception e) {
             Log.errorf("\n====================\nError during startup:\n%s\n====================", e.getMessage(), e);
 
+        }
+    }
+
+    private void logPlatformState(StartupImportState state) {
+        switch (state) {
+            case READY -> Log.info("Platform startup imports finished, starting AutoSubscribe");
+            case FAILED -> Log.warn("Platform startup imports failed, starting AutoSubscribe anyway");
+            case IMPORTING -> Log.warnf("Platform still importing after %s, starting AutoSubscribe anyway",
+                    config.autoSubscribe().platformWaitTimeout());
         }
     }
 

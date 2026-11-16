@@ -1,6 +1,5 @@
 package de.unihamburg.daibetes.api.analysis.llm;
 
-import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -14,9 +13,7 @@ import org.jboss.resteasy.reactive.RestStreamElementType;
 @Path("/data-analysis/llm")
 @Produces("application/json")
 @Consumes("application/json")
-//@RolesAllowed("admin")
 @Tag(name = "Model", description = "Service for managing app operations")
-@Authenticated
 public interface DataAnalysisLLMService {
 
 

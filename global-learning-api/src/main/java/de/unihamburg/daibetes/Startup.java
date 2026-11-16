@@ -1,8 +1,9 @@
 package de.unihamburg.daibetes;
 
+import bio.cosy.feddb.core.api.info.StartupImportState;
 import de.unihamburg.daibetes.agent.embedding.EmbeddingAO;
+import de.unihamburg.daibetes.api.info.StartupImportsBO;
 import de.unihamburg.daibetes.agent.store.StoreIngestor;
-import de.unihamburg.daibetes.api.app.FederatedAppCreateImportBO;
 import de.unihamburg.daibetes.api.app.ToolExternalHandler;
 import de.unihamburg.daibetes.api.workflow.export.WorkflowExportBO;
 import de.unihamburg.daibetes.config.FLNetConfig;
@@ -11,6 +12,7 @@ import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
+import org.eclipse.microprofile.context.ManagedExecutor;
 
 @ApplicationScoped
 public class Startup {
@@ -30,10 +32,25 @@ public class Startup {
     @Inject
     EmbeddingAO embeddingAO;
 
-    public void onStartup(@Observes StartupEvent event) {
-        try {
-            Log.infof("Starting Quarkus");
+    @Inject
+    StartupImportsBO startupImportsBO;
 
+    @Inject
+    ManagedExecutor executor;
+
+    public void onStartup(@Observes StartupEvent event) {
+        Log.infof("Starting Quarkus");
+        if (config.backgroundStartupImports()) {
+            // The state stays IMPORTING in /info until the imports ended
+            executor.runAsync(this::runImports);
+            Log.infof("Startup imports run in the background");
+        } else {
+            runImports();
+        }
+    }
+
+    void runImports() {
+        try {
             if (config.createVectorExtensionOnStartup()) {
                 Log.infof("Ensuring vector extension exists");
                 if (embeddingAO.prepareVectorExtensionTransactional()) {
@@ -45,8 +62,8 @@ public class Startup {
                 Log.infof("Skipping vector extension creation on startup");
             }
             if (config.toolImports().enabled()) {
-                Log.infof("Starting tool imports");
-                toolExternalHandler.importAllToolsTransactional();
+                Log.infof("Starting tool imports, building them on import: %s", config.toolImports().buildOnImport());
+                toolExternalHandler.importAllTools();
             } else {
                 Log.infof("Tool imports have been disabled");
             }
@@ -62,7 +79,9 @@ public class Startup {
             } else {
                 Log.infof("Ingestor has been disabled");
             }
+            startupImportsBO.setState(StartupImportState.READY);
         } catch (Exception e) {
+            startupImportsBO.setState(StartupImportState.FAILED);
             Log.errorf("\n====================\nError during startup:\n%s\n====================", e.getMessage(), e);
 
         }

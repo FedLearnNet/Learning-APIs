@@ -3,6 +3,7 @@ package bio.cosy.feddb.local.config;
 import bio.cosy.feddb.local.api.cohort.permission.AutoMetricsAccess;
 import bio.cosy.feddb.local.api.cohort.permission.AutoStatisticsAccess;
 import bio.cosy.feddb.local.api.cohort.permission.AutoTrainingAccess;
+import bio.cosy.feddb.local.api.cohort.permission.TrainingAccess;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 import io.smallrye.config.WithName;
@@ -12,6 +13,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
+//BFF is here: bio.cosy.feddb.core.security.bff.BffConfig
 
 @ConfigMapping(prefix = "flnet")
 public interface FLNetClientConfig {
@@ -94,6 +96,14 @@ public interface FLNetClientConfig {
         @WithDefault("10")
         int etlParallelism();
 
+        /** Complete patients sent to an app transformer in one request. Use 1 for legacy tools. */
+        @WithDefault("100")
+        int appTransformBatchPatients();
+
+        /** UTF-8 bytes of the complete START_PREDICTION envelope, including hyperparameters. */
+        @WithDefault("1048576")
+        long appTransformMaxMessageBytes();
+
         @WithDefault("10")
         int previewRows();
 
@@ -161,6 +171,14 @@ public interface FLNetClientConfig {
         @WithDefault("ALL")
         AutoTrainingAccess autoTrainingAccess();
 
+        @WithName("tre-training-access")
+        @WithDefault("ENABLED")
+        TrainingAccess treTrainingAccess();
+
+        @WithName("tre-auto-training-access")
+        @WithDefault("ALL")
+        AutoTrainingAccess treAutoTrainingAccess();
+
         @WithName("auto-statistics-access")
         @WithDefault("ALL")
         AutoStatisticsAccess autoStatisticsAccess();
@@ -177,6 +195,14 @@ public interface FLNetClientConfig {
         @WithName("enabled")
         @WithDefault("false")
         Boolean enabled();
+
+        @WithName("platform-wait-timeout")
+        @WithDefault("PT30M")
+        Duration platformWaitTimeout();
+
+        @WithName("platform-poll-interval")
+        @WithDefault("PT10S")
+        Duration platformPollInterval();
     }
 
     interface AutoSubscribeGroupConfig {
@@ -305,10 +331,6 @@ public interface FLNetClientConfig {
     }
 
     interface AuthConfig {
-
-        @WithName("enable")
-        @WithDefault("true")
-        boolean enabled();
 
         Optional<String> username();
 

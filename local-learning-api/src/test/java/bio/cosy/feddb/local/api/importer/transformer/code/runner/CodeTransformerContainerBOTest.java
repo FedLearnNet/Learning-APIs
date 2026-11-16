@@ -1,14 +1,12 @@
 package bio.cosy.feddb.local.api.importer.transformer.code.runner;
 
-import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerLogDTO;
-import bio.cosy.feddb.local.api.importer.transformer.session.AppTransformerSessionBO;
+import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,13 +39,8 @@ class CodeTransformerContainerBOTest {
     }
 
     @Test
-    void runnerLogKeepsLifecycleAndOwnStepLinesOnly() {
-        when(sessionBO.openPreview(any(), eq("user"), any())).thenAnswer(invocation -> {
-            ConnectorRunStepDTO step = new ConnectorRunStepDTO();
-            step.setId(5L);
-            invocation.<Consumer<ConnectorRunStepDTO>>getArgument(2).accept(step);
-            return -1L;
-        });
+    void runnerLogKeepsLifecycleAndOwnAttemptLinesOnly() {
+        when(sessionBO.attemptIdOf(-1L)).thenReturn(5L);
 
         containerBO.start("user");
         containerBO.log(5L, "from the runner");

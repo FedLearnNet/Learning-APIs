@@ -7,7 +7,6 @@ import bio.cosy.feddb.core.api.pipeline.PipelineStatusUpdateDTO;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
-import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Multi;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
@@ -30,7 +29,6 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Pipeline", description = "Service for managing user Pipelines")
-@Authenticated
 public interface PipelineService extends PipelineCallbackService {
 
     @POST

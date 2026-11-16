@@ -158,7 +158,7 @@ public class TransformerListTool {
             PagedResponse<StoreDTO> response;
             do {
                 response = storeService.list(null, List.of(FederatedAppType.DATA_TRANSFORMATION.name()), null, null,
-                        true, true, false, "name:asc", page++, PAGE_SIZE);
+                        true, true, false, false, "name:asc", page++, PAGE_SIZE);
                 response.getResults().stream()
                         .map(StoreDTO::getApp)
                         .filter(Objects::nonNull)

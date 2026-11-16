@@ -6,12 +6,15 @@ import bio.cosy.feddb.core.api.model.workflow.chat.ModelWorkflowChatMessageType;
 import de.unihamburg.daibetes.api.analysis.chat.hitl.HumanInTheLoopRequestBO;
 import de.unihamburg.daibetes.api.analysis.chat.hitl.HumanInTheLoopRequestDTO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
+import io.quarkus.security.Authenticated;
 import io.quarkus.websockets.next.*;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Inject;
 
 import java.util.Optional;
 
+// default-roles-allowed covers not WebSockets)
+@Authenticated
 @SessionScoped
 @WebSocket(path = "/model/workflow/{workflowId}/chat")
 public class DataAnalysisChatService {

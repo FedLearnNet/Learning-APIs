@@ -1,5 +1,7 @@
 package de.unihamburg.daibetes;
 
+import bio.cosy.feddb.core.security.Roles;
+import io.quarkus.test.security.TestSecurity;
 import de.unihamburg.daibetes.api.umls.importer.UmlsImportDTO;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
@@ -9,6 +11,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
 @QuarkusTest
+@TestSecurity(user = "test-modeler", roles = {Roles.GLOBAL_DATA_MODELER, Roles.ADMIN})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class UMLSImportServiceTest {
 

@@ -1,15 +1,15 @@
 INSERT INTO workflow (id, created_at, updated_at, version, publish_status, keycloak_id)
 VALUES (1, '2025-10-25 22:30:22.09', '2025-10-25 22:30:23.192', 2, 'UNPUBLISHED', 'SYSTEM');
 
-INSERT INTO workflow_node (id, old_fc_version, created_at, global_app_id, global_app_version_id, global_model_sub_id,
+INSERT INTO workflow_node (id, created_at, global_app_id, global_app_version_id, global_model_sub_id,
                            updated_at, version, workflow_id, hyperparams, imagename, node_id, "position")
-VALUES (1, NULL, '2025-10-25 22:30:22.513', 6, 10, NULL, '2025-10-25 22:30:22.513', 0, 1,
+VALUES (1, '2025-10-25 22:30:22.513', 6, 10, NULL, '2025-10-25 22:30:22.513', 0, 1,
         '{"binarization_method":"kmeans","p_value":0.05,"clustering_method":"WGCNA","deep_split":2,"dynamic_tree_cut":0.5,"ceiling":3,"bidirectional":"true","seed":42,"similarity_cutoff_mode":"automatic"}',
         'gitlab.cosy.bio:5050/cosybio/posymed/apps/posymed-unpast/model:latest', '9ec73a8d-e545-4881-a705-81a10f2a86ac',
         '{"x":550,"y":200}');
 
 
-INSERT INTO federated_learning_request
+INSERT INTO learning_request
 (id, created_at, updated_at, version, platform_user_id, global_request_id, name, description, channel_id, status)
 VALUES (1, '2025-04-12 10:00:00', '2025-04-12 10:00:00', 0, 'PLATFORM_USER_001', 1, 'Approved Request new App',
         'Description for Request 1', '4162416241624162416241624162416241624162416241624162416241624162', 'APPROVED'),
@@ -160,16 +160,10 @@ ALTER TABLE workflow
 ALTER TABLE workflow_node
     ALTER COLUMN id RESTART WITH 2;
 
-ALTER TABLE federated_learning_request
+ALTER TABLE learning_request
     ALTER COLUMN id RESTART WITH 8;
 ALTER TABLE federated_learning_project
     ALTER COLUMN id RESTART WITH 8;
 
 ALTER TABLE patient_learning
     ALTER COLUMN id RESTART WITH 9;
-
-
-ALTER TABLE federated_learning_experiments
-    ALTER COLUMN id RESTART WITH 5;
-ALTER TABLE federated_learning_experiments_steps
-    ALTER COLUMN id RESTART WITH 6;

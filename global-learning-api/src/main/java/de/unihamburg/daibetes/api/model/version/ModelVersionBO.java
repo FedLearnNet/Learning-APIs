@@ -52,12 +52,28 @@ public class ModelVersionBO extends BaseBo<ModelVersionDTO, ModelVersionEntity, 
             e.setMinorVersion(request.getModelVersion());
             e.setPatchVersion(request.getModelVersion());
             e.setChangelog(request.getChangelog());
+            if (ModelPublishStatus.PUBLISHED.equals(request.getPublishStatus()) && isPrivateFederatedVersion(e)) {
+                throw new NotAllowedException("The model of this federated experiment is private and cannot be published");
+            }
             e.setPublishStatus(request.getPublishStatus());
             e.setUpdatedAt(new Date());
             this.ao.persist(e);
             return this.mapper.entityToDto(e);
         }
         throw new NotAllowedException("User does not have access to this model");
+    }
+
+    /**
+     * Whether a version of the model comes from a federated experiment whose sites did not agree to a public
+     * model; such a model must not be published, neither the version nor the model itself.
+     */
+    public boolean hasPrivateFederatedVersion(Long modelId) {
+        return ao.getAllForModel(modelId).stream().anyMatch(this::isPrivateFederatedVersion);
+    }
+
+    private boolean isPrivateFederatedVersion(ModelVersionEntity version) {
+        return version.getFederatedExperiment() != null
+                && !Boolean.TRUE.equals(version.getFederatedExperiment().getModelCanBePublic());
     }
 
     public ModelVersionDTO getByExperiment(Long id, String keycloakId) {

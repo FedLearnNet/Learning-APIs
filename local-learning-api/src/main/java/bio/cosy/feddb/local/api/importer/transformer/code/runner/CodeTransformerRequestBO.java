@@ -1,8 +1,8 @@
 package bio.cosy.feddb.local.api.importer.transformer.code.runner;
 
-import bio.cosy.feddb.core.api.run.AppMessageTypeEnum;
-import bio.cosy.feddb.core.api.run.AppMessageWrapperDTO;
-import bio.cosy.feddb.core.api.run.AppRunTypeEnum;
+import bio.cosy.feddb.core.execution.run.types.AppMessageTypeEnum;
+import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
+import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
 import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerCheckDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerCheckResultDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.save.CodeTransformerSaveDTO;

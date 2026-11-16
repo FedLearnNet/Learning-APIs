@@ -3,7 +3,6 @@ package bio.cosy.feddb.local.api.importer.files;
 import bio.cosy.feddb.local.api.importer.files.progress.ImportEventDTO;
 import bio.cosy.feddb.local.api.importer.files.progress.ImportProgressDTO;
 import io.smallrye.mutiny.Multi;
-import io.quarkus.security.Authenticated;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -23,7 +22,6 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Connector File", description = "Service for connector-related file handling")
-@Authenticated
 public interface ConnectorFilesService {
 
     @POST

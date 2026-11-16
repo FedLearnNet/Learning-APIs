@@ -1,8 +1,10 @@
 package bio.cosy.feddb.local.api.eam;
 
 import bio.cosy.feddb.core.api.socket.FedDBClientDataDTO;
+import bio.cosy.feddb.core.api.socket.FedDBClientTypeEnum;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import bio.cosy.feddb.local.health.WebSocketClientState;
+import bio.cosy.feddb.local.services.orch.ComputingInfoBO;
 import io.quarkus.logging.Log;
 import io.quarkus.oidc.client.Tokens;
 import io.quarkus.runtime.ShutdownEvent;
@@ -17,35 +19,29 @@ import jakarta.enterprise.event.ObservesAsync;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
-import java.time.Instant;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 @ApplicationScoped
 public class ClientManager {
     private static final String AUTHORIZATION_HEADER = "Authorization";
-
+    private final Queue<FedDBClientDataDTO<?>> pendingClientMessages = new ConcurrentLinkedQueue<>();
     @Inject
     FLNetClientConfig config;
-
     @Inject
     Instance<WebSocketConnector<WebsocketClient>> connectors;
-
     @Inject
     WebSocketClientState state;
-
     @Inject
     GlobalAuthManager globalAuthManager;
+    @Inject
+    ComputingInfoBO computingInfo;
 
-    private final Queue<FedDBClientDataDTO<?>> pendingClientMessages = new ConcurrentLinkedQueue<>();
     private WebSocketClientConnection connection;
     private ScheduledExecutorService reconnectExecutor;
     private ScheduledFuture<?> reconnectTask;
@@ -54,6 +50,17 @@ public class ClientManager {
     private boolean isReconnecting = false;
     private int reconnectAttempt = 0;
     private volatile boolean shuttingDown;
+
+    public void sendSystemInfo() {
+        sendSystemInfo(connection);
+    }
+
+    private void sendSystemInfo(WebSocketClientConnection target) {
+        var info = computingInfo.get();
+        if (info != null && target != null && target.isOpen())
+            fireAndForget(new FedDBClientDataDTO<>(FedDBClientTypeEnum.SYSTEM_INFO, info), target);
+    }
+
     void connect() {
         if (shuttingDown) {
             return;
@@ -76,8 +83,7 @@ public class ClientManager {
                 Log.info("Connection already open");
                 return;
             }
-            boolean authEnabled = isAuthEnabled();
-            if (authEnabled && !globalAuthManager.isConfigured()) {
+            if (!globalAuthManager.isConfigured()) {
                 state.markDisconnected();
                 state.markError("Global WebSocket user auth is not configured");
                 Log.warn("Global WebSocket user auth is not configured; waiting for /global/auth/login or flnet.global.auth.username/password");
@@ -90,8 +96,7 @@ public class ClientManager {
             String authorizationHeader = authorization.map(GlobalAuthManager.Authorization::header).orElse(null);
             Log.debugf("Global authorization header configured: %s", authorizationHeader != null);
             connectionPhase = "opening handshake";
-            Log.infof("Opening global WebSocket handshake: authenticationEnabled=%s, authorizationHeaderPresent=%s",
-                    authEnabled, authorizationHeader != null);
+            Log.infof("Opening global WebSocket handshake: authorizationHeaderPresent=%s", authorizationHeader != null);
             WebSocketConnector<WebsocketClient> connector = connectors.get()
                     .baseUri(socketConfig.uri());
             if (authorizationHeader != null) {
@@ -129,7 +134,7 @@ public class ClientManager {
             Log.debugf("Skipping global WebSocket reconnect during shutdown: reason=%s", reason);
             return;
         }
-        if (isAuthEnabled() && !globalAuthManager.isConfigured()) {
+        if (!globalAuthManager.isConfigured()) {
             closeConnection("global authentication is not configured");
             state.markDisconnected();
             state.markError("Global WebSocket user auth is not configured");
@@ -280,6 +285,7 @@ public class ClientManager {
     }
 
     public void connectionOpened(WebSocketClientConnection connection) {
+        Infrastructure.getDefaultWorkerPool().execute(() -> sendSystemInfo(connection));
         Log.infof("Global WebSocket ready: connectionId=%s, queuedMessages=%d; resetting reconnect attempt",
                 connection.id(), pendingClientMessages.size());
 
@@ -321,10 +327,6 @@ public class ClientManager {
             connection.close().await().atMost(Duration.ofSeconds(5));
         }
         connection = null;
-    }
-
-    private boolean isAuthEnabled() {
-        return globalAuthManager.isEnabled();
     }
 
     private void processQueuedMessages(WebSocketClientConnection connection) {

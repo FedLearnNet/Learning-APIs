@@ -110,10 +110,10 @@ public class CohortServiceImpl implements CohortService {
     }
 
     @Override
-    public Response delete(Long id) {
+    public Response delete(Long cohortId) {
         String keycloakId = userIdentity.getKeycloakId();
         try {
-            CohortDeletionAcceptedDTO accepted = cohortBO.scheduleDeletion(id, keycloakId);
+            CohortDeletionAcceptedDTO accepted = cohortBO.scheduleDeletion(cohortId, keycloakId);
             return Response.status(Response.Status.ACCEPTED).entity(accepted).build();
         } catch (NotFoundException e) {
             return Response.status(Response.Status.OK).build();

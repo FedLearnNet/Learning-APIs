@@ -25,6 +25,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.reactive.messaging.Channel;
@@ -99,7 +100,9 @@ public class ConnectorServiceImpl implements ConnectorService {
     @Override
     @Blocking
     public ConnectorDTO getConnector(Long id) {
-        return connectorBO.getFileCheckedById(id);
+        ConnectorDTO connector = connectorBO.getFileCheckedById(id);
+        cohortMemberAuthBO.checkForMember(connector.getCohortId(), userIdentity.getKeycloakId());
+        return connector;
     }
 
     @Override
@@ -240,6 +243,15 @@ public class ConnectorServiceImpl implements ConnectorService {
     @Override
     @Transactional
     public Response rollbackConnectorRun(Long id, Long runId, boolean deleteAudit) {
+        ConnectorRunDTO run = runBO.getById(runId);
+        if (!Objects.equals(run.getConnectorId(), id)) {
+            throw new NotFoundException("Run " + runId + " does not belong to connector " + id);
+        }
+        String keycloakId = userIdentity.getKeycloakId();
+        cohortMemberAuthBO.checkForEditPatients(run.getCohortId(), keycloakId);
+        if (deleteAudit) {
+            cohortMemberAuthBO.checkForDelete(run.getCohortId(), keycloakId);
+        }
         rollbackBO.rollbackConnectorRun(runId, deleteAudit);
         return Response.ok().build();
     }

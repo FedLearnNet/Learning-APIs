@@ -4,7 +4,7 @@ import bio.cosy.feddb.core.api.file.FileContentDTO;
 import bio.cosy.feddb.core.api.file.FileDTO;
 import bio.cosy.feddb.core.api.file.FileRenameDTO;
 import bio.cosy.feddb.core.api.file.analytics.FileProfile;
-import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.PermitAll;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -20,9 +20,7 @@ import java.util.List;
 @Path("/files")
 @Produces("application/json")
 @Consumes("application/json")
-//@RolesAllowed("admin")
 @Tag(name = "File", description = "Service for managing user Files")
-@Authenticated
 public interface FileService {
 
     @GET
@@ -88,6 +86,8 @@ public interface FileService {
 
     @GET
     @Path("{id}/download")
+    // Apps download their inputs by secret link without a user token; without a secret a user is required.
+    @PermitAll
     @Operation(summary = "Download a file by id")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @APIResponses({

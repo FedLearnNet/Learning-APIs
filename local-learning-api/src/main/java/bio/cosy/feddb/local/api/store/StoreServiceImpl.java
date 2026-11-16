@@ -23,9 +23,9 @@ public class StoreServiceImpl implements StoreService {
     GlobalAPIStoreService globalApi;
 
     @Override
-    public PagedResponse<StoreDTO> list(String search, List<String> appTypes, List<String> privacyTechniques, Integer minRating, boolean showUncertified, boolean hideWorkflow, boolean onlyTrainedAnalysis, String sort, int page, int size) {
+    public PagedResponse<StoreDTO> list(String search, List<String> appTypes, List<String> privacyTechniques, Integer minRating, boolean showUncertified, boolean hideWorkflow, boolean onlyTrainedAnalysis, boolean onlyWithImage, String sort, int page, int size) {
         try {
-            return globalApi.list(search, appTypes, privacyTechniques, minRating, showUncertified, hideWorkflow, onlyTrainedAnalysis, sort, page, size);
+            return globalApi.list(search, appTypes, privacyTechniques, minRating, showUncertified, hideWorkflow, onlyTrainedAnalysis, onlyWithImage, sort, page, size);
         } catch (ProcessingException e) {
             throw new ServiceUnavailableException(UNAVAILABLE_MESSAGE);
         }

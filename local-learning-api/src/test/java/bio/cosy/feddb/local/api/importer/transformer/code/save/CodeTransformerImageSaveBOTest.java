@@ -3,7 +3,7 @@ package bio.cosy.feddb.local.api.importer.transformer.code.save;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerAO;
 import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerEntity;
 import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerStatus;
-import bio.cosy.feddb.local.services.orch.OrchDockerServiceClient;
+import bio.cosy.feddb.core.services.orch.clients.DockerServiceClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +21,7 @@ class CodeTransformerImageSaveBOTest {
     @BeforeEach
     void setUp() {
         imageSaveBO.connectorTransformerAO = mock(ConnectorTransformerAO.class);
-        imageSaveBO.dockerClient = mock(OrchDockerServiceClient.class);
+        imageSaveBO.dockerClient = mock(DockerServiceClient.class);
         entity.setId(3L);
         entity.setImageName(OLD);
         entity.setStatus(CodeTransformerStatus.BUILDING);

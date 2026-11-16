@@ -2,9 +2,11 @@ package bio.cosy.feddb.local.api.cohort.patient;
 
 
 import bio.cosy.feddb.core.base.PagedResponse;
+import bio.cosy.feddb.local.api.cohort.member.CohortPermissionChecker;
 import bio.cosy.feddb.local.api.cohort.patient.dataentry.PatientDataEntryRollbackBO;
 import bio.cosy.feddb.local.api.auth.UserIdentity;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
+import io.quarkus.security.PermissionsAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -32,8 +34,9 @@ public class PatientServiceImpl implements PatientService {
     CohortMemberAuthBO cohortMemberAuthBO;
 
     @Override
-    public PatientDTO getPatientDataById(Long cohortID, Long internalPatientId) {
-        PatientDTO patientData = patientBO.getPatientDataById(cohortID, internalPatientId);
+    @PermissionsAllowed(CohortPermissionChecker.READ)
+    public PatientDTO getPatientDataById(Long cohortId, Long internalPatientId) {
+        PatientDTO patientData = patientBO.getPatientDataById(cohortId, internalPatientId);
         if (patientData == null) {
             throw new NotFoundException();
         }
@@ -41,8 +44,9 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public PatientDTO getPatientDataByExternalId(Long cohortID, String externalPatientId) {
-        PatientDTO patientData = patientBO.getPatientDataByExternalId(cohortID, externalPatientId);
+    @PermissionsAllowed(CohortPermissionChecker.READ)
+    public PatientDTO getPatientDataByExternalId(Long cohortId, String externalPatientId) {
+        PatientDTO patientData = patientBO.getPatientDataByExternalId(cohortId, externalPatientId);
         if (patientData == null) {
             throw new NotFoundException();
         }
@@ -50,17 +54,20 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
+    @PermissionsAllowed(CohortPermissionChecker.READ)
     public List<PatientDTO> listPatientData(Long cohortId) {
         return patientBO.listPatientData(cohortId);
     }
 
     @Override
     @Transactional
+    @PermissionsAllowed(CohortPermissionChecker.READ)
     public List<PatientReferenceDTO> listPatientReferences(Long cohortId, Integer limit) {
         return patientBO.listPatientReferences(cohortId, limit);
     }
 
     @Override
+    @PermissionsAllowed(CohortPermissionChecker.READ)
     public PagedResponse<PatientDTO> getReducedPatientData(Long cohortId, String numericReductionMethod, String nonNumericReductionMethod, Integer page, Integer pageSize) {
         try {
             // Validate pagination parameters
@@ -108,7 +115,11 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     @Transactional
+    @PermissionsAllowed(CohortPermissionChecker.EDIT_PATIENTS)
     public PatientDTO rollbackPatientData(Long cohortId, Long internalPatientId, Integer revisionNumber, boolean deleteAudit) {
+        if (patientBO.getPatientDataById(cohortId, internalPatientId) == null) {
+            throw new NotFoundException();
+        }
         rollbackBO.rollbackPatientToRevision(internalPatientId, revisionNumber, deleteAudit);
         return patientBO.getPatientDataById(cohortId, internalPatientId);
     }

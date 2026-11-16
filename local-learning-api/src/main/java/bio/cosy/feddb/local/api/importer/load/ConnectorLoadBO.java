@@ -43,7 +43,7 @@ public class ConnectorLoadBO {
     }
 
     public void dryRunPatient(ConnectorRunDTO run, List<MappingRowResultDTO> patientRows) {
-        connectorLoadPatientBO.dryRunPatient(requireSinglePatient(patientRows), run);
+        connectorLoadPatientBO.dryRunPatientTransactional(requireSinglePatient(patientRows), run);
     }
 
     private ConnectorLoadPatient requireSinglePatient(List<MappingRowResultDTO> patientRows) {

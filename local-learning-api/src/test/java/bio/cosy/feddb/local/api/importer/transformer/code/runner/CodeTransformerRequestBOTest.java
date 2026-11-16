@@ -1,10 +1,10 @@
 package bio.cosy.feddb.local.api.importer.transformer.code.runner;
 
-import bio.cosy.feddb.core.api.run.AppMessageTypeEnum;
-import bio.cosy.feddb.core.api.run.AppMessageWrapperDTO;
+import bio.cosy.feddb.core.execution.run.types.AppMessageTypeEnum;
+import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerCheckDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerCheckResultDTO;
-import bio.cosy.feddb.local.api.importer.transformer.session.AppTransformerSessionException;
+import bio.cosy.feddb.local.api.importer.run.AppTransformerSessionFailure;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.websockets.next.WebSocketConnection;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +54,7 @@ class CodeTransformerRequestBOTest {
 
     @Test
     void failingRunnerIsReportedAndStopped() {
-        when(containerBO.connection("user")).thenThrow(new AppTransformerSessionException("gone"));
+        when(containerBO.connection("user")).thenThrow(new AppTransformerSessionFailure("gone"));
 
         CodeTransformerCheckResultDTO result = requestBO.check(new CodeTransformerCheckDTO(), "user");
 

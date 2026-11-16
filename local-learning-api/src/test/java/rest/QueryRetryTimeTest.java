@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -68,7 +67,7 @@ public class QueryRetryTimeTest {
         p.setIsAllowedToQuery(true);
         p.setQueryRetryTime(queryRetryTime);
         p.setQuerySampleThreshold(100);
-        p.setAutoTrainingAccess(AutoTrainingAccess.ALL);
+        p.setFederatedAutoTrainingAccess(AutoTrainingAccess.ALL);
         return p;
     }
 

@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.api.importer.run.preview;
 
+import bio.cosy.feddb.local.api.importer.files.table.ColumnNames;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
 import bio.cosy.feddb.local.api.importer.extract.ConnectorExtractBO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadSettingsDTO;
@@ -72,6 +73,7 @@ public class ConnectorPreviewBO {
 
         PreviewResponseDTO response = new PreviewResponseDTO();
         response.setJsons(new ArrayList<>());
+        response.setColumns(new ArrayList<>());
         response.setStages(new ArrayList<>());
 
         ConnectorPreviewTransformationStageData stage =
@@ -79,7 +81,7 @@ public class ConnectorPreviewBO {
                         .getStage();
 
         if (response.getJsons().isEmpty()) {
-            response.getJsons().add(render(stage));
+            addTable(response, stage);
         }
 
         return response;
@@ -150,7 +152,7 @@ public class ConnectorPreviewBO {
                         cached.get().getCachedAt(), stage.getRows(), appBased, false, null);
             } else if (appBased && appRunner != null && blockedBy == null) {
                 List<Map<String, Object>> rows = appRunner.apply(transformer, stage.getRows());
-                List<String> columns = columnsOf(stage.getColumns(), rows);
+                List<String> columns = ColumnNames.withRowColumns(stage.getColumns(), rows);
                 storeAppStage(connectorId, stepIndex, transformer, fingerprint, rows, columns);
                 stage = new ConnectorPreviewTransformationStageData(rows, columns, stage.getProfiles());
             } else if (appBased) {
@@ -170,7 +172,8 @@ public class ConnectorPreviewBO {
             } else {
                 List<Map<String, Object>> rows =
                         transformationBO.applyBuiltInTransformation(transformer, stage.getRows(), patientIdColumn);
-                stage = new ConnectorPreviewTransformationStageData(rows, stage.getColumns(), stage.getProfiles());
+                stage = new ConnectorPreviewTransformationStageData(
+                        rows, ColumnNames.withRowColumns(stage.getColumns(), rows), stage.getProfiles());
                 if (blockedBy == null) {
                     cacheBO.store(connectorId, stepIndex, transformer.getId(), fingerprint,
                             limitPreviewRows(rows), stage.getColumns());
@@ -179,7 +182,7 @@ public class ConnectorPreviewBO {
             }
 
             if (response != null) {
-                response.getJsons().add(render(stage));
+                addTable(response, stage);
             }
         }
 
@@ -196,6 +199,11 @@ public class ConnectorPreviewBO {
         cacheBO.store(connectorId, stepIndex, transformer.getId(), fingerprint,
                 limitPreviewRows(rows), columns);
         cacheBO.invalidateFrom(connectorId, stepIndex + 1);
+    }
+
+    private void addTable(PreviewResponseDTO response, ConnectorPreviewTransformationStageData stage) {
+        response.getJsons().add(render(stage));
+        response.getColumns().add(ColumnNames.withRowColumns(List.of(), limitPreviewRows(stage.getRows())));
     }
 
     private String render(ConnectorPreviewTransformationStageData stage) {
@@ -222,18 +230,11 @@ public class ConnectorPreviewBO {
                 appBased, requiresRun, blockedByStep));
     }
 
-    private static List<String> columnsOf(List<String> columns, List<Map<String, Object>> rows) {
-        LinkedHashSet<String> all = new LinkedHashSet<>(columns == null ? List.of() : columns);
-        rows.forEach(row -> all.addAll(row.keySet()));
-        return new ArrayList<>(all);
-    }
-
     private static List<String> columnsOf(ConnectorPreviewTransformationCacheStage cached,
                                           ConnectorPreviewTransformationStageData stage) {
         List<String> columns = cached.getColumns();
         return columns == null || columns.isEmpty() ? stage.getColumns() : columns;
     }
-
 
     private static int size(List<ConnectorTransformerDTO> transformers) {
         return transformers == null ? 0 : transformers.size();
