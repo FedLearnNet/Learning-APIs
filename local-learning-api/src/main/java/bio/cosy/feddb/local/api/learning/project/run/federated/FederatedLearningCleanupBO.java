@@ -9,12 +9,14 @@ import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
 import bio.cosy.feddb.local.services.controller.LocalControllerLearningService;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Typed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 @ApplicationScoped
+@Typed(FederatedLearningCleanupBO.class)
 public class FederatedLearningCleanupBO extends LearningCleanupBO {
 
     @Inject
@@ -31,7 +33,7 @@ public class FederatedLearningCleanupBO extends LearningCleanupBO {
 
     public void failTraining(ExecutionRunEntity run, ExecutionFailure failure, String globalId) {
         stopControllerRuns(run);
-        super.stopTraining(run);
+        super.failTraining(run, failure, globalId);
     }
 
     // Never throws: a controller that cannot be reached must not break the training, its run stays open.

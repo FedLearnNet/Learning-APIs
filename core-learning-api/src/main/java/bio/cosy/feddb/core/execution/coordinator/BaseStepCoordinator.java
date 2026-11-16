@@ -73,7 +73,7 @@ public abstract class BaseStepCoordinator<
         }
         Step step = locked.get();
         // A federated step runs all its participants at once, the app that runs them drives it.
-        if (step.getRun().getMode() == ExecutionMode.FEDERATED) {
+        if (step.getRun().getMode() != ExecutionMode.SINGLE) {
             return;
         }
 

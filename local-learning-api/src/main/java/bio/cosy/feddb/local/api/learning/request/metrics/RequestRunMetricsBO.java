@@ -4,6 +4,7 @@ import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
 import bio.cosy.feddb.core.execution.message.RunMessageTypes;
 import bio.cosy.feddb.core.api.socket.ProjectFederatedRequestRunMetricsDTO;
 import bio.cosy.feddb.core.api.socket.RunMetricDTO;
+import bio.cosy.feddb.core.api.socket.RunResultRequestType;
 import bio.cosy.feddb.core.api.socket.RunMetricsResponseClientDTO;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.base.PagedResponse;
@@ -12,6 +13,7 @@ import bio.cosy.feddb.local.api.cohort.permission.PermissionBO;
 import bio.cosy.feddb.local.api.eam.WebsocketSender;
 import bio.cosy.feddb.local.api.learning.project.LearningProjectAO;
 import bio.cosy.feddb.local.api.learning.project.LearningProjectEntity;
+import bio.cosy.feddb.local.api.learning.project.run.LearningProgressBO;
 import bio.cosy.feddb.local.execution.message.ExecutionMessageAO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
 import bio.cosy.feddb.local.api.learning.request.LearningRequestStatus;
@@ -57,6 +59,9 @@ public class RequestRunMetricsBO extends BaseBo<RequestRunMetricsDTO, RequestRun
     @Inject
     FLNetClientConfig config;
 
+    @Inject
+    LearningProgressBO progressBO;
+
     @Transactional
     public void createAndCheckAutoAccessTransactional(ProjectFederatedRequestRunMetricsDTO request) {
         if (!config.request().runMetrics().enabled()) {
@@ -71,6 +76,7 @@ public class RequestRunMetricsBO extends BaseBo<RequestRunMetricsDTO, RequestRun
         RequestRunMetricsEntity entity = new RequestRunMetricsEntity();
         entity.setRequestKeycloakId(request.getKeycloakId());
         entity.setGlobalRequestId(request.getGlobalRequestId());
+        entity.setType(request.getType());
         entity.setProject(projectOpt.get());
         ao.persist(entity);
 
@@ -96,8 +102,8 @@ public class RequestRunMetricsBO extends BaseBo<RequestRunMetricsDTO, RequestRun
         return cohortIds.stream().allMatch(cohortId -> permissionBO.hasAutoMetricsAccess(keycloakId, cohortId));
     }
 
-    public PagedResponse<RequestRunMetricsDTO> list(Page page, LearningRequestStatus status) {
-        List<RequestRunMetricsEntity> entities = ao.list(page, status);
+    public PagedResponse<RequestRunMetricsDTO> list(Page page, LearningRequestStatus status, RunResultRequestType type) {
+        List<RequestRunMetricsEntity> entities = ao.list(page, status, type);
         List<RequestRunMetricsDTO> dtos = mapper.entitiesToDtos(entities);
         return new PagedResponse<>(dtos, page.index, page.size);
     }
@@ -184,12 +190,17 @@ public class RequestRunMetricsBO extends BaseBo<RequestRunMetricsDTO, RequestRun
             return;
         }
 
-        List<RunMetricDTO> metrics = messageAO.listForRun(run.getId(), RunMessageTypes.METRIC).stream()
-                .map(message -> message.getPayload())
-                .filter(ExecutionMessageMetricDTO.class::isInstance)
-                .map(ExecutionMessageMetricDTO.class::cast)
-                .map(m -> new RunMetricDTO(m.getMetric(), m.getValue(), m.getX(), m.getXUnit()))
-                .collect(Collectors.toList());
+        List<RunMetricDTO> metrics = List.of();
+        if (entity.getType() == RunResultRequestType.OUTPUTS) {
+            progressBO.handOutputsToPlatform(run);
+        } else {
+            metrics = messageAO.listForRun(run.getId(), RunMessageTypes.METRIC).stream()
+                    .map(message -> message.getPayload())
+                    .filter(ExecutionMessageMetricDTO.class::isInstance)
+                    .map(ExecutionMessageMetricDTO.class::cast)
+                    .map(m -> new RunMetricDTO(m.getMetric(), m.getValue(), m.getX(), m.getXUnit()))
+                    .collect(Collectors.toList());
+        }
 
         RunMetricsResponseClientDTO response = new RunMetricsResponseClientDTO();
         response.setGlobalExperimentUniqueId(project.getRequest().getGlobalExperimentUniqueId());

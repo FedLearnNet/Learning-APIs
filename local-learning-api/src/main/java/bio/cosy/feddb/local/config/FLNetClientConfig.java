@@ -3,6 +3,7 @@ package bio.cosy.feddb.local.config;
 import bio.cosy.feddb.local.api.cohort.permission.AutoMetricsAccess;
 import bio.cosy.feddb.local.api.cohort.permission.AutoStatisticsAccess;
 import bio.cosy.feddb.local.api.cohort.permission.AutoTrainingAccess;
+import bio.cosy.feddb.local.api.cohort.permission.TrainingAccess;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 import io.smallrye.config.WithName;
@@ -163,6 +164,14 @@ public interface FLNetClientConfig {
         @WithName("auto-training-access")
         @WithDefault("ALL")
         AutoTrainingAccess autoTrainingAccess();
+
+        @WithName("tre-training-access")
+        @WithDefault("ENABLED")
+        TrainingAccess treTrainingAccess();
+
+        @WithName("tre-auto-training-access")
+        @WithDefault("ALL")
+        AutoTrainingAccess treAutoTrainingAccess();
 
         @WithName("auto-statistics-access")
         @WithDefault("ALL")

@@ -52,7 +52,7 @@ public class ExecutionAttemptLifecycle extends BaseAttemptLifecycle<ExecutionAtt
     @Transactional
     public boolean startsOnConnectTransactional(Long attemptId) {
         return attemptAO.findByIdOptional(attemptId)
-                .map(attempt -> attempt.getStep().getRun().getMode() != ExecutionMode.FEDERATED
+                .map(attempt -> attempt.getStep().getRun().getMode() == ExecutionMode.SINGLE
                         && !connectorAppRunBO.isSession(attempt.getStep().getRun().getId()))
                 .orElse(true);
     }

@@ -29,7 +29,9 @@ public interface LearningRequestMapper extends BaseMapper<LearningRequestDTO, Le
             @Mapping(target = "patientCountByCohort", ignore = true),
             @Mapping(target = "cohortDecisions", ignore = true),
             @Mapping(target = "awaitingCurrentUserDecision", ignore = true),
-            @Mapping(target = "platformIsCoordinator", source = "project.platformIsCoordinator")
+            @Mapping(target = "platformIsCoordinator", source = "project.platformIsCoordinator"),
+            @Mapping(target = "executionMode", source = "project.executionMode"),
+            @Mapping(target = "globalFLExperimentUniqueId", source = "globalExperimentUniqueId")
     })
     LearningRequestDTO entityToDto(LearningRequestEntity entity);
 
@@ -40,7 +42,9 @@ public interface LearningRequestMapper extends BaseMapper<LearningRequestDTO, Le
             @Mapping(target = "patientCountByCohort", ignore = true),
             @Mapping(target = "cohortDecisions", ignore = true),
             @Mapping(target = "awaitingCurrentUserDecision", ignore = true),
-            @Mapping(target = "platformIsCoordinator", source = "project.platformIsCoordinator")
+            @Mapping(target = "platformIsCoordinator", source = "project.platformIsCoordinator"),
+            @Mapping(target = "executionMode", source = "project.executionMode"),
+            @Mapping(target = "globalFLExperimentUniqueId", source = "globalExperimentUniqueId")
     })
     LearningRequestDTO entityToSummaryDto(LearningRequestEntity entity);
 
@@ -49,7 +53,8 @@ public interface LearningRequestMapper extends BaseMapper<LearningRequestDTO, Le
             @Mapping(target = "name", ignore = true),
             @Mapping(target = "platformUserId", ignore = true),
             @Mapping(target = "project", ignore = true),
-            @Mapping(target = "patients", ignore = true)
+            @Mapping(target = "patients", ignore = true),
+            @Mapping(target = "globalExperimentUniqueId", source = "globalFLExperimentUniqueId")
     })
     LearningRequestEntity dtoToEntity(LearningRequestDTO sourceCode);
 

@@ -12,7 +12,7 @@ public interface RequestRunMetricsMapper extends BaseMapper<RequestRunMetricsDTO
     @Mappings({
             @Mapping(target = "projectId", source = "project.id"),
             @Mapping(target = "projectName", source = "project.name"),
-            @Mapping(target = "experimentGlobalUniqueId", source = "project.request.getGlobalExperimentUniqueId"),
+            @Mapping(target = "experimentGlobalUniqueId", source = "project.request.globalExperimentUniqueId"),
             @Mapping(target = "metricNames", ignore = true)
     })
     RequestRunMetricsDTO entityToDto(RequestRunMetricsEntity entity);

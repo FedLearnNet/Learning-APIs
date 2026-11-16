@@ -1,4 +1,4 @@
-package de.unihamburg.daibetes.api.project.training.metrics;
+package de.unihamburg.daibetes.api.project.training.result;
 
 /**
  * Non-performance metric names an app emits: cohort descriptors (parsed once per site, no round axis)

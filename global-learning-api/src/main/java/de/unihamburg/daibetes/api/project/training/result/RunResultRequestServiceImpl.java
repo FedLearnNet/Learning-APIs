@@ -1,5 +1,6 @@
-package de.unihamburg.daibetes.api.project.training.metrics;
+package de.unihamburg.daibetes.api.project.training.result;
 
+import bio.cosy.feddb.core.api.socket.RunResultRequestType;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -8,25 +9,25 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
-public class RunMetricsRequestServiceImpl implements RunMetricsRequestService {
+public class RunResultRequestServiceImpl implements RunResultRequestService {
 
     @Inject
-    RunMetricsRequestBO bo;
+    RunResultRequestBO bo;
 
     @Inject
     UserIdentity userIdentity;
 
     @Override
     @Transactional
-    public RunMetricsRequestDTO getRequest(Long projectId, Long experimentId) {
-        return bo.findForExperiment(experimentId, userIdentity.getKeycloakId())
-                .orElseThrow(() -> new NotFoundException("No metrics request found for experiment " + experimentId));
+    public RunResultRequestDTO getRequest(Long projectId, Long experimentId, RunResultRequestType type) {
+        return bo.findForExperiment(experimentId, type, userIdentity.getKeycloakId())
+                .orElseThrow(() -> new NotFoundException("No " + type + " request found for experiment " + experimentId));
     }
 
     @Override
     @Transactional
-    public RunMetricsRequestDTO createRequest(Long projectId, Long experimentId) {
-        return bo.createAndBroadcast(experimentId, userIdentity.getKeycloakId());
+    public RunResultRequestDTO createRequest(Long projectId, Long experimentId, RunResultRequestType type) {
+        return bo.createAndBroadcast(experimentId, type, userIdentity.getKeycloakId());
     }
 
     @Override

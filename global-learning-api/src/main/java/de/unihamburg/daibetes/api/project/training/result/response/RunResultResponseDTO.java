@@ -1,4 +1,4 @@
-package de.unihamburg.daibetes.api.project.training.metrics.response;
+package de.unihamburg.daibetes.api.project.training.result.response;
 
 import bio.cosy.feddb.core.api.socket.RunMetricDTO;
 import bio.cosy.feddb.core.base.BaseDTO;
@@ -9,7 +9,7 @@ import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class RunMetricsResponseDTO extends BaseDTO {
+public class RunResultResponseDTO extends BaseDTO {
     private String randomClinicId;
     private Long requestId;
     private List<RunMetricDTO> metrics;

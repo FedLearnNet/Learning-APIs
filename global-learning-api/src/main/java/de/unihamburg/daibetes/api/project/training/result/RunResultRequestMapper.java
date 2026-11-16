@@ -1,9 +1,9 @@
-package de.unihamburg.daibetes.api.project.training.metrics;
+package de.unihamburg.daibetes.api.project.training.result;
 
 import bio.cosy.feddb.core.base.BaseMapper;
-import de.unihamburg.daibetes.api.project.training.metrics.response.RunMetricsResponseDTO;
-import de.unihamburg.daibetes.api.project.training.metrics.response.RunMetricsResponseEntity;
-import de.unihamburg.daibetes.api.project.training.metrics.response.RunMetricsResponseMapper;
+import de.unihamburg.daibetes.api.project.training.result.response.RunResultResponseDTO;
+import de.unihamburg.daibetes.api.project.training.result.response.RunResultResponseEntity;
+import de.unihamburg.daibetes.api.project.training.result.response.RunResultResponseMapper;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -16,9 +16,9 @@ import java.util.List;
 import java.util.Set;
 
 @Mapper(config = QuarkusMappingConfig.class)
-public interface RunMetricsRequestMapper extends BaseMapper<RunMetricsRequestDTO, RunMetricsRequestEntity> {
+public interface RunResultRequestMapper extends BaseMapper<RunResultRequestDTO, RunResultRequestEntity> {
 
-    RunMetricsResponseMapper responseMapper = Mappers.getMapper(RunMetricsResponseMapper.class);
+    RunResultResponseMapper responseMapper = Mappers.getMapper(RunResultResponseMapper.class);
 
     @Mappings({
             @Mapping(target = "experimentId", source = "experiment.id"),
@@ -27,16 +27,16 @@ public interface RunMetricsRequestMapper extends BaseMapper<RunMetricsRequestDTO
             @Mapping(target = "totalParticipants", expression = "java(entity.getResponses() != null ? entity.getResponses().size() : 0)"),
             @Mapping(target = "responses", source = "entity.responses", qualifiedByName = "mapResponses")
     })
-    RunMetricsRequestDTO entityToDto(RunMetricsRequestEntity entity);
+    RunResultRequestDTO entityToDto(RunResultRequestEntity entity);
 
     @Mappings({
             @Mapping(target = "experiment.id", source = "experimentId"),
             @Mapping(target = "responses", ignore = true)
     })
-    RunMetricsRequestEntity dtoToEntity(RunMetricsRequestDTO dto);
+    RunResultRequestEntity dtoToEntity(RunResultRequestDTO dto);
 
     @Named("mapResponses")
-    default List<RunMetricsResponseDTO> mapResponses(Set<RunMetricsResponseEntity> responses) {
+    default List<RunResultResponseDTO> mapResponses(Set<RunResultResponseEntity> responses) {
         if (responses == null || responses.isEmpty()) {
             return new ArrayList<>();
         }

@@ -9,7 +9,7 @@ VALUES (1, '2025-10-25 22:30:22.513', 6, 10, NULL, '2025-10-25 22:30:22.513', 0,
         '{"x":550,"y":200}');
 
 
-INSERT INTO federated_learning_request
+INSERT INTO learning_request
 (id, created_at, updated_at, version, platform_user_id, global_request_id, name, description, channel_id, status)
 VALUES (1, '2025-04-12 10:00:00', '2025-04-12 10:00:00', 0, 'PLATFORM_USER_001', 1, 'Approved Request new App',
         'Description for Request 1', '4162416241624162416241624162416241624162416241624162416241624162', 'APPROVED'),
@@ -160,7 +160,7 @@ ALTER TABLE workflow
 ALTER TABLE workflow_node
     ALTER COLUMN id RESTART WITH 2;
 
-ALTER TABLE federated_learning_request
+ALTER TABLE learning_request
     ALTER COLUMN id RESTART WITH 8;
 ALTER TABLE federated_learning_project
     ALTER COLUMN id RESTART WITH 8;

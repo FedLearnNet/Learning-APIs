@@ -7,7 +7,7 @@ import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.project.ProjectBO;
 import de.unihamburg.daibetes.api.project.ProjectCreateDTO;
-import de.unihamburg.daibetes.api.project.training.federated.CreateProjectFederatedExperimentDTO;
+import de.unihamburg.daibetes.api.project.training.federated.CreateProjectExperimentDTO;
 import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingBO;
 import de.unihamburg.daibetes.api.workflow.WorkflowAO;
 import de.unihamburg.daibetes.api.workflow.WorkflowEntity;
@@ -57,8 +57,8 @@ abstract class FederatedTrainingPlatformCoordinatorTestBase {
         RestAssuredConfigUtil.initMapper();
     }
 
-    protected CreateProjectFederatedExperimentDTO create(boolean platformIsCoordinator) {
-        CreateProjectFederatedExperimentDTO create = new CreateProjectFederatedExperimentDTO();
+    protected CreateProjectExperimentDTO create(boolean platformIsCoordinator) {
+        CreateProjectExperimentDTO create = new CreateProjectExperimentDTO();
         create.setName("Federated " + UUID.randomUUID());
         create.setDescription("Platform coordinator regression test");
         create.setModelNeedToBePublic(false);
@@ -66,7 +66,7 @@ abstract class FederatedTrainingPlatformCoordinatorTestBase {
         return create;
     }
 
-    protected ValidatableResponse postTraining(long projectId, CreateProjectFederatedExperimentDTO create) {
+    protected ValidatableResponse postTraining(long projectId, CreateProjectExperimentDTO create) {
         return given()
                 .contentType(ContentType.JSON)
                 .body(create)

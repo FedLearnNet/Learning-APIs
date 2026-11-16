@@ -15,11 +15,17 @@ import de.unihamburg.daibetes.api.model.sub.file.ModelSubFileBO;
 import de.unihamburg.daibetes.api.model.version.ModelVersionBO;
 import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentAO;
 import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
+import bio.cosy.feddb.core.execution.event.ExecutionEventPublisher;
+import bio.cosy.feddb.core.execution.file.ExecutionFileDirection;
+import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
+import de.unihamburg.daibetes.execution.file.ExecutionFileBO;
+import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @ApplicationScoped
@@ -49,6 +55,12 @@ public class ModelFederatedExperimentResultBO {
     @Inject
     ModelSubFileBO modelSubFileBO;
 
+    @Inject
+    ExecutionFileBO executionFileBO;
+
+    @Inject
+    ExecutionEventPublisher events;
+
     public ModelSubDTO uploadResults(ModelExperimentResultDTO dto, String keycloakId) {
         if (dto.getFiles() == null || dto.getFiles().isEmpty()) {
             throw new BadRequestException("No files uploaded");
@@ -59,6 +71,10 @@ public class ModelFederatedExperimentResultBO {
         }
 
         ExecutionExperimentEntity experiment = findExperiment(dto.getGlobalFLExperimentUniqueId(), dto.getClinicId());
+        if (dto.getNodeId() != null) {
+            keepOutputs(experiment, dto);
+            return null;
+        }
         FederatedAppVersionDTO appVersion = federatedAppVersionBO.getById(appVersionId);
         Long appId = appVersion.getFederatedAppId();
 
@@ -66,6 +82,24 @@ public class ModelFederatedExperimentResultBO {
 
         modelSubFileBO.create(dto, subVersion.getId(), keycloakId);
         return subVersion;
+    }
+
+    // TRE: the outputs a clinic released belong to its attempt of the step, once.
+    private void keepOutputs(ExecutionExperimentEntity experiment, ModelExperimentResultDTO dto) {
+        ExecutionAttemptEntity attempt = experiment.getRuns().stream()
+                .flatMap(run -> run.getStepsInExecutionOrder().stream())
+                .filter(step -> step.getWorkflowNode() != null && dto.getNodeId().equals(step.getWorkflowNode().getNodeId()))
+                .map(ExecutionRunStepEntity::getSelectedAttempt)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("No step " + dto.getNodeId() + " in experiment " + experiment.getId()));
+        if (attempt.getExecutionFiles().stream().anyMatch(file -> file.getDirection() == ExecutionFileDirection.OUTPUT)) {
+            return;
+        }
+        if (executionFileBO.addOutputs(attempt, dto.getFiles()).isEmpty()) {
+            throw new BadRequestException("None of the outputs could be stored");
+        }
+        events.attemptUpdated(attempt.getId());
     }
 
     public ModelSubDTO createModel(Long appId, Long appVersionId, Long experimentId) {

@@ -52,6 +52,7 @@ public class LearningProjectEntity extends BaseEntity {
     private Boolean isCoordinator;
 
     @Enumerated(EnumType.STRING)
+    @ColumnDefault("'FEDERATED'")
     @Column(name = "execution_mode", length = 20, nullable = false)
     private ExecutionMode executionMode = ExecutionMode.FEDERATED;
 

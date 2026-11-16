@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.api.information;
 
+import bio.cosy.feddb.core.api.socket.RunResultRequestType;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
 import bio.cosy.feddb.local.api.learning.request.LearningRequestBO;
 import bio.cosy.feddb.local.api.learning.request.LearningRequestDTO;
@@ -38,7 +39,8 @@ public class UserInformationServiceBO {
         dto.setNotifications(notificationBO.findActiveForUser(keycloakId));
         dto.setOpenTrainingRequests(countOpenTrainingRequests(keycloakId));
         dto.setOpenStatisticsRequests(countOpenStatisticsRequests(keycloakId));
-        dto.setOpenMetricsRequests(countOpenMetricsRequests(keycloakId));
+        dto.setOpenMetricsRequests(countOpenMetricsRequests(keycloakId, RunResultRequestType.METRICS));
+        dto.setOpenOutputRequests(countOpenMetricsRequests(keycloakId, RunResultRequestType.OUTPUTS));
         return dto;
     }
 
@@ -60,8 +62,8 @@ public class UserInformationServiceBO {
                 .allMatch(cohortId -> cohortMemberAuthBO.isMember(cohortId, keycloakId));
     }
 
-    private Long countOpenMetricsRequests(String keycloakId) {
-        return requestRunMetricsBO.list(ALL_PENDING, LearningRequestStatus.PENDING).getResults().stream()
+    private Long countOpenMetricsRequests(String keycloakId, RunResultRequestType type) {
+        return requestRunMetricsBO.list(ALL_PENDING, LearningRequestStatus.PENDING, type).getResults().stream()
                 .map(RequestRunMetricsDTO::getId)
                 .filter(id -> requestRunMetricsBO.getCohortIds(id).stream()
                         .allMatch(cohortId -> cohortMemberAuthBO.isMember(cohortId, keycloakId)))

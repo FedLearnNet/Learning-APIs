@@ -6,7 +6,7 @@ import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.development.run.CreateExperimentDTO;
 import de.unihamburg.daibetes.api.project.ProjectEntity;
-import de.unihamburg.daibetes.api.project.training.federated.CreateProjectFederatedExperimentDTO;
+import de.unihamburg.daibetes.api.project.training.federated.CreateProjectExperimentDTO;
 import de.unihamburg.daibetes.api.workflow.WorkflowEntity;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import org.mapstruct.BeanMapping;
@@ -80,7 +80,7 @@ public interface ExecutionExperimentMapper {
             @Mapping(target = "acceptanceClinicCount", constant = "0L"),
             @Mapping(target = "modelCanBePublic", constant = "true")
     })
-    ExecutionExperimentEntity federatedCreateDtoToEntity(CreateProjectFederatedExperimentDTO create, String keycloakId, ProjectEntity project,
+    ExecutionExperimentEntity federatedCreateDtoToEntity(CreateProjectExperimentDTO create, String keycloakId, ProjectEntity project,
                                                          ProjectDetailDTO projectVersion, WorkflowEntity workflow,
                                                          String relayServerAddress, String channelId);
 

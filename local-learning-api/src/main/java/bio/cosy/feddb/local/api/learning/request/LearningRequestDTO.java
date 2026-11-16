@@ -2,6 +2,7 @@ package bio.cosy.feddb.local.api.learning.request;
 
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.base.BaseDTO;
+import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningDTO;
 import bio.cosy.feddb.local.api.learning.request.cohort.FederatedLearningRequestCohortDTO;
 import lombok.AccessLevel;
@@ -23,6 +24,7 @@ public class LearningRequestDTO extends BaseDTO {
     private Boolean modelNeedToBePublic;
     private Boolean modelCanBePublic;
     private Boolean platformIsCoordinator;
+    private ExecutionMode executionMode;
 
     private String channelId;
 
@@ -36,6 +38,10 @@ public class LearningRequestDTO extends BaseDTO {
     private List<FederatedLearningRequestCohortDTO> cohortDecisions;
 
     private boolean awaitingCurrentUserDecision;
+
+    public Map<Long, Long> getPatientCountByCohort() {
+        return patientCountByCohort == null ? null : Map.copyOf(patientCountByCohort);
+    }
 
     public void setPatientCountByCohort(final Map<Long, Long> patientCountByCohort) {
         this.patientCountByCohort = patientCountByCohort == null

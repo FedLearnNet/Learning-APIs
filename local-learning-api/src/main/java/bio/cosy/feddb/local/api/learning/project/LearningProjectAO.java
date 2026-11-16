@@ -14,7 +14,7 @@ import java.util.Optional;
 public class LearningProjectAO implements PanacheRepository<LearningProjectEntity> {
 
     public Optional<LearningProjectEntity> findByRequestIdOptional(String id) {
-        return find("request.globalFLExperimentUniqueId", id).firstResultOptional();
+        return find("request.globalExperimentUniqueId", id).firstResultOptional();
     }
 
     public List<LearningProjectEntity> list(Page page) {

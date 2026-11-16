@@ -81,7 +81,7 @@ public class LearningSetupBO {
             return project.getRun().getParticipantId();
         }
         ExecutionRunEntity run = workflowExecutionBO.createTransactional(
-                new ExecutionStartDTO(ExecutionPurpose.TRAINING, ExecutionMode.FEDERATED, project.getName()), project.getWorkflow().getNodes());
+                new ExecutionStartDTO(ExecutionPurpose.TRAINING, project.getExecutionMode(), project.getName()), project.getWorkflow().getNodes());
         run.setParticipantId(UUID.randomUUID().toString());
         run.setKeycloakId(config.user().systemUserName());
         project.setRun(run);
@@ -110,6 +110,10 @@ public class LearningSetupBO {
         LinkedHashMap<String, String> inputFilePaths = new LinkedHashMap<>();
         inputsOf(step).forEach(input -> inputFilePaths.put(input.getVariableName(), input.getFileName()));
         start.setInputFilePaths(inputFilePaths);
+        if (step.getRun().getMode() == ExecutionMode.TRE) {
+            // central training on this clinic, no relay
+            start.setSupportFederatedLearning(false);
+        }
         ExecutionFederationEntity federation = step.getFederation();
         if (federation == null || federation.getConfig() == null) {
             return;

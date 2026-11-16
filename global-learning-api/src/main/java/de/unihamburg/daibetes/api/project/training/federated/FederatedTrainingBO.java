@@ -2,6 +2,7 @@ package de.unihamburg.daibetes.api.project.training.federated;
 
 import bio.cosy.feddb.core.api.project.ProjectStatus;
 import bio.cosy.feddb.core.api.socket.LearningClientSyncResponseDTO;
+import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.core.execution.event.ExecutionEventPublisher;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipAO;
@@ -66,9 +67,9 @@ public class FederatedTrainingBO {
     FederatedTrainingCleanupBO cleanupBO;
 
     @Transactional
-    public List<ExecutionRunDetailDTO> listTransactional(Long projectId, String keycloakId) {
+    public List<ExecutionRunDetailDTO> listTransactional(Long projectId, ExecutionMode mode, String keycloakId) {
         membershipAO.checkProjectAndUser(projectId, keycloakId);
-        return runAO.listFederatedTrainingsOfProject(projectId).stream().map(run -> mapper.mapRunEntityToDetailDTO(run, false)).toList();
+        return runAO.listFederatedTrainingsOfProject(projectId, mode).stream().map(run -> mapper.mapRunEntityToDetailDTO(run, false)).toList();
     }
 
     @Transactional
@@ -78,10 +79,10 @@ public class FederatedTrainingBO {
     }
 
     @Transactional
-    public ExecutionRunDetailDTO createTransactional(Long projectId, CreateProjectFederatedExperimentDTO create, String keycloakId,
+    public ExecutionRunDetailDTO createTransactional(Long projectId, ExecutionMode mode, CreateProjectExperimentDTO create, String keycloakId,
                                                      Set<String> roles) {
         membershipAO.checkProjectAndUser(projectId, keycloakId);
-        return mapper.mapRunEntityToDetailDTO(setupBO.create(projectId, create, keycloakId, roles), false);
+        return mapper.mapRunEntityToDetailDTO(setupBO.create(projectId, mode, create, keycloakId, roles), false);
     }
 
     @Transactional

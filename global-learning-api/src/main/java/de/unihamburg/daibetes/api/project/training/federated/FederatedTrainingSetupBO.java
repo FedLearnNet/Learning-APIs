@@ -18,6 +18,7 @@ import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.feddbclient.FLNetClientBroadcastBO;
 import de.unihamburg.daibetes.api.project.ProjectAO;
 import de.unihamburg.daibetes.api.project.ProjectBO;
+import de.unihamburg.daibetes.api.query.response.QueryResponseBO;
 import de.unihamburg.daibetes.api.workflow.WorkflowBO;
 import de.unihamburg.daibetes.api.workflow.WorkflowEntity;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
@@ -38,6 +39,7 @@ import de.unihamburg.daibetes.services.GlobalRelayService;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotAllowedException;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -85,6 +87,9 @@ public class FederatedTrainingSetupBO {
     FederatedTrainingAggregatorBO aggregatorBO;
 
     @Inject
+    QueryResponseBO queryResponseBO;
+
+    @Inject
     ObjectMapper objectMapper;
 
     @Inject
@@ -95,9 +100,20 @@ public class FederatedTrainingSetupBO {
     String relayServerAddress;
 
     /** A training on a copy of the project's workflow; the clinics are asked to accept it. */
-    public ExecutionRunEntity create(Long projectId, CreateProjectFederatedExperimentDTO create, String keycloakId, Set<String> roles) {
+    public ExecutionRunEntity create(Long projectId, ExecutionMode mode, CreateProjectExperimentDTO create, String keycloakId, Set<String> roles) {
+        String connectionId = null;
+        if (mode == ExecutionMode.TRE) {
+            // TRE trains on the chosen clinic, which coordinates itself
+            if (create.getQueryResponseId() == null) {
+                throw new BadRequestException("A TRE training needs a client");
+            }
+            create.setPlatformIsCoordinator(false);
+        }
         projectBO.checkPlatformIsCoordinatorAllowed(Boolean.TRUE.equals(create.getPlatformIsCoordinator()));
         ProjectDetailDTO project = projectBO.getById(projectId);
+        if (mode == ExecutionMode.TRE) {
+            connectionId = queryResponseBO.findConnectionId(create.getQueryResponseId(), project.getQueryId());
+        }
         WorkflowEntity workflow = workflowBO.cloneWorkflow(workflowBO.getById(project.getWorkflowId()));
         project.setWorkflowId(workflow.getId());
 
@@ -105,7 +121,7 @@ public class FederatedTrainingSetupBO {
                 project, workflow, relayServerAddress, HashUtil.randomHex(32));
         experimentAO.persist(experiment);
 
-        ExecutionStartDTO start = new ExecutionStartDTO(ExecutionPurpose.TRAINING, ExecutionMode.FEDERATED, create.getName());
+        ExecutionStartDTO start = new ExecutionStartDTO(ExecutionPurpose.TRAINING, mode, create.getName());
         start.setLocation(ExecutionLocation.LOCAL);
         ExecutionRunEntity run = workflowExecutionBO.createTransactional(start, workflow.getNodes());
         run.setKeycloakId(keycloakId);
@@ -114,7 +130,9 @@ public class FederatedTrainingSetupBO {
         Log.infof("Created federated training %d of project %d", run.getId(), projectId);
 
         ProjectFederatedExperimentForLocalDTO query = experimentMapper.experimentToLearningQuery(experiment, roles, workflowBO.entityToDto(workflow));
-        broadcastBO.sendAfterCommit("Learning query of training " + run.getId(), () -> broadcastBO.fireLearningQuery(query));
+        query.setMode(mode);
+        String target = connectionId;
+        broadcastBO.sendAfterCommit("Learning query of training " + run.getId(), () -> broadcastBO.fireLearningQuery(query, target));
         return run;
     }
 
@@ -143,6 +161,10 @@ public class FederatedTrainingSetupBO {
             return false;
         }
         Optional<ExecutionParticipantEntity> participant = run.participant(clinicId);
+        if (participant.isEmpty() && run.getMode() == ExecutionMode.TRE && !run.getParticipants().isEmpty()) {
+            Log.warnf("Ignoring clinic %s for TRE training %s, another clinic takes part", clinicId, globalUniqueId);
+            return false;
+        }
         if (participant.isEmpty()) {
             run.addParticipant(federationMapper.clinicToParticipantEntity(clinicId, modelCanBePublic));
             experiment.setAcceptanceClinicCount(Optional.ofNullable(experiment.getAcceptanceClinicCount()).orElse(0L) + 1);
@@ -154,7 +176,7 @@ public class FederatedTrainingSetupBO {
             experiment.setModelCanBePublic(false);
         }
         if (experiment.getStatus() == ProjectStatus.INIT
-                && experiment.getAcceptanceClinicCount() >= config.federatedLearning().participantsMinAmount()) {
+                && experiment.getAcceptanceClinicCount() >= minParticipants(run)) {
             experiment.setStatus(ProjectStatus.READY);
         }
         Log.infof("Clinic %s accepted training %s, %d patients of %d clinics now", clinicId, globalUniqueId,
@@ -167,7 +189,7 @@ public class FederatedTrainingSetupBO {
         if (experiment.getStatus() != ProjectStatus.READY) {
             throw new NotAllowedException("Experiment is not ready");
         }
-        if (run.getParticipants().size() < config.federatedLearning().participantsMinAmount()) {
+        if (run.getParticipants().size() < minParticipants(run)) {
             throw new NotAllowedException("Not enough participants");
         }
         if (run.getSteps().isEmpty()) {
@@ -190,7 +212,7 @@ public class FederatedTrainingSetupBO {
     public boolean startStep(ExecutionExperimentEntity experiment, ExecutionRunEntity run, ExecutionRunStepEntity step) {
         RelaySetup relay;
         try {
-            relay = setupRelay(experiment, run, step);
+            relay = run.getMode() == ExecutionMode.TRE ? new RelaySetup(withoutRelay(run), null) : setupRelay(experiment, run, step);
         } catch (RuntimeException e) {
             Log.errorf(e, "Relay setup of step %d failed", step.getId());
             return false;
@@ -224,6 +246,17 @@ public class FederatedTrainingSetupBO {
         Long nodeId = node.getId();
         String workflowNodeId = node.getNodeId();
         broadcastBO.sendAfterCommit("Setup of step " + next.getId(), () -> broadcastBO.nextStepLearning(globalUniqueId, nodeId, workflowNodeId));
+    }
+
+    // TRE: every clinic still gets its start, just without a relay.
+    private Map<String, FederatedLearningRelayInfoDTO> withoutRelay(ExecutionRunEntity run) {
+        Map<String, FederatedLearningRelayInfoDTO> clinics = new HashMap<>();
+        run.getParticipants().forEach(participant -> clinics.put(participant.getParticipantId(), null));
+        return clinics;
+    }
+
+    private int minParticipants(ExecutionRunEntity run) {
+        return run.getMode() == ExecutionMode.TRE ? 1 : config.federatedLearning().participantsMinAmount();
     }
 
     private String chooseClinicCoordinator(ExecutionRunEntity run) {

@@ -1,5 +1,6 @@
-package de.unihamburg.daibetes.api.project.training.metrics;
+package de.unihamburg.daibetes.api.project.training.result;
 
+import bio.cosy.feddb.core.api.socket.RunResultRequestType;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -11,25 +12,27 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Path("/project/{projectId}/experiment/federated/{experimentId}/metrics-request")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Tag(name = "RunMetricsRequest", description = "Service for requesting local run metrics from clinic participants")
-public interface RunMetricsRequestService {
+@Tag(name = "RunResultRequest", description = "Service for requesting local run results from clinic participants")
+public interface RunResultRequestService {
 
     @GET
     @Operation(summary = "Get the metrics request for an experiment")
     @APIResponse(responseCode = "200", description = "Metrics request found")
     @APIResponse(responseCode = "404", description = "No metrics request exists yet")
     @Transactional
-    RunMetricsRequestDTO getRequest(
+    RunResultRequestDTO getRequest(
             @PathParam("projectId") Long projectId,
-            @PathParam("experimentId") Long experimentId);
+            @PathParam("experimentId") Long experimentId,
+            @QueryParam("type") @DefaultValue("METRICS") RunResultRequestType type);
 
     @POST
     @Operation(summary = "Create and broadcast a metrics request to all clinic participants")
     @APIResponse(responseCode = "200", description = "Metrics request created and broadcast")
     @Transactional
-    RunMetricsRequestDTO createRequest(
+    RunResultRequestDTO createRequest(
             @PathParam("projectId") Long projectId,
-            @PathParam("experimentId") Long experimentId);
+            @PathParam("experimentId") Long experimentId,
+            @QueryParam("type") @DefaultValue("METRICS") RunResultRequestType type);
 
     @GET
     @Path("/evaluation")

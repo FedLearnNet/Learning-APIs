@@ -1,14 +1,15 @@
-package de.unihamburg.daibetes.api.project.training.metrics;
+package de.unihamburg.daibetes.api.project.training.result;
 
 import bio.cosy.feddb.core.api.socket.ProjectFederatedRequestRunMetricsDTO;
 import bio.cosy.feddb.core.api.socket.RunMetricDTO;
+import bio.cosy.feddb.core.api.socket.RunResultRequestType;
 import bio.cosy.feddb.core.api.socket.RunMetricsResponseClientDTO;
 import bio.cosy.feddb.core.base.BaseBo;
 import de.unihamburg.daibetes.api.feddbclient.FLNetClientBroadcastBO;
 import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentAO;
 import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
-import de.unihamburg.daibetes.api.project.training.metrics.response.RunMetricsResponseBO;
-import de.unihamburg.daibetes.api.project.training.metrics.response.RunMetricsResponseDTO;
+import de.unihamburg.daibetes.api.project.training.result.response.RunResultResponseBO;
+import de.unihamburg.daibetes.api.project.training.result.response.RunResultResponseDTO;
 import de.unihamburg.daibetes.api.project.membership.ProjectMembershipAO;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -27,10 +28,10 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 @ApplicationScoped
-public class RunMetricsRequestBO extends BaseBo<RunMetricsRequestDTO, RunMetricsRequestEntity, RunMetricsRequestAO, RunMetricsRequestMapper> {
+public class RunResultRequestBO extends BaseBo<RunResultRequestDTO, RunResultRequestEntity, RunResultRequestAO, RunResultRequestMapper> {
 
     @Inject
-    RunMetricsResponseBO runMetricsResponseBO;
+    RunResultResponseBO runMetricsResponseBO;
 
     @Inject
     ExecutionExperimentAO experimentAO;
@@ -41,13 +42,14 @@ public class RunMetricsRequestBO extends BaseBo<RunMetricsRequestDTO, RunMetrics
     @Inject
     ProjectMembershipAO membershipAO;
 
-    public RunMetricsRequestDTO createAndBroadcast(Long experimentId, String keycloakId) {
+    public RunResultRequestDTO createAndBroadcast(Long experimentId, RunResultRequestType type, String keycloakId) {
         ExecutionExperimentEntity experiment = experimentAO.findByIdOptional(experimentId)
                 .orElseThrow(() -> new NotFoundException("Experiment not found: " + experimentId));
 
-        RunMetricsRequestEntity entity = new RunMetricsRequestEntity();
+        RunResultRequestEntity entity = new RunResultRequestEntity();
         entity.setGlobalRequestId(UUID.randomUUID());
         entity.setRequestKeycloakId(keycloakId);
+        entity.setType(type);
         entity.setExperiment(experiment);
         ao.persist(entity);
 
@@ -55,14 +57,14 @@ public class RunMetricsRequestBO extends BaseBo<RunMetricsRequestDTO, RunMetrics
         broadcastMsg.setKeycloakId(keycloakId);
         broadcastMsg.setGlobalExperimentUniqueId(experiment.getGlobalUniqueId());
         broadcastMsg.setGlobalRequestId(entity.getGlobalRequestId());
+        broadcastMsg.setType(type);
         broadcastBO.fireRunMetricsRequest(broadcastMsg);
 
         return mapper.entityToDto(entity);
     }
 
-    public Optional<RunMetricsRequestDTO> findForExperiment(Long experimentId, String keycloakId) {
-
-        return ao.findByExperimentId(experimentId)
+    public Optional<RunResultRequestDTO> findForExperiment(Long experimentId, RunResultRequestType type, String keycloakId) {
+        return ao.findByExperimentId(experimentId, type)
                 .map(mapper::entityToDto)
                 .map(r -> {
                     membershipAO.checkProjectAndUser(r.getProjectId(), keycloakId);
@@ -87,9 +89,9 @@ public class RunMetricsRequestBO extends BaseBo<RunMetricsRequestDTO, RunMetrics
      * "federated" and "local" are validation-size-weighted means across sites (see EvaluationSummaryDTO).
      */
     public EvaluationSummaryDTO evaluationSummary(Long experimentId, String keycloakId) {
-        RunMetricsRequestDTO request = findForExperiment(experimentId, keycloakId)
+        RunResultRequestDTO request = findForExperiment(experimentId, RunResultRequestType.METRICS, keycloakId)
                 .orElseThrow(() -> new NotFoundException("No metrics request for experiment " + experimentId));
-        List<RunMetricsResponseDTO> responses = request.getResponses() != null ? request.getResponses() : List.of();
+        List<RunResultResponseDTO> responses = request.getResponses() != null ? request.getResponses() : List.of();
 
         EvaluationSummaryDTO summary = new EvaluationSummaryDTO();
         summary.setPrimaryMetric(PRIMARY_METRIC);
@@ -98,7 +100,7 @@ public class RunMetricsRequestBO extends BaseBo<RunMetricsRequestDTO, RunMetrics
         List<SiteParsed> sites = new ArrayList<>();
         Set<String> metricNames = new LinkedHashSet<>();
         int maxRound = 0;
-        for (RunMetricsResponseDTO r : responses) {
+        for (RunResultResponseDTO r : responses) {
             SiteParsed sp = new SiteParsed();
             sp.clinicId = r.getRandomClinicId();
             for (RunMetricDTO m : Optional.ofNullable(r.getMetrics()).orElseGet(List::of)) {

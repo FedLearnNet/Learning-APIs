@@ -1,7 +1,8 @@
 package de.unihamburg.daibetes.api.project.training;
 
+import bio.cosy.feddb.core.execution.ExecutionMode;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
-import de.unihamburg.daibetes.api.project.training.federated.CreateProjectFederatedExperimentDTO;
+import de.unihamburg.daibetes.api.project.training.federated.CreateProjectExperimentDTO;
 import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingBO;
 import de.unihamburg.daibetes.api.project.training.platform.CreateProjectLocalExperimentDTO;
 import de.unihamburg.daibetes.api.project.training.platform.PlatformTrainingBO;
@@ -15,6 +16,7 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 
 import java.util.List;
+import java.util.Locale;
 
 @ApplicationScoped
 public class ProjectExperimentServiceImpl implements ProjectExperimentService {
@@ -35,29 +37,29 @@ public class ProjectExperimentServiceImpl implements ProjectExperimentService {
     Multi<ExecutionRunDetailDTO> runs;
 
     @Override
-    public List<ExecutionRunDetailDTO> listFederated(Long projectId) {
-        return federatedTrainingBO.listTransactional(projectId, userIdentity.getKeycloakId());
+    public List<ExecutionRunDetailDTO> listFederated(Long projectId, String kind) {
+        return federatedTrainingBO.listTransactional(projectId, modeOf(kind), userIdentity.getKeycloakId());
     }
 
     @Override
-    public Response createFederated(Long projectId, CreateProjectFederatedExperimentDTO createDTO) {
-        ExecutionRunDetailDTO created = federatedTrainingBO.createTransactional(projectId, createDTO, userIdentity.getKeycloakId(), userIdentity.getRoles());
+    public Response createFederated(Long projectId, String kind, CreateProjectExperimentDTO createDTO) {
+        ExecutionRunDetailDTO created = federatedTrainingBO.createTransactional(projectId, modeOf(kind), createDTO, userIdentity.getKeycloakId(), userIdentity.getRoles());
         return Response.status(Response.Status.CREATED).entity(created).build();
     }
 
     @Override
-    public Multi<ExecutionRunDetailDTO> retrieveFederated(Long projectId, Long runId) {
+    public Multi<ExecutionRunDetailDTO> retrieveFederated(Long projectId, String kind, Long runId) {
         String keycloakId = userIdentity.getKeycloakId();
         return subscribe(Uni.createFrom().item(() -> federatedTrainingBO.findRunTransactional(projectId, runId, keycloakId)));
     }
 
     @Override
-    public ExecutionRunDetailDTO startFederated(Long projectId, Long runId) {
+    public ExecutionRunDetailDTO startFederated(Long projectId, String kind, Long runId) {
         return federatedTrainingBO.startTransactional(projectId, runId, userIdentity.getKeycloakId());
     }
 
     @Override
-    public ExecutionRunDetailDTO stopFederated(Long projectId, Long runId) {
+    public ExecutionRunDetailDTO stopFederated(Long projectId, String kind, Long runId) {
         return federatedTrainingBO.stopTransactional(projectId, runId, userIdentity.getKeycloakId());
     }
 
@@ -103,6 +105,10 @@ public class ProjectExperimentServiceImpl implements ProjectExperimentService {
     public Multi<ExecutionRunDetailDTO> retrieveLocalTest(Long projectId) {
         String keycloakId = userIdentity.getKeycloakId();
         return subscribe(Uni.createFrom().item(() -> platformTrainingBO.findTestTransactional(projectId, keycloakId)));
+    }
+
+    private ExecutionMode modeOf(String kind) {
+        return ExecutionMode.valueOf(kind.toUpperCase(Locale.ROOT));
     }
 
     // The training now, then every change of it; nothing for a project never tested.

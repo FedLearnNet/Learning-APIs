@@ -1,6 +1,6 @@
 package de.unihamburg.daibetes.api.project.training;
 
-import de.unihamburg.daibetes.api.project.training.federated.CreateProjectFederatedExperimentDTO;
+import de.unihamburg.daibetes.api.project.training.federated.CreateProjectExperimentDTO;
 import de.unihamburg.daibetes.api.project.training.platform.CreateProjectLocalExperimentDTO;
 import de.unihamburg.daibetes.execution.run.ExecutionRunDetailDTO;
 import io.smallrye.mutiny.Multi;
@@ -25,15 +25,18 @@ import java.util.List;
 @Tag(name = "Project", description = "Service for managing project operations")
 public interface ProjectExperimentService {
 
+    // federated across clinics, or TRE on one chosen clinic
+    String ACROSS_CLINICS = "{kind: federated|tre}";
+
     @GET
-    @Path("federated")
+    @Path(ProjectExperimentService.ACROSS_CLINICS)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Lists the trainings of the project across clinics, newest first.")
     @APIResponse(responseCode = "200", description = "Trainings of the project")
-    List<ExecutionRunDetailDTO> listFederated(@PathParam("id") Long id);
+    List<ExecutionRunDetailDTO> listFederated(@PathParam("id") Long id, @PathParam("kind") String kind);
 
     @POST
-    @Path("federated")
+    @Path(ProjectExperimentService.ACROSS_CLINICS)
     @Operation(summary = "Sets up a training of the project's workflow across clinics and asks them to accept it.")
     @APIResponse(responseCode = "201", description = "Training set up",
             content = @Content(
@@ -41,29 +44,29 @@ public interface ProjectExperimentService {
                     schema = @Schema(implementation = ExecutionRunDetailDTO.class)
             ))
     @APIResponse(responseCode = "400", description = "Invalid data")
-    Response createFederated(@PathParam("id") Long id, @RequestBody @Valid CreateProjectFederatedExperimentDTO createDTO);
+    Response createFederated(@PathParam("id") Long id, @PathParam("kind") String kind, @RequestBody @Valid CreateProjectExperimentDTO createDTO);
 
     @GET
-    @Path("federated/{runId}")
+    @Path(ProjectExperimentService.ACROSS_CLINICS + "/{runId}")
     @Operation(summary = "Follows a training across clinics: the run now and on every change after.")
     @APIResponse(responseCode = "200", description = "Training found")
     @APIResponse(responseCode = "404", description = "Training not found")
     @RestStreamElementType(MediaType.APPLICATION_JSON)
-    Multi<ExecutionRunDetailDTO> retrieveFederated(@PathParam("id") Long id, @PathParam("runId") Long runId);
+    Multi<ExecutionRunDetailDTO> retrieveFederated(@PathParam("id") Long id, @PathParam("kind") String kind, @PathParam("runId") Long runId);
 
     @PUT
-    @Path("federated/{runId}/start")
+    @Path(ProjectExperimentService.ACROSS_CLINICS + "/{runId}/start")
     @Operation(summary = "Starts a training enough clinics accepted.")
     @APIResponse(responseCode = "200", description = "Training started")
     @APIResponse(responseCode = "404", description = "Training not found")
-    ExecutionRunDetailDTO startFederated(@PathParam("id") Long id, @PathParam("runId") Long runId);
+    ExecutionRunDetailDTO startFederated(@PathParam("id") Long id, @PathParam("kind") String kind, @PathParam("runId") Long runId);
 
     @PUT
-    @Path("federated/{runId}/stop")
+    @Path(ProjectExperimentService.ACROSS_CLINICS + "/{runId}/stop")
     @Operation(summary = "Stops a training across clinics.")
     @APIResponse(responseCode = "200", description = "Training stopped")
     @APIResponse(responseCode = "404", description = "Training not found")
-    ExecutionRunDetailDTO stopFederated(@PathParam("id") Long id, @PathParam("runId") Long runId);
+    ExecutionRunDetailDTO stopFederated(@PathParam("id") Long id, @PathParam("kind") String kind, @PathParam("runId") Long runId);
 
     @GET
     @Path("local")

@@ -271,7 +271,10 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         Log.infof("Storing query results for query %s", createdQueryId);
         Infrastructure.getDefaultWorkerPool().execute(() ->
                 queryPatientBO.storeMatchedPatientsTransactional(patientMatchSql, resolvedCohortIds, createdQueryId));
-        return QueryClientResponseDTO.createResponse(count, queryGlobalUniqueId);
+        QueryClientResponseDTO response = QueryClientResponseDTO.createResponse(count, queryGlobalUniqueId);
+        response.setSupportedModes(permissionBO.supportedModesOf(allowedCohorts.stream()
+                .filter(p -> resolvedCohortIds.contains(p.getCohortId())).toList()));
+        return response;
     }
 
 

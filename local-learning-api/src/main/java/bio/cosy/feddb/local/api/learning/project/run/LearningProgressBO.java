@@ -36,6 +36,7 @@ import org.jboss.resteasy.reactive.multipart.FileUpload;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @ApplicationScoped
@@ -114,26 +115,33 @@ public class LearningProgressBO {
      */
     public void uploadModel(Long attemptId, ModelSubDataDTO model) {
         ExecutionAttemptEntity attempt = attemptAO.findById(attemptId);
-        if (attempt == null) {
-            return;
+        if (attempt != null) {
+            handToPlatform(attempt, Map.of(model.getFile().fileName(), model.getFile().uploadedFile().toFile()), false);
         }
+    }
+
+    private void handToPlatform(ExecutionAttemptEntity attempt, Map<String, File> files, boolean outputs) {
+        Long attemptId = attempt.getId();
         ExecutionRunEntity run = attempt.getStep().getRun();
         LearningProjectEntity project = projectAO.findByRunId(run.getId());
         if (!Boolean.TRUE.equals(project.getIsCoordinator())) {
-            Log.infof("Not handing the model of attempt %d to the platform: this clinic does not coordinate", attemptId);
+            Log.infof("Not handing the files of attempt %d to the platform: this clinic does not coordinate", attemptId);
             return;
         }
         ClientMultipartForm form = ClientMultipartForm.create();
         form.attribute("globalFLExperimentUniqueId", project.getRequest().getGlobalExperimentUniqueId(), "experimentId");
         form.attribute("appVersionId", String.valueOf(attempt.getStep().getWorkflowNode().getFederatedAppVersionId()), "appVersionId");
         form.attribute("clinicId", run.getParticipantId(), "clinicId");
-        form.binaryFileUpload("files", model.getFile().fileName(), model.getFile().uploadedFile().toString(), "application/octet-stream");
+        if (outputs) {
+            form.attribute("nodeId", attempt.getStep().getWorkflowNode().getNodeId(), "nodeId");
+        }
+        files.forEach((name, file) -> form.binaryFileUpload("files", name, file.toString(), "application/octet-stream"));
         try (Response response = globalAPIModelResultService.upload(form)) {
             if (response.getStatus() != Response.Status.CREATED.getStatusCode()) {
-                Log.errorf("Platform answered %d to the model of attempt %d: %s", response.getStatus(), attemptId, response.readEntity(String.class));
+                Log.errorf("Platform answered %d to the files of attempt %d: %s", response.getStatus(), attemptId, response.readEntity(String.class));
             }
         } catch (RuntimeException e) {
-            Log.errorf(e, "Could not hand the model of attempt %d to the platform", attemptId);
+            Log.errorf(e, "Could not hand the files of attempt %d to the platform", attemptId);
         }
     }
 
@@ -146,6 +154,25 @@ public class LearningProgressBO {
             keepWrittenOutputs(attempt);
             step.setSelectedAttempt(attempt);
         }
+    }
+
+    /**
+     * TRE: the outputs of every finished step go to the platform next to the model, once released.
+     */
+    public void handOutputsToPlatform(ExecutionRunEntity run) {
+        run.getStepsInExecutionOrder().stream()
+                .map(ExecutionRunStepEntity::getSelectedAttempt)
+                .filter(attempt -> attempt != null && attempt.getStatus() == RunStatusTypes.FINISHED)
+                .forEach(attempt -> {
+                    Map<String, File> outputs = executionFileBO.loadForAttempt(attempt.getId(), ExecutionFileDirection.OUTPUT);
+                    try {
+                        if (!outputs.isEmpty()) {
+                            handToPlatform(attempt, outputs, true);
+                        }
+                    } finally {
+                        outputs.values().forEach(FileUtils::deleteQuietly);
+                    }
+                });
     }
 
     /**

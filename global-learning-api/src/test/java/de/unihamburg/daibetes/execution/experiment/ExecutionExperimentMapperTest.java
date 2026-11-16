@@ -1,7 +1,7 @@
 package de.unihamburg.daibetes.execution.experiment;
 
 import bio.cosy.feddb.core.api.socket.ProjectFederatedExperimentForLocalDTO;
-import de.unihamburg.daibetes.api.project.training.federated.CreateProjectFederatedExperimentDTO;
+import de.unihamburg.daibetes.api.project.training.federated.CreateProjectExperimentDTO;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -13,8 +13,8 @@ class ExecutionExperimentMapperTest {
 
     private final ExecutionExperimentMapper mapper = new ExecutionExperimentMapperImpl();
 
-    private CreateProjectFederatedExperimentDTO create(Boolean platformIsCoordinator) {
-        CreateProjectFederatedExperimentDTO create = new CreateProjectFederatedExperimentDTO();
+    private CreateProjectExperimentDTO create(Boolean platformIsCoordinator) {
+        CreateProjectExperimentDTO create = new CreateProjectExperimentDTO();
         create.setName("Platform Coordinator Experiment");
         create.setDescription("Mapper regression test");
         create.setPlatformIsCoordinator(platformIsCoordinator);

@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.api.learning.request;
 
 import bio.cosy.feddb.core.api.socket.LearningQueryClientResponseDTO;
+import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.core.api.socket.ProjectFederatedExperimentForLocalDTO;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
 import bio.cosy.feddb.core.base.BaseBo;
@@ -24,7 +25,6 @@ import bio.cosy.feddb.local.api.search.SearchResultDTO;
 import bio.cosy.feddb.local.api.search.SearchResultType;
 import bio.cosy.feddb.local.api.search.SearchScoreUtil;
 import io.quarkus.logging.Log;
-import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -208,11 +208,11 @@ public class LearningRequestBO extends BaseBo<LearningRequestDTO, LearningReques
         Long id = createTransactional(queryOptional.get(), requestLearning, harmonizedQueryResult);
 
         Set<Long> pendingCohortIds = initCohortDecisionsTransactional(
-                id, requestLearning.getKeycloakId(), certificationLevel, needsInternetAccess);
+                id, requestLearning.getKeycloakId(), requestLearning.getMode(), certificationLevel, needsInternetAccess);
 
         // Auto-approved cohorts: send their patients to global now. Request stays PENDING while any
         // cohort is still manual; flips to APPROVED only when every cohort is decided.
-        QuarkusTransaction.requiringNew().run(() -> finalizeAutoApprovedCohorts(id));
+        finalizeAutoApprovedCohortsTransactional(id);
 
         if (!pendingCohortIds.isEmpty()) {
             websocketClientNotificationBO.notifyTrainingRequestReceived(pendingCohortIds);
@@ -238,6 +238,7 @@ public class LearningRequestBO extends BaseBo<LearningRequestDTO, LearningReques
         LearningProjectEntity project = projectBO.createForRequest(
                 query.getId(), entity, requestLearning.getProjectVersion(), requestLearning.getWorkflow());
         project.setPlatformIsCoordinator(requestLearning.getPlatformIsCoordinator());
+        project.setExecutionMode(requestLearning.getMode());
         entity.setProject(project);
 
         patientLearningBO.initPatientList(query.getId(), entity, harmonizedQueryResult);
@@ -245,7 +246,7 @@ public class LearningRequestBO extends BaseBo<LearningRequestDTO, LearningReques
     }
 
     @Transactional
-    public Set<Long> initCohortDecisionsTransactional(Long id, String platformUserId,
+    public Set<Long> initCohortDecisionsTransactional(Long id, String platformUserId, ExecutionMode mode,
                                                       int certificationLevel,
                                                       boolean needsInternetAccess) {
         LearningRequestEntity entity = ao.findByIdOptional(id)
@@ -254,8 +255,14 @@ public class LearningRequestBO extends BaseBo<LearningRequestDTO, LearningReques
         if (cohortIds.isEmpty()) {
             cohortIds = getPatientCohortIds(entity);
         }
-        return cohortDecisionBO.initForRequest(entity, cohortIds, platformUserId,
+        Set<Long> pending = cohortDecisionBO.initForRequest(entity, cohortIds, platformUserId, mode,
                 certificationLevel, needsInternetAccess);
+        // cohorts without training access for the mode never take part
+        Set<Long> rejected = cohortDecisionBO.getRejectedCohortIds(id);
+        if (!rejected.isEmpty()) {
+            patientLearningBO.removePatientsOfCohorts(id, rejected);
+        }
+        return pending;
     }
 
 
@@ -318,7 +325,8 @@ public class LearningRequestBO extends BaseBo<LearningRequestDTO, LearningReques
         return findByIdForUser(id, keycloakId);
     }
 
-    private void finalizeAutoApprovedCohorts(Long id) {
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    void finalizeAutoApprovedCohortsTransactional(Long id) {
         Set<Long> autoApprovedCohortIds = cohortDecisionBO.getApprovedCohortIds(id);
         long autoAcceptedPatients = patientLearningBO.countForRequestAndCohorts(id, autoApprovedCohortIds);
         if (autoAcceptedPatients > 0) {

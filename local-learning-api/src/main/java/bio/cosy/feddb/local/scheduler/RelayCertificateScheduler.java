@@ -6,6 +6,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import java.time.Instant;
+
 @ApplicationScoped
 public class RelayCertificateScheduler {
 
@@ -15,6 +17,6 @@ public class RelayCertificateScheduler {
     @Scheduled(every = "30s", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     @Transactional
     void retryPendingCertificates() {
-        progressBO.retryPending();
+        progressBO.retryPending(Instant.now());
     }
 }

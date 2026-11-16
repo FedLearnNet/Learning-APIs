@@ -1,4 +1,4 @@
-package de.unihamburg.daibetes.api.project.training.metrics;
+package de.unihamburg.daibetes.api.project.training.result;
 
 import java.util.List;
 

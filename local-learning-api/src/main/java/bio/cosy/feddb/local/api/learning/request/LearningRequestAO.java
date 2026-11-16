@@ -40,7 +40,7 @@ public class LearningRequestAO implements PanacheRepository<LearningRequestEntit
     }
 
     public Optional<LearningRequestEntity> findByGlobalFLExperimentUniqueId(String globalFLExperimentUniqueId) {
-        return find("globalFLExperimentUniqueId", globalFLExperimentUniqueId).firstResultOptional();
+        return find("globalExperimentUniqueId", globalFLExperimentUniqueId).firstResultOptional();
     }
 
     @Transactional
@@ -49,7 +49,7 @@ public class LearningRequestAO implements PanacheRepository<LearningRequestEntit
                 """
                         status = ?1,
                         updatedAt = ?2
-                        where globalFLExperimentUniqueId = ?3
+                        where globalExperimentUniqueId = ?3
                         """,
                 status,
                 new Date(),

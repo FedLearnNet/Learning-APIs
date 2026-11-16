@@ -88,12 +88,12 @@ public class ExecutionRunAO extends BaseExecutionRunAO<ExecutionRunEntity> {
         return find("id = ?1 and purpose = ?2 and mode = ?3", runId, ExecutionPurpose.TEST, ExecutionMode.FEDERATED).firstResultOptional();
     }
 
-    public List<ExecutionRunEntity> listFederatedTrainingsOfProject(Long projectId) {
-        return list("experiment.project.id = ?1 and mode = ?2 order by createdAt desc", projectId, ExecutionMode.FEDERATED);
+    public List<ExecutionRunEntity> listFederatedTrainingsOfProject(Long projectId, ExecutionMode mode) {
+        return list("experiment.project.id = ?1 and mode = ?2 order by createdAt desc", projectId, mode);
     }
 
     public Optional<ExecutionRunEntity> findFederatedTrainingOfProjectOptional(Long runId, Long projectId) {
-        return find("id = ?1 and mode = ?2 and experiment.project.id = ?3", runId, ExecutionMode.FEDERATED, projectId).firstResultOptional();
+        return find("id = ?1 and mode in ?2 and experiment.project.id = ?3", runId, List.of(ExecutionMode.FEDERATED, ExecutionMode.TRE), projectId).firstResultOptional();
     }
 
     public List<ExecutionRunEntity> listPlatformTrainingsOfProject(Long projectId, boolean tests) {

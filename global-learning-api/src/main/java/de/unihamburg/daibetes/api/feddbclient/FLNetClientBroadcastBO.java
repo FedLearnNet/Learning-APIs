@@ -137,14 +137,15 @@ public class FLNetClientBroadcastBO {
      * Broadcasts a learning experiment configuration to all connected clients.
      * Initiates the setup phase of a federated learning experiment across all participants.
      *
-     * @param experiment The experiment configuration to be distributed
+     * @param experiment   The experiment configuration to be distributed
+     * @param connectionId The only client to ask, all if null
      */
-    public void fireLearningQuery(ProjectFederatedExperimentForLocalDTO experiment) {
+    public void fireLearningQuery(ProjectFederatedExperimentForLocalDTO experiment, @Nullable String connectionId) {
         logger.infof("Firing learning query for experiment: %s", experiment);
         FedDBClientDataDTO<ProjectFederatedExperimentForLocalDTO> fedDBClientDataDTO = new FedDBClientDataDTO<>(
                 FedDBClientTypeEnum.LEARNING_QUERY, experiment);
 
-        sendMessageToAll(fedDBClientDataDTO);
+        sendMessageToAll(fedDBClientDataDTO, connectionId);
     }
 
     /**
@@ -314,8 +315,13 @@ public class FLNetClientBroadcastBO {
      * @param message The message to be broadcast to all connections
      */
     private void sendMessageToAll(FedDBClientDataDTO<?> message) {
+        sendMessageToAll(message, null);
+    }
+
+    private void sendMessageToAll(FedDBClientDataDTO<?> message, @Nullable String connectionId) {
         logger.infof("Broadcasting message to all connections: %s", message);
-        connections.findByEndpointId(ENDPOINT_ID)
+        connections.findByEndpointId(ENDPOINT_ID).stream()
+                .filter(c -> connectionId == null || c.id().equals(connectionId))
                 .forEach(c -> {
                     try {
                         c.sendTextAndAwait(message);

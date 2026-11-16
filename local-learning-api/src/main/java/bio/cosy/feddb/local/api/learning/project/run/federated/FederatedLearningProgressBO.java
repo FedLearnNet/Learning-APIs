@@ -18,6 +18,7 @@ import bio.cosy.feddb.local.execution.step.ExecutionRunStepEntity;
 import bio.cosy.feddb.local.services.controller.LocalControllerLearningService;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Typed;
 import jakarta.inject.Inject;
 import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
@@ -30,6 +31,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @ApplicationScoped
+@Typed(FederatedLearningProgressBO.class)
 public class FederatedLearningProgressBO extends LearningProgressBO {
 
     @Inject
@@ -67,8 +69,7 @@ public class FederatedLearningProgressBO extends LearningProgressBO {
     /**
      * Sends a request again if its certificate did not arrive in time, and fails the step if it never does.
      */
-    public void retryPending() {
-        Instant now = Instant.now();
+    public void retryPending(Instant now) {
         long timeoutMillis = config.relay().certSign().timeout().toMillis();
         int maxAttempts = config.relay().certSign().maxAttempts();
         for (ExecutionFederationEntity pending : federationAO.listPendingRelayCerts()) {

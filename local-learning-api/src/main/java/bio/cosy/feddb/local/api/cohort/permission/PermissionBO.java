@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.api.cohort.permission;
 
 import bio.cosy.feddb.core.base.BaseBo;
+import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.local.api.cohort.CohortBO;
 import bio.cosy.feddb.local.api.cohort.CohortDTO;
 import bio.cosy.feddb.local.api.cohort.CohortEntity;
@@ -14,6 +15,7 @@ import jakarta.ws.rs.NotFoundException;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @ApplicationScoped
 public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, PermissionAO, PermissionMapper> {
@@ -56,20 +58,25 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
         return false; // null or NONE
     }
 
-    public boolean grantsFederatedAutoTrainingAccess(List<PermissionDTO> permissions, int certificationLevel,
-                                                     boolean needsInternetAccess) {
-        if (permissions == null || permissions.isEmpty() || needsInternetAccess) {
+    public boolean grantsAutoTrainingAccess(List<PermissionDTO> permissions, ExecutionMode mode, int certificationLevel,
+                                            boolean needsInternetAccess) {
+        if (permissions == null || needsInternetAccess) {
             return false;
         }
-        return permissions.stream().anyMatch(p -> grantsAutoTraining(p.getFederatedAutoTrainingAccess(), certificationLevel));
+        return permissions.stream().filter(p -> allowsTraining(p, mode)).anyMatch(p -> grantsAutoTraining(
+                mode == ExecutionMode.TRE ? p.getTreAutoTrainingAccess() : p.getFederatedAutoTrainingAccess(), certificationLevel));
     }
 
-    public boolean grantsSPEAutoTrainingAccess(List<PermissionDTO> permissions, int certificationLevel,
-                                               boolean needsInternetAccess) {
-        if (permissions == null || permissions.isEmpty() || needsInternetAccess) {
-            return false;
-        }
-        return permissions.stream().anyMatch(p -> grantsAutoTraining(p.getSpeAutoTrainingAccess(), certificationLevel));
+    // FL unless disabled, TRE only when enabled.
+    public boolean allowsTraining(PermissionDTO permission, ExecutionMode mode) {
+        return mode == ExecutionMode.TRE ? permission.getTreTrainingAccess() == TrainingAccess.ENABLED
+                : permission.getFederatedTrainingAccess() != TrainingAccess.DISABLED;
+    }
+
+    public Set<ExecutionMode> supportedModesOf(List<PermissionDTO> permissions) {
+        return permissions.stream()
+                .flatMap(p -> Stream.of(ExecutionMode.FEDERATED, ExecutionMode.TRE).filter(mode -> allowsTraining(p, mode)))
+                .collect(Collectors.toSet());
     }
 
     public List<PermissionDTO> getActivePermissionsForCohort(String userId, Long cohortId) {
@@ -123,8 +130,8 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
         cohortExists(permission);
 
         if (config.cohort().deactivateAutomaticCohortPermission().learning()
-                && permission.getFederatedAutoTrainingAccess() != null
-                && permission.getFederatedAutoTrainingAccess() != AutoTrainingAccess.NONE
+                && (isAutoTraining(permission.getFederatedAutoTrainingAccess())
+                || isAutoTraining(permission.getTreAutoTrainingAccess()))
         ) {
             Log.warnf("Automatic training access is deactivated in the configuration, cannot create permission with training access");
             throw new NotAllowedException("Automatic training access is deactivated in the configuration, " +
@@ -151,6 +158,10 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
         return mapper.entityToDto(newPermission);
     }
 
+    private boolean isAutoTraining(AutoTrainingAccess access) {
+        return access != null && access != AutoTrainingAccess.NONE;
+    }
+
     public PermissionDTO update(Long id, PermissionDTO permission) {
         this.cohortExists(permission);
         return super.update(id, permission);
@@ -160,6 +171,8 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
     public void setDefault(PermissionDTO permission, FLNetClientConfig.DefaultCohortPermission permissionConfig) {
         permission.setUserId(permissionConfig.globalUserId().orElse(null));
         permission.setFederatedAutoTrainingAccess(permissionConfig.autoTrainingAccess());
+        permission.setTreTrainingAccess(permissionConfig.treTrainingAccess());
+        permission.setTreAutoTrainingAccess(permissionConfig.treAutoTrainingAccess());
         permission.setAutoStatisticsAccess(permissionConfig.autoStatisticsAccess());
         permission.setAutoMetricsAccess(permissionConfig.autoMetricsAccess());
         permission.setIsAllowedToQuery(permissionConfig.isAllowedToQuery());
@@ -170,6 +183,8 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
     public void setDefault(PermissionEntity permission, FLNetClientConfig.DefaultCohortPermission permissionConfig) {
         permission.setUserId(permissionConfig.globalUserId().orElse(null));
         permission.setFederatedAutoTrainingAccess(permissionConfig.autoTrainingAccess());
+        permission.setTreTrainingAccess(permissionConfig.treTrainingAccess());
+        permission.setTreAutoTrainingAccess(permissionConfig.treAutoTrainingAccess());
         permission.setAutoStatisticsAccess(permissionConfig.autoStatisticsAccess());
         permission.setAutoMetricsAccess(permissionConfig.autoMetricsAccess());
         permission.setIsAllowedToQuery(permissionConfig.isAllowedToQuery());
@@ -193,6 +208,7 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
 
         if (config.cohort().deactivateAutomaticCohortPermission().learning()) {
             permission.setFederatedAutoTrainingAccess(AutoTrainingAccess.NONE);
+            permission.setTreAutoTrainingAccess(AutoTrainingAccess.NONE);
         }
         if (config.cohort().deactivateAutomaticCohortPermission().metrics()) {
             permission.setAutoMetricsAccess(AutoMetricsAccess.NONE);

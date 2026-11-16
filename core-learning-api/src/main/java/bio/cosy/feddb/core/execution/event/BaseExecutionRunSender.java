@@ -56,6 +56,7 @@ public abstract class BaseExecutionRunSender<
     @PostConstruct
     void announceChangedRuns() {
         changes.group().intoLists().every(WINDOW)
+                .onOverflow().bufferUnconditionally()
                 .filter(window -> !window.isEmpty())
                 .onItem().transformToUniAndConcatenate(window -> Uni.createFrom().item(() -> {
                             announceChangedRunsTransactional(window);

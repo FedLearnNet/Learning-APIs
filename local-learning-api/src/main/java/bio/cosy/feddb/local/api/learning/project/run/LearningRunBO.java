@@ -12,6 +12,7 @@ import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.local.api.learning.project.LearningProjectAO;
 import bio.cosy.feddb.local.api.learning.project.LearningProjectEntity;
 import bio.cosy.feddb.local.api.learning.project.run.federated.FederatedLearningCleanupBO;
+import bio.cosy.feddb.local.api.learning.project.run.federated.FederatedLearningProgressBO;
 import bio.cosy.feddb.local.api.learning.request.LearningRequestEntity;
 import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptAO;
 import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptEntity;
@@ -19,14 +20,18 @@ import bio.cosy.feddb.local.execution.run.ExecutionRunAO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
 import bio.cosy.feddb.local.execution.step.ExecutionRunStepEntity;
 import io.quarkus.logging.Log;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-public abstract class LearningRunBO {
+@ApplicationScoped
+public class LearningRunBO {
 
     @Inject
     LearningSetupBO setupBO;
@@ -42,6 +47,9 @@ public abstract class LearningRunBO {
 
     @Inject
     FederatedLearningCleanupBO federatedCleanupBO;
+
+    @Inject
+    FederatedLearningProgressBO federatedProgressBO;
 
     @Inject
     LearningProgressBO progressBO;
@@ -88,7 +96,7 @@ public abstract class LearningRunBO {
             setupBO.prepareNextStep(run, request.getRelayInfo());
             return Optional.empty();
         }
-        return progressBO.startCurrentStep(run, request);
+        return progressOf(run.getMode()).startCurrentStep(run, request);
     }
 
     @Transactional
@@ -125,12 +133,17 @@ public abstract class LearningRunBO {
         }
         ExecutionRunStepEntity step = attempt.getStep();
         ExecutionRunEntity run = step.getRun();
+        // The run stream and the finished event both report an end; a step ends once.
+        if (run.getMode() == ExecutionMode.SINGLE
+                || RunStatusTypes.isFinalStatus(status) && RunStatusTypes.isFinalStatus(step.getStatus())) {
+            return;
+        }
         String globalId = projectAO.findByRunId(run.getId()).getRequest().getGlobalExperimentUniqueId();
         if (RunStatusTypes.isFinalStatus(status)) {
             if (run.getMode().equals(ExecutionMode.FEDERATED)) {
                 cleanUpFL(step);
             }
-            progressBO.endStep(step, attempt);
+            progressOf(run.getMode()).endStep(step, attempt);
             if (status == RunStatusTypes.FINISHED && run.getStepsInExecutionOrder().getLast() == step) {
                 getCleanupBO(run.getMode()).finishTraining(run, globalId);
             } else if (status == RunStatusTypes.ERROR) {
@@ -138,6 +151,22 @@ public abstract class LearningRunBO {
             }
         }
         progressBO.reportStatus(run, step, status, globalId);
+    }
+
+    /**
+     * Ended attempts of open trainings whose step was never ended, e.g. a report lost before a restart.
+     */
+    @Transactional
+    public Map<Long, RunStatusTypes> listUnhandledEndsTransactional() {
+        Map<Long, RunStatusTypes> ends = new LinkedHashMap<>();
+        runAO.listOpenTrainings().stream()
+                .filter(run -> run.getMode() != ExecutionMode.SINGLE)
+                .flatMap(run -> run.getStepsInExecutionOrder().stream())
+                .filter(step -> !RunStatusTypes.isFinalStatus(step.getStatus()))
+                .map(ExecutionRunStepEntity::getSelectedAttempt)
+                .filter(attempt -> attempt != null && attempt.hasEnded())
+                .forEach(attempt -> ends.put(attempt.getId(), attempt.getStatus()));
+        return ends;
     }
 
     private Optional<LearningProjectEntity> projectOf(String globalId) {
@@ -150,6 +179,10 @@ public abstract class LearningRunBO {
 
     public void cleanUpFL(ExecutionRunStepEntity step) {
         federatedCleanupBO.stopController(step.getFederation());
+    }
+
+    private LearningProgressBO progressOf(ExecutionMode mode) {
+        return mode == ExecutionMode.FEDERATED ? federatedProgressBO : progressBO;
     }
 
     public LearningCleanupBO getCleanupBO(ExecutionMode mode) {

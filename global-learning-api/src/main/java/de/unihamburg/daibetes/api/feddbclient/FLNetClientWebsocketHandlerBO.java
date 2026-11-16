@@ -7,7 +7,7 @@ import bio.cosy.feddb.core.services.orch.dto.SystemComputingInfoDTO;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingBO;
-import de.unihamburg.daibetes.api.project.training.metrics.RunMetricsRequestBO;
+import de.unihamburg.daibetes.api.project.training.result.RunResultRequestBO;
 import de.unihamburg.daibetes.api.query.response.QueryResponseBO;
 import de.unihamburg.daibetes.api.query.statistics.DataStatisticsResponseBO;
 import io.quarkus.arc.log.LoggerName;
@@ -36,7 +36,7 @@ public class FLNetClientWebsocketHandlerBO {
     DataStatisticsResponseBO dataStatisticsResponseBO;
 
     @Inject
-    RunMetricsRequestBO runMetricsRequestBO;
+    RunResultRequestBO runMetricsRequestBO;
 
     @Inject
     FederatedTrainingBO federatedTrainingBO;
@@ -70,7 +70,7 @@ public class FLNetClientWebsocketHandlerBO {
         if (m.getMessageType().equals(FedDBClientTypeEnum.EXISTING_QUERY)) {
             QueryClientResponseDTO query = objectMapper.convertValue(m.getMessage(), QueryClientResponseDTO.class);
             Log.infof("Received query response from %s", query);
-            queryResponseBO.saveResponse(query);
+            queryResponseBO.saveResponse(query, connectionId);
         }
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.DATA_STATISTICS)) {

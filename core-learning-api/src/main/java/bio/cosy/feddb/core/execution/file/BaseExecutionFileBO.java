@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public abstract class BaseExecutionFileBO<
@@ -86,7 +87,7 @@ public abstract class BaseExecutionFileBO<
     public List<DTO> addOutputs(Attempt attempt, List<FileUpload> uploads) {
         List<DTO> outputs = new ArrayList<>();
         for (FileUpload upload : uploads) {
-            String name = AppRunUploadData.keyOf(upload);
+            String name = Optional.ofNullable(AppRunUploadData.keyOf(upload)).orElse(upload.fileName());
             try {
                 F storedFile = storeFile(attempt, upload);
                 DTO created = createLink(attempt, storedFile, name, ExecutionFileDirection.OUTPUT);

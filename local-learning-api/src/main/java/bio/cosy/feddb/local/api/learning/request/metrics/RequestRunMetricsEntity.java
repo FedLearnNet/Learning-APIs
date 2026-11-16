@@ -3,7 +3,9 @@ package bio.cosy.feddb.local.api.learning.request.metrics;
 import bio.cosy.feddb.core.base.BaseEntity;
 import bio.cosy.feddb.local.api.learning.project.LearningProjectEntity;
 import bio.cosy.feddb.local.api.learning.request.LearningRequestStatus;
+import bio.cosy.feddb.core.api.socket.RunResultRequestType;
 import jakarta.persistence.*;
+import org.hibernate.annotations.ColumnDefault;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,6 +26,11 @@ public class RequestRunMetricsEntity extends BaseEntity {
 
     @Column(name = "global_request_id", nullable = false)
     private UUID globalRequestId;
+
+    @Enumerated(EnumType.STRING)
+    @ColumnDefault("'METRICS'")
+    @Column(name = "type", length = 20, nullable = false)
+    private RunResultRequestType type = RunResultRequestType.METRICS;
 
     @Column(name = "verified_on")
     private Date verifiedOn;

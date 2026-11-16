@@ -31,7 +31,13 @@ public class QueryResponseBO extends BaseBo<QueryResponseDTO, QueryResponseEntit
         return mapper.entitiesToDtos(ao.list("query.id = ?1 and count > 0 and error is null", queryId).stream());
     }
 
-    public void saveResponse(QueryClientResponseDTO request) {
+    public String findConnectionId(Long responseId, Long queryId) {
+        return ao.findByIdOptional(responseId).filter(response -> response.getQuery().getId().equals(queryId))
+                .map(QueryResponseEntity::getConnectionId)
+                .orElseThrow(() -> new NotFoundException("Client " + responseId + " did not answer query " + queryId));
+    }
+
+    public void saveResponse(QueryClientResponseDTO request, String connectionId) {
         QueryResponseDTO dto = mapper.createDtoToDto(request);
         boolean isError = request.getType().equals(FedDBClientResponseType.ERROR);
         if (isError) {
@@ -41,6 +47,7 @@ public class QueryResponseBO extends BaseBo<QueryResponseDTO, QueryResponseEntit
             if (!isError && dto.getCount() != null && dto.getCount() > 0) {
                 QueryResponseEntity response = mapper.dtoToEntity(dto);
                 response.setQuery(queryBO.findEntityByGlobalUniqueId(request.getGlobalUniqueQueryId()));
+                response.setConnectionId(connectionId);
                 ao.persist(response);
             }
             queryBO.setCount(request.getGlobalUniqueQueryId(), dto.getCount());

@@ -1,4 +1,4 @@
-package bio.cosy.feddb.local.api.learning.project.run;
+package bio.cosy.feddb.local.api.learning.project.run.federated;
 
 import bio.cosy.feddb.core.api.socket.RelayCertSignRequestDTO;
 import bio.cosy.feddb.core.api.socket.RelayCertSignResponseDTO;
@@ -8,7 +8,7 @@ import bio.cosy.feddb.core.services.controller.ControllerStartRelayingRequestDTO
 import bio.cosy.feddb.local.api.eam.WebsocketSender;
 import bio.cosy.feddb.local.api.learning.project.LearningProjectAO;
 import bio.cosy.feddb.local.api.learning.project.LearningProjectEntity;
-import bio.cosy.feddb.local.api.learning.project.run.federated.FederatedLearningProgressBO;
+import bio.cosy.feddb.local.api.learning.project.run.LearningProgressBO;
 import bio.cosy.feddb.local.api.learning.request.LearningRequestEntity;
 import bio.cosy.feddb.local.api.workflow.node.WorkflowNodeEntity;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
@@ -50,6 +50,7 @@ class FederatedLearningProgressBOTest {
 
     private ExecutionRunStepEntity step;
     private ExecutionFederationEntity federation;
+    private ExecutionAttemptLifecycle lifecycle;
 
     @SuppressWarnings("unchecked")
     private FederatedLearningProgressBO progressBO() {
@@ -57,7 +58,14 @@ class FederatedLearningProgressBOTest {
         bo.federationAO = mock(ExecutionFederationAO.class);
         bo.stepAO = mock(ExecutionRunStepAO.class);
         bo.projectAO = mock(LearningProjectAO.class);
-        bo.lifecycle = mock(ExecutionAttemptLifecycle.class);
+        lifecycle = mock(ExecutionAttemptLifecycle.class);
+        try {
+            var field = LearningProgressBO.class.getDeclaredField("lifecycle");
+            field.setAccessible(true);
+            field.set(bo, lifecycle);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
         bo.websocketSender = mock(WebsocketSender.class);
         bo.controllerService = mock(LocalControllerLearningService.class);
         bo.config = mock(FLNetClientConfig.class, RETURNS_DEEP_STUBS);
@@ -109,7 +117,7 @@ class FederatedLearningProgressBOTest {
     }
 
     private void verifyStepFailed(FederatedLearningProgressBO bo) {
-        verify(bo.lifecycle).updateTransactional(eq(ATTEMPT_ID), argThat(update -> update.getStatus() == RunStatusTypes.ERROR));
+        verify(lifecycle).updateTransactional(eq(ATTEMPT_ID), argThat(update -> update.getStatus() == RunStatusTypes.ERROR));
     }
 
     @Test
@@ -134,7 +142,7 @@ class FederatedLearningProgressBOTest {
         // The app key of the controller run is the relay client id.
         verify(bo.controllerService).startRelaying(new ControllerStartRelayingRequestDTO(CHANNEL, CLIENT, "signed-cert"));
         assertTrue(federation.getRelayCertSigned());
-        verify(bo.lifecycle, never()).updateTransactional(any(), any());
+        verify(lifecycle, never()).updateTransactional(any(), any());
     }
 
     @Test
@@ -171,7 +179,7 @@ class FederatedLearningProgressBOTest {
         bo.handleSignedTransactional(otherClient);
 
         verify(bo.controllerService, never()).startRelaying(any());
-        verify(bo.lifecycle, never()).updateTransactional(any(), any());
+        verify(lifecycle, never()).updateTransactional(any(), any());
         assertEquals(false, federation.getRelayCertSigned());
     }
 
@@ -246,7 +254,7 @@ class FederatedLearningProgressBOTest {
 
         assertEquals(3, federation.getRelayCertAttempts());
         verify(bo.websocketSender).sendRelayCertRequest(new RelayCertSignRequestDTO(EXPERIMENT, CLINIC, NODE, CLIENT, CSR));
-        verify(bo.lifecycle, never()).updateTransactional(any(), any());
+        verify(lifecycle, never()).updateTransactional(any(), any());
     }
 
     @Test

@@ -1,8 +1,8 @@
-package de.unihamburg.daibetes.api.project.training.metrics.response;
+package de.unihamburg.daibetes.api.project.training.result.response;
 
 import bio.cosy.feddb.core.api.socket.RunMetricDTO;
 import bio.cosy.feddb.core.base.BaseEntity;
-import de.unihamburg.daibetes.api.project.training.metrics.RunMetricsRequestEntity;
+import de.unihamburg.daibetes.api.project.training.result.RunResultRequestEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +15,7 @@ import java.util.List;
 @Table(name = "run_metrics_response")
 @Getter
 @Setter
-public class RunMetricsResponseEntity extends BaseEntity {
+public class RunResultResponseEntity extends BaseEntity {
 
     @Column(name = "random_clinic_id", nullable = false)
     private String randomClinicId;
@@ -26,5 +26,5 @@ public class RunMetricsResponseEntity extends BaseEntity {
 
     @ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "metrics_request_id", nullable = false)
-    private RunMetricsRequestEntity request;
+    private RunResultRequestEntity request;
 }
