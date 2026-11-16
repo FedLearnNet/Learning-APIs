@@ -1,6 +1,8 @@
 package bio.cosy.feddb.local.execution.attempt;
 
 import bio.cosy.feddb.core.execution.attempt.BaseAttemptLifecycle;
+import bio.cosy.feddb.core.execution.message.ConsoleStdOutDTO;
+import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
 import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
 import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
@@ -9,6 +11,8 @@ import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
 import bio.cosy.feddb.core.security.ToolAuthenticated;
 import bio.cosy.feddb.local.api.importer.run.ConnectorAppRunBO;
+import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerContainerBO;
+import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerRequestBO;
 import io.quarkus.logging.Log;
 import io.quarkus.websockets.next.*;
 import io.smallrye.common.annotation.Blocking;
@@ -30,6 +34,12 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
 
     @Inject
     ConnectorAppRunBO connectorAppRunBO;
+
+    @Inject
+    CodeTransformerRequestBO codeTransformerRequestBO;
+
+    @Inject
+    CodeTransformerContainerBO codeTransformerContainerBO;
 
     @OnOpen
     @Blocking
@@ -59,6 +69,27 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
     @OnTextMessage
     <T> void onMessage(AppMessageWrapperDTO<T> message) {
         consume(connection, message);
+    }
+
+    // Answers of the code runner go to the waiting check or save request
+    @Override
+    protected <T> void handleAppMessages(AppMessageWrapperDTO<T> m, Long attemptId, AppRunTypeEnum runType) {
+        switch (m.getType()) {
+            case TRANSFORMATION_CHECK_RESULT, TRANSFORMATION_SAVE_RESULT -> codeTransformerRequestBO.complete(m.getMessage());
+            default -> super.handleAppMessages(m, attemptId, runType);
+        }
+    }
+
+    @Override
+    protected void logMessage(Long attemptId, ExecutionMessageLogDTO log, AppRunTypeEnum runType) {
+        super.logMessage(attemptId, log, runType);
+        codeTransformerContainerBO.log(attemptId, log.getMessage());
+    }
+
+    @Override
+    protected void consoleMessage(Long attemptId, ConsoleStdOutDTO console, AppRunTypeEnum runType) {
+        super.consoleMessage(attemptId, console, runType);
+        codeTransformerContainerBO.log(attemptId, console.getMsg());
     }
 
     // A transformer session answers batch after batch, a finished batch neither ends its app nor its connection.

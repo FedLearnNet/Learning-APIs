@@ -107,6 +107,12 @@ public interface FLNetClientConfig {
         @WithDefault("10")
         int previewRows();
 
+        @WithDefault("ghcr.io/fedlearnnet/python-tool-api/code-transformer-runtime:latest")
+        String codeTransformerImage();
+
+        @WithDefault("ghcr.io/fedlearnnet/tool-build-pipeline/pipeline:staging")
+        String codeTransformerPipelineImage();
+
         // importer file rows kept in memory before spilling to an NDJSON disk cache; 0 = disk first
         @WithDefault("0")
         int importRowLimitForDiskCache();

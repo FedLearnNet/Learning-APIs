@@ -1,37 +1,21 @@
 package de.unihamburg.daibetes.api.build.pipeline;
 
-import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
-import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
+import bio.cosy.feddb.core.api.pipeline.BasePipelineDTO;
 import bio.cosy.feddb.core.api.pipeline.PipelineRunMode;
-import bio.cosy.feddb.core.base.BaseDTO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppPublishDTO;
-import de.unihamburg.daibetes.api.build.pipeline.steps.PipelineStepDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.List;
-
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class PipelineDTO extends BaseDTO {
-
-    private PipelineStatus pipelineStatus;
-
+public class PipelineDTO extends BasePipelineDTO {
     private PipelineType pipelineType;
 
     private PipelineRunMode runMode = PipelineRunMode.BUILD_ONLY;
 
     private FederatedAppPublishDTO publishRequest;
 
-    private List<PipelineStepDTO> pipelineSteps;
-
-    private AppPublishInfoDTO publishInfo;
-
     private String secret;
-
-    private String dockerTag;
-
     private Long modelSubId;
     private Long appVersionId;
-    private String containerId;
 }

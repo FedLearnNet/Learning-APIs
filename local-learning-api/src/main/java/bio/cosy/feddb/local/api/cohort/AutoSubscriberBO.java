@@ -29,6 +29,7 @@ import jakarta.ws.rs.WebApplicationException;
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -371,6 +372,7 @@ public class AutoSubscriberBO {
             ConnectorFilesDTO uploaded = uploadBO.uploadFileForCohort(
                     cohortId,
                     etlFile,
+                    Path.of(etlDataPath).getFileName().toString(),
                     config.user().systemUserName(),
                     fileSettings.toFileParsingSettings()
             );

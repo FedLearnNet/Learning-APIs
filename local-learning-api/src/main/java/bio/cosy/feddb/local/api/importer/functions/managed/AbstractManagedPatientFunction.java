@@ -110,11 +110,11 @@ public abstract class AbstractManagedPatientFunction extends AbstractManagedFunc
         if (spec == null) {
             return null;
         }
-        if ("[VALUE]".equals(spec)) {
+        if (VALUE_PREFIX.equals(spec)) {
             return column == null ? null : row.get(column);
         }
-        if (spec.startsWith("[VALUE]")) {
-            return spec.substring("[VALUE]".length());
+        if (spec.startsWith(VALUE_PREFIX)) {
+            return spec.substring(VALUE_PREFIX.length());
         }
         return row.get(spec);
     }

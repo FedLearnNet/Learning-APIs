@@ -59,15 +59,17 @@ datamodeler-api/sapbert
 
 global-learning-api/results/.venv
 global-learning-api/results/
+local-learning-api/results/.venv
+local-learning-api/results/
+local-learning-api/logs/
 
 /research/
 
 .claude
 
 */orch_secrets.env
-
-local-learning-api/results
 local-learning-api/src/main/resources/sapbert
+local-learning-api/sapbert
 local-learning-api/download-gdc-sm.sh
 local-learning-api/src/test/resources/eval/gdc
 local-learning-api/src/test/resources/eval/synthea-omop

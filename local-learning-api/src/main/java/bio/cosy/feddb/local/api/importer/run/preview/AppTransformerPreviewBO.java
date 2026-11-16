@@ -5,6 +5,7 @@ import bio.cosy.feddb.core.execution.failure.FailureCategory;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
 import bio.cosy.feddb.local.api.importer.files.table.ColumnNames;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunBO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 
 @ApplicationScoped
@@ -97,6 +99,19 @@ public class AppTransformerPreviewBO {
                 sessionBO.close(sessionId);
             }
             emitter.complete();
+        }
+    }
+
+    // Starts the app for these rows only, used by the agent and harmonization outside a connector preview
+    public List<Map<String, Object>> transformAppBased(ConnectorTransformerDTO transformer,
+                                                       List<Map<String, Object>> rows,
+                                                       String keycloakId,
+                                                       Consumer<ExecutionRunDTO> onRunCreated) {
+        Long sessionId = sessionBO.openPreview(transformer, keycloakId, onRunCreated);
+        try {
+            return sessionBO.transform(sessionId, transformer, rows);
+        } finally {
+            sessionBO.close(sessionId);
         }
     }
 

@@ -14,14 +14,12 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class PipelineBOTest {
@@ -56,7 +54,6 @@ class PipelineBOTest {
         assertSame(vulnerability, current.getVulnerabilityScanResult());
         assertEquals(previous.getImageName(), current.getImageName());
         assertEquals("published-tag", pipeline.getDockerTag());
-        verify(bo.ao).persist(pipeline);
     }
 
     private static Stream<Arguments> scanOnlyResults() {
@@ -107,8 +104,7 @@ class PipelineBOTest {
         PipelineBO bo = new PipelineBO();
         bo.ao = mock(PipelineAO.class);
         bo.mapper = mock(PipelineMapper.class);
-        when(bo.ao.findByIdAndSecretOptional(1L, "secret", LockModeType.PESSIMISTIC_WRITE))
-                .thenReturn(Optional.of(pipeline));
+        when(bo.ao.findByIdAndSecret(1L, "secret", LockModeType.PESSIMISTIC_WRITE)).thenReturn(pipeline);
         when(bo.mapper.entityToDto(pipeline)).thenReturn(new PipelineDTO());
         return bo;
     }

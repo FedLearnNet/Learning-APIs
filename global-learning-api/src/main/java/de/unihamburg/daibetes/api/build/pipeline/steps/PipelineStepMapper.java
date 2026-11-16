@@ -1,5 +1,6 @@
 package de.unihamburg.daibetes.api.build.pipeline.steps;
 
+import bio.cosy.feddb.core.api.pipeline.PipelineStepDTO;
 import bio.cosy.feddb.core.base.BaseMapper;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import org.mapstruct.Mapper;

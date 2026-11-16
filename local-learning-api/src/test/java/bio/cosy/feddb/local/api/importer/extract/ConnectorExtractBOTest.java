@@ -50,7 +50,7 @@ class ConnectorExtractBOTest {
                 List.of()
         );
         TableData expected = new TableData(
-                stored.columns(), stored.rows(), stored.columnProfiles());
+                stored.getColumns(), stored.getRows(), stored.getColumnProfiles());
 
         when(filesBO.getById(42L)).thenReturn(file);
         when(filesBO.getPreviewData(42L)).thenReturn(Map.of("0", stored));

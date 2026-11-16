@@ -13,6 +13,7 @@ import io.quarkus.logging.Log;
 import io.quarkus.websockets.next.WebSocketConnection;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
+import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -134,6 +135,16 @@ public class AppTransformerSessionBO {
         }
     }
 
+    // Attempt of the only app of a preview session, e.g. the code runner
+    public Long attemptIdOf(Long sessionId) {
+        return Optional.ofNullable(sessions.get(sessionId)).flatMap(forSession -> forSession.values().stream().findFirst())
+                .orElseThrow(() -> new AppTransformerSessionFailure("No running app transformer for session " + sessionId));
+    }
+
+    public WebSocketConnection connection(Long sessionId, ConnectorTransformerDTO transformer) {
+        return connectionOf(attemptIdOf(sessionId), transformer);
+    }
+
     /**
      * Stops every app the import or preview started, whether it succeeded or failed.
      */
@@ -151,8 +162,14 @@ public class AppTransformerSessionBO {
         });
     }
 
+    @PreDestroy
+    public void closeAll() {
+        List.copyOf(sessions.keySet()).forEach(this::close);
+    }
+
     private Long start(ConnectorTransformerDTO transformer, Long connectorRunId, String keycloakId, Consumer<ExecutionRunDTO> onRunCreated) {
-        ExecutionRunDTO run = appRunBO.startTransactional(transformer, transformer.getHyperparams(), connectorRunId, null, keycloakId, true);
+        ExecutionRunDTO run = appRunBO.startTransactional(transformer, AppTransformerBatchBO.appHyperParams(transformer),
+                connectorRunId, null, keycloakId, true);
         try {
             onRunCreated.accept(run);
             // The import runs batch after batch, so it waits here; the app's connect ends the wait, not a poll.

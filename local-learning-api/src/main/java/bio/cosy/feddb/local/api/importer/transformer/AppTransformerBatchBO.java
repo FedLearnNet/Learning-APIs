@@ -100,12 +100,30 @@ public class AppTransformerBatchBO {
         StartRunDTO start = new StartRunDTO();
         start.setId(batchId);
         start.setStatus(RunStatusTypes.PENDING);
-        start.setHyperParams(transformer.getHyperparams());
+        start.setHyperParams(appHyperParams(transformer));
         LinkedHashMap<String, Object> inputData = new LinkedHashMap<>();
         inputData.put("input", rows);
         start.setInputData(inputData);
         start.setInputFilePaths(new LinkedHashMap<>());
         return new AppMessageWrapperDTO<>(AppMessageTypeEnum.START_PREDICTION, start, AppRunTypeEnum.MODEL_RUN);
+    }
+
+    // The wrapper reads input_mapping, return_mapping and column off the hyperparameters; explicit ones win
+    public static LinkedHashMap<String, Object> appHyperParams(ConnectorTransformerDTO transformer) {
+        LinkedHashMap<String, Object> params = new LinkedHashMap<>();
+        if (transformer.getInputMapping() != null && !transformer.getInputMapping().isEmpty()) {
+            params.put("input_mapping", transformer.getInputMapping());
+        }
+        if (transformer.getReturnMapping() != null && !transformer.getReturnMapping().isEmpty()) {
+            params.put("return_mapping", transformer.getReturnMapping());
+        }
+        if (transformer.getColumn() != null && !transformer.getColumn().isBlank()) {
+            params.put("column", transformer.getColumn());
+        }
+        if (transformer.getHyperparams() != null) {
+            params.putAll(transformer.getHyperparams());
+        }
+        return params;
     }
 
     private byte[] jsonBytes(Object value) {

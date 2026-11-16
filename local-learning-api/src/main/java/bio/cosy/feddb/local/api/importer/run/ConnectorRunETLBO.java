@@ -18,10 +18,10 @@ import bio.cosy.feddb.local.api.importer.run.message.ConnectorRunRunMessagesBO;
 import bio.cosy.feddb.local.api.importer.run.patientlog.ConnectorRunPatientLogBO;
 import bio.cosy.feddb.local.api.importer.run.patientlog.ConnectorRunPatientLogType;
 import bio.cosy.feddb.local.api.importer.run.preview.ConnectorPreviewBO;
-import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
-import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBO;
-import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBatchBO;
 import bio.cosy.feddb.local.api.importer.transformer.AppTransformerBatchBO;
+import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBatchBO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import io.quarkus.logging.Log;
 import io.smallrye.context.api.ManagedExecutorConfig;
@@ -55,7 +55,7 @@ public class ConnectorRunETLBO {
     ConnectorRunAO runAO;
 
     @Inject
-    ConnectorTransformerBO transformerBO;
+    ConnectorTransformationBO transformationBO;
 
     @Inject
     AppTransformerSessionBO appTransformerSessionBO;
@@ -372,7 +372,7 @@ public class ConnectorRunETLBO {
             TableDataGroup group,
             boolean dryRun) {
         return processPatientGroup(connectorDTO, run, mappingContext, group, dryRun,
-                worker -> transformerBO.applyTransformations(connectorDTO, worker, new ArrayList<>(group.rows())));
+                worker -> transformationBO.applyTransformations(connectorDTO, worker, new ArrayList<>(group.rows())));
     }
 
     private List<PatientGroupResultDTO> processAppPatientBatch(List<TableDataGroup> batch,

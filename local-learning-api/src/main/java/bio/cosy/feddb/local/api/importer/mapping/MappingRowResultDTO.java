@@ -21,14 +21,6 @@ public class MappingRowResultDTO {
             ConnectorMappingDTO mapping,
             Object value,
             String visitId,
-            String visitTimestamp) {
-        addEntry(mapping, value, visitId, visitTimestamp, false);
-    }
-
-    public void addEntry(
-            ConnectorMappingDTO mapping,
-            Object value,
-            String visitId,
             String visitTimestamp,
             boolean isNullValue) {
         PatientDataEntryDTO entry = new PatientDataEntryDTO();

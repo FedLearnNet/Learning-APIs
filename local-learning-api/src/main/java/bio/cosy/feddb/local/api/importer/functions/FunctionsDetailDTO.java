@@ -14,4 +14,6 @@ public class FunctionsDetailDTO {
     private List<FunctionParameterDTO> parameters = new ArrayList<>();
     private List<String> returnKeys = new ArrayList<>();
     private List<String> choices;
+    private Long appVersionId;
+    private String appImage;
 }

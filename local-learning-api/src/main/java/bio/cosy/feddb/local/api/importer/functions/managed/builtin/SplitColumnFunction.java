@@ -4,10 +4,7 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionParameterDTO;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterType;
 import bio.cosy.feddb.local.api.importer.functions.managed.AbstractManagedRowFunction;
 import bio.cosy.feddb.local.api.importer.functions.managed.RowFunctionExecutionContext;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,9 +32,6 @@ import java.util.regex.Pattern;
 @ApplicationScoped
 public class SplitColumnFunction extends AbstractManagedRowFunction {
 
-    @Inject
-    ObjectMapper objectMapper;
-
     @Override
     public String methodName() {
         return "Split Column";
@@ -45,18 +39,20 @@ public class SplitColumnFunction extends AbstractManagedRowFunction {
 
     @Override
     public String description() {
-        return "Split one packed column into several columns by a delimiter (row-level inverse of Merge Columns).";
+        return "Split a column whose cells hold several values joined by a separator into one new column per part, in order "
+                + "(row-level inverse of Merge Columns).";
     }
 
     @Override
     public List<FunctionParameterDTO> parameters() {
         return List.of(
                 FunctionParameterDTO.of("source", FunctionParameterType.STRING, true, null,
-                        "Row key carrying the packed value to split (mapped via inputMapping)."),
+                        "Always the key 'source': map it in inputMapping onto the packed column, e.g. {\"source\": \"codes\"}."),
                 FunctionParameterDTO.of("delimiter", FunctionParameterType.STRING, true, null,
-                        "Separator to split the packed value on."),
+                        "The separator, taken literally (no regular expression)."),
                 FunctionParameterDTO.of("parts", FunctionParameterType.MAP, true, null,
-                        "JSON array of output piece names, in order (each name is also a returnMapping key).")
+                        "JSON array of names for the parts in order, e.g. [\"first\", \"second\"]; the last part keeps the rest. Each name "
+                                + "is a return key: map the parts you need in returnMapping onto new columns, e.g. {\"second\": \"second_code\"}.")
         );
     }
 
@@ -67,13 +63,7 @@ public class SplitColumnFunction extends AbstractManagedRowFunction {
 
         Object packed = row.get("source");
         String delimiter = String.valueOf(params.get("delimiter"));
-        List<String> parts;
-        try {
-            parts = objectMapper.readValue(String.valueOf(params.get("parts")), new TypeReference<>() {
-            });
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid 'parts' JSON array", e);
-        }
+        List<String> parts = BuiltInFunctionSupport.readStringList(params.get("parts"), "parts");
 
         Map<String, Object> result = new LinkedHashMap<>();
         if (packed == null) {

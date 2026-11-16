@@ -7,8 +7,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static bio.cosy.feddb.local.api.importer.functions.managed.AbstractManagedFunction.VALUE_PREFIX;
+import static bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerStatics.CODE_MODULE;
+import static bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerStatics.TOOLS_MODULE;
+import static bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerStatics.plain;
 
 @Data
 @NoArgsConstructor
@@ -27,13 +31,40 @@ public class ConnectorTransformerDTO extends BaseDTO {
     private Long appVersionId;
     private String appImage;
     private String appSlug;
-    private LinkedHashMap<String, Object> hyperparams;
+    private Map<String, Object> hyperparams;
 
     private Long connectorId;
 
+
     @JsonIgnore
     public boolean isAppBased() {
-        return appImage != null && !appImage.isBlank()
-                || appSlug != null && !appSlug.isBlank();
+        return getAppImage() != null && !getAppImage().isBlank()
+                || getAppSlug() != null && !getAppSlug().isBlank();
     }
+
+    @JsonIgnore
+    public boolean isCodeTransformer() {
+        return getModuleName() != null && plain(CODE_MODULE).equals(plain(getModuleName()));
+    }
+
+    @JsonIgnore
+    public boolean isStoreTool() {
+        return TOOLS_MODULE.equals(getModuleName())
+                || isCodeTransformer()
+                || getAppVersionId() != null
+                || isAppBased();
+    }
+
+    @JsonIgnore
+    public boolean isRowBased() {
+        return getReturnMapping() != null && !getReturnMapping().isEmpty()
+                || getInputMapping() != null && getInputMapping().values().stream()
+                .anyMatch(value -> !String.valueOf(value).startsWith(VALUE_PREFIX));
+    }
+
+    @JsonIgnore
+    public boolean isCellBased() {
+        return getColumn() != null && !getColumn().isBlank() && !isRowBased() && !isAppBased();
+    }
+
 }

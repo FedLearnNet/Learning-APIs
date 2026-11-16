@@ -1,16 +1,17 @@
 package de.unihamburg.daibetes.api.build.pipeline;
 
 import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
+import bio.cosy.feddb.core.api.pipeline.PipelineCallbackService;
+import bio.cosy.feddb.core.api.pipeline.PipelineRunInfoDTO;
+import bio.cosy.feddb.core.api.pipeline.PipelineStatusUpdateDTO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
-import java.util.Optional;
 
 @ApplicationScoped
 public class PipelineServiceImpl implements PipelineService {
@@ -54,14 +55,14 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional
-    public PipelineDTO processUpdate(Long id, String secret, PipelineStatusUpdateDTO dto) {
-        return bo.processStatusUpdate(id, secret, dto);
+    public void processUpdate(Long id, String secret, PipelineStatusUpdateDTO dto) {
+        bo.processStatusUpdate(id, secret, dto);
     }
 
     @Override
     @Transactional
-    public PipelineDTO processSummary(Long id, String secret, AppPublishInfoDTO dto) {
-        return bo.processSummary(id, secret, dto);
+    public void processSummary(Long id, String secret, AppPublishInfoDTO dto) {
+        bo.processSummary(id, secret, dto);
     }
 
     @Override
@@ -78,17 +79,11 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional
-    public Response getFileMetadata(Long id, String secret) {
-        Optional<byte[]> files = bo.loadFilesForPipeline(id, secret);
-        if (files.isEmpty()) {
+    public Response getFiles(Long id, String secret) {
+        byte[] files = bo.getFiles(id, secret);
+        if (files == null) {
             return Response.noContent().build();
         }
-        byte[] zipBytes = files.get();
-
-        String filename = "pipeline-" + id + "-files.zip";
-        return Response.ok(zipBytes, "application/zip")
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .header(HttpHeaders.CONTENT_LENGTH, zipBytes.length)
-                .build();
+        return PipelineCallbackService.zip(id, files);
     }
 }

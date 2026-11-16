@@ -48,6 +48,10 @@ public class ConnectorDTO extends BaseDTO {
     //based on runs
     private ConnectorRunDTO lastRun;
 
+    public List<ConnectorMappingDTO> getSchemaMapping() {
+        return schemaMapping != null ? schemaMapping : List.of();
+    }
+
     @JsonIgnore
     public List<ConnectorTransformerDTO> getAppTransformers() {
         if (transformer == null) {

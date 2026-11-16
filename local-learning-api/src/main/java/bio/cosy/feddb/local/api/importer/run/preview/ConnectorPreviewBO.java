@@ -11,7 +11,7 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionRunnerBO;
 import bio.cosy.feddb.local.api.importer.mapping.MappingBO;
 import bio.cosy.feddb.local.api.importer.run.preview.cache.ConnectorPreviewTransformationCacheBO;
 import bio.cosy.feddb.local.api.importer.run.preview.cache.ConnectorPreviewTransformationCacheStage;
-import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.importer.extract.UploadInfoDTO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadInfoDTO;
@@ -41,7 +41,7 @@ public class ConnectorPreviewBO {
     TabularFileReaderBO fileHandlerBO;
 
     @Inject
-    ConnectorTransformerBO transformerBO;
+    ConnectorTransformationBO transformationBO;
 
     @Inject
     FunctionRunnerBO functionRunnerBO;
@@ -93,7 +93,7 @@ public class ConnectorPreviewBO {
             throw new BadRequestException("There is no transformation step " + stepIndex + " to run");
         }
         ConnectorTransformerDTO transformer = transformers.get(stepIndex - 1);
-        if (!transformer.isAppBased()) {
+        if (transformer == null || !transformer.isAppBased()) {
             throw new BadRequestException("Transformation step " + stepIndex + " is not app based");
         }
 
@@ -103,6 +103,12 @@ public class ConnectorPreviewBO {
                 walk.getStage().getRows(),
                 walk.getStage().getColumns(),
                 cacheBO.stageFingerprint(walk.getFingerprint(), transformer));
+    }
+
+    public ConnectorPreviewTransformationStageData run(ConnectorConfigDTO config,
+                                                       BiFunction<ConnectorTransformerDTO, List<Map<String, Object>>, List<Map<String, Object>>> appRunner) {
+        List<ConnectorTransformerDTO> transformers = config.getTransformer() == null ? List.of() : config.getTransformer();
+        return walk(config, transformers, transformers.size(), null, true, appRunner).getStage();
     }
 
     public void warmFromRun(ConnectorConfigDTO config,
@@ -133,7 +139,7 @@ public class ConnectorPreviewBO {
         for (int index = 0; index < upTo; index++) {
             ConnectorTransformerDTO transformer = transformers.get(index);
             int stepIndex = index + 1;
-            boolean appBased = transformer.isAppBased();
+            boolean appBased = transformer != null && transformer.isAppBased();
             fingerprint = cacheBO.stageFingerprint(fingerprint, transformer);
             Optional<ConnectorPreviewTransformationCacheStage> cached = blockedBy == null
                     ? cacheBO.find(connectorId, stepIndex, fingerprint)
@@ -165,7 +171,7 @@ public class ConnectorPreviewBO {
                 }
             } else {
                 List<Map<String, Object>> rows =
-                        transformerBO.applyBuiltInTransformation(transformer, stage.getRows(), patientIdColumn);
+                        transformationBO.applyBuiltInTransformation(transformer, stage.getRows(), patientIdColumn);
                 stage = new ConnectorPreviewTransformationStageData(
                         rows, ColumnNames.withRowColumns(stage.getColumns(), rows), stage.getProfiles());
                 if (blockedBy == null) {
@@ -292,7 +298,7 @@ public class ConnectorPreviewBO {
                     : ConnectorFileUploadInfoDTO.DEFAULT_SHEET_NAME;
             uploadInfo.put(table, lenient.convertValue(node, UploadInfoDTO.class));
         } else {
-            node.fields().forEachRemaining(table -> {
+            node.properties().forEach(table -> {
                 if (table.getValue().isObject()) {
                     uploadInfo.put(table.getKey(), lenient.convertValue(table.getValue(), UploadInfoDTO.class));
                 }

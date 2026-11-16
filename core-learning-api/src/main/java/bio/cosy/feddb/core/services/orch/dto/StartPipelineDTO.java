@@ -23,8 +23,14 @@ public class StartPipelineDTO {
 
     private List<String> environments = new ArrayList<>();
 
+    private boolean localOnly;
+
     public void addEnvironment(String apiKey, Long id, String secret) {
         environments.add("PIPELINE_API_KEY=" + apiKey);
+        addEnvironment(id, secret);
+    }
+
+    public void addEnvironment(Long id, String secret) {
         environments.add("PIPELINE_ID=" + id);
         environments.add("PIPELINE_SECRET=" + secret);
     }

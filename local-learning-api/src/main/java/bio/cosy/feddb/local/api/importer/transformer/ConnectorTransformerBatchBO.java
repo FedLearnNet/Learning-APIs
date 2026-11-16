@@ -18,7 +18,7 @@ import java.util.Map;
 @ApplicationScoped
 public class ConnectorTransformerBatchBO {
     @Inject
-    ConnectorTransformerBO transformerBO;
+    ConnectorTransformationBO transformationBO;
 
     @Inject
     AppTransformerSessionBO sessionBO;
@@ -51,7 +51,7 @@ public class ConnectorTransformerBatchBO {
                     ConnectorRunDTO worker = run.createPatientWorker();
                     worker.setCurrentTransformingStep(step);
                     try {
-                        List<Map<String, Object>> rows = transformerBO.applyTransformation(stage, worker, patient.rows());
+                        List<Map<String, Object>> rows = transformationBO.applyTransformation(stage, worker, patient.rows());
                         if (rows == null) {
                             throw new IllegalStateException("Transformation returned null");
                         }
