@@ -1,6 +1,5 @@
-package bio.cosy.feddb.local.api.harmonization;
+package bio.cosy.feddb.local.agent.etl.transform.assistant;
 
-import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.subscription.MultiEmitter;
 
@@ -10,13 +9,17 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import static bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType.DONE;
 import static bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType.ERROR;
 
-public class HarmonizationAssistantRun {
+/**
+ * Events of an assistant run in the background: a client that subscribes late gets the events so far first.
+ * Independent of the access token of the client, so a run outlasts it.
+ */
+public class TransformerAssistantStream {
 
     private final List<TransformerAssistantMessageDTO> events = new CopyOnWriteArrayList<>();
     private final List<MultiEmitter<? super TransformerAssistantMessageDTO>> clients = new CopyOnWriteArrayList<>();
     private volatile boolean running = true;
 
-    synchronized void emit(TransformerAssistantMessageDTO event) {
+    public synchronized void emit(TransformerAssistantMessageDTO event) {
         if (event.getType() == DONE || event.getType() == ERROR) {
             running = false;
         }
@@ -24,7 +27,7 @@ public class HarmonizationAssistantRun {
         clients.forEach(client -> client.emit(event));
     }
 
-    Multi<TransformerAssistantMessageDTO> events() {
+    public Multi<TransformerAssistantMessageDTO> events() {
         return Multi.createFrom().emitter(client -> {
             synchronized (this) {
                 events.forEach(client::emit);
@@ -34,15 +37,15 @@ public class HarmonizationAssistantRun {
         });
     }
 
-    boolean isRunning() {
+    public boolean isRunning() {
         return running;
     }
 
-    void stop() {
+    public void stop() {
         running = false;
     }
 
-    void close() {
+    public void close() {
         clients.forEach(MultiEmitter::complete);
     }
 }

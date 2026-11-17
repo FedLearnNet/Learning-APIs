@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 import static bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType.*;
 
 /**
- * One transformer assistant run of a WebSocket session: streams events to the client, collects the node results
+ * One transformer assistant run: streams events to the client, collects the node results
  * and routes user messages either as answer to a pending question or as additional instruction.
  */
 final class TransformerRun implements TransformerAssistantUser {

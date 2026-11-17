@@ -51,6 +51,9 @@ public interface FLNetConfig {
     @WithDefault("1")
     Long auditMinAcceptanceAmount();
 
+    @WithName("llm-audit")
+    LlmAuditConfig llmAudit();
+
     DataAnalysisConfig dataAnalysis();
 
     @WithName("test-engine")
@@ -86,6 +89,44 @@ public interface FLNetConfig {
         @WithName("overhead.enabled")
         @WithDefault("false")
         boolean overheadEnabled();
+    }
+
+    interface LlmAuditConfig {
+
+        @WithDefault("true")
+        boolean enabled();
+
+        // Requests per user within 24 hours, admins are exempt
+        @WithDefault("3")
+        int perUserPerDay();
+
+        // Audits running against the LLM at the same time
+        @WithDefault("1")
+        int parallelism();
+
+        // Pending and running audits platform-wide, further requests are rejected
+        @WithDefault("10")
+        int maxQueued();
+
+        // Characters of source code put into the prompt
+        @WithDefault("120000")
+        int sourceCharBudget();
+
+        // Characters of a single file before it gets truncated
+        @WithDefault("30000")
+        int maxFileChars();
+
+        @WithDefault("50")
+        int maxSastFindings();
+
+        @WithDefault("40")
+        int maxVulnerabilities();
+
+        @WithDefault("31457280")
+        long maxArchiveBytes();
+
+        @WithDefault("1048576")
+        long maxFileBytes();
     }
 
     interface DataAnalysisConfig {

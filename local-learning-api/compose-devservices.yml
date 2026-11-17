@@ -26,7 +26,7 @@ services:
     networks:
       - local-learning-network
   orch-api:
-    image: ghcr.io/fedlearnnet/orchestration-api/orch-api:feature-pipeline-sast
+    image: ghcr.io/fedlearnnet/orchestration-api/orch-api:staging
     user: "0:0"
     ports:
       - '${NODE_ORCH_PORT:-8091}:8080'
