@@ -106,6 +106,11 @@ public abstract class BaseAttemptLauncher<
         if (callback == null) {
             return null;
         }
+        // A queued attempt stays pending, it is launched again once a slot frees.
+        if (!admits(attempt)) {
+            Log.debugf("Attempt %d waits in the queue", attemptId);
+            return null;
+        }
         attempt.setStatus(RunStatusTypes.INITIALIZED);
 
         String apiKey = provisionCredential(attempt, callback);
@@ -130,6 +135,10 @@ public abstract class BaseAttemptLauncher<
     }
 
     protected void beforeClaim(Long attemptId) {
+    }
+
+    protected boolean admits(Attempt attempt) {
+        return true;
     }
 
     protected String provisionCredential(Attempt attempt, ExecutionCallback callback) {

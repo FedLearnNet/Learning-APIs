@@ -50,6 +50,10 @@ public class PermissionEntity extends BaseEntity {
     @Column(name = "tre_training_access")
     private TrainingAccess treTrainingAccess;
 
+    // the platform shows the Keycloak name of this client instead of a generic one
+    @Column(name = "tre_share_name")
+    private Boolean treShareName;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "auto_statistics_access")
     private AutoStatisticsAccess autoStatisticsAccess;

@@ -25,6 +25,7 @@ public class PermissionDTO extends BaseDTO {
     //for SiteCoffer (TRE (Trusted Research Environment))
     private AutoTrainingAccess treAutoTrainingAccess;
     private TrainingAccess treTrainingAccess;
+    private Boolean treShareName;
 
     private AutoStatisticsAccess autoStatisticsAccess;
     private AutoMetricsAccess autoMetricsAccess;

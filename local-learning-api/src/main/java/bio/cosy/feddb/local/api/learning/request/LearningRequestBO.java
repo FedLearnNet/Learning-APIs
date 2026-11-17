@@ -3,9 +3,11 @@ package bio.cosy.feddb.local.api.learning.request;
 import bio.cosy.feddb.core.api.socket.LearningQueryClientResponseDTO;
 import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.core.api.socket.ProjectFederatedExperimentForLocalDTO;
+import bio.cosy.feddb.core.api.tre.TreSourceDTO;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.base.PagedResponse;
+import bio.cosy.feddb.local.api.cohort.TreSourceBO;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningBO;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningDTO;
@@ -66,6 +68,9 @@ public class LearningRequestBO extends BaseBo<LearningRequestDTO, LearningReques
     @Inject
     FederatedLearningRequestCohortBO cohortDecisionBO;
 
+    @Inject
+    TreSourceBO treSourceBO;
+
     public PagedResponse<LearningRequestDTO> list(Page page, LearningRequestStatus status, String keycloakId) {
         List<LearningRequestDTO> found = ao.list(page, status).stream()
                 .filter(entity -> hasCohortSearchAccess(getInvolvedCohortIds(entity), keycloakId))
@@ -102,6 +107,10 @@ public class LearningRequestBO extends BaseBo<LearningRequestDTO, LearningReques
     }
 
     private Set<Long> getPatientCohortIds(LearningRequestEntity entity) {
+        TreSourceDTO treSource = entity.getProject() == null ? null : entity.getProject().getTreSource();
+        if (treSource != null) {
+            return treSourceBO.findCohortIdTransactional(treSource.getId()).map(Set::of).orElse(Set.of());
+        }
         return patientLearningBO.getCohortIdsForRequests(List.of(entity.getId()));
     }
 
@@ -178,6 +187,15 @@ public class LearningRequestBO extends BaseBo<LearningRequestDTO, LearningReques
     public Optional<LearningQueryClientResponseDTO> handleLearningRequest(ProjectFederatedExperimentForLocalDTO requestLearning) {
         Log.infof("Processing requesting learning: %s", requestLearning);
 
+        TreSourceDTO treSource = requestLearning.getProjectVersion() == null ? null : requestLearning.getProjectVersion().getTreSource();
+        if (treSource != null) {
+            // sent to every client, only the one holding the database takes part
+            if (treSourceBO.findCohortIdTransactional(treSource.getId()).isEmpty()) {
+                return Optional.empty();
+            }
+            return decide(createTransactional(null, requestLearning, null), requestLearning);
+        }
+
         String queryId = requestLearning.getProjectVersion().getGlobalUniqueQueryId();
         if (queryId == null) {
             Log.warnf("Stop processing requesting learning: %s, query id is null", requestLearning);
@@ -197,15 +215,16 @@ public class LearningRequestBO extends BaseBo<LearningRequestDTO, LearningReques
         }
 
         Log.info("Received query result: " + harmonizedQueryResult);
+        return decide(createTransactional(queryOptional.get(), requestLearning, harmonizedQueryResult), requestLearning);
+    }
 
+    private Optional<LearningQueryClientResponseDTO> decide(Long id, ProjectFederatedExperimentForLocalDTO requestLearning) {
         int certificationLevel = requestLearning.getProjectVersion() != null
                 ? requestLearning.getProjectVersion().getCertificationLevel() : 0;
 
         boolean needsInternetAccess = requestLearning.getWorkflow().getNodes().stream()
                 .filter(Objects::nonNull)
                 .anyMatch(WorkflowNodeDetailDTO::needsInternetAccess);
-
-        Long id = createTransactional(queryOptional.get(), requestLearning, harmonizedQueryResult);
 
         Set<Long> pendingCohortIds = initCohortDecisionsTransactional(
                 id, requestLearning.getKeycloakId(), requestLearning.getMode(), certificationLevel, needsInternetAccess);
@@ -236,12 +255,14 @@ public class LearningRequestBO extends BaseBo<LearningRequestDTO, LearningReques
         ao.persist(entity);
 
         LearningProjectEntity project = projectBO.createForRequest(
-                query.getId(), entity, requestLearning.getProjectVersion(), requestLearning.getWorkflow());
+                query == null ? null : query.getId(), entity, requestLearning.getProjectVersion(), requestLearning.getWorkflow());
         project.setPlatformIsCoordinator(requestLearning.getPlatformIsCoordinator());
         project.setExecutionMode(requestLearning.getMode());
         entity.setProject(project);
 
-        patientLearningBO.initPatientList(query.getId(), entity, harmonizedQueryResult);
+        if (query != null) {
+            patientLearningBO.initPatientList(query.getId(), entity, harmonizedQueryResult);
+        }
         return entity.getId();
     }
 
@@ -311,7 +332,7 @@ public class LearningRequestBO extends BaseBo<LearningRequestDTO, LearningReques
         }
 
         if (decision == FederatedLearningRequestCohortStatus.APPROVED) {
-            long acceptedNow = patientLearningBO.countForRequestAndCohorts(id, decidableCohortIds);
+            long acceptedNow = countAccepted(id, decidableCohortIds);
             if (acceptedNow > 0) {
                 notifyAcceptedPatients(id, acceptedNow, updateDTO.getModelCanBePublic());
             } else if (Boolean.FALSE.equals(updateDTO.getModelCanBePublic())) {
@@ -328,11 +349,18 @@ public class LearningRequestBO extends BaseBo<LearningRequestDTO, LearningReques
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     void finalizeAutoApprovedCohortsTransactional(Long id) {
         Set<Long> autoApprovedCohortIds = cohortDecisionBO.getApprovedCohortIds(id);
-        long autoAcceptedPatients = patientLearningBO.countForRequestAndCohorts(id, autoApprovedCohortIds);
+        long autoAcceptedPatients = countAccepted(id, autoApprovedCohortIds);
         if (autoAcceptedPatients > 0) {
             notifyAcceptedPatients(id, autoAcceptedPatients, null);
         }
         resolveRequestStatus(id, null);
+    }
+
+    // an external database has no patients here, each approved cohort counts once
+    private long countAccepted(Long id, Set<Long> cohortIds) {
+        LearningProjectEntity project = ao.findById(id).getProject();
+        return project != null && project.getTreSource() != null
+                ? cohortIds.size() : patientLearningBO.countForRequestAndCohorts(id, cohortIds);
     }
 
     private void notifyAcceptedPatients(Long id, long patientCount, Boolean modelCanBePublic) {

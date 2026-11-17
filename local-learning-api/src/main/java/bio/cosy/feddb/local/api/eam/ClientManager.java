@@ -2,6 +2,7 @@ package bio.cosy.feddb.local.api.eam;
 
 import bio.cosy.feddb.core.api.socket.FedDBClientDataDTO;
 import bio.cosy.feddb.core.api.socket.FedDBClientTypeEnum;
+import bio.cosy.feddb.local.api.cohort.TreSourceBO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import bio.cosy.feddb.local.health.WebSocketClientState;
 import bio.cosy.feddb.local.services.orch.ComputingInfoBO;
@@ -41,6 +42,8 @@ public class ClientManager {
     GlobalAuthManager globalAuthManager;
     @Inject
     ComputingInfoBO computingInfo;
+    @Inject
+    TreSourceBO treSourceBO;
 
     private WebSocketClientConnection connection;
     private ScheduledExecutorService reconnectExecutor;
@@ -59,6 +62,15 @@ public class ClientManager {
         var info = computingInfo.get();
         if (info != null && target != null && target.isOpen())
             fireAndForget(new FedDBClientDataDTO<>(FedDBClientTypeEnum.SYSTEM_INFO, info), target);
+    }
+
+    public void sendTreSources() {
+        sendTreSources(connection);
+    }
+
+    private void sendTreSources(WebSocketClientConnection target) {
+        if (target != null && target.isOpen())
+            fireAndForget(new FedDBClientDataDTO<>(FedDBClientTypeEnum.TRE_SOURCES, treSourceBO.listTransactional()), target);
     }
 
     void connect() {
@@ -285,7 +297,10 @@ public class ClientManager {
     }
 
     public void connectionOpened(WebSocketClientConnection connection) {
-        Infrastructure.getDefaultWorkerPool().execute(() -> sendSystemInfo(connection));
+        Infrastructure.getDefaultWorkerPool().execute(() -> {
+            sendSystemInfo(connection);
+            sendTreSources(connection);
+        });
         Log.infof("Global WebSocket ready: connectionId=%s, queuedMessages=%d; resetting reconnect attempt",
                 connection.id(), pendingClientMessages.size());
 

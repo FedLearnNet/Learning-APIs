@@ -272,8 +272,9 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         Infrastructure.getDefaultWorkerPool().execute(() ->
                 queryPatientBO.storeMatchedPatientsTransactional(patientMatchSql, resolvedCohortIds, createdQueryId));
         QueryClientResponseDTO response = QueryClientResponseDTO.createResponse(count, queryGlobalUniqueId);
-        response.setSupportedModes(permissionBO.supportedModesOf(allowedCohorts.stream()
-                .filter(p -> resolvedCohortIds.contains(p.getCohortId())).toList()));
+        List<PermissionDTO> queried = allowedCohorts.stream().filter(p -> resolvedCohortIds.contains(p.getCohortId())).toList();
+        response.setSupportedModes(permissionBO.supportedModesOf(queried));
+        response.setShareName(permissionBO.sharesName(queried));
         return response;
     }
 

@@ -19,6 +19,7 @@ import bio.cosy.feddb.local.api.workflow.WorkflowBO;
 import bio.cosy.feddb.local.api.workflow.node.WorkflowNodeBO;
 import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptAO;
 import bio.cosy.feddb.local.execution.attempt.ExecutionAttemptEntity;
+import bio.cosy.feddb.local.execution.queue.ExecutionQueueBO;
 import bio.cosy.feddb.local.execution.step.ExecutionRunStepEntity;
 import bio.cosy.feddb.local.services.GlobalAPIStoreService;
 import io.quarkus.logging.Log;
@@ -55,6 +56,9 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
 
     @Inject
     WorkflowOrchestrator workflowOrchestrator;
+
+    @Inject
+    ExecutionQueueBO queueBO;
 
     @Inject
     @VirtualThreads
@@ -108,6 +112,14 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
     @Override
     protected void customizeStart(ExecutionAttemptEntity attempt, StartWorkflowNodeDTO start) {
         start.setEnableRemoteResultSaving(attempt.getStep().getRun().getToolType() == null);
+        if (attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TRAINING) {
+            learningRunBO.customizeStart(attempt, start);
+        }
+    }
+
+    @Override
+    protected boolean admits(ExecutionAttemptEntity attempt) {
+        return queueBO.admits(attempt);
     }
 
     // A run that ended needs its containers and volumes no more, what it keeps was stored before.

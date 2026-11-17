@@ -4,8 +4,10 @@ import bio.cosy.feddb.core.execution.ExecutionPurpose;
 import bio.cosy.feddb.core.execution.run.BaseExecutionRunAO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolRunType;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.LockModeType;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +20,15 @@ public class ExecutionRunAO extends BaseExecutionRunAO<ExecutionRunEntity> {
     }
 
     public List<ExecutionRunEntity> listOpenTrainings() {
-        return list("purpose = ?1 and status not in ?2", ExecutionPurpose.TRAINING,
+        return openTrainings().list();
+    }
+
+    public List<ExecutionRunEntity> listOpenTrainingsLocked() {
+        return openTrainings().withLock(LockModeType.PESSIMISTIC_WRITE).list();
+    }
+
+    private PanacheQuery<ExecutionRunEntity> openTrainings() {
+        return find("purpose = ?1 and status not in ?2", ExecutionPurpose.TRAINING,
                 List.of(RunStatusTypes.FINISHED, RunStatusTypes.STOPPED, RunStatusTypes.ERROR));
     }
 

@@ -1,0 +1,117 @@
+# External databases for testing TRE runs on synthetic data, one per supported type, all with the same records:
+# 10 patients, their diagnoses (ICD-10) and lab measurements (LOINC).
+#
+#   docker compose -f tre-test-databases/docker-compose.yml up -d
+#
+# On the cohort's "External database" form, as "Docker container" (orchestration allowlist entry in brackets):
+#   Neo4j       tre-neo4j     port 7687   user neo4j        password tre-test-password   (tre-neo4j)
+#   PostgreSQL  tre-postgres  port 5432   user tre_reader   password tre-reader          (tre-postgres)   database clinic
+#   MySQL       tre-mysql     port 3306   user tre_reader   password tre-reader          (tre-mysql)      database clinic
+#   MongoDB     tre-mongodb   port 27017  user tre_reader   password tre-reader          (tre-mongodb)    database clinic
+# As "Address in your network" the host ports below work via host.docker.internal, e.g. host.docker.internal:5433,
+# allowlisted as host:port.
+# Allowlist for the orchestration: CONTAINER_NETWORK_EXTERNAL_SOURCES=tre-neo4j,tre-postgres,tre-mysql,tre-mongodb
+#
+# Test values only, never real data. Neo4j community has no read-only users, tools connect as neo4j.
+name: tre-test-databases
+
+services:
+  tre-neo4j:
+    image: neo4j:5.26.31-community
+    container_name: tre-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/tre-test-password
+    ports:
+      - "7475:7474"
+      - "7688:7687"
+    healthcheck:
+      test: [ "CMD-SHELL", "cypher-shell -u neo4j -p tre-test-password 'RETURN 1' || exit 1" ]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+    volumes:
+      - tre-neo4j-data:/data
+    networks:
+      - tre-test-network
+
+  # Neo4j runs no init scripts, so the seed is loaded once it answers; MERGE keeps a rerun harmless
+  tre-neo4j-seed:
+    image: neo4j:5.26.31-community
+    entrypoint: [ "cypher-shell", "-a", "bolt://tre-neo4j:7687", "-u", "neo4j", "-p", "tre-test-password",
+                  "-f", "/seed/neo4j.cypher" ]
+    volumes:
+      - ./seed/neo4j.cypher:/seed/neo4j.cypher:ro
+    depends_on:
+      tre-neo4j:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - tre-test-network
+
+  tre-postgres:
+    image: postgres:18
+    container_name: tre-postgres
+    environment:
+      POSTGRES_DB: clinic
+      POSTGRES_USER: tre_admin
+      POSTGRES_PASSWORD: tre-admin
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U tre_admin -d clinic" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - ./seed/postgres.sql:/docker-entrypoint-initdb.d/01-seed.sql:ro
+      - tre-postgres-data:/var/lib/postgresql
+    networks:
+      - tre-test-network
+
+  tre-mysql:
+    image: mysql:8.4
+    container_name: tre-mysql
+    environment:
+      MYSQL_DATABASE: clinic
+      MYSQL_ROOT_PASSWORD: tre-admin
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -uroot -ptre-admin" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - ./seed/mysql.sql:/docker-entrypoint-initdb.d/01-seed.sql:ro
+      - tre-mysql-data:/var/lib/mysql
+    networks:
+      - tre-test-network
+
+  tre-mongodb:
+    image: mongo:8.0
+    container_name: tre-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: tre_admin
+      MONGO_INITDB_ROOT_PASSWORD: tre-admin
+      MONGO_INITDB_DATABASE: clinic
+    ports:
+      - "27018:27017"
+    healthcheck:
+      test: [ "CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - ./seed/mongodb.js:/docker-entrypoint-initdb.d/01-seed.js:ro
+      - tre-mongodb-data:/data/db
+    networks:
+      - tre-test-network
+
+volumes:
+  tre-neo4j-data:
+  tre-postgres-data:
+  tre-mysql-data:
+  tre-mongodb-data:
+
+networks:
+  tre-test-network:

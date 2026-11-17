@@ -1,9 +1,13 @@
 package de.unihamburg.daibetes.api.project.training.federated;
 
+import bio.cosy.feddb.core.api.tre.ExternalDatabaseAccess;
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.project.ProjectStatus;
 import bio.cosy.feddb.core.api.socket.FederatedLearningRelayInfoDTO;
 import bio.cosy.feddb.core.api.socket.ProjectFederatedExperimentForLocalDTO;
+import bio.cosy.feddb.core.api.tre.TreSourceDTO;
+import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
+import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
 import bio.cosy.feddb.core.execution.ExecutionLocation;
 import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.core.execution.ExecutionPurpose;
@@ -104,14 +108,22 @@ public class FederatedTrainingSetupBO {
         String connectionId = null;
         if (mode == ExecutionMode.TRE) {
             // TRE trains on the chosen clinic, which coordinates itself
-            if (create.getQueryResponseId() == null) {
-                throw new BadRequestException("A TRE training needs a client");
-            }
             create.setPlatformIsCoordinator(false);
         }
         projectBO.checkPlatformIsCoordinatorAllowed(Boolean.TRUE.equals(create.getPlatformIsCoordinator()));
         ProjectDetailDTO project = projectBO.getById(projectId);
+        TreSourceDTO treSource = project.getTreSource();
+        if (treSource != null && mode != ExecutionMode.TRE) {
+            throw new BadRequestException("A project on an external database only runs as TRE");
+        }
         if (mode == ExecutionMode.TRE) {
+            checkTreWorkflow(workflowBO.getById(project.getWorkflowId()), treSource);
+        }
+        // on an external database every client is asked, only the one holding it answers
+        if (mode == ExecutionMode.TRE && treSource == null) {
+            if (create.getQueryResponseId() == null) {
+                throw new BadRequestException("A TRE training needs a client");
+            }
             connectionId = queryResponseBO.findConnectionId(create.getQueryResponseId(), project.getQueryId());
         }
         WorkflowEntity workflow = workflowBO.cloneWorkflow(workflowBO.getById(project.getWorkflowId()));
@@ -143,8 +155,10 @@ public class FederatedTrainingSetupBO {
      */
     public boolean accept(ExecutionExperimentEntity experiment, ExecutionRunEntity run, Integer count, String clinicId, Boolean modelCanBePublic) {
         String globalUniqueId = experiment.getGlobalUniqueId();
-        int minCount = config.federatedLearning().participantsMinDataCount();
-        if ((count == null || count <= 0) && minCount < 0) {
+        // an external database has no patient count
+        boolean external = experiment.getProjectVersion() != null && experiment.getProjectVersion().getTreSource() != null;
+        int minCount = external ? Integer.MIN_VALUE : config.federatedLearning().participantsMinDataCount();
+        if ((count == null || count <= 0) && minCount < 0 && !external) {
             Log.warnf("Ignoring acceptance of training %s without patients", globalUniqueId);
             return false;
         }
@@ -253,6 +267,18 @@ public class FederatedTrainingSetupBO {
         Map<String, FederatedLearningRelayInfoDTO> clinics = new HashMap<>();
         run.getParticipants().forEach(participant -> clinics.put(participant.getParticipantId(), null));
         return clinics;
+    }
+
+    private void checkTreWorkflow(WorkflowDTO workflow, TreSourceDTO treSource) {
+        for (WorkflowNodeDetailDTO node : workflow.getNodes()) {
+            if (node.needsFederatedLearningAccess()) {
+                throw new BadRequestException("Federated tools can not run in a TRE: " + node.getNodeId());
+            }
+            if (treSource != null && treSource.getAccess() == ExternalDatabaseAccess.TOOL
+                    && !Objects.equals(treSource.getToolVersionId(), node.getFederatedAppVersionId())) {
+                throw new BadRequestException("Only " + treSource.getToolName() + " may run on " + treSource.getName());
+            }
+        }
     }
 
     private int minParticipants(ExecutionRunEntity run) {
