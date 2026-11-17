@@ -12,6 +12,9 @@ import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
 import bio.cosy.feddb.core.execution.run.dto.FederatedRunEnricher;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
+import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
+import bio.cosy.feddb.local.api.cohort.ExternalDatabaseDTO;
+import bio.cosy.feddb.local.api.cohort.TreSourceBO;
 import bio.cosy.feddb.local.api.cohort.patient.export.PatientDataExportBO;
 import bio.cosy.feddb.local.api.learning.project.LearningProjectAO;
 import bio.cosy.feddb.local.api.learning.project.LearningProjectEntity;
@@ -75,6 +78,9 @@ public class LearningSetupBO {
     @Inject
     FLNetClientConfig config;
 
+    @Inject
+    TreSourceBO treSourceBO;
+
     public String approve(LearningRequestEntity request) {
         LearningProjectEntity project = request.getProject();
         if (project.getRun() != null) {
@@ -114,6 +120,13 @@ public class LearningSetupBO {
             // central training on this clinic, no relay
             start.setSupportFederatedLearning(false);
         }
+        ExternalDatabaseDTO database = databaseOf(step);
+        if (database != null && database.getHyperParams() != null) {
+            // the client's values win over the project's
+            LinkedHashMap<String, Object> hyperParams = new LinkedHashMap<>(start.getHyperParams() == null ? Map.of() : start.getHyperParams());
+            hyperParams.putAll(database.getHyperParams());
+            start.setHyperParams(hyperParams);
+        }
         ExecutionFederationEntity federation = step.getFederation();
         if (federation == null || federation.getConfig() == null) {
             return;
@@ -131,6 +144,10 @@ public class LearningSetupBO {
             return;
         }
         LearningProjectEntity project = projectAO.findByRunId(step.getRun().getId());
+        if (project.getTreSource() != null) {
+            // the app reads the external database itself
+            return;
+        }
         Path data = exportBO.exportDataForLearning(project.getExportConfig(), project.getQuery().getId(), project.getRequest().getId());
         try {
             inputsOf(step).forEach(input -> orchestrator.uploadFilesToVolume(step.getRun().getId(), attempt.getId(), data, input.getFileName()));
@@ -139,6 +156,28 @@ public class LearningSetupBO {
         } finally {
             FileUtils.deleteQuietly(data.toFile());
         }
+    }
+
+    public void customizeStart(ExecutionAttemptEntity attempt, StartWorkflowNodeDTO start) {
+        ExternalDatabaseDTO database = databaseOf(attempt.getStep());
+        if (database == null) {
+            return;
+        }
+        TreLearningHelper.connect(database, start);
+    }
+
+    private ExternalDatabaseDTO databaseOf(ExecutionRunStepEntity step) {
+        if (!readsProjectData(step)) {
+            return null;
+        }
+        LearningProjectEntity project = projectAO.findByRunId(step.getRun().getId());
+        if (project == null || project.getTreSource() == null) {
+            return null;
+        }
+        ExternalDatabaseDTO database = treSourceBO.findDatabaseTransactional(project.getTreSource().getId())
+                .orElseThrow(() -> new IllegalStateException("External database " + project.getTreSource().getName() + " was removed"));
+        TreLearningHelper.checkTool(database, step);
+        return database;
     }
 
     // The step after the current one, or the first; its app starts and waits until every clinic is ready for it.
