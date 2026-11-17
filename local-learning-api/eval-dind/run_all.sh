@@ -23,8 +23,8 @@ step() {
   env "$@" "$DIR/run.sh" || status=1
 }
 
-[ -d "$MODULE/src/test/resources/eval/gdc/source-tables" ] || "$MODULE/download-gdc-sm.sh" || status=1
-[ -d "$MODULE/src/test/resources/eval/synthea-omop/source-tables" ] || "$MODULE/download-synthea-omop.sh" || status=1
+[ -d "$MODULE/src/test/resources/eval/gdc/source-tables" ] || "$MODULE/acetl-eval/download-gdc-sm.sh" || status=1
+[ -d "$MODULE/src/test/resources/eval/synthea-omop/source-tables" ] || "$MODULE/acetl-eval/download-synthea-omop.sh" || status=1
 
 step "US-130" EVAL_TESTS=us130 EVAL_MODES=real,synthetic EVAL_RUN_NUMBERS="$(runs "$NAME" "${RUNS:-3}")"
 step "GDC-SM, 78 fields" EVAL_TESTS=gdc EVAL_MODES=real EVAL_RUN_NUMBERS="$(runs "$NAME" "${RUNS:-3}")"
@@ -32,6 +32,6 @@ step "GDC-SM, 736 fields" EVAL_TESTS=gdc EVAL_MODES=real EVAL_GDC_SCHEMA=full \
   EVAL_RUN_NUMBERS="$(runs "$NAME-full" "${FULL_RUNS:-1}")"
 step "Synthea-OMOP" EVAL_TESTS=synthea EVAL_MODES=real EVAL_RUN_NUMBERS="$(runs "$NAME" "${SYNTHEA_RUNS:-1}")"
 
-python3 "$MODULE/eval-summary.py" "$MODULE/results/eval" --markdown "$MODULE/results/eval/summary-$NAME.md" || status=1
+python3 "$MODULE/acetl-eval/eval-summary.py" "$MODULE/results/eval" --markdown "$MODULE/results/eval/summary-$NAME.md" || status=1
 echo "Summary: $MODULE/results/eval/summary-$NAME.md"
 exit "$status"

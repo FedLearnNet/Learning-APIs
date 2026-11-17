@@ -13,8 +13,8 @@ local-learning-api/eval-dind/run_protocol.sh  # the protocol of the paper: all s
 NAME=paper local-learning-api/eval-dind/run_protocol_unattended.sh  # the same in the background, up to 3 attempts
 local-learning-api/eval-dind/run_all.sh      # everything: US-130, GDC-SM (78 and 736 fields), Synthea-OMOP, summary
 NAME=v3 local-learning-api/eval-dind/run_all.sh  # runs run-v3-1..3, run-v3-full-1, summary-v3.md; again to continue
-local-learning-api/download-gdc-sm.sh        # once, for the GDC benchmark
-local-learning-api/download-synthea-omop.sh  # once, for the Synthea-OMOP benchmark
+local-learning-api/acetl-eval/download-gdc-sm.sh        # once, for the GDC benchmark
+local-learning-api/acetl-eval/download-synthea-omop.sh  # once, for the Synthea-OMOP benchmark
 local-learning-api/eval-dind/run.sh          # US-130 and GDC, real and synthetic, 3 runs each
 EVAL_TESTS=gdc EVAL_RUNS=1 EVAL_GDC_STUDIES="GDC Krug" local-learning-api/eval-dind/run.sh
 EVAL_TESTS=synthea EVAL_MODES=real EVAL_RUNS=1 local-learning-api/eval-dind/run.sh
@@ -50,10 +50,10 @@ data), the configurations `real-matcher-only`, `real-no-review` and `real-no-wri
 
 Every run writes `<test>-effort.json` next to its results: per schema node the runtime, the model calls, the
 questions, the validations and where the result comes from (direct, built-in, store tool, saved code, new code).
-`eval-summary.py --runs <name>` adds them to the summary, together with source selection against the reference
+`acetl-eval/eval-summary.py --runs <name>` adds them to the summary, together with source selection against the reference
 connectors of `src/main/resources/connectors` for US-130 and MIMIC-IV.
 
-`eval-export.py --runs <name>` writes `results/expert-review-<name>`: `for-expert/review.html` (one page per distinct
+`acetl-eval/eval-export.py --runs <name>` writes `results/expert-review-<name>`: `for-expert/review.html` (one page per distinct
 mapping, rated in the browser, ratings downloaded as CSV), `ratings.csv`, `column-reference.csv` (MIMIC-IV reference
 columns to confirm) and `README.txt`; `for-expert-later/` holds 10% of the pages with new IDs, for a second rating
 after two weeks; `key.csv` tells which runs and automated results stand behind each ID and stays with you.

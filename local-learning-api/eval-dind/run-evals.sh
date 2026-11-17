@@ -11,7 +11,7 @@ benchmark() {
   local name="$1" test="$2" data="$3" download="$4" studies="$5"
   shift 5
   if [ ! -d "local-learning-api/src/test/resources/eval/${data}/source-tables" ]; then
-    echo "▷ ${name} skipped: run local-learning-api/${download} on the checkout first" >&2
+    echo "▷ ${name} skipped: run local-learning-api/acetl-eval/${download} on the checkout first" >&2
     status=1
     return
   fi
@@ -42,13 +42,13 @@ benchmark() {
 
 if [[ ",${EVAL_TESTS}," == *",us130,"* ]]; then
   echo "▷ US-130: transformer writer and harmonization"
-  local-learning-api/run-us130-eval.sh || status=1
+  local-learning-api/acetl-eval/run-us130-eval.sh || status=1
 fi
 
 # The MIMIC-IV demo onto the US-130 schema, cohort import only, in its own run so it starts from the same catalog
 if [[ ",${EVAL_TESTS}," == *",mimic,"* ]]; then
   echo "▷ MIMIC-IV demo: transformer writer"
-  EVAL_DATASETS="MIMIC IV Demo" EVAL_TEST_CLASSES=TransformerWriterEvaluationTest local-learning-api/run-us130-eval.sh \
+  EVAL_DATASETS="MIMIC IV Demo" EVAL_TEST_CLASSES=TransformerWriterEvaluationTest local-learning-api/acetl-eval/run-us130-eval.sh \
     || status=1
 fi
 

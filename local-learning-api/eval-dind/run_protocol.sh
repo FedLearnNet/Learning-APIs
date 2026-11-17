@@ -33,17 +33,17 @@ step() {
 }
 
 if [[ ",$STEPS," == *",runs,"* ]]; then
-  [ -d "$MODULE/src/test/resources/eval/gdc/source-tables" ] || "$MODULE/download-gdc-sm.sh" || status=1
-  [ -d "$MODULE/src/test/resources/eval/synthea-omop/source-tables" ] || "$MODULE/download-synthea-omop.sh" || status=1
+  [ -d "$MODULE/src/test/resources/eval/gdc/source-tables" ] || "$MODULE/acetl-eval/download-gdc-sm.sh" || status=1
+  [ -d "$MODULE/src/test/resources/eval/synthea-omop/source-tables" ] || "$MODULE/acetl-eval/download-synthea-omop.sh" || status=1
   step "Primary model: reference, configurations and data exposure" EVAL_MODELS="$PRIMARY_MODEL" \
     EVAL_MODES="real,real-matcher-only,real-no-review,real-no-writer,synthetic,real-privacy"
   step "Further models: reference setting" EVAL_MODELS="$MODELS" EVAL_MODES=real
 fi
 
 if [[ ",$STEPS," == *",export,"* ]]; then
-  python3 "$MODULE/eval-summary.py" "$MODULE/results/eval" --runs "$NAME" \
+  python3 "$MODULE/acetl-eval/eval-summary.py" "$MODULE/results/eval" --runs "$NAME" \
     --markdown "$MODULE/results/eval/summary-$NAME.md" >/dev/null || status=1
-  python3 "$MODULE/eval-export.py" "$MODULE/results/eval" --runs "$NAME" \
+  python3 "$MODULE/acetl-eval/eval-export.py" "$MODULE/results/eval" --runs "$NAME" \
     --out "$MODULE/results/expert-review-$NAME" || status=1
   echo "Summary: $MODULE/results/eval/summary-$NAME.md"
   echo "Expert package: $MODULE/results/expert-review-$NAME (give the folder for-expert to the expert)"
