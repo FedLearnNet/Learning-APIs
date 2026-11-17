@@ -126,7 +126,8 @@ public interface ConnectorService {
                     content = @Content(schema = @Schema(implementation = ConnectorDTO.class))
             ),
             @APIResponse(responseCode = "400", description = "Invalid data"),
-            @APIResponse(responseCode = "404", description = "Connector not found")
+            @APIResponse(responseCode = "404", description = "Connector not found"),
+            @APIResponse(responseCode = "409", description = "Connector name already exists")
     })
     ConnectorDTO updateConnector(
             @PathParam("id")
@@ -146,7 +147,8 @@ public interface ConnectorService {
                     content = @Content(schema = @Schema(implementation = ConnectorDTO.class))
             ),
             @APIResponse(responseCode = "400", description = "Invalid data"),
-            @APIResponse(responseCode = "404", description = "Connector not found")
+            @APIResponse(responseCode = "404", description = "Connector not found"),
+            @APIResponse(responseCode = "409", description = "Connector name already exists")
     })
     ConnectorDTO patchConnector(
             @PathParam("id")
