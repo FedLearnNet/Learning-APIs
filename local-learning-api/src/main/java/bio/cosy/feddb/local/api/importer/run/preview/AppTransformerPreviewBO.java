@@ -82,7 +82,8 @@ public class AppTransformerPreviewBO {
             });
             List<Map<String, Object>> rows = sessionBO.transform(sessionId, input.getTransformer(), input.getRows());
             previewBO.storeAppStage(config.getConnectorId(), stepIndex, input.getTransformer(),
-                    input.getFingerprint(), rows, ColumnNames.withRowColumns(input.getColumns(), rows));
+                    input.getFingerprint(), rows, ColumnNames.withRowColumns(input.getColumns(), rows),
+                    config.previewRowsOrDefault());
             Optional.ofNullable(following.get()).ifPresent(Cancellable::cancel);
             AppTransformerPreviewStreamDTO done = previewMessageOf(run.get(), stepIndex, true, null);
             done.setStatus(RunStatusTypes.FINISHED);

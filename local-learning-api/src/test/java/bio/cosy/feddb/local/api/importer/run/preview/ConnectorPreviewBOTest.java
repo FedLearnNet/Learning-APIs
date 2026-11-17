@@ -326,8 +326,8 @@ class ConnectorPreviewBOTest {
                         List.of("patient_nbr", "race"),
                         new ArrayList<>(List.of(row("patient-1", "Caucasian"))),
                         new ArrayList<>()));
-        ConnectorTransformationBO transformerBO = mock(ConnectorTransformationBO.class);
-        when(transformerBO.applyBuiltInTransformation(same(split), anyList(), isNull()))
+        ConnectorTransformationBO transformationBO = mock(ConnectorTransformationBO.class);
+        when(transformationBO.applyBuiltInTransformation(same(split), anyList(), isNull()))
                 .thenAnswer(invocation -> {
                     List<Map<String, Object>> rows = invocation.getArgument(1);
                     return rows.stream().map(input -> {
@@ -347,7 +347,7 @@ class ConnectorPreviewBOTest {
         previewBO.cacheBO = cacheBO;
         previewBO.extractBO = extractBO;
         previewBO.fileHandlerBO = mock(TabularFileReaderBO.class);
-        previewBO.transformationBO = transformerBO;
+        previewBO.transformationBO = transformationBO;
         previewBO.functionRunnerBO = mock(FunctionRunnerBO.class);
 
         PreviewResponseDTO response = previewBO.preview(config);
@@ -357,6 +357,141 @@ class ConnectorPreviewBOTest {
         verify(cacheBO).store(eq(3L), eq(1), any(), any(), anyList(),
                 eq(List.of("patient_nbr", "race", "race_main", "race_detail")));
         assertEquals(List.of(List.of("patient_nbr", "race", "race_main", "race_detail")), response.getColumns());
+    }
+
+    @Test
+    void previewShowsTheRequestedNumberOfRows() {
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (int i = 0; i < 40; i++) {
+            rows.add(row("patient-" + i, "Caucasian"));
+        }
+        ConnectorExtractBO extractBO = mock(ConnectorExtractBO.class);
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
+                .thenReturn(new TableData(List.of("patient_nbr", "race"), rows, new ArrayList<>()));
+        TabularFileReaderBO fileHandlerBO = mock(TabularFileReaderBO.class);
+        when(fileHandlerBO.getJson(any(TableData.class)))
+                .thenAnswer(invocation -> Integer.toString(invocation.getArgument(0, TableData.class).getRows().size()));
+
+        ConnectorPreviewBO previewBO = new ConnectorPreviewBO();
+        previewBO.cacheBO = new ConnectorPreviewTransformationCacheBO();
+        previewBO.extractBO = extractBO;
+        previewBO.fileHandlerBO = fileHandlerBO;
+
+        ConnectorConfigDTO config = new ConnectorConfigDTO();
+        config.setPreviewRows(25);
+        PreviewResponseDTO response = previewBO.previewPivot(config);
+
+        assertEquals(List.of("25"), response.getJsons());
+        verify(extractBO).loadPreviewData(isNull(), isNull(), eq(25), isNull(), isNull(), isNull());
+    }
+
+    @Test
+    void previewKeepsTenRowsWhenNoRowCountIsGiven() {
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (int i = 0; i < 40; i++) {
+            rows.add(row("patient-" + i, "Caucasian"));
+        }
+        ConnectorExtractBO extractBO = mock(ConnectorExtractBO.class);
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
+                .thenReturn(new TableData(List.of("patient_nbr", "race"), rows, new ArrayList<>()));
+        TabularFileReaderBO fileHandlerBO = mock(TabularFileReaderBO.class);
+        when(fileHandlerBO.getJson(any(TableData.class)))
+                .thenAnswer(invocation -> Integer.toString(invocation.getArgument(0, TableData.class).getRows().size()));
+
+        ConnectorPreviewBO previewBO = new ConnectorPreviewBO();
+        previewBO.cacheBO = new ConnectorPreviewTransformationCacheBO();
+        previewBO.extractBO = extractBO;
+        previewBO.fileHandlerBO = fileHandlerBO;
+
+        assertEquals(List.of("10"), previewBO.previewPivot(new ConnectorConfigDTO()).getJsons());
+        verify(extractBO).loadPreviewData(isNull(), isNull(), eq(10), isNull(), isNull(), isNull());
+    }
+
+    @Test
+    void preferringRowsWithDataPicksThemFromTheWholeStoredSample() {
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (int i = 0; i < 30; i++) {
+            rows.add(row("patient-" + i, "?"));
+        }
+        rows.add(row("patient-30", "Caucasian"));
+        ConnectorExtractBO extractBO = mock(ConnectorExtractBO.class);
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
+                .thenReturn(new TableData(List.of("patient_nbr", "race"), rows, new ArrayList<>()));
+        TabularFileReaderBO fileHandlerBO = mock(TabularFileReaderBO.class);
+        when(fileHandlerBO.getJson(any(TableData.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0, TableData.class).getRows().stream()
+                        .map(row -> String.valueOf(row.get("race")))
+                        .toList()
+                        .toString());
+
+        ConnectorPreviewBO previewBO = new ConnectorPreviewBO();
+        previewBO.cacheBO = new ConnectorPreviewTransformationCacheBO();
+        previewBO.extractBO = extractBO;
+        previewBO.fileHandlerBO = fileHandlerBO;
+
+        ConnectorConfigDTO config = new ConnectorConfigDTO();
+        config.setPreviewRows(3);
+        config.setPreviewNonEmpty(true);
+        PreviewResponseDTO response = previewBO.previewPivot(config);
+
+        // The only row with a race is picked, and the rows stay in file order.
+        assertEquals(List.of("[?, ?, Caucasian]"), response.getJsons());
+        verify(extractBO).loadPreviewData(isNull(), isNull(),
+                eq(bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadSettingsDTO.PREVIEW_POOL_ROWS),
+                isNull(), isNull(), isNull());
+    }
+
+    @Test
+    void patientPreviewsUseTheRowCountAsPatientLimitAndIgnoreTheDataPreference() {
+        ConnectorTransformerDTO transformer = new ConnectorTransformerDTO();
+        ConnectorConfigDTO config = new ConnectorConfigDTO();
+        config.setTransformer(List.of(transformer));
+        config.setPreviewRows(2);
+        config.setPreviewNonEmpty(true);
+
+        ConnectorExtractBO extractBO = mock(ConnectorExtractBO.class);
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
+                .thenReturn(new TableData(List.of("patient_nbr", "race"), new ArrayList<>(List.of(
+                        row("patient-1", "?"),
+                        row("patient-2", "?"),
+                        row("patient-3", "Caucasian"))), new ArrayList<>()));
+        MappingBO mappingBO = mock(MappingBO.class);
+        when(mappingBO.resolveExternalIdSourceColumn(isNull())).thenReturn("patient_nbr");
+        FunctionRunnerBO functionRunnerBO = mock(FunctionRunnerBO.class);
+        when(functionRunnerBO.mode(same(transformer))).thenReturn(FunctionExecutionMode.PATIENT);
+        ConnectorTransformationBO transformationBO = mock(ConnectorTransformationBO.class);
+        when(transformationBO.applyBuiltInTransformation(same(transformer), anyList(), eq("patient_nbr")))
+                .thenAnswer(invocation -> invocation.getArgument(1));
+        TabularFileReaderBO fileHandlerBO = mock(TabularFileReaderBO.class);
+        when(fileHandlerBO.getJson(any(TableData.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0, TableData.class).getRows().stream()
+                        .map(row -> String.valueOf(row.get("patient_nbr")))
+                        .toList()
+                        .toString());
+
+        ConnectorPreviewBO previewBO = new ConnectorPreviewBO();
+        previewBO.cacheBO = new ConnectorPreviewTransformationCacheBO();
+        previewBO.extractBO = extractBO;
+        previewBO.fileHandlerBO = fileHandlerBO;
+        previewBO.transformationBO = transformationBO;
+        previewBO.functionRunnerBO = functionRunnerBO;
+        previewBO.mappingBO = mappingBO;
+
+        PreviewResponseDTO response = previewBO.preview(config);
+
+        // Whole patients in file order: the selector would have split them, so it is not used.
+        assertEquals(List.of("[patient-1, patient-2]"), response.getJsons());
+        verify(extractBO).loadPreviewData(isNull(), isNull(), eq(2), isNull(), isNull(), isNull());
+    }
+
+    @Test
+    void theRowCountIsClampedToTheSupportedRange() {
+        ConnectorConfigDTO config = new ConnectorConfigDTO();
+        assertEquals(10, config.previewRowsOrDefault());
+        config.setPreviewRows(0);
+        assertEquals(1, config.previewRowsOrDefault());
+        config.setPreviewRows(5000);
+        assertEquals(100, config.previewRowsOrDefault());
     }
 
     private static Map<String, Object> row(String patientId, String race) {

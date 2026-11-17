@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.api.importer.files.table;
 
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
+import bio.cosy.feddb.local.api.importer.run.preview.PreviewCells;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -89,5 +90,40 @@ public class TableSample {
                 .distinct()
                 .toList()));
         return values;
+    }
+
+    /**
+     * The first {@code headRows} rows, followed by "filler" rows from further down: for every column
+     * that is still empty in the rows taken so far, the first later row that has a value in it (one
+     * row can fill several columns). At most {@code maxFillers} fillers are added. The rows stay in
+     * file order, so asking for the first {@code headRows} or fewer rows never returns a filler.
+     */
+    public static TableSample withFillers(TableData tableData, int headRows, int maxFillers) {
+        if (tableData == null) {
+            return null;
+        }
+        List<String> columns = tableData.getColumns() == null ? List.of() : tableData.getColumns();
+        Set<String> empty = new LinkedHashSet<>(columns);
+        List<Map<String, Object>> sampledRows = new ArrayList<>();
+        int fillers = 0;
+        try (var rows = tableData.streamRows()) {
+            Iterator<Map<String, Object>> iterator = rows.iterator();
+            while (iterator.hasNext()) {
+                Map<String, Object> row = iterator.next();
+                if (sampledRows.size() < Math.max(0, headRows)) {
+                    sampledRows.add(row);
+                    empty.removeIf(column -> PreviewCells.hasValue(row, column));
+                    continue;
+                }
+                if (empty.isEmpty() || fillers >= maxFillers) {
+                    break;
+                }
+                if (empty.removeIf(column -> PreviewCells.hasValue(row, column))) {
+                    sampledRows.add(row);
+                    fillers++;
+                }
+            }
+        }
+        return new TableSample(columns, sampledRows, tableData.getColumnProfiles());
     }
 }
