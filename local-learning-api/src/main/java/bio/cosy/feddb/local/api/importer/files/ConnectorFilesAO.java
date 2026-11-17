@@ -29,4 +29,8 @@ public class ConnectorFilesAO implements PanacheRepository<ConnectorFilesEntity>
     public Optional<ConnectorFilesEntity> getFirstFileByCohortId(Long cohortId) {
         return find("cohort.id = ?1 ORDER BY id DESC", cohortId).firstResultOptional();
     }
+
+    public List<ConnectorFilesEntity> getFilesWithoutCohort(String keycloakId) {
+        return list("cohort is null and connector is null and keycloakId = ?1 order by id desc", keycloakId);
+    }
 }

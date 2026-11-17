@@ -37,7 +37,8 @@ public class ConnectorTransformerEntity extends BaseEntity {
     @Column(name = "return_mapping", columnDefinition = "jsonb")
     private Map<String, Object> returnMapping;
 
-    @Column(name = "column_name", length = 255)
+    // Comma separated, a combined transformer runs on many columns at once
+    @Column(name = "column_name", columnDefinition = "TEXT")
     private String column;
 
     @Column(name = "app_version_id")
@@ -45,6 +46,9 @@ public class ConnectorTransformerEntity extends BaseEntity {
 
     @Column(name = "app_image", length = 1000)
     private String appImage;
+
+    @Column(name = "app_slug", length = 255)
+    private String appSlug;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "hyperparams", columnDefinition = "jsonb")
@@ -65,6 +69,7 @@ public class ConnectorTransformerEntity extends BaseEntity {
                 && Objects.equals(column, other.column)
                 && Objects.equals(appVersionId, other.appVersionId)
                 && Objects.equals(appImage, other.appImage)
+                && Objects.equals(appSlug, other.appSlug)
                 && mapsEqual(inputMapping, other.inputMapping)
                 && mapsEqual(returnMapping, other.returnMapping)
                 && mapsEqual(hyperparams, other.hyperparams);

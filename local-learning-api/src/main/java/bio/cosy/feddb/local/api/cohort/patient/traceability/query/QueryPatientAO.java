@@ -21,10 +21,6 @@ public class QueryPatientAO implements PanacheRepository<QueryPatientEntity> {
             ON CONFLICT (patient_id, query_id) DO NOTHING
             """;
 
-    public List<QueryPatientEntity> getAllForQuery(Long queryId) {
-        return find("query.id", queryId).list();
-    }
-
     public int insertMatchedPatients(String patientMatchSql, Long queryId, Collection<Long> cohortIds) {
         if (cohortIds == null || cohortIds.isEmpty()) {
             return 0;

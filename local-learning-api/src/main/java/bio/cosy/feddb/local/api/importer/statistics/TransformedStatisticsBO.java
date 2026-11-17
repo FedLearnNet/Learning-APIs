@@ -12,12 +12,13 @@ import bio.cosy.feddb.local.api.importer.files.ConnectorFilesAO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFilesEntity;
 import bio.cosy.feddb.local.api.importer.files.read.TabularFileReaderBO;
 import bio.cosy.feddb.local.api.importer.files.table.ColumnNames;
+import bio.cosy.feddb.local.api.importer.files.table.SheetMergePlan;
 import bio.cosy.feddb.local.api.importer.files.table.TableData;
 import bio.cosy.feddb.local.api.importer.functions.FunctionExecutionMode;
 import bio.cosy.feddb.local.api.importer.functions.FunctionRunnerBO;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import bio.cosy.feddb.local.api.importer.mapping.MappingBO;
-import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,7 +74,7 @@ public class TransformedStatisticsBO {
     TabularFileReaderBO fileHandlerBO;
 
     @Inject
-    ConnectorTransformerBO transformerBO;
+    ConnectorTransformationBO transformationBO;
 
     @Inject
     FunctionRunnerBO functionRunnerBO;
@@ -170,9 +171,7 @@ public class TransformedStatisticsBO {
                     ? selectRepresentativePatients(source, sourceColumns, patientIdColumn)
                     : selectRepresentativeRows(source, sourceColumns);
 
-            for (ConnectorTransformerDTO transformer : builtInTransformers) {
-                rows = transformerBO.applyBuiltInTransformation(transformer, rows, patientIdColumn);
-            }
+            rows = transformationBO.applyBuiltInTransformations(builtInTransformers, rows, patientIdColumn);
 
             List<ColumnProfile> profiles;
             try (TableData transformed = new TableData(resultColumns(sourceColumns, rows), rows, null)) {
@@ -183,6 +182,22 @@ public class TransformedStatisticsBO {
             fileEntity.setTransformedStatistics(profiles);
             return profiles;
         }
+    }
+
+    @Transactional
+    @TransactionConfiguration(timeout = STATISTICS_TIMEOUT_SECONDS)
+    public List<ColumnProfile> getFileStatistics(
+            Long cohortId,
+            ConnectorInputConfigDTO inputConfig,
+            Map<String, UploadInfoDTO> uploadInfo,
+            SheetMergeResultDTO mergeConfig,
+            PivotConfigDTO pivotConfig) {
+        boolean pivoting = pivotConfig != null && pivotConfig.getValueColumnIndex() != null
+                && !pivotConfig.getValueColumnIndex().isEmpty();
+        if (SheetMergePlan.requested(mergeConfig) || pivoting) {
+            return getTransformedStatistics(cohortId, inputConfig, uploadInfo, mergeConfig, pivotConfig, List.of(), List.of());
+        }
+        return getSourceStatistics(cohortId, inputConfig, uploadInfo);
     }
 
     /**
@@ -376,7 +391,7 @@ public class TransformedStatisticsBO {
         }
         return transformers.stream()
                 .filter(Objects::nonNull)
-                .filter(transformer -> transformer.getAppImage() == null || transformer.getAppImage().isBlank())
+                .filter(transformer -> !transformer.isAppBased())
                 .toList();
     }
 

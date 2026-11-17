@@ -1,0 +1,267 @@
+{
+  "name" : "logistic-regression",
+  "uniqueAppId" : "a67b810a-6c3c-4f63-a9e4-b56333174591",
+  "slug" : "logistic-regression",
+  "type" : "ANALYSIS",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://github.com/FedLearnNet/tool-logistic-regression",
+  "authors" : [ {
+    "keycloakId" : "admin"
+  } ],
+  "versions" : [ {
+    "appVersion" : "1.0.0",
+    "publishHash" : "ef51d891eb85e4a4fadfe236a13d53204a1ff9b0",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "shortDescription" : "Trains logistic regression models and exports predictions, coefficients, and feature explanations.",
+    "longDescription" : "# logistic-regression\n\nTrains logistic regression models and exports predictions, coefficients, and feature explanations.\n\n## Runtime inputs\n\nSupply input files according to the schemas in `app.yml`.\n\n## Inputs and outputs\n\n### Inputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `data` | CSV | Training CSV containing numeric features and a target column (target_column). Optional first column 'id'. |\n\n### Outputs\n\n| Name | Type | Description |\n| --- | --- | --- |\n| `explanation` | HTML | Human-readable explainability report (top positive/negative coefficients per class). |\n| `report` | TEXT | Small textual run report. |\n| `predictions` | CSV | Predictions CSV including label and probabilities for each class (p_<class> columns). |\n| `coefficients` | CSV | Long-form coefficient table per class (includes intercept). |\n\n## Configuration\n\n| Name | Default | Description |\n| --- | --- | --- |\n| `target_column` | `col_5` | Name of the target/label column in the training CSV. |\n| `standardize` | `1` | Standardize numeric features before training and prediction. |\n| `C` | `1.0` | Inverse regularization strength (smaller => stronger regularization). |\n| `max_iter` | `200` | Maximum number of solver iterations. |\n| `solver` | `lbfgs` | Optimizer/solver used for Logistic Regression. |\n| `multi_class` | `auto` | Multi-class handling strategy. |\n| `class_weight` | `balanced` | Class weighting strategy. Use balanced for imbalanced datasets. |\n| `random_state` | `42` | Random seed. |\n| `explain_top_k` | `15` | Number of top positive/negative coefficients per class to show in explanation.html. |\n\n## Development\n\n```bash\npython3 -m venv .venv\nsource .venv/bin/activate\npip install -r requirements-dev.txt\ncp .env.example .env\n# Set APP_ID and platform URLs before connecting.\npython main.py\n```\n\nThe Docker base image provides the FL-Net API. `requirements.txt` lists additional\nruntime dependencies; `requirements-dev.txt` includes the API for local development.\nRuntime datasets and trained models must be supplied separately; see `data/README.md`.\n\nBuild with `docker build -t tool-logistic-regression .`.\n",
+    "appConfig" : {
+      "hyperparams" : [ {
+        "default" : "col_5",
+        "description" : "Name of the target/label column in the training CSV.",
+        "name" : "target_column",
+        "options" : [ ],
+        "type" : "STRING",
+        "variableName" : "target_column",
+        "mode" : "BOTH"
+      }, {
+        "default" : "1",
+        "description" : "Standardize numeric features before training and prediction.",
+        "name" : "standardize",
+        "options" : [ ],
+        "type" : "BOOLEAN",
+        "variableName" : "standardize",
+        "mode" : "BOTH"
+      }, {
+        "default" : "1.0",
+        "description" : "Inverse regularization strength (smaller => stronger regularization).",
+        "minValue" : 0.0,
+        "name" : "C",
+        "options" : [ ],
+        "type" : "FLOAT",
+        "variableName" : "C",
+        "mode" : "BOTH"
+      }, {
+        "default" : "200",
+        "description" : "Maximum number of solver iterations.",
+        "maxValue" : 100000.0,
+        "minValue" : 1.0,
+        "name" : "max_iter",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "max_iter",
+        "mode" : "BOTH"
+      }, {
+        "default" : "lbfgs",
+        "description" : "Optimizer/solver used for Logistic Regression.",
+        "name" : "solver",
+        "options" : [ "lbfgs", "liblinear", "saga", "newton-cg", "sag" ],
+        "type" : "CATEGORICAL",
+        "variableName" : "solver",
+        "mode" : "BOTH"
+      }, {
+        "default" : "auto",
+        "description" : "Multi-class handling strategy.",
+        "name" : "multi_class",
+        "options" : [ "auto", "ovr", "multinomial" ],
+        "type" : "CATEGORICAL",
+        "variableName" : "multi_class",
+        "mode" : "BOTH"
+      }, {
+        "default" : "balanced",
+        "description" : "Class weighting strategy. Use balanced for imbalanced datasets.",
+        "name" : "class_weight",
+        "options" : [ "balanced", "none" ],
+        "type" : "CATEGORICAL",
+        "variableName" : "class_weight",
+        "mode" : "BOTH"
+      }, {
+        "default" : "42",
+        "description" : "Random seed.",
+        "maxValue" : 2.1474836E9,
+        "minValue" : 0.0,
+        "name" : "random_state",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "random_state",
+        "mode" : "BOTH"
+      }, {
+        "default" : "15",
+        "description" : "Number of top positive/negative coefficients per class to show in explanation.html.",
+        "maxValue" : 200.0,
+        "minValue" : 1.0,
+        "name" : "explain_top_k",
+        "options" : [ ],
+        "type" : "INTEGER",
+        "variableName" : "explain_top_k",
+        "mode" : "BOTH"
+      } ],
+      "input" : [ {
+        "delimiter" : ",",
+        "description" : "Training CSV containing numeric features and a target column (target_column). Optional first column 'id'.",
+        "hasHeader" : true,
+        "mode" : "BOTH",
+        "name" : "data",
+        "required" : true,
+        "tabularSchema" : {
+          "allowOnlyNumbers" : false,
+          "prohibitedNulls" : false
+        },
+        "type" : "CSV",
+        "variableName" : "data"
+      } ],
+      "output" : [ {
+        "description" : "Human-readable explainability report (top positive/negative coefficients per class).",
+        "mode" : "BOTH",
+        "name" : "explanation",
+        "required" : false,
+        "type" : "HTML",
+        "variableName" : "explanation"
+      }, {
+        "description" : "Small textual run report.",
+        "mode" : "BOTH",
+        "name" : "report",
+        "required" : false,
+        "type" : "TEXT",
+        "variableName" : "report"
+      }, {
+        "description" : "Predictions CSV including label and probabilities for each class (p_<class> columns).",
+        "mode" : "PREDICTION",
+        "name" : "predictions",
+        "required" : false,
+        "type" : "CSV",
+        "variableName" : "predictions"
+      }, {
+        "description" : "Long-form coefficient table per class (includes intercept).",
+        "mode" : "BOTH",
+        "name" : "coefficients",
+        "required" : false,
+        "type" : "CSV",
+        "variableName" : "coefficients"
+      } ]
+    },
+    "publishInfo" : {
+      "commitHash" : "ef51d891eb85e4a4fadfe236a13d53204a1ff9b0",
+      "filePaths" : [ "https://github.com/FedLearnNet/tool-logistic-regression/blob/ef51d891eb85e4a4fadfe236a13d53204a1ff9b0/data/README.md", "https://github.com/FedLearnNet/tool-logistic-regression/blob/ef51d891eb85e4a4fadfe236a13d53204a1ff9b0/data/iris.csv" ],
+      "vulnerabilityScanResult" : {
+        "tool" : "trivy",
+        "target" : "localhost:5001/flnet/tools/logistic-regression:ef51d891eb85e4a4fadfe236a13d53204a1ff9b0",
+        "success" : false,
+        "summary" : {
+          "critical" : 0,
+          "high" : 1,
+          "medium" : 0,
+          "low" : 0,
+          "unknown" : 0,
+          "num" : 1
+        },
+        "rawReport" : {
+          "lang-pkgs-python-pkg" : [ {
+            "CVSS" : {
+              "nvd" : {
+                "V3Score" : 8.8,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "ghsa" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              },
+              "redhat" : {
+                "V3Score" : 7.1,
+                "V3Vector" : "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:L"
+              },
+              "bitnami" : {
+                "V40Score" : 7.7,
+                "V40Vector" : "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N/E:P"
+              }
+            },
+            "Layer" : {
+              "DiffID" : "sha256:935ce6de17d6f7643d4ec834285b7ce4525e3c03308abfd55061bc29e81db8e9"
+            },
+            "PkgID" : "setuptools@70.3.0",
+            "Title" : "setuptools: Path Traversal Vulnerability in setuptools PackageIndex",
+            "CweIDs" : [ "CWE-22" ],
+            "Status" : "fixed",
+            "PkgName" : "setuptools",
+            "Severity" : "HIGH",
+            "VendorIDs" : [ "GHSA-5rjg-fvgr-3xxf" ],
+            "DataSource" : {
+              "ID" : "ghsa",
+              "URL" : "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip",
+              "Name" : "GitHub Security Advisory pip"
+            },
+            "PrimaryURL" : "https://avd.aquasec.com/nvd/cve-2025-47273",
+            "References" : [ "https://access.redhat.com/errata/RHSA-2025:10407", "https://access.redhat.com/errata/RHSA-2025:14900", "https://access.redhat.com/security/cve/CVE-2025-47273", "https://advisory.echohq.com/cve/CVE-2025-47273", "https://bugzilla.redhat.com/2366982", "https://bugzilla.redhat.com/2384043", "https://bugzilla.redhat.com/show_bug.cgi?id=2366982", "https://creativecommons.org/licenses/by/4.0/", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273", "https://errata.almalinux.org/8/ALSA-2025-14900.html", "https://errata.rockylinux.org/RLSA-2025:10407", "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml", "https://github.com/pypa/setuptools", "https://github.com/pypa/setuptools/blob/6ead555c5fb29bc57fe6105b1bffc163f56fd558/setuptools/package_index.py#L810C1-L825C88", "https://github.com/pypa/setuptools/commit/250a6d17978f9f6ac3ac887091f2d32886fbbb0b", "https://github.com/pypa/setuptools/issues/4946", "https://github.com/pypa/setuptools/security/advisories/GHSA-5rjg-fvgr-3xxf", "https://linux.oracle.com/cve/CVE-2025-47273.html", "https://linux.oracle.com/errata/ELSA-2025-9940.html", "https://lists.debian.org/debian-lts-announce/2025/05/msg00035.html", "https://nvd.nist.gov/vuln/detail/CVE-2025-47273", "https://ubuntu.com/security/notices/USN-7544-1", "https://ubuntu.com/security/notices/USN-8010-1", "https://www.cve.org/CVERecord?id=CVE-2025-47273" ],
+            "Description" : "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code execution depending on the context. Version 78.1.1 fixes the issue.",
+            "Fingerprint" : "sha256:ef74d2d75ec1bc7173e025e50d5d2b8d730955f2cbd78e3e3b048678539ee461",
+            "FixedVersion" : "78.1.1",
+            "PkgIdentifier" : {
+              "UID" : "c5eccaa7d8e0c308",
+              "PURL" : "pkg:pypi/setuptools@70.3.0",
+              "BOMRef" : "pkg:pypi/setuptools@70.3.0"
+            },
+            "PublishedDate" : "2025-05-17T16:15:19.11Z",
+            "SeveritySource" : "ghsa",
+            "VendorSeverity" : {
+              "nvd" : 3,
+              "alma" : 2,
+              "ghsa" : 3,
+              "azure" : 3,
+              "rocky" : 2,
+              "amazon" : 3,
+              "photon" : 3,
+              "redhat" : 2,
+              "ubuntu" : 2,
+              "bitnami" : 3,
+              "oracle-oval" : 2
+            },
+            "VulnerabilityID" : "CVE-2025-47273",
+            "InstalledVersion" : "70.3.0",
+            "LastModifiedDate" : "2026-06-17T09:27:38.827Z"
+          } ]
+        },
+        "startedAt" : "2026-11-09T15:59:29.084+00:00",
+        "finishedAt" : "2026-11-09T16:01:16.410+00:00"
+      },
+      "sastScanResult" : {
+        "tool" : "opengrep",
+        "version" : "1.33.1",
+        "target" : "/app/repo",
+        "success" : true,
+        "complete" : true,
+        "scannedFiles" : 4,
+        "summary" : {
+          "error" : 0,
+          "warning" : 0,
+          "info" : 0,
+          "unknown" : 0
+        },
+        "findings" : [ ],
+        "errors" : [ ],
+        "rawReport" : {
+          "paths" : {
+            "scanned" : [ "/app/repo/app.py", "/app/repo/config.py", "/app/repo/helper.py", "/app/repo/main.py" ]
+          },
+          "errors" : [ ],
+          "results" : [ ],
+          "version" : "1.33.1",
+          "skipped_rules" : [ ],
+          "interfile_languages_used" : [ ]
+        },
+        "startedAt" : "2026-11-09T15:58:10.440+00:00",
+        "finishedAt" : "2026-11-09T15:58:25.625+00:00"
+      },
+      "malwareScanResult" : {
+        "tool" : "clamav",
+        "success" : true,
+        "infectedCount" : 0,
+        "findings" : [ ],
+        "startedAt" : "2026-11-09T16:01:16.427+00:00",
+        "finishedAt" : "2026-11-09T16:01:30.777+00:00"
+      },
+      "imageName" : "logistic-regression:ef51d891eb85e4a4fadfe236a13d53204a1ff9b0"
+    },
+    "imageName" : "logistic-regression:ef51d891eb85e4a4fadfe236a13d53204a1ff9b0"
+  } ]
+}

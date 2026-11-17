@@ -2,6 +2,7 @@ package bio.cosy.feddb.local.api.importer.validation;
 
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.datamodler.validation.BaseValidationBO;
+import bio.cosy.feddb.core.api.file.analytics.RowProfiler;
 import bio.cosy.feddb.local.api.schema.datatype.DataTypeHelper;
 import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeAO;
 import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeEntity;
@@ -9,8 +10,7 @@ import bio.cosy.feddb.local.config.FLNetClientConfig;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @ApplicationScoped
 public class ConnectorValidationBO extends BaseValidationBO {
@@ -107,5 +107,32 @@ public class ConnectorValidationBO extends BaseValidationBO {
         } catch (Exception e) {
             return new ConnectorValidationResultDTO(e.getMessage(), schemaId);
         }
+    }
+
+    public static boolean isMissingPlaceholder(Object value, Collection<?> allowedValues) {
+        String text = value == null ? "" : String.valueOf(value).strip();
+        return !text.isEmpty()
+                && RowProfiler.isMissing(text)
+                && (allowedValues == null || allowedValues.stream().map(String::valueOf).noneMatch(text::equals));
+    }
+
+    public String rejection(Object value, Long schemaId, DataTypeNodeDTO dataType) {
+        if (isMissingPlaceholder(value, dataType == null ? null : dataType.getOptions())) {
+            return "a missing-value marker, replace it with the value the schema uses for missing entries, if it has one, "
+                    + "else with null (Replace Value or Normalize Missing function)";
+        }
+        ConnectorValidationResultDTO result = validate(value, schemaId, dataType);
+        return result.isValid() ? null : result.getMessage();
+    }
+
+    public Map<Object, String> rejections(Collection<?> values, Long schemaId, DataTypeNodeDTO dataType) {
+        Map<Object, String> rejected = new LinkedHashMap<>();
+        for (Object value : values) {
+            String message = rejection(value, schemaId, dataType);
+            if (message != null) {
+                rejected.put(value, message);
+            }
+        }
+        return rejected;
     }
 }

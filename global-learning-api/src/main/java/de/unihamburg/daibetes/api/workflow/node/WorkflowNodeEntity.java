@@ -39,4 +39,14 @@ public class WorkflowNodeEntity extends BaseWorkflowNodeEntity {
     @OneToMany(mappedBy = "outputNode", cascade = CascadeType.ALL)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Set<WorkflowConnectionEntity> outComingConnections = new HashSet<>();
+
+    public FederatedAppVersionEntity getToolVersion() {
+        if (federatedAppVersion != null) {
+            return federatedAppVersion;
+        }
+        if (subModel != null && subModel.getModelVersion() != null && subModel.getModelVersion().getModel() != null) {
+            return subModel.getModelVersion().getModel().getFederatedAppVersion();
+        }
+        return null;
+    }
 }

@@ -2,16 +2,21 @@ package bio.cosy.feddb.local.api.importer.functions;
 
 import bio.cosy.feddb.local.api.importer.functions.managed.AbstractManagedFunction;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 @ApplicationScoped
 public class FunctionRunnerBO {
+
+    private static final ObjectMapper JSON = new ObjectMapper();
 
     @Inject
     FunctionRegistry registry;
@@ -79,6 +84,17 @@ public class FunctionRunnerBO {
                 ));
     }
 
+    private static String text(Object value) {
+        if (!(value instanceof Map || value instanceof Collection)) {
+            return String.valueOf(value);
+        }
+        try {
+            return JSON.writeValueAsString(value);
+        } catch (JsonProcessingException e) {
+            return String.valueOf(value);
+        }
+    }
+
     private Map<String, String> toStringMap(Map<String, Object> mapping) {
         if (mapping == null || mapping.isEmpty()) {
             return Map.of();
@@ -86,7 +102,7 @@ public class FunctionRunnerBO {
 
         Map<String, String> result = new LinkedHashMap<>();
         for (Map.Entry<String, Object> entry : mapping.entrySet()) {
-            result.put(entry.getKey(), entry.getValue() == null ? null : String.valueOf(entry.getValue()));
+            result.put(entry.getKey(), entry.getValue() == null ? null : text(entry.getValue()));
         }
         return result;
     }

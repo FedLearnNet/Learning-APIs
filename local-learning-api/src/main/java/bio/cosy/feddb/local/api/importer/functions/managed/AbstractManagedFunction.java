@@ -14,6 +14,9 @@ import java.util.Map;
 
 public abstract class AbstractManagedFunction {
 
+    // Marks an input mapping as the cell value
+    public static final String VALUE_PREFIX = "[VALUE]";
+
     @Inject
     ConnectorRunRunMessagesBO logger;
 
@@ -66,11 +69,11 @@ public abstract class AbstractManagedFunction {
     }
 
     private Object resolveMappingValue(String spec, Map<String, Object> row, String column) {
-        if ("[VALUE]".equals(spec)) {
+        if (VALUE_PREFIX.equals(spec)) {
             return column == null ? null : row.get(column);
         }
-        if (spec.startsWith("[VALUE]")) {
-            return spec.substring("[VALUE]".length());
+        if (spec.startsWith(VALUE_PREFIX)) {
+            return spec.substring(VALUE_PREFIX.length());
         }
         if (row.containsKey(spec)) {
             return row.get(spec);

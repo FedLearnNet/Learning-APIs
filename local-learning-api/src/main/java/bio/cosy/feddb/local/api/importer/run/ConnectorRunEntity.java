@@ -5,7 +5,6 @@ import bio.cosy.feddb.local.api.cohort.CohortEntity;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorEntity;
 import bio.cosy.feddb.local.api.importer.run.message.ConnectorRunMessagesEntity;
 import bio.cosy.feddb.local.api.importer.run.patientlog.ConnectorRunPatientLogEntity;
-import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -98,10 +97,6 @@ public class ConnectorRunEntity extends BaseAuthEntity {
         @ManyToOne(optional = false)
         @JoinColumn(name = "connector_id")
         private ConnectorEntity connector;
-
-        @OneToMany(mappedBy = "connectorRun", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-        @OnDelete(action = OnDeleteAction.CASCADE)
-        private List<ConnectorRunStepEntity> steps = new ArrayList<>();
 
         @OneToMany(mappedBy = "run", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
         @OnDelete(action = OnDeleteAction.CASCADE)

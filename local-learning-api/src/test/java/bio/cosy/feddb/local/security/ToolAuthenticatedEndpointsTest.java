@@ -48,9 +48,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ToolAuthenticatedEndpointsTest {
 
     /**
-     * Endpoints known when this test was written; guards against a scan that silently finds nothing.
+     * The execution attempt websocket, output and model upload; guards against a scan that silently finds nothing.
      */
-    private static final int MIN_EXPECTED_ENDPOINTS = 6;
+    private static final int MIN_EXPECTED_ENDPOINTS = 3;
 
     private static List<ToolEndpoint> endpoints;
 
@@ -226,7 +226,7 @@ class ToolAuthenticatedEndpointsTest {
         String concretePath() {
             return pathTemplate
                     .replace("{type}", "app")
-                    .replace("{mode}", "prediction")
+                    .replace("{mode}", "APP")
                     .replaceAll("\\{[^}]+}", "42");
         }
 

@@ -104,7 +104,8 @@ public class PathOrUrl {
 
     public static List<PathOrUrl> filterByWhitelist(List<PathOrUrl> sources, Optional<List<String>> whiteList) {
         return whiteList.map(white -> sources.stream()
-                        .filter(src -> white.stream().anyMatch(w -> src.toString().endsWith("/" + w)))
+                        .filter(src -> white.stream().anyMatch(w -> src.toString().equals(w)
+                                || src.toString().replace('\\', '/').endsWith("/" + w)))
                         .toList())
                 .orElse(sources);
     }

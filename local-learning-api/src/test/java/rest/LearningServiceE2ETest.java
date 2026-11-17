@@ -1,12 +1,8 @@
 package rest;
 
 
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectBO;
-import bio.cosy.feddb.local.api.learning.project.run.FederatedLearningExperimentBroadcastBO;
-import bio.cosy.feddb.local.api.learning.project.run.step.FederatedLearningExperimentStepAO;
-import bio.cosy.feddb.local.api.learning.project.run.step.FederatedLearningExperimentStepBO;
+import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
 import bio.cosy.feddb.local.services.KeycloakService;
-import bio.cosy.feddb.local.services.orch.WorkflowOrchestratorBO;
 import io.quarkus.logging.Log;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -24,22 +20,10 @@ import static org.mockito.Mockito.when;
 public class LearningServiceE2ETest {
 
     @Inject
-    WorkflowOrchestratorBO workflowOrchestratorBO;
+    WorkflowOrchestrator workflowOrchestrator;
 
     @InjectMock
     KeycloakService keycloakService;
-
-    @Inject
-    FederatedLearningExperimentStepBO federatedLearningExperimentStepBO;
-
-    @Inject
-    FederatedLearningExperimentBroadcastBO federatedLearningExperimentBroadcastBO;
-
-    @Inject
-    FederatedLearningProjectBO federatedLearningProjectBO;
-
-    @Inject
-    FederatedLearningExperimentStepAO federatedLearningExperimentStepAO;
 
     @Inject
     @RestClient
@@ -53,7 +37,7 @@ public class LearningServiceE2ETest {
     @AfterEach
     void tearDown() {
         Log.info("Cleaning up after test...");
-        workflowOrchestratorBO.cleanAll();
+        workflowOrchestrator.cleanAll();
     }
 /*
     @Test

@@ -926,6 +926,94 @@ public class QueryBuilderTest {
                 () -> queryBuilderBO.buildCountDistinctSql(queryTree(firstInjected)));
     }
 
+    @Test
+    @Order(35)
+    void testInvalidRegexIsRejectedBeforeExecution() {
+        Lang2QueryNodeDTO invalid = leaf("2001", "1001", "regex", "(");
+        QueryRejectedException rejected = Assertions.assertThrows(
+                QueryRejectedException.class,
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(invalid)));
+        Assertions.assertEquals("Regular expression is not valid", rejected.getMessage());
+
+        Lang2QueryNodeDTO valid = leaf("2001", "1001", "regex", "Diabetes");
+        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(valid));
+        Assertions.assertTrue(sql.contains("value_string ~ 'Diabetes'"));
+        assertSqlExecutes(sql);
+    }
+
+    @Test
+    @Order(36)
+    void testCountsAreLimitedToTheAllowedCohorts() {
+        Lang2QueryNodeDTO age = leaf("2002", "1002", ">", 26);
+        String unscoped = queryBuilderBO.buildCountDistinctSql(queryTree(age));
+        Assertions.assertFalse(queryAO.findPatientCountsByCohort(unscoped).isEmpty());
+        Assertions.assertTrue(queryAO.findPatientCountsByCohort(unscoped, List.of(2L)).isEmpty());
+        Assertions.assertTrue(queryAO.findPatientCountsByCohort(unscoped, List.of()).isEmpty());
+
+        Assertions.assertEquals(
+                List.of(1L, 2L),
+                matchedPatientIds(queryBO.runQuery(queryTree(age), List.of(1L))));
+
+        Lang2QueryNodeDTO tooTall = leaf("2003", "1002", ">", 1000);
+        QueryResultWrapperDTO none = queryBO.runQuery(queryTree(tooTall), List.of(2L));
+        Assertions.assertTrue(none.getResult().isEmpty());
+
+        Assertions.assertThrows(
+                QueryRejectedException.class,
+                () -> queryBO.runQuery(queryTree(age), List.of(2L)));
+    }
+
+    @Test
+    @Order(37)
+    void testIntervalsBeyondTwoHundredYearsAreRejected() {
+        Lang2QueryNodeDTO temporal = and(leaf("2001", "1001", "exists", null), leaf("2002", "1002", ">", 0));
+        temporal.setTemporalRelations(List.of(relation(0, 1, "within 300000 years")));
+        assertIntervalTooLarge(temporal);
+
+        Lang2QueryNodeDTO following = and(leaf("2001", "1001", "exists", null), leaf("2002", "1002", ">", 0));
+        following.setTemporalRelations(List.of(relation(0, 1, "in the following 300000 years")));
+        assertIntervalTooLarge(following);
+
+        Lang2QueryNodeDTO withinCount = leaf("2002", "1002", ">", 0);
+        withinCount.setValueMode("delta");
+        withinCount.setTimeAggregationMethod("within 300000 years at least 1 times");
+        assertIntervalTooLarge(withinCount);
+
+        Lang2QueryNodeDTO withinAverage = leaf("2002", "1002", ">=", 30);
+        withinAverage.setTimeAggregationMethod("within 300000 years");
+        withinAverage.setValueAggregationMethod("average");
+        assertIntervalTooLarge(withinAverage);
+
+        Lang2QueryNodeDTO window = leaf("2002", "1002", ">", 0);
+        window.setValueMode("delta 300000 years");
+        assertIntervalTooLarge(window);
+
+        Lang2QueryNodeDTO summedParts = leaf("2002", "1002", ">", 0);
+        summedParts.setValueMode("delta 150 years 60 years");
+        assertIntervalTooLarge(summedParts);
+
+        Lang2QueryNodeDTO intMaxWeeks = leaf("2002", "1002", ">", 0);
+        intMaxWeeks.setValueMode("delta 2147483647 weeks");
+        assertIntervalTooLarge(intMaxWeeks);
+
+        Lang2QueryNodeDTO atLimit = and(leaf("2001", "1001", "exists", null), leaf("2002", "1002", ">", 0));
+        atLimit.setTemporalRelations(List.of(relation(0, 1, "within 200 years")));
+        assertSqlExecutes(queryBuilderBO.buildCountDistinctSql(queryTree(atLimit)));
+
+        Lang2QueryNodeDTO windowAtLimit = leaf("2002", "1002", ">", 0);
+        windowAtLimit.setValueMode("delta 200 years");
+        assertSqlExecutes(queryBuilderBO.buildCountDistinctSql(queryTree(windowAtLimit)));
+    }
+
+    private void assertIntervalTooLarge(Lang2QueryNodeDTO root) {
+        QueryRejectedException rejected = Assertions.assertThrows(
+                QueryRejectedException.class,
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(root)));
+        Assertions.assertTrue(
+                rejected.getMessage().contains("exceeds the maximum of 200 years"),
+                rejected.getMessage());
+    }
+
     private QueryDTO queryTree(Lang2QueryNodeDTO root) {
         QueryDTO queryDTO = new QueryDTO();
         queryDTO.setQuery(root);

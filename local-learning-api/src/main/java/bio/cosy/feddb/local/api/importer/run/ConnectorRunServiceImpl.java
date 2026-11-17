@@ -35,7 +35,7 @@ public class ConnectorRunServiceImpl implements ConnectorRunService {
 
     @Override
     public List<ConnectorRunDTO> listRuns() {
-        Set<Long> cohortIds = cohortMemberAuthBO.getMemberCohortIds(userIdentity.getKeycloakId());
+        Set<Long> cohortIds = cohortMemberAuthBO.memberCohortIdsOf(userIdentity.getKeycloakId());
         return runBO.getAll().stream()
                 .filter(run -> cohortIds.contains(run.getCohortId()))
                 .toList();

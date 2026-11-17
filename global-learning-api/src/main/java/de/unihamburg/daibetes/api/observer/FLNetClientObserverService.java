@@ -1,6 +1,7 @@
 package de.unihamburg.daibetes.api.observer;
 
 import bio.cosy.feddb.core.security.Roles;
+import bio.cosy.feddb.core.services.orch.dto.SystemComputingInfoDTO;
 import io.smallrye.mutiny.Multi;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.DELETE;
@@ -15,6 +16,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.RestStreamElementType;
 
 import java.util.List;
+import java.util.Map;
 
 @Path("/admin/observer/client")
 @Produces(MediaType.APPLICATION_JSON)
@@ -33,6 +35,10 @@ public interface FLNetClientObserverService {
     @Operation(summary = "Returns a snapshot of currently connected WebSocket client IDs.")
     @APIResponse(responseCode = "200", description = "List of active connection IDs")
     List<String> getConnectedClients();
+
+    @GET
+    @Path("/systems")
+    Map<String, SystemComputingInfoDTO> getSystems();
 
     @GET
     @Path("/events")

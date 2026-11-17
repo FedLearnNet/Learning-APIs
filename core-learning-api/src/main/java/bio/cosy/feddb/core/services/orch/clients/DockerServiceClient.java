@@ -4,8 +4,10 @@ import bio.cosy.feddb.core.services.orch.dto.InfoDTO;
 import bio.cosy.feddb.core.services.orch.dto.RegistryImagesDTO;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 @Path("/docker")
+@RegisterRestClient(configKey = "orch-docker-service")
 @Produces("application/json")
 @Consumes("application/json")
 public interface DockerServiceClient {
@@ -26,6 +28,10 @@ public interface DockerServiceClient {
     @Produces("text/plain")
     String resolveToolImage(@QueryParam("slug") String slug, @QueryParam("commitHash") String commitHash);
 
+
+    @DELETE
+    @Path("image")
+    Response removeLocalImage(@QueryParam("name") String name);
 
     @DELETE
     @Path("workflow/{workflowId}/cleanup")

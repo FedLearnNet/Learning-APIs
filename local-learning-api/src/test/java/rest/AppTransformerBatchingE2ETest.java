@@ -1,9 +1,13 @@
 package rest;
 
 import bio.cosy.feddb.core.api.datamodler.schema.SchemaStructureDTO;
+import bio.cosy.feddb.core.api.app.FederatedAppDetailDTO;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
+import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
+import bio.cosy.feddb.core.services.orch.clients.WorkflowServiceClient;
+import bio.cosy.feddb.core.services.orch.clients.DockerServiceClient;
 import bio.cosy.feddb.core.services.orch.dto.CreateContainerResponseDTO;
-import bio.cosy.feddb.core.services.orch.dto.StartAppDTO;
+import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import bio.cosy.feddb.local.api.cohort.AutoSubscriberBO;
 import bio.cosy.feddb.local.api.cohort.CohortAO;
 import bio.cosy.feddb.local.api.cohort.CohortEntity;
@@ -16,11 +20,13 @@ import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
 import bio.cosy.feddb.local.api.importer.run.ImportStatusEnum;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import bio.cosy.feddb.local.services.datamodler.GlobalSchemaSubscriptionService;
-import bio.cosy.feddb.local.services.orch.OrchContainerServiceClient;
+import bio.cosy.feddb.local.services.GlobalAPIStoreService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusMock;
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
 import io.quarkus.test.junit.TestProfile;
@@ -32,6 +38,8 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -74,6 +82,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @QuarkusTest
 @TestProfile(AppTransformerBatchingE2ETest.AppTransformerProfile.class)
+@QuarkusTestResource(value = AppTransformerBatchingE2ETest.DatabaseResource.class, restrictToAnnotatedClass = true)
 public class AppTransformerBatchingE2ETest {
 
     private static final String GROUP_KEY = "us-130-app-transform";
@@ -83,10 +92,38 @@ public class AppTransformerBatchingE2ETest {
     private static final String SCHEMA_DUMMY_PATH = "/connectors/global_schema_dummy.json";
     private static final String ETL_DATA_PATH = "/connectors/clinic_001.csv";
 
+    /** This import test must never reset or clean the developer's live learning database. */
+    public static class DatabaseResource implements QuarkusTestResourceLifecycleManager {
+        private GenericContainer<?> database;
+
+        @Override
+        public Map<String, String> start() {
+            database = new GenericContainer<>("postgres:18")
+                    .withEnv("POSTGRES_USER", "user")
+                    .withEnv("POSTGRES_PASSWORD", "password")
+                    .withEnv("POSTGRES_DB", "flnet_batching_test")
+                    .withExposedPorts(5432)
+                    .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*\\s", 2));
+            database.start();
+            return Map.of("quarkus.datasource.jdbc.url", "jdbc:postgresql://" + database.getHost() + ":"
+                    + database.getMappedPort(5432) + "/flnet_batching_test?sslmode=disable",
+                    "quarkus.datasource.username", "user", "quarkus.datasource.password", "password");
+        }
+
+        @Override
+        public void stop() {
+            if (database != null) {
+                database.stop();
+            }
+        }
+    }
+
     public static class AppTransformerProfile implements QuarkusTestProfile {
         @Override
         public Map<String, String> getConfigOverrides() {
             return Map.of(
+                    "quarkus.oidc.enabled", "false",
+                    "flnet.global.socket.enabled", "false",
                     "flnet.auto-subscribe." + GROUP_KEY + ".global-schema-id", GLOBAL_SCHEMA_ID,
                     "flnet.auto-subscribe." + GROUP_KEY + ".cohort-name", COHORT_NAME,
                     "flnet.auto-subscribe." + GROUP_KEY + ".connector-path", CONNECTOR_PATH,
@@ -122,6 +159,18 @@ public class AppTransformerBatchingE2ETest {
 
     @BeforeEach
     void installMocks() throws Exception {
+        GlobalAPIStoreService store = org.mockito.Mockito.mock(GlobalAPIStoreService.class);
+        long versionId = 101L;
+        for (String slug : List.of("transformer-combine-rows", "transformer-split-rows")) {
+            FederatedAppDetailDTO app = new FederatedAppDetailDTO();
+            app.setLatestVersionId(versionId);
+            app.setImageName("test-registry/" + slug + ":current");
+            org.mockito.Mockito.when(store.getApp(slug)).thenReturn(app);
+            org.mockito.Mockito.when(store.getAppByVersion(versionId)).thenReturn(app);
+            versionId++;
+        }
+        QuarkusMock.installMockForType(store, GlobalAPIStoreService.class, RestClient.LITERAL);
+
         SchemaStructureDTO dummySchema;
         try (InputStream in = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(SCHEMA_DUMMY_PATH.substring(1))) {
@@ -143,15 +192,19 @@ public class AppTransformerBatchingE2ETest {
         QuarkusMock.installMockForType(schemaMock, GlobalSchemaSubscriptionService.class, RestClient.LITERAL);
 
         transformerApps = new TransformerAppStub(objectMapper);
-        OrchContainerServiceClient containerClient = org.mockito.Mockito.mock(OrchContainerServiceClient.class);
-        org.mockito.Mockito.when(containerClient.startContainer(
-                        org.mockito.ArgumentMatchers.any(StartAppDTO.class),
-                        org.mockito.ArgumentMatchers.anyBoolean(),
-                        org.mockito.ArgumentMatchers.anyBoolean(),
-                        org.mockito.ArgumentMatchers.anyString(),
+        WorkflowServiceClient workflowClient = org.mockito.Mockito.mock(WorkflowServiceClient.class);
+        org.mockito.Mockito.when(workflowClient.startWorkflow(
+                        org.mockito.ArgumentMatchers.any(StartWorkflowNodeDTO.class),
+                        org.mockito.ArgumentMatchers.anyBoolean(), org.mockito.ArgumentMatchers.anyString(),
                         org.mockito.ArgumentMatchers.anyInt()))
                 .thenAnswer(invocation -> transformerApps.startContainer(
-                        invocation.getArgument(0), invocation.getArgument(4)));
+                        invocation.getArgument(0), invocation.getArgument(3)));
+        QuarkusMock.installMockForType(workflowClient, WorkflowServiceClient.class, RestClient.LITERAL);
+        DockerServiceClient dockerClient = org.mockito.Mockito.mock(DockerServiceClient.class);
+        org.mockito.Mockito.when(dockerClient.cleanupWorkflow(org.mockito.ArgumentMatchers.anyLong()))
+                .thenAnswer(invocation -> Response.ok().build());
+        QuarkusMock.installMockForType(dockerClient, DockerServiceClient.class, RestClient.LITERAL);
+        ContainerServiceClient containerClient = org.mockito.Mockito.mock(ContainerServiceClient.class);
         org.mockito.Mockito.when(containerClient.cleanupWorkflow(
                         org.mockito.ArgumentMatchers.anyString(),
                         org.mockito.ArgumentMatchers.anyBoolean()))
@@ -159,7 +212,7 @@ public class AppTransformerBatchingE2ETest {
                     transformerApps.closeSockets();
                     return Response.ok().build();
                 });
-        QuarkusMock.installMockForType(containerClient, OrchContainerServiceClient.class, RestClient.LITERAL);
+        QuarkusMock.installMockForType(containerClient, ContainerServiceClient.class, RestClient.LITERAL);
     }
 
     @Test
@@ -187,11 +240,19 @@ public class AppTransformerBatchingE2ETest {
         assertEquals(2, transformerApps.startedImages.size(),
                 "Exactly one container per app transformer should be started, was "
                         + transformerApps.startedImages);
+        assertEquals(List.of("test-registry/transformer-combine-rows:current",
+                "test-registry/transformer-split-rows:current"), transformerApps.startedImages,
+                "Both transformer slugs must resolve to this platform's images");
 
         // ...and many more batches than containers, which is what proves they were reused.
         assertTrue(transformerApps.totalBatches() > transformerApps.startedImages.size(),
                 "The transformers should have served several batches each, served: "
                         + transformerApps.batchesPerStep());
+        assertTrue(transformerApps.totalBatches() <= 20,
+                "778 patients should need 16 import requests plus preview warming, got " + transformerApps.totalBatches());
+        assertEquals(778L, finalRun.getProcessedEntities());
+        assertEquals(0L, finalRun.getFailedEntities());
+        assertEquals(783L, finalRun.getCurrentRowNr());
 
         List<PatientDTO> patients = QuarkusTransaction.requiringNew()
                 .call(() -> patientBO.listPatientData(cohortId));
@@ -255,7 +316,7 @@ public class AppTransformerBatchingE2ETest {
             return batches;
         }
 
-        CreateContainerResponseDTO startContainer(StartAppDTO createDTO, Integer port) {
+        CreateContainerResponseDTO startContainer(StartWorkflowNodeDTO createDTO, Integer port) {
             startedImages.add(createDTO.getAppImage());
             Long stepId = env(createDTO, "APP_ID").map(Long::valueOf).orElseThrow(
                     () -> new IllegalStateException("Container environment is missing APP_ID"));
@@ -266,7 +327,7 @@ public class AppTransformerBatchingE2ETest {
             clients.add(client);
             WebSocket socket = client.newWebSocketBuilder()
                     .header(ToolApiKeyService.HEADER_NAME, apiKey)
-                    .buildAsync(URI.create("ws://localhost:" + port + "/connectors/run/execution/" + stepId + "/app"),
+                    .buildAsync(URI.create("ws://localhost:" + port + "/execution/APP/" + stepId + "/app"),
                             new AppListener(stepId, apiKey, port))
                     .join();
             sockets.add(socket);
@@ -297,6 +358,8 @@ public class AppTransformerBatchingE2ETest {
                     return null;
                 }
                 String payload = buffer.toString();
+                assertTrue(payload.getBytes(StandardCharsets.UTF_8).length <= 1048576,
+                        "Complete transformer messages must fit the byte budget");
                 buffer.setLength(0);
                 try {
                     JsonNode envelope = mapper.readTree(payload);
@@ -371,7 +434,7 @@ public class AppTransformerBatchingE2ETest {
                         // The id the run was started with: this is what pairs the result with its batch.
                         .multiPart("runId", String.valueOf(batchId))
                         .when()
-                        .post("/connectors/run/execution/{stepId}/upload/output", stepId)
+                        .post("/execution/APP/{stepId}/upload/output", stepId)
                         .then()
                         .statusCode(201);
             }
@@ -398,11 +461,11 @@ public class AppTransformerBatchingE2ETest {
 
         private static Map<String, String> mapOf(JsonNode node) {
             Map<String, String> map = new java.util.LinkedHashMap<>();
-            node.fields().forEachRemaining(e -> map.put(e.getKey(), e.getValue().asText()));
+            node.properties().forEach(e -> map.put(e.getKey(), e.getValue().asText()));
             return map;
         }
 
-        private static Optional<String> env(StartAppDTO dto, String key) {
+        private static Optional<String> env(StartWorkflowNodeDTO dto, String key) {
             List<String> environments = dto.getEnvironments();
             if (environments == null) {
                 return Optional.empty();

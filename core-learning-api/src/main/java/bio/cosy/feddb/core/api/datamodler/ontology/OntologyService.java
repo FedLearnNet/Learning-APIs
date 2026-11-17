@@ -196,6 +196,25 @@ public interface OntologyService {
     );
 
     @GET
+    @Path("/{id}/schema-siblings")
+    @Operation(
+            summary = "Get ontology-datatype pairs used in the same schema",
+            description = "Retrieves every ontology-datatype pair defined on a node of the root schema(s) the given "
+                    + "ontology is used in (the given ontology included)."
+    )
+    @APIResponses({
+            @APIResponse(
+                    responseCode = "200",
+                    description = "List of ontology-datatype pairs (empty list if the ontology is not used in any schema or not found)",
+                    content = @Content(schema = @Schema(implementation = OntologyDataTypeDTO.class, type = SchemaType.ARRAY))
+            )
+    })
+    Uni<List<OntologyDataTypeDTO>> getSchemaSiblingsWithDataTypes(
+            @Parameter(description = "Ontology ID", required = true)
+            @PathParam("id") UUID id
+    );
+
+    @GET
     @Path("/{id}/edges")
     @Operation(
             summary = "Get edges ontologies",

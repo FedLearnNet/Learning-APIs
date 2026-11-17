@@ -18,6 +18,9 @@ public final class CsvDialect {
     private static final Set<String> SUPPORTED_EXTENSIONS =
             Set.of(".csv", ".tsv", ".txt", ".psv", ".dat", ".tab", ".dsv");
 
+    // allowExtraCharsAfterClosingQuote is deprecated, but its replacement only tolerates whitespace after a closing quote;
+    // exports like "a"b would fail, so it stays until FastCSV removes it
+    @SuppressWarnings("removal")
     public static CsvReader<CsvRecord> reader(Reader reader, String delimiter) {
         return CsvReader.builder()
                 .fieldSeparator(delimiter.charAt(0))
@@ -26,6 +29,7 @@ public final class CsvDialect {
                 .skipEmptyLines(true)
                 .extraFieldStrategy(FieldMismatchStrategy.IGNORE)
                 .missingFieldStrategy(FieldMismatchStrategy.IGNORE)
+                .allowExtraCharsAfterClosingQuote(true)
                 .ofCsvRecord(reader);
     }
 

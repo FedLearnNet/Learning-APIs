@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.statistics.request;
 
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestStatus;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestStatus;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -32,7 +32,7 @@ public class RequestDataStatisticsAO implements PanacheRepository<RequestDataSta
 
     public List<RequestDataStatisticsEntity> list(
             Page page,
-            FederatedLearningRequestStatus status) {
+            LearningRequestStatus status) {
         return find("status = ?1", status).page(page).list();
     }
 
@@ -44,7 +44,7 @@ public class RequestDataStatisticsAO implements PanacheRepository<RequestDataSta
 
     public List<RequestDataStatisticsEntity> list(
             Page page,
-            FederatedLearningRequestStatus status,
+            LearningRequestStatus status,
             Long patientId) {
         return find(STATUS_AND_PATIENT_FILTER, status, patientId)
                 .page(page)

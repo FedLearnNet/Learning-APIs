@@ -1,13 +1,18 @@
 package bio.cosy.feddb.local.api.importer.run.preview;
 
-import bio.cosy.feddb.core.api.run.RunStatusTypes;
+import bio.cosy.feddb.core.execution.failure.ExecutionFailure;
+import bio.cosy.feddb.core.execution.failure.FailureCategory;
+import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
-import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepDTO;
-import bio.cosy.feddb.local.api.importer.run.step.ConnectorRunStepMessageSender;
+import bio.cosy.feddb.local.api.importer.files.table.ColumnNames;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.importer.transformer.AppTransformerSessionBO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunBO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
+import io.smallrye.mutiny.subscription.Cancellable;
 import io.smallrye.mutiny.subscription.MultiEmitter;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
@@ -15,11 +20,11 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 
 @ApplicationScoped
@@ -32,7 +37,7 @@ public class AppTransformerPreviewBO {
     AppTransformerSessionBO sessionBO;
 
     @Inject
-    ConnectorRunStepMessageSender messageSender;
+    ExecutionRunBO runBO;
 
     @Inject
     AppTransformerPreviewMapper mapper;
@@ -57,34 +62,38 @@ public class AppTransformerPreviewBO {
                         () -> self.get().run(config, stepIndex, input, keycloakId, emitter)));
     }
 
+    // The app's run is followed while the preview lasts, the session keeps it running until it is closed.
     @ActivateRequestContext
     public void run(ConnectorConfigDTO config,
                     int stepIndex,
                     ConnectorPreviewAppStageInput input,
                     String keycloakId,
                     MultiEmitter<? super AppTransformerPreviewStreamDTO> emitter) {
-        AtomicReference<ConnectorRunStepDTO> step = new AtomicReference<>();
+        AtomicReference<ExecutionRunDTO> run = new AtomicReference<>();
+        AtomicReference<Cancellable> following = new AtomicReference<>();
         Long sessionId = null;
         try {
             sessionId = sessionBO.openPreview(input.getTransformer(), keycloakId, created -> {
-                step.set(created);
-                emitter.emit(message(created, stepIndex, false, null));
+                run.set(created);
+                emitter.emit(previewMessageOf(created, stepIndex, false, null));
+                following.set(runBO.subscribe(created.getId()).subscribe().with(
+                        changed -> emitter.emit(previewMessageOf(changed, stepIndex, false, null)),
+                        failure -> Log.debugf("Stopped following preview run %d: %s", created.getId(), failure.getMessage())));
             });
-
             List<Map<String, Object>> rows = sessionBO.transform(sessionId, input.getTransformer(), input.getRows());
             previewBO.storeAppStage(config.getConnectorId(), stepIndex, input.getTransformer(),
-                    input.getFingerprint(), rows, columnsOf(input.getColumns(), rows));
-
-            AppTransformerPreviewStreamDTO done = message(step.get(), stepIndex, true, null);
+                    input.getFingerprint(), rows, ColumnNames.withRowColumns(input.getColumns(), rows));
+            Optional.ofNullable(following.get()).ifPresent(Cancellable::cancel);
+            AppTransformerPreviewStreamDTO done = previewMessageOf(run.get(), stepIndex, true, null);
             done.setStatus(RunStatusTypes.FINISHED);
-            done.setProgress(1f);
             done.setRowCount(rows.size());
-            publish(emitter, done);
+            emitter.emit(done);
             Log.infof("App transformer '%s' produced %d preview row(s) for step %d",
                     input.getTransformer().getAppImage(), rows.size(), stepIndex);
         } catch (Exception e) {
             Log.errorf("App transformer preview of step %d failed: %s", stepIndex, e.getMessage());
-            publish(emitter, message(step.get(), stepIndex, true, e.getMessage()));
+            Optional.ofNullable(following.get()).ifPresent(Cancellable::cancel);
+            emitter.emit(previewMessageOf(run.get(), stepIndex, true, e.getMessage()));
         } finally {
             if (sessionId != null) {
                 sessionBO.close(sessionId);
@@ -93,32 +102,27 @@ public class AppTransformerPreviewBO {
         }
     }
 
-
-    private void publish(MultiEmitter<? super AppTransformerPreviewStreamDTO> emitter,
-                         AppTransformerPreviewStreamDTO message) {
-        messageSender.sendMessage(message);
-        emitter.emit(message);
+    // Starts the app for these rows only, used by the agent and harmonization outside a connector preview
+    public List<Map<String, Object>> transformAppBased(ConnectorTransformerDTO transformer,
+                                                       List<Map<String, Object>> rows,
+                                                       String keycloakId,
+                                                       Consumer<ExecutionRunDTO> onRunCreated) {
+        Long sessionId = sessionBO.openPreview(transformer, keycloakId, onRunCreated);
+        try {
+            return sessionBO.transform(sessionId, transformer, rows);
+        } finally {
+            sessionBO.close(sessionId);
+        }
     }
 
-    private AppTransformerPreviewStreamDTO message(ConnectorRunStepDTO step,
-                                                   int stepIndex,
-                                                   boolean finished,
-                                                   String error) {
-        AppTransformerPreviewStreamDTO message = step == null
-                ? new AppTransformerPreviewStreamDTO()
-                : mapper.dtoToStreamDTO(step);
+    private AppTransformerPreviewStreamDTO previewMessageOf(ExecutionRunDTO run, int stepIndex, boolean finished, String error) {
+        AppTransformerPreviewStreamDTO message = run == null ? new AppTransformerPreviewStreamDTO() : mapper.runToStreamDTO(run);
         message.setStepIndex(stepIndex);
         message.setFinished(finished);
         if (error != null) {
             message.setStatus(RunStatusTypes.ERROR);
-            message.setLastError(error);
+            message.setFailure(new ExecutionFailure(FailureCategory.TOOL, error));
         }
         return message;
-    }
-
-    private static List<String> columnsOf(List<String> columns, List<Map<String, Object>> rows) {
-        LinkedHashSet<String> all = new LinkedHashSet<>(columns == null ? List.of() : columns);
-        rows.forEach(row -> all.addAll(row.keySet()));
-        return new ArrayList<>(all);
     }
 }

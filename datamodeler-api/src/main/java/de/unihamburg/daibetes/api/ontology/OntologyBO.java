@@ -157,6 +157,11 @@ public class OntologyBO {
                 .collect().asList();
     }
 
+    public Uni<List<OntologyDataTypeDTO>> getSchemaSiblingsWithDataTypes(UUID id) {
+        return ontologyDAO.findSchemaSiblingsWithDataTypes(id)
+                .collect().asList();
+    }
+
     public Uni<List<OntologyEdgeDTO>> getEdges(UUID id) {
         return ontologyDAO.findAllEdges(id)
                 .collect().asList();

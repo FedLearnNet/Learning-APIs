@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.api.importer.run.preview;
 
+import bio.cosy.feddb.local.api.importer.files.table.ColumnNames;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
 import bio.cosy.feddb.local.api.importer.extract.ConnectorExtractBO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadSettingsDTO;
@@ -10,7 +11,7 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionRunnerBO;
 import bio.cosy.feddb.local.api.importer.mapping.MappingBO;
 import bio.cosy.feddb.local.api.importer.run.preview.cache.ConnectorPreviewTransformationCacheBO;
 import bio.cosy.feddb.local.api.importer.run.preview.cache.ConnectorPreviewTransformationCacheStage;
-import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBO;
+import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.importer.extract.UploadInfoDTO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadInfoDTO;
@@ -40,7 +41,7 @@ public class ConnectorPreviewBO {
     TabularFileReaderBO fileHandlerBO;
 
     @Inject
-    ConnectorTransformerBO transformerBO;
+    ConnectorTransformationBO transformationBO;
 
     @Inject
     FunctionRunnerBO functionRunnerBO;
@@ -72,6 +73,7 @@ public class ConnectorPreviewBO {
 
         PreviewResponseDTO response = new PreviewResponseDTO();
         response.setJsons(new ArrayList<>());
+        response.setColumns(new ArrayList<>());
         response.setStages(new ArrayList<>());
 
         ConnectorPreviewTransformationStageData stage =
@@ -79,7 +81,7 @@ public class ConnectorPreviewBO {
                         .getStage();
 
         if (response.getJsons().isEmpty()) {
-            response.getJsons().add(render(stage));
+            addTable(response, stage);
         }
 
         return response;
@@ -91,7 +93,7 @@ public class ConnectorPreviewBO {
             throw new BadRequestException("There is no transformation step " + stepIndex + " to run");
         }
         ConnectorTransformerDTO transformer = transformers.get(stepIndex - 1);
-        if (!isAppBased(transformer)) {
+        if (transformer == null || !transformer.isAppBased()) {
             throw new BadRequestException("Transformation step " + stepIndex + " is not app based");
         }
 
@@ -101,6 +103,12 @@ public class ConnectorPreviewBO {
                 walk.getStage().getRows(),
                 walk.getStage().getColumns(),
                 cacheBO.stageFingerprint(walk.getFingerprint(), transformer));
+    }
+
+    public ConnectorPreviewTransformationStageData run(ConnectorConfigDTO config,
+                                                       BiFunction<ConnectorTransformerDTO, List<Map<String, Object>>, List<Map<String, Object>>> appRunner) {
+        List<ConnectorTransformerDTO> transformers = config.getTransformer() == null ? List.of() : config.getTransformer();
+        return walk(config, transformers, transformers.size(), null, true, appRunner).getStage();
     }
 
     public void warmFromRun(ConnectorConfigDTO config,
@@ -131,7 +139,7 @@ public class ConnectorPreviewBO {
         for (int index = 0; index < upTo; index++) {
             ConnectorTransformerDTO transformer = transformers.get(index);
             int stepIndex = index + 1;
-            boolean appBased = isAppBased(transformer);
+            boolean appBased = transformer != null && transformer.isAppBased();
             fingerprint = cacheBO.stageFingerprint(fingerprint, transformer);
             Optional<ConnectorPreviewTransformationCacheStage> cached = blockedBy == null
                     ? cacheBO.find(connectorId, stepIndex, fingerprint)
@@ -144,7 +152,7 @@ public class ConnectorPreviewBO {
                         cached.get().getCachedAt(), stage.getRows(), appBased, false, null);
             } else if (appBased && appRunner != null && blockedBy == null) {
                 List<Map<String, Object>> rows = appRunner.apply(transformer, stage.getRows());
-                List<String> columns = columnsOf(stage.getColumns(), rows);
+                List<String> columns = ColumnNames.withRowColumns(stage.getColumns(), rows);
                 storeAppStage(connectorId, stepIndex, transformer, fingerprint, rows, columns);
                 stage = new ConnectorPreviewTransformationStageData(rows, columns, stage.getProfiles());
             } else if (appBased) {
@@ -163,8 +171,9 @@ public class ConnectorPreviewBO {
                 }
             } else {
                 List<Map<String, Object>> rows =
-                        transformerBO.applyBuiltInTransformation(transformer, stage.getRows(), patientIdColumn);
-                stage = new ConnectorPreviewTransformationStageData(rows, stage.getColumns(), stage.getProfiles());
+                        transformationBO.applyBuiltInTransformation(transformer, stage.getRows(), patientIdColumn);
+                stage = new ConnectorPreviewTransformationStageData(
+                        rows, ColumnNames.withRowColumns(stage.getColumns(), rows), stage.getProfiles());
                 if (blockedBy == null) {
                     cacheBO.store(connectorId, stepIndex, transformer.getId(), fingerprint,
                             limitPreviewRows(rows), stage.getColumns());
@@ -173,7 +182,7 @@ public class ConnectorPreviewBO {
             }
 
             if (response != null) {
-                response.getJsons().add(render(stage));
+                addTable(response, stage);
             }
         }
 
@@ -190,6 +199,11 @@ public class ConnectorPreviewBO {
         cacheBO.store(connectorId, stepIndex, transformer.getId(), fingerprint,
                 limitPreviewRows(rows), columns);
         cacheBO.invalidateFrom(connectorId, stepIndex + 1);
+    }
+
+    private void addTable(PreviewResponseDTO response, ConnectorPreviewTransformationStageData stage) {
+        response.getJsons().add(render(stage));
+        response.getColumns().add(ColumnNames.withRowColumns(List.of(), limitPreviewRows(stage.getRows())));
     }
 
     private String render(ConnectorPreviewTransformationStageData stage) {
@@ -216,20 +230,10 @@ public class ConnectorPreviewBO {
                 appBased, requiresRun, blockedByStep));
     }
 
-    private static List<String> columnsOf(List<String> columns, List<Map<String, Object>> rows) {
-        LinkedHashSet<String> all = new LinkedHashSet<>(columns == null ? List.of() : columns);
-        rows.forEach(row -> all.addAll(row.keySet()));
-        return new ArrayList<>(all);
-    }
-
     private static List<String> columnsOf(ConnectorPreviewTransformationCacheStage cached,
                                           ConnectorPreviewTransformationStageData stage) {
         List<String> columns = cached.getColumns();
         return columns == null || columns.isEmpty() ? stage.getColumns() : columns;
-    }
-
-    static boolean isAppBased(ConnectorTransformerDTO transformer) {
-        return transformer != null && transformer.getAppImage() != null && !transformer.getAppImage().isBlank();
     }
 
     private static int size(List<ConnectorTransformerDTO> transformers) {
@@ -294,7 +298,7 @@ public class ConnectorPreviewBO {
                     : ConnectorFileUploadInfoDTO.DEFAULT_SHEET_NAME;
             uploadInfo.put(table, lenient.convertValue(node, UploadInfoDTO.class));
         } else {
-            node.fields().forEachRemaining(table -> {
+            node.properties().forEach(table -> {
                 if (table.getValue().isObject()) {
                     uploadInfo.put(table.getKey(), lenient.convertValue(table.getValue(), UploadInfoDTO.class));
                 }
@@ -358,7 +362,7 @@ public class ConnectorPreviewBO {
             return false;
         }
         return transformers.stream()
-                .filter(transformer -> transformer.getAppImage() == null || transformer.getAppImage().isBlank())
+                .filter(transformer -> !transformer.isAppBased())
                 .anyMatch(transformer -> functionRunnerBO.mode(transformer) == FunctionExecutionMode.PATIENT);
     }
 

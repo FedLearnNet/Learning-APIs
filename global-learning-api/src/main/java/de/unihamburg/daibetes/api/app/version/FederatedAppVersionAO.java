@@ -4,6 +4,7 @@ import bio.cosy.feddb.core.api.app.PublishStatus;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.NotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,31 @@ import java.util.UUID;
 
 @ApplicationScoped
 public class FederatedAppVersionAO implements PanacheRepository<FederatedAppVersionEntity> {
+
+    public FederatedAppVersionEntity findByIdAuthorChecked(Long appVersionId, String keycloakId) {
+        return find("from FederatedAppVersionEntity v where v.id = ?1 and exists ("
+                        + "select 1 from FederatedAppAuthorEntity a where a.federatedApp = v.federatedApp and a.keycloakId = ?2)",
+                appVersionId, keycloakId)
+                .firstResultOptional()
+                .orElseThrow(() -> new NotFoundException("App version " + appVersionId + " not found"));
+    }
+
+    public Optional<FederatedAppVersionEntity> findOfAppAuthorCheckedOptional(Long appVersionId, Long appId, String keycloakId) {
+        return find("from FederatedAppVersionEntity v where v.id = ?1 and v.federatedApp.id = ?2 and exists ("
+                        + "select 1 from FederatedAppAuthorEntity a where a.federatedApp = v.federatedApp and a.keycloakId = ?3)",
+                appVersionId, appId, keycloakId)
+                .firstResultOptional();
+    }
+
+    // app id while the version is still its app's latest unpublished one
+    public Optional<Long> findAppIdOfLatestUnpublishedOptional(Long appVersionId) {
+        return findByIdOptional(appVersionId)
+                .map(version -> version.getFederatedApp().getId())
+                .filter(appId -> findLastVersionByAppIdOptional(appId)
+                        .filter(latest -> latest.getId().equals(appVersionId))
+                        .filter(latest -> latest.getVersionPublishStatus() == PublishStatus.UNPUBLISHED)
+                        .isPresent());
+    }
 
     public List<FederatedAppVersionEntity> listForAudit(String keycloakId, long minAuditCount) {
         return find(

@@ -4,7 +4,7 @@ import bio.cosy.feddb.core.api.project.PatientExportFeatureDTO;
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.project.SelectedDataIdsDTO;
 import bio.cosy.feddb.core.base.BaseBo;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectBO;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectBO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeNestedDTO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaRootNodeDTO;
@@ -22,11 +22,18 @@ import java.util.stream.Collectors;
 public class SchemaNodeBO extends BaseBo<LocalSchemaNodeDTO, SchemaNodeEntity, SchemaNodeAO, SchemaNodeMapper> {
 
     @Inject
-    FederatedLearningProjectBO federatedLearningProjectBO;
+    LearningProjectBO federatedLearningProjectBO;
 
-    public List<LocalSchemaNodeDTO> getSchemaNodesForCohort(Long internalPatientId) {
-        return mapper.entitiesToDtos(ao.getSchemaNodesForCohort(internalPatientId));
+    public List<LocalSchemaNodeDTO> getSchemaNodesForCohort(Long cohortId) {
+        return mapper.entitiesToDtos(ao.getSchemaNodesForCohort(cohortId));
     }
+
+    public List<LocalSchemaNodeWithPathDTO> getSchemaNodesWithPathForCohort(Long cohortId) {
+        return ao.getSchemaNodesForCohort(cohortId).stream()
+                .map(mapper::entityToNamedDto)
+                .toList();
+    }
+
 
     public List<SearchResultDTO<LocalSchemaNodeDTO>> search(String query, Set<Long> cohortIds) {
         return cohortIds.stream()
@@ -110,7 +117,7 @@ public class SchemaNodeBO extends BaseBo<LocalSchemaNodeDTO, SchemaNodeEntity, S
                 .toList();
     }
 
-    public Map<Long, SimpleLocalSchemaNodeDTO> findSimpleMapByIds(Set<Long> schemaNodeIds){
+    public Map<Long, SimpleLocalSchemaNodeDTO> findSimpleMapByIds(Set<Long> schemaNodeIds) {
         return ao.findByIds(schemaNodeIds).stream()
                 .filter(Objects::nonNull)
                 .filter(node -> node.getId() != null)

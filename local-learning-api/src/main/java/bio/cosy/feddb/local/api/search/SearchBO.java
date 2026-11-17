@@ -4,9 +4,8 @@ import bio.cosy.feddb.local.api.cohort.CohortBO;
 import bio.cosy.feddb.local.api.cohort.CohortDTO;
 import bio.cosy.feddb.local.api.cohort.patient.PatientBO;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorBO;
-import bio.cosy.feddb.local.api.learning.project.FederatedLearningProjectBO;
-import bio.cosy.feddb.local.api.learning.project.run.message.FederatedLearningExperimentStepMessageBO;
-import bio.cosy.feddb.local.api.learning.request.FederatedLearningRequestBO;
+import bio.cosy.feddb.local.api.learning.project.LearningProjectBO;
+import bio.cosy.feddb.local.api.learning.request.LearningRequestBO;
 import bio.cosy.feddb.local.api.learning.request.metrics.RequestRunMetricsBO;
 import bio.cosy.feddb.local.api.query.QueryBO;
 import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeBO;
@@ -40,7 +39,7 @@ public class SearchBO {
     SchemaNodeBO schemaNodeBO;
 
     @Inject
-    FederatedLearningRequestBO federatedLearningRequestBO;
+    LearningRequestBO federatedLearningRequestBO;
 
     @Inject
     RequestDataStatisticsBO requestDataStatisticsBO;
@@ -49,10 +48,8 @@ public class SearchBO {
     RequestRunMetricsBO requestRunMetricsBO;
 
     @Inject
-    FederatedLearningProjectBO federatedLearningProjectBO;
+    LearningProjectBO federatedLearningProjectBO;
 
-    @Inject
-    FederatedLearningExperimentStepMessageBO federatedLearningExperimentStepMessageBO;
 
     public List<SearchResultDTO<?>> search(String query, Integer limit, String keycloakId) {
         if (query == null || query.isBlank()) {
@@ -73,7 +70,7 @@ public class SearchBO {
         results.addAll(requestDataStatisticsBO.search(query, keycloakId));
         results.addAll(requestRunMetricsBO.search(query, keycloakId));
         results.addAll(federatedLearningProjectBO.search(query, keycloakId));
-        results.addAll(federatedLearningExperimentStepMessageBO.search(query, keycloakId));
+        results.addAll(federatedLearningProjectBO.searchLogsTransactional(query, keycloakId));
 
         return results.stream()
                 .sorted(Comparator.comparingInt(SearchResultDTO<?>::getScore).reversed()

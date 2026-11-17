@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.api.importer.files.table;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -13,6 +14,13 @@ public final class ColumnNames {
     // Byte-order mark and the zero-width characters exports leave in header cells.
     private static final String INVISIBLE = "\uFEFF\u200B\u200C\u200D";
 
+    // The columns, then those only rows have, in the order they turn up.
+    public static List<String> withRowColumns(List<String> columns, List<Map<String, Object>> rows) {
+        LinkedHashSet<String> all = new LinkedHashSet<>(columns == null ? List.of() : columns);
+        rows.forEach(row -> all.addAll(row.keySet()));
+        return new ArrayList<>(all);
+    }
+
     // A column name as it is compared: invisible characters and surrounding space removed.
     public static String column(String name) {
         return strip(name).trim();
@@ -24,7 +32,7 @@ public final class ColumnNames {
     }
 
     public static String normalize(String column) {
-        return ColumnNames.unqualify(ColumnNames.column(column)).toLowerCase(Locale.ROOT);
+        return unqualify(column(column)).toLowerCase(Locale.ROOT);
     }
 
     // The table a file or archive entry stands for: its file name, without directory or extension.
@@ -47,16 +55,14 @@ public final class ColumnNames {
      * The column name without its table qualifier, if it has one.
      */
     public static String unqualify(String column) {
-        int separator = column == null ? -1 : column.lastIndexOf(QUALIFIER);
-        return separator < 0 ? column : column.substring(separator + QUALIFIER.length());
+        return Strings.CS.contains(column, QUALIFIER) ? StringUtils.substringAfterLast(column, QUALIFIER) : column;
     }
 
     /**
      * The table part of {@code table::column}, or {@code null} for an unqualified column.
      */
     public static String qualifier(String column) {
-        int separator = column == null ? -1 : column.lastIndexOf(QUALIFIER);
-        return separator < 0 ? null : column.substring(0, separator);
+        return Strings.CS.contains(column, QUALIFIER) ? StringUtils.substringBeforeLast(column, QUALIFIER) : null;
     }
 
     public static boolean matches(String configured, String available) {
@@ -84,7 +90,7 @@ public final class ColumnNames {
         }
         String wanted = column(expected);
         return columns.stream()
-                .filter(candidate -> Objects.equals(column(candidate), wanted))
+                .filter(candidate -> wanted.equals(column(candidate)))
                 .findFirst()
                 .orElse(null);
     }
@@ -120,6 +126,21 @@ public final class ColumnNames {
         });
         tablesByColumn.values().removeIf(tables -> tables.size() < 2);
         return new LinkedHashSet<>(tablesByColumn.keySet());
+    }
+
+    // Turns patientAge into "patient age"
+    public static String toSearchText(String column, boolean turnItIntoOneWord) {
+        String searchText = unqualify(column(column))
+                .replaceAll("([a-z])([A-Z])", "$1 $2")
+                .replaceAll("([A-Za-z])([0-9])", "$1 $2")
+                .replaceAll("[^A-Za-z0-9]+", " ")
+                .strip()
+                .toLowerCase(Locale.ROOT);
+
+        if (turnItIntoOneWord) {
+            searchText = searchText.replace(" ", "");
+        }
+        return searchText;
     }
 
     public static String preview(List<String> columns) {

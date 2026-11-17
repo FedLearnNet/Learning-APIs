@@ -25,11 +25,6 @@ public class BaseWorkflowNodeEntity extends BaseEntity {
     @Column(name = "execution_order")
     private Integer executionOrder;
 
-    //by default only v2
-    public boolean isOldFCVersion() {
-        return false;
-    }
-
     //by default false
     public boolean isSupportsFederatedLearning() {
         return false;

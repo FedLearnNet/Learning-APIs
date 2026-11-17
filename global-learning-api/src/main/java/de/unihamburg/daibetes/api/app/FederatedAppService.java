@@ -6,7 +6,7 @@ import bio.cosy.feddb.core.api.app.FederatedAppTagDTO;
 import bio.cosy.feddb.core.api.app.config.ToolConfigDTO;
 import bio.cosy.feddb.core.base.ValidationGroups;
 import de.unihamburg.daibetes.api.app.version.FederatedAppPublishDTO;
-import de.unihamburg.daibetes.api.testembed.pydantic.PydanticUpdateDTO;
+import de.unihamburg.daibetes.api.development.testembed.pydantic.PydanticUpdateDTO;
 import de.unihamburg.daibetes.dto.URLDTO;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;

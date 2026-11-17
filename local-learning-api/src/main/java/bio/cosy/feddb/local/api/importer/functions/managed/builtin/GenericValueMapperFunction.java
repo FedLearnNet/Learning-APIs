@@ -5,18 +5,13 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionParameterType;
 import bio.cosy.feddb.local.api.importer.functions.managed.AbstractManagedCellFunction;
 import bio.cosy.feddb.local.api.importer.functions.managed.CellFunctionExecutionContext;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 import java.util.List;
 import java.util.Map;
 
 @ApplicationScoped
 public class GenericValueMapperFunction extends AbstractManagedCellFunction {
-
-    @Inject
-    ObjectMapper objectMapper;
 
     @Override
     public String methodName() {
@@ -25,14 +20,16 @@ public class GenericValueMapperFunction extends AbstractManagedCellFunction {
 
     @Override
     public String description() {
-        return "Map a value using a JSON map string.";
+        return "Translate cell values with a JSON map: a value found as a key becomes its mapped value, every other value "
+                + "stays unchanged. Keys match the whole cell exactly, case and spaces included (trim with Trim And Case first).";
     }
 
     @Override
     public List<FunctionParameterDTO> parameters() {
         return List.of(
                 FunctionParameterDTO.of("map", FunctionParameterType.MAP, true, null,
-                        "JSON object mapping input values to output values.")
+                        "JSON object from input value to output value, e.g. {\"1\": \"Male\", \"2\": \"Female\", \"9\": null}; null "
+                                + "makes the cell empty. List every value of the column, a value without a key is kept as it is.")
         );
     }
 
@@ -40,14 +37,8 @@ public class GenericValueMapperFunction extends AbstractManagedCellFunction {
     public Object execute(CellFunctionExecutionContext context) {
         Object value = context.getValue();
         String key = value == null ? null : String.valueOf(value);
-        String mapString = String.valueOf(context.getParams().get("map"));
-
-        try {
-            Map<String, Object> mapping = objectMapper.readValue(mapString, new TypeReference<>() {
-            });
-            return mapping.getOrDefault(key, value);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid map_string JSON", e);
-        }
+        Map<String, Object> mapping = BuiltInFunctionSupport.readJson(context.getParams().get("map"), new TypeReference<>() {
+        }, "map");
+        return mapping == null ? value : mapping.getOrDefault(key, value);
     }
 }

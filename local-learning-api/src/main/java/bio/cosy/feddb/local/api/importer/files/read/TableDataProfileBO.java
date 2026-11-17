@@ -102,10 +102,16 @@ public class TableDataProfileBO {
 
     /** The profiles of a finished table, for callers that want them without keeping the table. */
     public List<ColumnProfile> profiles(TableData tableData) {
-        TableData profiled = enrich(tableData, null);
-        return profiled == null || profiled.getColumnProfiles() == null
-                ? List.of()
-                : profiled.getColumnProfiles();
+        if (tableData == null) {
+            return List.of();
+        }
+        List<String> columns = columnsOf(tableData);
+        try (Stream<Map<String, Object>> rows = tableData.streamRows()) {
+            return alignedProfiles(fileAnalytics.profileRows(columns, rows, null), columns);
+        } catch (Exception e) {
+            Log.debugf(e, "Could not build column profiles");
+            return List.of();
+        }
     }
 
     private static List<String> columnsOf(TableData tableData) {

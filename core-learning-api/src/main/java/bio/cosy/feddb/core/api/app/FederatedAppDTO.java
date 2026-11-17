@@ -1,5 +1,6 @@
 package bio.cosy.feddb.core.api.app;
 
+import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
 import bio.cosy.feddb.core.base.BaseDTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,14 +9,13 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @JsonIgnoreProperties(
-        value = {"latestUnpublishedVersionId", "hasImage"},
+        value = {"latestUnpublishedVersionId", "hasImage", "buildStatus"},
         allowGetters = true
 )
 public class FederatedAppDTO extends BaseDTO {
@@ -58,6 +58,9 @@ public class FederatedAppDTO extends BaseDTO {
 
     private Long latestVersionId;
     private String latestVersion;
+
+    // PENDING or RUNNING build of the latest version, only set while a published version has no image
+    private PipelineStatus buildStatus;
 
     //OLD FC VERSION
     private Boolean oldFCVersion;

@@ -4,14 +4,12 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionParameterDTO;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterType;
 import bio.cosy.feddb.local.api.importer.functions.managed.AbstractManagedCellFunction;
 import bio.cosy.feddb.local.api.importer.functions.managed.CellFunctionExecutionContext;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Collapse a site's heterogeneous missing-value sentinels onto a single
@@ -25,9 +23,6 @@ import java.util.Map;
 @ApplicationScoped
 public class NormalizeMissingFunction extends AbstractManagedCellFunction {
 
-    @Inject
-    ObjectMapper objectMapper;
-
     @Override
     public String methodName() {
         return "Normalize Missing";
@@ -35,7 +30,8 @@ public class NormalizeMissingFunction extends AbstractManagedCellFunction {
 
     @Override
     public String description() {
-        return "Map any of a set of missing-value sentinels (JSON array) to a single replacement (default empty).";
+        return "Turn every cell that equals one of several missing-value markers (trimmed, case insensitive) into one "
+                + "replacement, by default empty.";
     }
 
     @Override
@@ -44,14 +40,15 @@ public class NormalizeMissingFunction extends AbstractManagedCellFunction {
                 FunctionParameterDTO.of("tokens", FunctionParameterType.MAP, true, null,
                         "JSON array of sentinel strings to treat as missing (e.g. [\"?\", \"N/A\", \"-99\"])."),
                 FunctionParameterDTO.of("replacement", FunctionParameterType.STRING, false, "",
-                        "Value to write when a sentinel is matched (default empty string).")
+                        "Value for a matched marker; empty or 'null' leaves the cell empty.")
         );
     }
 
     @Override
     public Object execute(CellFunctionExecutionContext context) {
         Map<String, Object> params = context.getParams();
-        String replacement = params.get("replacement") == null ? "" : String.valueOf(params.get("replacement"));
+        // 'null' is the empty value, like in Replace Value
+        String replacement = "null".equals(params.get("replacement")) ? "" : Objects.toString(params.get("replacement"), "");
 
         Object value = context.getValue();
         if (value == null) {
@@ -59,13 +56,7 @@ public class NormalizeMissingFunction extends AbstractManagedCellFunction {
         }
         String candidate = value.toString().strip().toLowerCase(Locale.ROOT);
 
-        List<String> tokens;
-        try {
-            tokens = objectMapper.readValue(String.valueOf(params.get("tokens")), new TypeReference<>() {
-            });
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid 'tokens' JSON array", e);
-        }
+        List<String> tokens = BuiltInFunctionSupport.readStringList(params.get("tokens"), "tokens");
 
         for (String token : tokens) {
             if (token != null && token.strip().toLowerCase(Locale.ROOT).equals(candidate)) {

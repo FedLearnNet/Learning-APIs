@@ -28,7 +28,6 @@ public class WorkflowNodeDTO extends BaseDTO {
 
     private LinkedHashMap<String, Object> hyperParams;
 
-    private Boolean oldFCVersion;
     private Boolean supportsFederatedLearning = false;
     private Boolean isTrainable = false;
     private CommunicationEngine communicationEngine;
@@ -39,10 +38,6 @@ public class WorkflowNodeDTO extends BaseDTO {
 
     //will be calculated on create/update
     private Integer executionOrder;
-
-    public boolean isOldFCVersion() {
-        return oldFCVersion != null && oldFCVersion;
-    }
 
     public boolean isFlowerCommunicator() {
         return communicationEngine == CommunicationEngine.FLOWER;

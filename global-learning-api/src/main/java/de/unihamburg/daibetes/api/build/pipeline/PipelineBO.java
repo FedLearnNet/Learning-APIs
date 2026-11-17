@@ -1,30 +1,32 @@
 package de.unihamburg.daibetes.api.build.pipeline;
 
 import bio.cosy.feddb.core.api.app.AppPublishInfoDTO;
-import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
+import bio.cosy.feddb.core.api.pipeline.BasePipelineBO;
+import bio.cosy.feddb.core.api.pipeline.PipelineRunInfoDTO;
 import bio.cosy.feddb.core.api.pipeline.PipelineRunMode;
-import bio.cosy.feddb.core.base.BaseBo;
+import bio.cosy.feddb.core.api.pipeline.PipelineStatus;
+import bio.cosy.feddb.core.api.pipeline.StepName;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
+import bio.cosy.feddb.core.services.orch.clients.ContainerServiceClient;
 import bio.cosy.feddb.core.services.orch.dto.CreateContainerResponseDTO;
 import bio.cosy.feddb.core.services.orch.dto.StartPipelineDTO;
 import de.unihamburg.daibetes.api.app.FederatedAppEntity;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
+import de.unihamburg.daibetes.api.app.version.FederatedAppVersionAO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.build.pipeline.steps.PipelineStepBO;
 import de.unihamburg.daibetes.api.build.pipeline.steps.PipelineStepEntity;
-import de.unihamburg.daibetes.api.build.pipeline.steps.StepName;
 import de.unihamburg.daibetes.api.model.access.ModelAccessBO;
 import de.unihamburg.daibetes.api.model.sub.ModelSubEntity;
 import de.unihamburg.daibetes.api.model.sub.file.ModelSubFileBO;
 import de.unihamburg.daibetes.config.FLNetConfig;
-import de.unihamburg.daibetes.services.OrchContainerServiceClient;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
-import io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
@@ -42,13 +44,11 @@ import java.util.List;
 import java.util.Optional;
 
 @ApplicationScoped
-public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, PipelineMapper> {
-
-    private static final BroadcastProcessor<PipelineDTO> UPDATES = BroadcastProcessor.create();
+public class PipelineBO extends BasePipelineBO<PipelineDTO, PipelineEntity, PipelineAO, PipelineMapper> {
 
     @Inject
     @RestClient
-    OrchContainerServiceClient containerClient;
+    ContainerServiceClient containerClient;
 
     @Inject
     ToolApiKeyService toolApiKeyService;
@@ -64,6 +64,12 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
 
     @Inject
     ModelSubFileBO modelSubFileBO;
+
+    @Inject
+    FederatedAppVersionAO appVersionAO;
+
+    @Inject
+    Event<PipelinePublishEvent> publishEvents;
 
     @Inject
     FLNetConfig config;
@@ -110,6 +116,15 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         if (dto.getRunMode() == PipelineRunMode.LOCAL_BUILD && dto.getPipelineType() != PipelineType.MODEL) {
             throw new BadRequestException("LOCAL_BUILD requires uploaded model files");
         }
+        if (dto.getRunMode() == PipelineRunMode.ALL) {
+            if (dto.getPipelineType() != PipelineType.APP || dto.getPublishRequest() == null) {
+                throw new BadRequestException("ALL publishes a tool version and requires its publish settings");
+            }
+            if (appVersionAO.findAppIdOfLatestUnpublishedOptional(dto.getAppVersionId()).isEmpty()) {
+                throw new BadRequestException("Only the latest unpublished tool version can be built and published");
+            }
+            pipeline.setPublishRequest(dto.getPublishRequest());
+        }
         if (dto.getRunMode() == PipelineRunMode.SCAN_ONLY) {
             String imageName;
             if (dto.getPipelineType() == PipelineType.MODEL) {
@@ -126,7 +141,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
                 throw new BadRequestException("SCAN_ONLY requires an existing image");
             }
         }
-        PipelineDTO created = setPipelineEntityCreated(pipeline);
+        PipelineDTO created = setPipelineEntityCreatedTransactional(pipeline);
         if (dto.getAutoStart()) {
             return start(created.getId());
         }
@@ -135,7 +150,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
 
     // For the initial creation of the entity before the pipeline is started
     @Transactional
-    public PipelineDTO setPipelineEntityCreated(PipelineDTO dto) {
+    public PipelineDTO setPipelineEntityCreatedTransactional(PipelineDTO dto) {
         return stepBO.createSteps(create(dto));
     }
 
@@ -149,22 +164,9 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         return start(id);
     }
 
+    // Orch may pull the builder image first, so its call stays outside any transaction
     public PipelineDTO start(Long id) {
-        if (config.pipelineBuilderImage().isEmpty()) {
-            throw new IllegalStateException("Pipeline builder image is not configured");
-        }
-        String builderImage = config.pipelineBuilderImage().get();
-        Optional<PipelineEntity> entityOptional = ao.findByIdOptional(id);
-        if (entityOptional.isEmpty()) {
-            throw new NotFoundException(String.format("Property with the ID %s not found", id));
-        }
-        PipelineEntity entity = entityOptional.get();
-        String apiKey = toolApiKeyService.issue(Scope.PIPELINE_RUN, id);
-        StartPipelineDTO startApp = new StartPipelineDTO();
-        startApp.setPipelineId(id);
-        startApp.setAppImage(builderImage);
-        startApp.setRunMode(entity.getRunMode());
-        startApp.addEnvironment(apiKey, id, entity.getSecret());
+        StartPipelineDTO startApp = loadStartRequestTransactional(id);
         Log.info("Starting container for pipeline " + id);
         CreateContainerResponseDTO resp;
         try {
@@ -179,11 +181,27 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         if (containerId == null) {
             throw new IllegalStateException("Failed to start container for pipeline " + id);
         }
-        return setPipelineEntityRunning(id, containerId);
+        return setPipelineEntityRunningTransactional(id, containerId);
     }
 
     @Transactional
-    public PipelineDTO setPipelineEntityRunning(Long id, String containerId) {
+    public StartPipelineDTO loadStartRequestTransactional(Long id) {
+        if (config.pipelineBuilderImage().isEmpty()) {
+            throw new IllegalStateException("Pipeline builder image is not configured");
+        }
+        PipelineEntity entity = ao.findByIdOptional(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Property with the ID %s not found", id)));
+        StartPipelineDTO startApp = new StartPipelineDTO();
+        startApp.setPipelineId(id);
+        startApp.setAppImage(config.pipelineBuilderImage().get());
+        // orch builds and pushes alike for both, publishing happens here
+        startApp.setRunMode(entity.getRunMode() == PipelineRunMode.BUILD_ONLY ? PipelineRunMode.ALL : entity.getRunMode());
+        startApp.addEnvironment(toolApiKeyService.issue(Scope.PIPELINE_RUN, id), id, entity.getSecret());
+        return startApp;
+    }
+
+    @Transactional
+    public PipelineDTO setPipelineEntityRunningTransactional(Long id, String containerId) {
         PipelineEntity entity = ao.findByIdOptional(id, LockModeType.PESSIMISTIC_WRITE)
                 .orElseThrow(() -> new NotFoundException(String.format("Pipeline with ID %s not found", id)));
         entity.setContainerId(containerId);
@@ -239,7 +257,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
                 .onItem().transformToMulti(initial ->
                         Multi.createBy().merging().streams(
                                 Multi.createFrom().item(initial),
-                                UPDATES
+                                updates
                                         .select().where(dto -> dto != null && dto.getId() != null && dto.getId().equals(id))
                                         .onOverflow().drop()
                         )
@@ -247,22 +265,18 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
     }
 
 
-    public PipelineRunInfoDTO getPipelineRunInfo(Long id, String secret) {
-        Optional<PipelineEntity> entityOptional = ao.findByIdAndSecretOptional(id, secret, LockModeType.PESSIMISTIC_READ);
-        if (entityOptional.isEmpty()) {
-            throw new NotFoundException(String.format("Property with the ID %s not found", id));
-        }
-        PipelineEntity entity = entityOptional.get();
+    @Override
+    protected PipelineRunInfoDTO runInfo(PipelineEntity pipeline) {
         PipelineRunInfoDTO dto = new PipelineRunInfoDTO();
-        FederatedAppEntity appEntity = getFederatedAppEntity(entity);
+        FederatedAppEntity appEntity = getFederatedAppEntity(pipeline);
         dto.setGitRepoUrl(appEntity.getSourceUrl());
         dto.setImageName(appEntity.getSlug());
-        if (entity.getAppVersion() != null && entity.getAppVersion().getPublishInfo() != null) {
-            dto.setCommitHash(entity.getAppVersion().getPublishInfo().getCommitHash());
+        if (pipeline.getAppVersion() != null && pipeline.getAppVersion().getPublishInfo() != null) {
+            dto.setCommitHash(pipeline.getAppVersion().getPublishInfo().getCommitHash());
         }
-        if (entity.getRunMode() == PipelineRunMode.SCAN_ONLY) {
-            String imageName = entity.getPipelineType() == PipelineType.MODEL
-                    ? entity.getModelSub().getImageName() : entity.getAppVersion().getImageName();
+        if (pipeline.getRunMode() == PipelineRunMode.SCAN_ONLY) {
+            String imageName = pipeline.getPipelineType() == PipelineType.MODEL
+                    ? pipeline.getModelSub().getImageName() : pipeline.getAppVersion().getImageName();
             if (StringUtils.isBlank(imageName)) {
                 throw new BadRequestException("SCAN_ONLY requires an existing image");
             }
@@ -271,28 +285,24 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         return dto;
     }
 
-    public PipelineDTO processStatusUpdate(Long id, String secret, PipelineStatusUpdateDTO dto) {
-        Optional<PipelineEntity> entityOptional = ao.findByIdAndSecretOptional(id, secret, LockModeType.PESSIMISTIC_WRITE);
-        if (entityOptional.isEmpty()) {
-            throw new NotFoundException(String.format("Property with the ID %s not found", id));
+    @Override
+    protected byte[] files(PipelineEntity pipeline) {
+        if (pipeline.getPipelineType() != PipelineType.MODEL) {
+            return null;
         }
-        PipelineEntity entity = entityOptional.get();
-        stepBO.updateStep(entity, dto);
-        updateOverallPipelineStatus(entity);
-        PipelineDTO updated = mapper.entityToDto(entity);
-        UPDATES.onNext(updated);
-        return updated;
+        if (pipeline.getModelSub() == null) {
+            throw new NotFoundException("No model associated with this pipeline");
+        }
+        return modelSubFileBO.getFilesForPipeline(pipeline.getModelSub());
     }
 
-    public PipelineDTO processSummary(Long id, String secret, AppPublishInfoDTO dto) {
-        Optional<PipelineEntity> entityOptional = ao.findByIdAndSecretOptional(id, secret, LockModeType.PESSIMISTIC_WRITE);
-        if (entityOptional.isEmpty()) {
-            throw new NotFoundException(String.format("Property with the ID %s not found", id));
-        }
-        PipelineEntity entity = entityOptional.get();
-        if (entity.getRunMode() == PipelineRunMode.SCAN_ONLY) {
-            AppPublishInfoDTO previous = entity.getPipelineType() == PipelineType.MODEL
-                    ? entity.getModelSub().getPublishInfo() : entity.getAppVersion().getPublishInfo();
+    @Override
+    @Transactional
+    public void processSummary(Long id, String secret, AppPublishInfoDTO dto) {
+        PipelineEntity pipeline = ao.findByIdAndSecret(id, secret, LockModeType.PESSIMISTIC_WRITE);
+        if (pipeline.getRunMode() == PipelineRunMode.SCAN_ONLY) {
+            AppPublishInfoDTO previous = pipeline.getPipelineType() == PipelineType.MODEL
+                    ? pipeline.getModelSub().getPublishInfo() : pipeline.getAppVersion().getPublishInfo();
             if (previous != null) {
                 // SCAN_ONLY rescans the existing image for vulnerabilities without rebuilding or running
                 // SAST/malware checks.
@@ -306,15 +316,12 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
                 }
             }
         }
-        setScanTimes(entity, dto);
-        entity.setPublishInfo(dto);
-        if (entity.getRunMode() != PipelineRunMode.SCAN_ONLY && StringUtils.isNotBlank(dto.getCommitHash())) {
-            entity.setDockerTag(dto.getCommitHash());
+        setScanTimes(pipeline, dto);
+        pipeline.setPublishInfo(dto);
+        if (pipeline.getRunMode() != PipelineRunMode.SCAN_ONLY && StringUtils.isNotBlank(dto.getCommitHash())) {
+            pipeline.setDockerTag(dto.getCommitHash());
         }
-        ao.persist(entity);
-        PipelineDTO updated = mapper.entityToDto(entity);
-        UPDATES.onNext(updated);
-        return updated;
+        updates.onNext(mapper.entityToDto(pipeline));
     }
 
     // Only set it if the step got rerun
@@ -348,32 +355,18 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
     }
 
 
-    private void updateOverallPipelineStatus(PipelineEntity pipeline) {
-        boolean hasFailedStep = pipeline.getSteps().stream()
-                .anyMatch(s -> s.getStepStatus() == PipelineStatus.FAILED);
-
-        if (hasFailedStep) {
-            pipeline.setPipelineStatus(PipelineStatus.FAILED);
-            updateRebuilding(pipeline);
-            toolApiKeyService.revoke(Scope.PIPELINE_RUN, pipeline.getId());
-            return;
-        }
-        boolean allStepsSucceeded = pipeline.getSteps().stream()
-                .filter(f -> !f.getName().equals(StepName.PREFLIGHT))
-                .allMatch(s -> s.getStepStatus() == PipelineStatus.SUCCESS || s.getStepStatus() == PipelineStatus.WARNING);
-
-        boolean succeeded = allStepsSucceeded && pipeline.getSteps().stream()
-                .anyMatch(step -> step.getName() == StepName.COLLECT_SUMMARY);
-        pipeline.setPipelineStatus(succeeded ? PipelineStatus.SUCCESS : PipelineStatus.RUNNING);
-        pipeline.setUpdatedAt(new Date());
+    @Override
+    protected void finished(PipelineEntity pipeline) {
         updateRebuilding(pipeline);
-        if (succeeded) {
+        if (pipeline.getPipelineStatus() == PipelineStatus.SUCCESS) {
             setImageTag(pipeline);
         }
-        ao.persist(pipeline);
-        if (succeeded) {
-            toolApiKeyService.revoke(Scope.PIPELINE_RUN, pipeline.getId());
+        if (pipeline.getPipelineStatus() == PipelineStatus.SUCCESS && pipeline.getRunMode() == PipelineRunMode.ALL
+                && pipeline.getPublishRequest() != null && pipeline.getAppVersion() != null) {
+            publishEvents.fire(new PipelinePublishEvent(pipeline.getId(), pipeline.getAppVersion().getId(),
+                    pipeline.getPublishRequest()));
         }
+        toolApiKeyService.revoke(Scope.PIPELINE_RUN, pipeline.getId());
     }
 
     private void updateRebuilding(PipelineEntity pipeline) {
@@ -492,25 +485,7 @@ public class PipelineBO extends BaseBo<PipelineDTO, PipelineEntity, PipelineAO, 
         updateRebuilding(entity);
         ao.persist(entity);
         PipelineDTO updated = mapper.entityToDto(entity);
-        UPDATES.onNext(updated);
+        updates.onNext(updated);
         return updated;
     }
-
-    public Optional<byte[]> getFilesForPipeline(Long id, String secret) {
-        Optional<PipelineEntity> entityOptional = ao.findByIdAndSecretOptional(id, secret, LockModeType.PESSIMISTIC_READ);
-        if (entityOptional.isEmpty()) {
-            throw new NotFoundException(String.format("Property with the ID %s not found", id));
-        }
-        PipelineEntity entity = entityOptional.get();
-        if (entity.getPipelineType() != PipelineType.MODEL) {
-            return Optional.empty();
-        }
-        ModelSubEntity subEntity = entity.getModelSub();
-        if (subEntity == null) {
-            throw new NotFoundException("No model associated with this pipeline");
-        }
-        return Optional.of(modelSubFileBO.getFilesForPipeline(subEntity));
-    }
-
-
 }
