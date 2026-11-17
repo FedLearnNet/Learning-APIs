@@ -5,6 +5,7 @@ import bio.cosy.feddb.core.execution.ExecutionPurpose;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
 import de.unihamburg.daibetes.api.analysis.run.DataAnalysisRunResultBO;
 import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingAggregatorBO;
+import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingFlowerAggregatorBO;
 import de.unihamburg.daibetes.api.project.training.platform.PlatformTrainingBO;
 import de.unihamburg.daibetes.execution.message.ExecutionMessageAO;
 import de.unihamburg.daibetes.execution.message.ExecutionMessageEntity;
@@ -25,6 +26,9 @@ public class ExecutionAttemptLifecycle extends BaseAttemptLifecycle<ExecutionAtt
 
     @Inject
     FederatedTrainingAggregatorBO aggregatorBO;
+
+    @Inject
+    FederatedTrainingFlowerAggregatorBO flowerAggregatorBO;
 
     @Inject HostedFederatedTestBO hostedTests;
 
@@ -70,7 +74,9 @@ public class ExecutionAttemptLifecycle extends BaseAttemptLifecycle<ExecutionAtt
                 });
             }
             case TRAINING -> {
-                if (FederatedTrainingAggregatorBO.isAggregator(attempt)) {
+                if (FederatedTrainingFlowerAggregatorBO.isFlowerAggregator(attempt)) {
+                    flowerAggregatorBO.customizeStartup(attempt, start);
+                } else if (FederatedTrainingAggregatorBO.isAggregator(attempt)) {
                     aggregatorBO.customizeStartup(attempt, start);
                 } else {
                     start.setInputFilePaths(platformTrainingBO.inputFilePathsOf(attempt));

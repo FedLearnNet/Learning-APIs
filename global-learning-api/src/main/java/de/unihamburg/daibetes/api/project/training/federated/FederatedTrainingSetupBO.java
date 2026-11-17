@@ -87,6 +87,9 @@ public class FederatedTrainingSetupBO {
     FederatedTrainingAggregatorBO aggregatorBO;
 
     @Inject
+    FederatedTrainingFlowerAggregatorBO flowerAggregatorBO;
+
+    @Inject
     QueryResponseBO queryResponseBO;
 
     @Inject
@@ -115,6 +118,12 @@ public class FederatedTrainingSetupBO {
             connectionId = queryResponseBO.findConnectionId(create.getQueryResponseId(), project.getQueryId());
         }
         WorkflowEntity workflow = workflowBO.cloneWorkflow(workflowBO.getById(project.getWorkflowId()));
+        if (!Boolean.TRUE.equals(create.getPlatformIsCoordinator()) && workflowHasFlowerNode(workflow)) {
+            // Flower's aggregator (Tool/SuperLink bundle) needs its Fleet API port reachable by clinics'
+            // SuperNodes; only the platform is set up to expose a port like that.
+            throw new NotAllowedException("This workflow contains a Flower-based tool, which requires the "
+                    + "platform to be the aggregator; random-clinic aggregation is not supported for it.");
+        }
         project.setWorkflowId(workflow.getId());
 
         ExecutionExperimentEntity experiment = experimentMapper.federatedCreateDtoToEntity(create, keycloakId, projectAO.findById(projectId),
@@ -255,6 +264,10 @@ public class FederatedTrainingSetupBO {
         return clinics;
     }
 
+    private boolean workflowHasFlowerNode(WorkflowEntity workflow) {
+        return workflow.getNodes().stream().anyMatch(FederatedTrainingFlowerAggregatorBO::isFlowerNode);
+    }
+
     private int minParticipants(ExecutionRunEntity run) {
         return run.getMode() == ExecutionMode.TRE ? 1 : config.federatedLearning().participantsMinAmount();
     }
@@ -286,7 +299,11 @@ public class FederatedTrainingSetupBO {
                 step.setSelectedAttempt(attempt);
             }
         }
-        if (platformSlot != null) {
+        if (FederatedTrainingFlowerAggregatorBO.isFlowerStep(step)) {
+            // Ticket-#2 validation at creation already guarantees the platform coordinates whenever the
+            // workflow has a Flower node, so this is unconditional - there is no relay slot for Flower at all.
+            flowerAggregatorBO.addAttempt(step, params);
+        } else if (platformSlot != null) {
             aggregatorBO.addAttempt(step, platformSlot, params);
         }
     }
@@ -300,6 +317,13 @@ public class FederatedTrainingSetupBO {
         FederatedAppVersionEntity appVersion = step.getWorkflowNode().getToolVersion();
         if (appVersion == null) {
             throw new IllegalStateException("Step " + step.getId() + " has no app version");
+        }
+        if (FederatedTrainingFlowerAggregatorBO.isFlowerStep(step)) {
+            // Flower's SuperLink is reached directly via its own exposed port, not the FL-Net relay - a Flower
+            // app also has isSupportsFederatedLearning() set, so this has to be checked first, not folded into
+            // the check below. No relay slot at all, for the platform or for clinics.
+            Log.infof("App version %d of step %d uses Flower, no FL-Net relay run needed", appVersion.getId(), step.getId());
+            return new RelaySetup(withoutRelay(run), null);
         }
         if (!appVersion.getFederatedApp().isSupportsFederatedLearning()) {
             Log.infof("App version %d of step %d needs no relay run", appVersion.getId(), step.getId());

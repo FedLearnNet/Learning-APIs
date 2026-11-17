@@ -25,9 +25,12 @@ public class ExecutionAttemptAO extends BaseExecutionAttemptAO<ExecutionAttemptE
         return find("id = ?1 and step.run.purpose = ?2", attemptId, ExecutionPurpose.TEST).firstResultOptional();
     }
 
-    // Only the id, so the experiment of a platform aggregator is locked before its attempt is loaded.
+    // Only the id, so the experiment of a platform aggregator is locked before its attempt is loaded. Matches
+    // FederatedTrainingAggregatorBO#isAggregator (no participant), not just FL-Net's relay-config-bearing one -
+    // a Flower-based step's platform aggregator has no relay config at all and must still be found here.
     public Optional<Long> findAggregatorExperimentIdOptional(Long attemptId) {
-        return find("select step.run.experiment.id from ExecutionAttemptEntity where id = ?1 and federation.relayConfig is not null",
+        return find("select step.run.experiment.id from ExecutionAttemptEntity "
+                        + "where id = ?1 and federation is not null and federation.participant is null",
                 attemptId).project(Long.class).firstResultOptional();
     }
 

@@ -64,8 +64,15 @@ public class FederatedTrainingAggregatorBO {
         return step.getAttempts().stream().filter(FederatedTrainingAggregatorBO::isAggregator).findFirst();
     }
 
+    /**
+     * True for the platform's own attempt of a federated step, whichever communication engine the tool uses - a
+     * clinic's attempt always has a participant (see addAttempts), the platform's own never does. A Flower-based
+     * step's platform attempt is one of these too (see FederatedTrainingFlowerAggregatorBO#isFlowerAggregator) even
+     * though it carries no relay config at all; callers that need FL-Net's relay/Controller specifically (a relay
+     * config is present) should check that in addition to this.
+     */
     public static boolean isAggregator(ExecutionAttemptEntity attempt) {
-        return attempt.getFederation() != null && attempt.getFederation().getRelayConfig() != null;
+        return attempt.getFederation() != null && attempt.getFederation().getParticipant() == null;
     }
 
     /** Adds the aggregator to the step with the coordinator slot of the relay; it starts once the step is committed. */

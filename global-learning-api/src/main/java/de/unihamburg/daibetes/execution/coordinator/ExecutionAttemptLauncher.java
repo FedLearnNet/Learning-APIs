@@ -22,6 +22,7 @@ import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
 import io.smallrye.common.annotation.RunOnVirtualThread;
 import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingAggregatorBO;
+import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingFlowerAggregatorBO;
 import de.unihamburg.daibetes.api.project.training.platform.PlatformTrainingBO;
 import de.unihamburg.daibetes.api.workflow.WorkflowBO;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -105,6 +106,8 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
     protected void stageInputs(ExecutionAttemptEntity attempt) {
         if (HostedFederatedTestBO.isHosted(attempt)) {
             aggregatorBO.connectController(attempt, attempt.getFederation().getParticipant().getParticipantId());
+        } else if (FederatedTrainingFlowerAggregatorBO.isFlowerAggregator(attempt)) {
+            // Flower's SuperLink needs no CSR/relay join - nothing to stage before it starts.
         } else if (FederatedTrainingAggregatorBO.isAggregator(attempt)) {
             aggregatorBO.connectController(attempt);
         } else if (attempt.getStep().getRun().getPurpose() == ExecutionPurpose.TRAINING) {

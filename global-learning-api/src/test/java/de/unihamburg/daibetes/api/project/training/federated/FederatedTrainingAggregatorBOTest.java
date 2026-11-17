@@ -12,6 +12,7 @@ import bio.cosy.feddb.core.services.controller.RelaySignCertRequestDTO;
 import bio.cosy.feddb.core.services.controller.RelaySignCertResponseDTO;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptAO;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
+import de.unihamburg.daibetes.execution.federation.ExecutionParticipantEntity;
 import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
 import de.unihamburg.daibetes.services.GlobalRelayService;
 import de.unihamburg.daibetes.services.LocalControllerLearningService;
@@ -104,7 +105,9 @@ class FederatedTrainingAggregatorBOTest {
     @Test
     void clinicAttemptIsNoAggregator() {
         ExecutionAttemptEntity clinic = new ExecutionAttemptEntity();
-        clinic.federationOrNew();
+        // isAggregator() now means "no participant" (see its Javadoc), not "has a relay config" - a clinic
+        // attempt is told apart by having a participant, same as a real one gets from addAttempts().
+        clinic.federationOrNew().setParticipant(new ExecutionParticipantEntity());
 
         assertFalse(FederatedTrainingAggregatorBO.isAggregator(clinic));
     }
