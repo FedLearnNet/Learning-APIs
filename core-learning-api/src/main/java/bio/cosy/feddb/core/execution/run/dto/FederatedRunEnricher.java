@@ -1,5 +1,6 @@
 package bio.cosy.feddb.core.execution.run.dto;
 
+import bio.cosy.feddb.core.api.app.CommunicationEngine;
 import bio.cosy.feddb.core.execution.helper.NodeHyperParams;
 
 import java.util.List;
@@ -27,6 +28,20 @@ public final class FederatedRunEnricher {
         start.setStartAggregator(coordinator);
         start.setAggregatorOnly(aggregatorOnly);
         start.setTotalRounds(NodeHyperParams.totalRounds(start.getHyperParams()));
+        start.setConfig(config);
+    }
+
+    /**
+     * Tags a start as Flower instead of FL-Net: one participant (AGGREGATOR or CLIENT), no relay
+     * and no round count - Flower drives its own rounds through the app's own server_app.py
+     * config, not the platform's hyperparams. {@code config} carries nothing for the aggregator
+     * (it runs its own SuperLink directly); for a clinic it carries where to reach it
+     * ({@link FederatedRunConfigDTO#getSuperlinkAddress()}).
+     */
+    public static void enrichWithFlower(StartRunDTO start, boolean coordinator, FederatedRunConfigDTO config) {
+        start.setCommunicationEngine(CommunicationEngine.FLOWER);
+        start.setParticipants(List.of(new FederatedRunParticipantDTO(coordinator ? "aggregator" : "clinic",
+                coordinator ? "AGGREGATOR" : "CLIENT", start.getHyperParams(), start.getInputFilePaths())));
         start.setConfig(config);
     }
 }

@@ -27,4 +27,12 @@ public class FederatedRunConfigDTO {
     private Double timeout;
     private Integer maxPolls;
     private Boolean useContainerizedController;
+
+    // Flower-only (CommunicationEngine.FLOWER): the platform's own externally-reachable SuperLink
+    // address, host:port - what a clinic's SuperNode connects to instead of joining the FL-Net
+    // relay. The platform currently runs its SuperLink in --insecure mode (see
+    // Flower_Integration_Plan.md's flagged TLS gap), so there is no CA cert to carry yet; the app
+    // (pyfedappwrap)'s FederatedRunConfigDTO already has superlinkRootCertificatesPath/
+    // supernodeAuthPrivateKeyPath fields ready for when that provisioning exists.
+    private String superlinkAddress;
 }

@@ -2,6 +2,7 @@ package de.unihamburg.daibetes.api.project.training.federated;
 
 import bio.cosy.feddb.core.api.app.CommunicationEngine;
 import bio.cosy.feddb.core.execution.event.ExecutionEventPublisher;
+import bio.cosy.feddb.core.execution.run.dto.FederatedRunEnricher;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
@@ -68,8 +69,12 @@ public class FederatedTrainingFlowerAggregatorBO {
         return attempt;
     }
 
-    /** The platform holds no patient data, its aggregator only aggregates; Flower needs no relay enrichment. */
+    /**
+     * The platform holds no patient data, its aggregator only aggregates. It needs no SuperLink
+     * address of its own - it runs the SuperLink directly - so the config carries nothing.
+     */
     public void customizeStartup(ExecutionAttemptEntity attempt, StartRunDTO start) {
         start.setInputFilePaths(new LinkedHashMap<>());
+        FederatedRunEnricher.enrichWithFlower(start, true, null);
     }
 }

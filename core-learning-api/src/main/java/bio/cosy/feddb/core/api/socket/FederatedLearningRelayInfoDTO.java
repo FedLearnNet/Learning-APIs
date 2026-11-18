@@ -21,6 +21,12 @@ public class FederatedLearningRelayInfoDTO {
     private Set<String> orderClientIds;
     private RelayServerAppVersions appVersion;
 
+    // Flower-only: set instead of every other field above when the step's app uses Flower - there
+    // is no FL-Net relay to join, just the platform's own SuperLink to reach. Doubles as the
+    // discriminator {@link #getRunConfig()}'s caller needs to tell a Flower slot from an FL-Net one
+    // (see LearningSetupBO#customizeStartup), since channel/id/key are all null for a Flower slot.
+    private String superlinkAddress;
+
     /**
      * Null-safe accessor. The flag is a nullable Boolean (the mapper may leave it unset), so callers
      * must not unbox it directly. Overrides the Lombok getter and returns a primitive boolean,
@@ -42,6 +48,7 @@ public class FederatedLearningRelayInfoDTO {
         config.setMaxNumClients(maxNumClients);
         config.setOrderClientIds(orderClientIds != null ? new ArrayList<>(orderClientIds) : null);
         config.setAppVersion(appVersion != null ? appVersion.name() : null);
+        config.setSuperlinkAddress(superlinkAddress);
         return config;
     }
 }

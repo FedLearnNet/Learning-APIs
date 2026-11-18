@@ -131,6 +131,13 @@ public class LearningSetupBO {
         if (federation == null || federation.getConfig() == null) {
             return;
         }
+        if (federation.getConfig().getSuperlinkAddress() != null) {
+            // Flower: this clinic is always a CLIENT, never the coordinator - a Flower step's
+            // aggregator is always the platform's own attempt (see FederatedTrainingFlowerAggregatorBO),
+            // never a clinic, so there is no relay-style coordinator slot for this to check.
+            FederatedRunEnricher.enrichWithFlower(start, false, federation.getConfig());
+            return;
+        }
         // A clinic always trains on its own data, also when it coordinates.
         FederatedRunEnricher.enrichWithFederatedRelay(start, federation.getConfig(), Boolean.TRUE.equals(federation.getStartAggregator()), false);
     }

@@ -238,6 +238,17 @@ public interface FLNetConfig {
         @WithDefault("false")
         @WithName("platform-aggregator.enabled")
         boolean platformAggregatorEnabled();
+
+        FlowerConfig flower();
+    }
+
+    interface FlowerConfig {
+
+        // The platform's own externally-reachable SuperLink address (host:port) - what a clinic's
+        // SuperNode connects to for a Flower-tagged step. Empty until the team sets up that
+        // exposure (see Flower_Integration_Plan.md); a Flower step then fails its relay setup with
+        // a clear error instead of silently sending clinics no address at all.
+        Optional<String> superlinkAddress();
     }
 
 

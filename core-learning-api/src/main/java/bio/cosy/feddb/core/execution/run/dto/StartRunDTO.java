@@ -1,5 +1,6 @@
 package bio.cosy.feddb.core.execution.run.dto;
 
+import bio.cosy.feddb.core.api.app.CommunicationEngine;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import lombok.Data;
 import lombok.ToString;
@@ -38,4 +39,10 @@ public class StartRunDTO {
     private Boolean aggregatorOnly;
     private Integer totalRounds;
     private boolean distributedTest;
+
+    // Which engine's path the app (pyfedappwrap FederatedWorkerManager) dispatches this start to.
+    // Defaults to FL_NET, same as the app's own default, so every start that is not a Flower one
+    // (including non-federated starts, where this field is simply ignored) keeps behaving exactly
+    // as before this field existed - never serialized as a bare null (see FederatedRunEnricher).
+    private CommunicationEngine communicationEngine = CommunicationEngine.FL_NET;
 }

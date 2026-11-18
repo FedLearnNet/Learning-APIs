@@ -278,6 +278,22 @@ public class FederatedTrainingSetupBO {
         return clinics;
     }
 
+    // Every clinic gets the platform's SuperLink address instead of a relay slot; the aggregator
+    // (always the platform for a Flower step, see FederatedTrainingFlowerAggregatorBO) needs none.
+    private Map<String, FederatedLearningRelayInfoDTO> flowerClinicSlots(ExecutionRunEntity run, ExecutionRunStepEntity step) {
+        String superlinkAddress = config.federatedLearning().flower().superlinkAddress()
+                .orElseThrow(() -> new IllegalStateException(
+                        "flnet.federated-learning.flower.superlink-address is not configured; step " + step.getId()
+                                + " uses a Flower tool and needs it to reach clinics"));
+        Map<String, FederatedLearningRelayInfoDTO> clinics = new HashMap<>();
+        run.getParticipants().forEach(participant -> {
+            FederatedLearningRelayInfoDTO slot = new FederatedLearningRelayInfoDTO();
+            slot.setSuperlinkAddress(superlinkAddress);
+            clinics.put(participant.getParticipantId(), slot);
+        });
+        return clinics;
+    }
+
     private boolean workflowHasFlowerNode(WorkflowEntity workflow) {
         return workflow.getNodes().stream().anyMatch(FederatedTrainingFlowerAggregatorBO::isFlowerNode);
     }
@@ -349,7 +365,7 @@ public class FederatedTrainingSetupBO {
             // app also has isSupportsFederatedLearning() set, so this has to be checked first, not folded into
             // the check below. No relay slot at all, for the platform or for clinics.
             Log.infof("App version %d of step %d uses Flower, no FL-Net relay run needed", appVersion.getId(), step.getId());
-            return new RelaySetup(withoutRelay(run), null);
+            return new RelaySetup(flowerClinicSlots(run, step), null);
         }
         if (!appVersion.getFederatedApp().isSupportsFederatedLearning()) {
             Log.infof("App version %d of step %d needs no relay run", appVersion.getId(), step.getId());
