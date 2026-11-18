@@ -8,6 +8,7 @@ import bio.cosy.feddb.local.api.cohort.patient.PatientAO;
 import bio.cosy.feddb.local.api.cohort.patient.PatientEntity;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.crud.PatientDataAuditAO;
 import bio.cosy.feddb.local.api.cohort.permission.PermissionBO;
+import bio.cosy.feddb.local.api.eam.ClientManager;
 import bio.cosy.feddb.local.api.cohort.queryability.CohortQueryAbilityAO;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorBO;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunAO;
@@ -53,6 +54,9 @@ public class CohortBO extends BaseBo<CohortDTO, CohortEntity, CohortAO, CohortMa
 
     @Inject
     PermissionBO permissionBO;
+
+    @Inject
+    ClientManager clientManager;
 
     @Inject
     CohortCriterionBO cohortCriterionBO;
@@ -161,19 +165,27 @@ public class CohortBO extends BaseBo<CohortDTO, CohortEntity, CohortAO, CohortMa
         // Persist cohort first so it's managed before schema nodes reference it
         ao.persist(entity);
         Log.debugf("Created cohort %s", entity);
-        // Subscribe the relevant schema
-        Set<SchemaNodeEntity> schemaNodes = schemaBO.subscribe(UUID.fromString(createDTO.getGlobalSchemaID()));
-        // Now we can create the cohort and connect the schema nodes
-        // Set the owning side for each schema node
-        for (SchemaNodeEntity node : schemaNodes) {
-            node.setCohort(entity);
+        if (entity.getExternalDatabase() != null) {
+            // no schema, the database is only reachable by TRE runs
+            entity.setTreSourceId(UUID.randomUUID().toString());
+        } else {
+            // Subscribe the relevant schema
+            Set<SchemaNodeEntity> schemaNodes = schemaBO.subscribe(UUID.fromString(createDTO.getGlobalSchemaID()));
+            // Now we can create the cohort and connect the schema nodes
+            // Set the owning side for each schema node
+            for (SchemaNodeEntity node : schemaNodes) {
+                node.setCohort(entity);
+            }
+            // Connect schema nodes to the cohort (inverse side)
+            entity.setSchemaNodes(schemaNodes);
         }
-        // Connect schema nodes to the cohort (inverse side)
-        entity.setSchemaNodes(schemaNodes);
         if (addDefaultPermission) {
             permissionBO.addDefault(entity);
         }
         cohortCriterionBO.replaceCriteria(entity, createDTO.getCriteria());
+        if (entity.getExternalDatabase() != null) {
+            clientManager.sendTreSources();
+        }
         return mapper.entityToDto(entity);
     }
 
@@ -198,7 +210,18 @@ public class CohortBO extends BaseBo<CohortDTO, CohortEntity, CohortAO, CohortMa
         entity.setCopyrightLabel(updateDTO.getCopyrightLabel());
         entity.setKeycloakId(keycloakId);
         cohortCriterionBO.replaceCriteria(entity, updateDTO.getCriteria());
+        ExternalDatabaseDTO database = updateDTO.getExternalDatabase();
+        if (database != null && entity.getExternalDatabase() != null) {
+            if (database.getPassword() == null || database.getPassword().isBlank()) {
+                database.setPassword(entity.getExternalDatabase().getPassword());
+            }
+            database.setTestDataFile(entity.getExternalDatabase().getTestDataFile());
+            entity.setExternalDatabase(database);
+        }
         ao.persist(entity);
+        if (entity.getExternalDatabase() != null) {
+            clientManager.sendTreSources();
+        }
         return mapper.entityToDetailDto(entity);
     }
 
@@ -241,6 +264,7 @@ public class CohortBO extends BaseBo<CohortDTO, CohortEntity, CohortAO, CohortMa
 
         self.get().deleteSchemaArtifacts(cohortId);
         self.get().deleteCohortEntity(cohortId);
+        clientManager.sendTreSources();
         Log.infof("Finished deletion for cohort %d", cohortId);
     }
 

@@ -1,6 +1,7 @@
 package bio.cosy.feddb.core.api.project;
 
 import bio.cosy.feddb.core.api.file.FileDTO;
+import bio.cosy.feddb.core.api.tre.TreSourceDTO;
 import bio.cosy.feddb.core.base.BaseDTO;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -26,6 +27,9 @@ public class ProjectDTO extends BaseDTO {
     private ProjectStatus status = ProjectStatus.INIT;
 
     private PatientDataExportConfigDTO exportConfig;
+
+    // TRE on an external database of a client instead of the query's data
+    private TreSourceDTO treSource;
 
     //For the controller, that he can decide if the controller needs data
     private boolean coordinatorHasData = false;

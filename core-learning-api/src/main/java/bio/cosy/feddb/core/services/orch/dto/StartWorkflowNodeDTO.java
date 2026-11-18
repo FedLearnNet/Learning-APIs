@@ -32,6 +32,9 @@ public class StartWorkflowNodeDTO {
 
     private List<String> environments = new ArrayList<>();
 
+    // container of an external database joined to the app's network
+    private String externalSource;
+
     public void upsertEnv(String key, String value) {
         if (environments == null) {
             environments = new ArrayList<>();

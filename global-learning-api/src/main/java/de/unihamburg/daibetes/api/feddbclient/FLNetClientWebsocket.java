@@ -6,9 +6,12 @@ import de.unihamburg.daibetes.api.observer.FLNetClientObserverEmitter;
 import de.unihamburg.daibetes.api.observer.FLNetClientObserverEventDTO;
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.logging.Log;
+import de.unihamburg.daibetes.api.query.response.QueryResponseBO;
 import io.quarkus.security.Authenticated;
+import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.websockets.next.*;
 import jakarta.inject.Inject;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.logging.Logger;
 
 @Authenticated // FL-Net clients log in with their platform account
@@ -20,12 +23,19 @@ public class FLNetClientWebsocket {
     @Inject
     FLNetClientObserverEmitter observerEmitter;
 
+    @Inject
+    QueryResponseBO queryResponseBO;
+
+    @Inject
+    SecurityIdentity identity;
+
     @LoggerName("FLNetClientWebsocket")
     Logger logger;
 
     @OnOpen
     public void onOpen(WebSocketConnection connection) {
         logger.info("Connection opened: " + connection.id());
+        queryResponseBO.putClientName(connection.id(), nameOf(identity));
         observerEmitter.emit(FLNetClientObserverEventDTO.connected(connection.id()));
     }
 
@@ -61,4 +71,15 @@ public class FLNetClientWebsocket {
         }
     }
 
+
+    // full name of the platform account the client logs in with, else its user name
+    private static String nameOf(SecurityIdentity identity) {
+        if (identity == null || identity.isAnonymous()) {
+            return null;
+        }
+        if (identity.getPrincipal() instanceof JsonWebToken token && token.getClaim("name") != null) {
+            return token.getClaim("name").toString();
+        }
+        return identity.getPrincipal().getName();
+    }
 }

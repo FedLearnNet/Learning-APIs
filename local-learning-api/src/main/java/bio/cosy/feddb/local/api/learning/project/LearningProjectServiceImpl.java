@@ -4,6 +4,8 @@ import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.core.helper.FileResponse;
 import bio.cosy.feddb.local.api.auth.UserIdentity;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
+import bio.cosy.feddb.local.execution.queue.ExecutionQueueBO;
+import bio.cosy.feddb.local.execution.queue.QueuedRunDTO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunBO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
 import io.quarkus.panache.common.Page;
@@ -17,6 +19,7 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 
 import java.io.File;
+import java.util.List;
 
 @ApplicationScoped
 public class LearningProjectServiceImpl implements LearningProjectService {
@@ -26,6 +29,9 @@ public class LearningProjectServiceImpl implements LearningProjectService {
 
     @Inject
     ExecutionRunBO runBO;
+
+    @Inject
+    ExecutionQueueBO queueBO;
 
     @Inject
     UserIdentity userIdentity;
@@ -66,6 +72,11 @@ public class LearningProjectServiceImpl implements LearningProjectService {
                     .entity("Project not found: " + projectId)
                     .build();
         }
+    }
+
+    @Override
+    public List<QueuedRunDTO> listQueue() {
+        return queueBO.listTransactional();
     }
 
     @Override

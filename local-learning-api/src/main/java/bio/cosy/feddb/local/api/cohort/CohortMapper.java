@@ -1,5 +1,6 @@
 package bio.cosy.feddb.local.api.cohort;
 
+import bio.cosy.feddb.core.api.tre.TreSourceDTO;
 import bio.cosy.feddb.core.base.BaseMapper;
 import bio.cosy.feddb.local.api.cohort.inclusion.CohortCriterionDTO;
 import bio.cosy.feddb.local.api.cohort.inclusion.CohortCriterionEntity;
@@ -44,6 +45,7 @@ public abstract class CohortMapper implements BaseMapper<CohortDTO, CohortEntity
             @Mapping(target = "amountOfPatients", ignore = true),
             @Mapping(target = "criteria", source = "criteria", qualifiedByName = "mapCriteria"),
             @Mapping(target = "deletionInProgress", ignore = true),
+            @Mapping(target = "externalDatabase", qualifiedByName = "withoutPassword"),
     })
     public abstract CohortDTO entityToDto(CohortEntity entity);
 
@@ -55,6 +57,7 @@ public abstract class CohortMapper implements BaseMapper<CohortDTO, CohortEntity
             @Mapping(target = "members", source = "members", qualifiedByName = "mapMembers"),
             @Mapping(target = "criteria", source = "criteria", qualifiedByName = "mapCriteria"),
             @Mapping(target = "deletionInProgress", ignore = true),
+            @Mapping(target = "externalDatabase", qualifiedByName = "withoutPassword"),
     })
     public abstract CohortDetailDTO entityToDetailDto(CohortEntity entity);
 
@@ -65,9 +68,22 @@ public abstract class CohortMapper implements BaseMapper<CohortDTO, CohortEntity
             @Mapping(target = "queryabilities", ignore = true),
             @Mapping(target = "connectorFiles", ignore = true),
             @Mapping(target = "members", ignore = true),
-            @Mapping(target = "criteria", ignore = true)
+            @Mapping(target = "criteria", ignore = true),
+            @Mapping(target = "externalDatabase", ignore = true)
     })
     public abstract CohortEntity dtoToEntity(CohortDTO dto);
+
+    // the public part of an external database, offered to the platform
+    @Mappings({
+            @Mapping(target = "id", source = "treSourceId"),
+            @Mapping(target = ".", source = "externalDatabase"),
+    })
+    public abstract TreSourceDTO entityToTreSource(CohortEntity entity);
+
+    @Named("withoutPassword")
+    protected ExternalDatabaseDTO withoutPassword(ExternalDatabaseDTO database) {
+        return database == null ? null : database.toBuilder().password(null).build();
+    }
 
 
     @Mappings({
@@ -89,6 +105,9 @@ public abstract class CohortMapper implements BaseMapper<CohortDTO, CohortEntity
 
     @AfterMapping
     public void afterMapping(CohortDTO dto, @MappingTarget CohortEntity entity) {
+        if (dto.getGlobalSchemaId() == null) {
+            return;
+        }
         // Find/Subscribe to the schema and connect the nodes
         entity.setSchemaNodes(
                 schemaBO.getCohortNodes(dto.getId(), UUID.fromString(dto.getGlobalSchemaId()))
@@ -96,6 +115,9 @@ public abstract class CohortMapper implements BaseMapper<CohortDTO, CohortEntity
     }
 
     private LocalSchemaRootNodeDTO mapBase(CohortEntity entity, CohortDTO dto) {
+        if (entity.getExternalDatabase() != null) {
+            return null;
+        }
         LocalSchemaRootNodeDTO root = schemaNodeBO.getSchemaNodesNestedForCohort(entity.getId());
         if (root == null) {
             throw new IllegalStateException("Root node not found for cohort: " + entity.getName());

@@ -8,6 +8,7 @@ import bio.cosy.feddb.core.api.socket.LearningClientSyncResponseDTO;
 import bio.cosy.feddb.core.api.socket.StartLearningClientRequestDTO;
 import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
+import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.local.api.learning.project.LearningProjectAO;
 import bio.cosy.feddb.local.api.learning.project.LearningProjectEntity;
@@ -109,6 +110,10 @@ public class LearningRunBO {
 
     public void customizeStartup(ExecutionAttemptEntity attempt, StartRunDTO start) {
         setupBO.customizeStartup(attempt, start);
+    }
+
+    public void customizeStart(ExecutionAttemptEntity attempt, StartWorkflowNodeDTO start) {
+        setupBO.customizeStart(attempt, start);
     }
 
     public void stageInputs(ExecutionAttemptEntity attempt) {

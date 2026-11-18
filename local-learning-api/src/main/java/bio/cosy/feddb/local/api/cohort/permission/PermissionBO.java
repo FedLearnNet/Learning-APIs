@@ -79,6 +79,11 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
                 .collect(Collectors.toSet());
     }
 
+    // Only a cohort open for TRE may name its client.
+    public boolean sharesName(List<PermissionDTO> permissions) {
+        return permissions.stream().anyMatch(p -> Boolean.TRUE.equals(p.getTreShareName()) && allowsTraining(p, ExecutionMode.TRE));
+    }
+
     public List<PermissionDTO> getActivePermissionsForCohort(String userId, Long cohortId) {
         if (cohortId == null) {
             return new ArrayList<>();

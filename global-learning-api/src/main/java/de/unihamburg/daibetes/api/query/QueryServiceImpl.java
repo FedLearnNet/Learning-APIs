@@ -2,6 +2,8 @@ package de.unihamburg.daibetes.api.query;
 
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.query.QueryDetailDTO;
+import bio.cosy.feddb.core.api.tre.TreSourceDTO;
+import de.unihamburg.daibetes.api.feddbclient.FLNetClientWebsocketHandlerBO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
 import de.unihamburg.daibetes.api.query.response.QueryResponseBO;
 import de.unihamburg.daibetes.api.query.response.QueryResponseDTO;
@@ -26,6 +28,14 @@ public class QueryServiceImpl implements QueryService {
 
     @Inject
     QueryResponseBO responses;
+
+    @Inject
+    FLNetClientWebsocketHandlerBO clientHandlerBO;
+
+    @Override
+    public List<TreSourceDTO> treSources() {
+        return clientHandlerBO.listTreSources();
+    }
 
     @Override
     public List<QueryResponseDTO> systems(Long id) {

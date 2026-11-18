@@ -1,5 +1,8 @@
 package bio.cosy.feddb.local.api.cohort;
 
+import bio.cosy.feddb.core.api.file.FileDTO;
+import org.jboss.resteasy.reactive.RestForm;
+import org.jboss.resteasy.reactive.multipart.FileUpload;
 import bio.cosy.feddb.local.api.cohort.member.CohortAvailableUserDTO;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberCreateDTO;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberDTO;
@@ -78,6 +81,19 @@ public interface CohortService {
     @Transactional
     @PermissionsAllowed(CohortPermissionChecker.EDIT)
     CohortDetailDTO update(@PathParam("cohortId") Long cohortId, @Valid UpdateCohortDTO updateDTO);
+
+    @POST
+    @Path("/{cohortId}/test-data")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Operation(summary = "Upload the test data file of an external database, it replaces the earlier one")
+    @PermissionsAllowed(CohortPermissionChecker.EDIT)
+    FileDTO uploadTestData(@PathParam("cohortId") Long cohortId, @RestForm("file") FileUpload file);
+
+    @DELETE
+    @Path("/{cohortId}/test-data")
+    @Operation(summary = "Remove the test data file of an external database")
+    @PermissionsAllowed(CohortPermissionChecker.EDIT)
+    Response deleteTestData(@PathParam("cohortId") Long cohortId);
 
     @POST
     @Path("/{cohortId}/members")

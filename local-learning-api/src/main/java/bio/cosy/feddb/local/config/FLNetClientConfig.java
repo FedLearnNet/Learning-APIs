@@ -35,6 +35,8 @@ public interface FLNetClientConfig {
 
     CohortConfig cohort();
 
+    ExecutionConfig execution();
+
     /**
      * Settings for the relay server connection of the controller.
      */
@@ -62,6 +64,25 @@ public interface FLNetClientConfig {
         @WithName("max-attempts")
         @WithDefault("3")
         int maxAttempts();
+    }
+
+    interface ExecutionConfig {
+
+        QueueConfig queue();
+    }
+
+    /**
+     * Training runs, TRE and federated alike, share the resources of the client and start one after another.
+     */
+    interface QueueConfig {
+
+        @WithDefault("true")
+        boolean enabled();
+
+        // runs training at once, the next waits until one ends
+        @WithName("max-concurrent")
+        @WithDefault("1")
+        int maxConcurrent();
     }
 
     interface CohortConfig {

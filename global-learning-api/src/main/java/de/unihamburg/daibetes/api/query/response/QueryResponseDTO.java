@@ -19,4 +19,5 @@ public class QueryResponseDTO extends BaseDTO {
     private String error;
     private SystemComputingInfoReducedDTO system;
     private Set<ExecutionMode> supportedModes;
+    private String clientName;
 }

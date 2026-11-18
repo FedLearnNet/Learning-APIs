@@ -2,6 +2,7 @@ package bio.cosy.feddb.local.api.learning.project;
 
 import bio.cosy.feddb.core.base.PagedResponse;
 import bio.cosy.feddb.local.api.cohort.permission.PermissionDTO;
+import bio.cosy.feddb.local.execution.queue.QueuedRunDTO;
 import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
 import io.smallrye.mutiny.Multi;
 import jakarta.transaction.Transactional;
@@ -16,6 +17,8 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.RestStreamElementType;
 
+import java.util.List;
+
 @Path("/learning/projects")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -29,6 +32,11 @@ public interface LearningProjectService {
     PagedResponse<LearningProjectDTO> list(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("page_size") @DefaultValue("20") int size);
+
+    @GET
+    @Path("/queue")
+    @Operation(summary = "Training runs waiting for a free slot of this client, the next first")
+    List<QueuedRunDTO> listQueue();
 
     @GET
     @Path("/{id}")

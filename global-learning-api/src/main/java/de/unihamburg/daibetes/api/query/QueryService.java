@@ -48,6 +48,11 @@ public interface QueryService {
     List<String> getAllClients();
 
     @GET
+    @Path("/tre-sources")
+    @Operation(summary = "List the external databases connected clients offer for TRE")
+    List<bio.cosy.feddb.core.api.tre.TreSourceDTO> treSources();
+
+    @GET
     @Path("/{id}")
     @Operation(summary = "Retrieve a single query")
     @APIResponse(responseCode = "200", description = "Query found")
