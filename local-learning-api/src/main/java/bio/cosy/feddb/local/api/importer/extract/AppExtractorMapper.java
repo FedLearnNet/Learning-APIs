@@ -12,7 +12,8 @@ public interface AppExtractorMapper {
     @Mappings({
             @Mapping(target = "cached", ignore = true),
             @Mapping(target = "hash", ignore = true),
-            @Mapping(target = "uploadInfo", ignore = true)
+            @Mapping(target = "uploadInfo", ignore = true),
+            @Mapping(target = "outputParams", ignore = true)
     })
     ConnectorExtractorStreamDTO runToStreamDTO(ExecutionRunDTO run);
 

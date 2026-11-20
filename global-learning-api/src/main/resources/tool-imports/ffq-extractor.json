@@ -1,0 +1,88 @@
+{
+  "name" : "FFQ Extractor - Tool",
+  "uniqueAppId" : "b2c3ad91-06d6-464a-9f64-df5195521eb2",
+  "slug" : "tool-ffq-extractor",
+  "type" : "EXTRACTOR",
+  "supportsFederatedLearning" : false,
+  "sourceUrl" : "https://github.com/FedLearnNet/tool-ffq-extractor",
+  "oldFCVersion" : false,
+  "count" : 0,
+  "average" : 0.0,
+  "addedToWorkflowCount" : 0,
+  "authors" : [ {
+    "keycloakId" : "admin"
+  }, {
+    "keycloakId" : "test"
+  } ],
+  "versions" : [ {
+    "appVersion" : "0.1.0",
+    "publishHash" : "ef89bb646d52764e3f2772e4a9393736a9959915f46ff126626c0336fd6bde1f",
+    "rebuilding" : false,
+    "changelog" : "FFQ Excel/ZIP to Nutrition CSV: first-sheet default, date_cell/patient_id_cell hyperparams, console-only errors, nutrition_csv output only.",
+    "versionPublishStatus" : "PUBLISHED",
+    "needsInternetAccess" : false,
+    "needsHostAccess" : false,
+    "certificationLevel" : 0,
+    "imageName" : "tool-ffq-extractor:0.1.0",
+    "shortDescription" : "Convert FFQ Excel (or a ZIP of many) into microbiome Nutrition CSV rows.",
+    "longDescription" : "EXTRACTOR tool that turns food-frequency questionnaire Excel workbooks into a flat Nutrition CSV. Accepts a single .xlsx or a .zip of many per-patient workbooks. Outputs nutrition_csv.",
+    "publishInfo" : {
+      "imageName" : "tool-ffq-extractor:0.1.0",
+      "filePaths" : [ ]
+    },
+    "appConfig" : {
+      "hyperparams" : [ {
+        "name" : "workers",
+        "variableName" : "workers",
+        "type" : "INTEGER",
+        "description" : "Process-pool size for ZIP batch extraction (ignored for a single .xlsx).",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "minValue" : 1.0,
+        "maxValue" : 64.0,
+        "default" : "4"
+      }, {
+        "name" : "sheet",
+        "variableName" : "sheet",
+        "type" : "STRING",
+        "description" : "Worksheet name containing the FFQ matrix. Leave empty to use the first sheet.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : ""
+      }, {
+        "name" : "date_cell",
+        "variableName" : "date_cell",
+        "type" : "STRING",
+        "description" : "Excel cell (A1-style) holding the questionnaire date.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "A1"
+      }, {
+        "name" : "patient_id_cell",
+        "variableName" : "patient_id_cell",
+        "type" : "STRING",
+        "description" : "Excel cell (A1-style) holding the unique patient ID.",
+        "mode" : "BOTH",
+        "options" : [ ],
+        "default" : "A3"
+      } ],
+      "input" : [ {
+        "name" : "ffq_archive",
+        "variableName" : "ffq_archive",
+        "type" : "PATH",
+        "description" : "A filled FFQ .xlsx workbook, or a .zip archive containing many per-patient FFQ Excel files (nested folders allowed).",
+        "required" : true
+      } ],
+      "output" : [ {
+        "name" : "nutrition_csv",
+        "variableName" : "nutrition_csv",
+        "type" : "CSV",
+        "description" : "Combined Nutrition rows (one row per marked food item).",
+        "hasHeader" : true,
+        "delimiter" : ","
+      } ]
+    },
+    "audits" : [ ]
+  } ],
+  "hasImage" : false
+}

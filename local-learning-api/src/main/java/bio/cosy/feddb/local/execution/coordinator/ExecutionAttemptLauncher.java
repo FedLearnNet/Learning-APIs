@@ -14,6 +14,7 @@ import bio.cosy.feddb.core.execution.orchestrator.WorkflowOrchestrator;
 import bio.cosy.feddb.core.security.Scope;
 import bio.cosy.feddb.core.services.orch.dto.StartWorkflowNodeDTO;
 import bio.cosy.feddb.local.api.cohort.patient.tools.PatientToolBO;
+import bio.cosy.feddb.local.api.importer.run.ConnectorAppRunBO;
 import bio.cosy.feddb.local.api.learning.project.run.LearningRunBO;
 import bio.cosy.feddb.local.api.workflow.WorkflowBO;
 import bio.cosy.feddb.local.api.workflow.node.WorkflowNodeBO;
@@ -50,6 +51,9 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
 
     @Inject
     PatientToolBO patientToolBO;
+
+    @Inject
+    ConnectorAppRunBO connectorAppRunBO;
 
     @Inject
     LearningRunBO learningRunBO;
@@ -101,7 +105,11 @@ public class ExecutionAttemptLauncher extends BaseAttemptLauncher<ExecutionAttem
     @Override
     protected void stageInputs(ExecutionAttemptEntity attempt) {
         switch (attempt.getStep().getRun().getPurpose()) {
-            case PROCESSING -> patientToolBO.stageInput(attempt);
+            case PROCESSING -> {
+                // Patient tools and connector extractors both use PROCESSING; each no-ops when unused.
+                patientToolBO.stageInput(attempt);
+                connectorAppRunBO.stageInputs(attempt);
+            }
             case TRAINING -> learningRunBO.stageInputs(attempt);
             default -> {
             }
