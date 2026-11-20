@@ -16,6 +16,7 @@ import java.util.Map;
 public class TransformerSelectGuardrail extends TransformerAnswerGuardrail {
 
     static final String LOSSES = "LOSSES";
+    static final String CODES = "CODES";
 
     @Inject
     TransformerValidateTool validateTool;
@@ -29,7 +30,23 @@ public class TransformerSelectGuardrail extends TransformerAnswerGuardrail {
             return checkNotFound(answer, variables);
         }
         OutputGuardrailResult functions = checkFunctions(answer);
-        return functions.isSuccess() ? checkLosses(answer, variables) : functions;
+        if (!functions.isSuccess()) {
+            return functions;
+        }
+        OutputGuardrailResult losses = checkLosses(answer, variables);
+        return losses.isSuccess() ? checkGuessedCodes(answer) : losses;
+    }
+
+    // Shares cannot tell apart codes of about the same count, only a code book or the user can
+    private OutputGuardrailResult checkGuessedCodes(ConnectorSelectedTransformer answer) {
+        String guessed = validateTool.flagGuessedCodes(answer);
+        if (guessed.isEmpty() || !hints.once(CODES)) {
+            return success();
+        }
+        return feedback("Your chain is valid, but the source column holds codes without labels, and codes with about "
+                + "the same count become different values, so their shares do not tell which code means what: " + guessed
+                + ". Ask the user with askUser which code means what; if the user leaves it to you, keep the chain. "
+                + "Validate again and answer.");
     }
 
     private OutputGuardrailResult checkLosses(ConnectorSelectedTransformer answer, Map<String, Object> variables) {

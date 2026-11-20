@@ -75,16 +75,19 @@ public class TransformerHelper {
         return patientIds.stream().distinct().count() < patientIds.size();
     }
 
-    /** Every column with a few of its values, e.g. "encounter_id: 2278392, 149190, 64410". */
+    /** Every column with a few of its values, e.g. "encounter_id: 2278392, 149190, 64410", and whether its cells are packed. */
     public static List<String> columnExamples(TableSample preview) {
         return preview.getColumns().stream()
-                .map(column -> column + ": " + preview.getRows().stream()
-                        .filter(Objects::nonNull)
-                        .map(row -> Objects.toString(row.get(column), ""))
-                        .filter(value -> !value.isBlank())
-                        .distinct()
-                        .limit(EXAMPLE_VALUES)
-                        .collect(Collectors.joining(", ")))
+                .map(column -> {
+                    List<String> values = preview.getRows().stream()
+                            .filter(Objects::nonNull)
+                            .map(row -> Objects.toString(row.get(column), ""))
+                            .filter(value -> !value.isBlank())
+                            .distinct()
+                            .toList();
+                    return column + ": " + values.stream().limit(EXAMPLE_VALUES).collect(Collectors.joining(", "))
+                            + PackedValues.note(values);
+                })
                 .toList();
     }
 
@@ -150,6 +153,7 @@ public class TransformerHelper {
         if (counts.size() > maxValues) {
             text.append(", ... ").append(profile.uniqueValues()).append(" distinct values");
         }
+        text.append(PackedValues.note(counts.stream().map(Map.Entry::getKey).toList()));
         return text.toString();
     }
 
