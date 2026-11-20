@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.api.importer.statistics;
 
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
+import bio.cosy.feddb.local.api.importer.connector.input.AppBasedUploadSettingsDTO;
 import bio.cosy.feddb.local.api.importer.connector.input.ConnectorInputConfigDTO;
 import bio.cosy.feddb.local.api.importer.connector.input.FileUploadSettingsDTO;
 import bio.cosy.feddb.local.api.importer.extract.ConnectorExtractBO;
@@ -130,10 +131,7 @@ public class TransformedStatisticsBO {
             PivotConfigDTO pivotConfig,
             List<ConnectorTransformerDTO> transformers,
             List<ConnectorMappingDTO> schemaMapping) {
-        if (!(inputConfig instanceof FileUploadSettingsDTO fileSettings)) {
-            throw new BadRequestException("Statistics are only supported for file input");
-        }
-
+        FileUploadSettingsDTO fileSettings = statisticsFileSettings(inputConfig);
         ConnectorFilesEntity fileEntity = resolveFile(cohortId, fileSettings);
         List<ConnectorTransformerDTO> builtInTransformers = builtInTransformers(transformers);
         boolean patientMode = hasPatientTransformation(builtInTransformers);
@@ -211,9 +209,7 @@ public class TransformedStatisticsBO {
             ConnectorInputConfigDTO inputConfig,
             Map<String, UploadInfoDTO> uploadInfo
     ) {
-        if (!(inputConfig instanceof FileUploadSettingsDTO fileSettings)) {
-            throw new BadRequestException("Statistics are only supported for file input");
-        }
+        FileUploadSettingsDTO fileSettings = statisticsFileSettings(inputConfig);
         ConnectorFilesEntity fileEntity = resolveFile(cohortId, fileSettings);
         List<ConnectorFileUploadInfoDTO> stored = fileEntity.getUploadInfo();
         if (stored == null || stored.isEmpty()) {
@@ -398,6 +394,59 @@ public class TransformedStatisticsBO {
     private boolean hasPatientTransformation(List<ConnectorTransformerDTO> transformers) {
         return transformers.stream()
                 .anyMatch(transformer -> functionRunnerBO.mode(transformer) == FunctionExecutionMode.PATIENT);
+    }
+
+    /**
+     * Statistics always operate on a connector file entity. FILE configs already carry a file id;
+     * APP configs point at stored extractor outputs in {@code outputParams}.
+     */
+    private FileUploadSettingsDTO statisticsFileSettings(ConnectorInputConfigDTO inputConfig) {
+        if (inputConfig instanceof FileUploadSettingsDTO fileSettings) {
+            return fileSettings;
+        }
+        if (inputConfig instanceof AppBasedUploadSettingsDTO appSettings) {
+            Long fileId = firstStoredOutputFileId(appSettings);
+            if (fileId == null) {
+                throw new NotFoundException(
+                        "This extractor has not produced any output yet. Run the extractor before validating.");
+            }
+            FileUploadSettingsDTO stored = new FileUploadSettingsDTO();
+            stored.setFileId(fileId);
+            return stored;
+        }
+        throw new BadRequestException("Statistics are only supported for file input");
+    }
+
+    private static Long firstStoredOutputFileId(AppBasedUploadSettingsDTO appSettings) {
+        Map<String, Object> outputParams = appSettings.getOutputParams();
+        if (outputParams == null || outputParams.isEmpty()) {
+            return null;
+        }
+        List<String> selected = appSettings.getSelectedOutputs();
+        for (Map.Entry<String, Object> output : outputParams.entrySet()) {
+            if (selected != null && !selected.isEmpty() && !selected.contains(output.getKey())) {
+                continue;
+            }
+            Long fileId = toFileId(output.getValue());
+            if (fileId != null) {
+                return fileId;
+            }
+        }
+        return null;
+    }
+
+    private static Long toFileId(Object value) {
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Long.valueOf(String.valueOf(value).trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private ConnectorFilesEntity resolveFile(Long cohortId, FileUploadSettingsDTO fileSettings) {

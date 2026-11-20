@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.api.importer.files.upload;
 
 import bio.cosy.feddb.core.api.file.FileParsingSettingsDTO;
+import bio.cosy.feddb.core.api.file.FileParsingType;
 import bio.cosy.feddb.core.base.BaseFileBO;
 import bio.cosy.feddb.local.api.cohort.CohortAO;
 import bio.cosy.feddb.local.api.importer.ImportPhaseTimer;
@@ -63,6 +64,10 @@ public class ConnectorFileUploadBO
             String keycloakId,
             String importId
     ) {
+        if (requested != null && requested.isOpaqueRequest()) {
+            return uploadOpaqueFile(cohortId, file, requested, keycloakId);
+        }
+
         FileParsingSettingsDTO parserSettings = parsingSettings(requested, fallbackParsingSettings, file);
         int previewRows = requested == null
                 ? ConnectorFileUploadSettingsDTO.DEFAULT_PREVIEW_ROWS
@@ -89,6 +94,41 @@ public class ConnectorFileUploadBO
         entity.setUploadInfo(uploadInfo);
         entity.setPreviewData(analysis.previewData());
         uploadTimer.done("file %s profiled into %d logical table(s)", entity.getId(), uploadInfo.size());
+        return entity;
+    }
+
+    /**
+     * Opaque PATH blobs are not tabular connector inputs; keep them out of default file pickers
+     * and skip profiling after safety validation.
+     */
+    private ConnectorFilesEntity uploadOpaqueFile(
+            Long cohortId,
+            FileUpload file,
+            ConnectorFileUploadSettingsDTO requested,
+            String keycloakId
+    ) {
+        OpaquePathUploadValidator.ValidatedOpaqueFile validated = OpaquePathUploadValidator.validate(file);
+        ImportPhaseTimer uploadTimer = ImportPhaseTimer.started("Upload opaque", "%s", validated.safeFileName());
+
+        ConnectorFilesDTO newDto = new ConnectorFilesDTO();
+        // Opaque PATH blobs are not tabular connector inputs; keep them out of default file pickers.
+        newDto.setIsSupportFile(true);
+        newDto.setCohortId(cohortId);
+
+        ConnectorFilesEntity entity = createEntity(
+                newDto, keycloakId, file.uploadedFile().toFile(), validated.safeFileName());
+        entity.setContentType(validated.contentType());
+        entity.setFileName(validated.safeFileName());
+        entity.setSize(validated.size());
+
+        FileParsingSettingsDTO opaqueSettings = new FileParsingSettingsDTO();
+        opaqueSettings.setFileType(FileParsingType.OPAQUE);
+        opaqueSettings.setHasHeader(false);
+        opaqueSettings.setFirstSheetOnly(true);
+        entity.setUploadSettings(opaqueSettings);
+        entity.setUploadInfo(List.of());
+        entity.setPreviewData(null);
+        uploadTimer.done("opaque file %s stored (%d bytes, no tabular parse)", entity.getId(), validated.size());
         return entity;
     }
 
