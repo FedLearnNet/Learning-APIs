@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,6 +64,7 @@ class QueryResponseReleaseTest {
         responseBO.queryBO = queryBO;
         responseBO.queryAO = queryAO;
         responseBO.config = config;
+        responseBO.virtualThreads = Executors.newVirtualThreadPerTaskExecutor();
         responseBO.ao = mock(QueryResponseAO.class);
         responseBO.mapper = mock(QueryResponseMapper.class);
         doAnswer(invocation -> stored.add(invocation.getArgument(0))).when(responseBO.ao).persist(any(QueryResponseEntity.class));

@@ -10,6 +10,7 @@ import de.unihamburg.daibetes.api.query.QueryBO;
 import de.unihamburg.daibetes.api.query.QueryEntity;
 import de.unihamburg.daibetes.config.FLNetConfig;
 import io.quarkus.logging.Log;
+import io.quarkus.virtual.threads.VirtualThreads;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -19,6 +20,7 @@ import jakarta.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 
 @ApplicationScoped
@@ -32,6 +34,10 @@ public class QueryResponseBO extends BaseBo<QueryResponseDTO, QueryResponseEntit
 
     @Inject
     FLNetConfig config;
+
+    @Inject
+    @VirtualThreads
+    ExecutorService virtualThreads;
 
     /**
      * Clients with matches of a released query; count, hardware and name only of TRE clients.
@@ -74,6 +80,7 @@ public class QueryResponseBO extends BaseBo<QueryResponseDTO, QueryResponseEntit
     public void releaseAtDeadline(String globalUniqueId) {
         Uni.createFrom().item(globalUniqueId)
                 .onItem().delayIt().by(config.query().releaseTimeout())
+                .emitOn(virtualThreads)
                 .invoke(this::releaseTransactional)
                 .subscribe().with(released -> {
                 }, e -> Log.errorf(e, "Failed to release query %s", globalUniqueId));
@@ -107,7 +114,7 @@ public class QueryResponseBO extends BaseBo<QueryResponseDTO, QueryResponseEntit
     /**
      * Releases the query unless all clients answered before.
      */
-    @Transactional
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void releaseTransactional(String globalUniqueId) {
         Optional<QueryEntity> query = queryAO.findForUpdateByGlobalUniqueId(globalUniqueId);
         if (query.isPresent() && !query.get().isHasResult()) {
