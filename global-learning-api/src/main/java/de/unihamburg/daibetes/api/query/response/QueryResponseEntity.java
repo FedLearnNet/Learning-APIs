@@ -17,12 +17,11 @@ import java.util.Set;
 @Getter
 public class QueryResponseEntity extends BaseEntity {
 
-
     @ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "query_id", nullable = false)
     private QueryEntity query;
     private Integer count;
-    private String error;
+
 
     @JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     private SystemComputingInfoReducedDTO system;

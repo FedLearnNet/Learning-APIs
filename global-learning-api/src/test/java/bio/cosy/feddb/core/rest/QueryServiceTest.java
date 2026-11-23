@@ -1,8 +1,10 @@
 package bio.cosy.feddb.core.rest;
 
-import bio.cosy.feddb.core.api.query.Lang2QueryDocuments;
 import bio.cosy.feddb.core.api.query.QueryDTO;
-import bio.cosy.feddb.core.api.query.QueryItemDTO;
+import bio.cosy.feddb.core.api.query.QueryDetailDTO;
+import bio.cosy.feddb.core.api.query.QueryOperatorTypes;
+import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
+import bio.cosy.feddb.core.api.query.item.QueryItemHelper;
 import bio.cosy.feddb.core.rest.helper.RestAssuredConfigUtil;
 import de.unihamburg.daibetes.api.project.ProjectAO;
 import de.unihamburg.daibetes.api.project.ProjectEntity;
@@ -59,8 +61,8 @@ public class QueryServiceTest {
         QueryItemDTO updatedItem = new QueryItemDTO();
         updatedItem.setOntologyId("updated-ontology");
         updatedItem.setDataTypeId("updated-datatype");
-        updatedItem.setOperator(List.of());
-        baseQuery.setQuery(Lang2QueryDocuments.andGroup(updatedItem));
+        updatedItem.setOperator(QueryOperatorTypes.EXISTS);
+        baseQuery.setQuery(QueryItemHelper.andGroup(updatedItem));
 
         QueryDTO updated = given()
                 .contentType(ContentType.JSON)
@@ -128,12 +130,33 @@ public class QueryServiceTest {
     }
 
     @Test
+    @TestSecurity(user = "test", roles = {"admin"})
+    public void testFiredQueryReleasesAtReleaseTime() throws InterruptedException {
+        QueryDTO fired = given()
+                .contentType(ContentType.JSON)
+                .when().post("/1/fire")
+                .then()
+                .statusCode(200)
+                .body("hasResult", equalTo(false))
+                .extract().as(QueryDTO.class);
+
+        // no client answers, the release still happens at the deadline (PT2S in test)
+        QueryDetailDTO current = new QueryDetailDTO();
+        for (int i = 0; i < 30 && !current.isHasResult(); i++) {
+            Thread.sleep(500);
+            current = given().when().get("/" + fired.getId()).then().statusCode(200).extract().as(QueryDetailDTO.class);
+        }
+        assertEquals(true, current.isHasResult());
+        assertEquals(0, current.getResult());
+    }
+
+    @Test
     public void testQueryUpdateDoesNotChangeProjects() {
         Long[] ids = QuarkusTransaction.requiringNew().call(() -> {
             QueryCreateDTO createDTO = new QueryCreateDTO();
             createDTO.setName("Project-safe query");
             createDTO.setDescription("Used to verify project merge isolation");
-            createDTO.setQuery(Lang2QueryDocuments.andGroup());
+            createDTO.setQuery(QueryItemHelper.andGroup());
             QueryDTO query = queryBO.create(createDTO, "test");
 
             QueryEntity queryEntity = queryAO.findById(query.getId());

@@ -1,4 +1,4 @@
-package bio.cosy.feddb.local.api.query;
+package bio.cosy.feddb.core.api.query;
 
 /**
  * Thrown when a query cannot be evaluated and must be rejected instead of

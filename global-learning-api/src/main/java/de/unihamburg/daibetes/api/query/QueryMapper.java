@@ -1,10 +1,10 @@
 package de.unihamburg.daibetes.api.query;
 
-import bio.cosy.feddb.core.api.query.EnhancedQueryItemDTO;
-import bio.cosy.feddb.core.api.query.Lang2QueryDocuments;
+import bio.cosy.feddb.core.api.query.item.EnhancedQueryItemDTO;
+import bio.cosy.feddb.core.api.query.item.QueryItemHelper;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.query.QueryDetailDTO;
-import bio.cosy.feddb.core.api.query.QueryItemDTO;
+import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
 import bio.cosy.feddb.core.base.BaseMapper;
 import de.unihamburg.daibetes.api.project.ProjectEntity;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
@@ -75,7 +75,8 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
     @Mappings({
             @Mapping(target = "groupId", source = "groupId"),
             @Mapping(target = "queryString", source = ".", qualifiedByName = "dtoToQueryString"),
-            @Mapping(target = "projects", source = "projectIds", qualifiedByName = "queryDTOToProjectEntity")
+            @Mapping(target = "projects", source = "projectIds", qualifiedByName = "queryDTOToProjectEntity"),
+            @Mapping(target = "expectedAnswers", ignore = true)
     })
     QueryEntity dtoToEntity(QueryDTO dto);
 
@@ -95,6 +96,7 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
             @Mapping(target = "queryString", source = ".", qualifiedByName = "dtoToQueryString"),
             @Mapping(target = "projects", ignore = true),
             @Mapping(target = "result", ignore = true),
+            @Mapping(target = "expectedAnswers", ignore = true)
     })
     QueryEntity createDtoToEntity(QueryCreateDTO dto);
 
@@ -115,7 +117,8 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
             @Mapping(target = "hasResult", constant = "false"),
             @Mapping(target = "hasFired", constant = "false"),
             @Mapping(target = "latestDataStatisticsRequest", ignore = true),
-            @Mapping(target = "latestDataStatisticsRequestTimestamp", ignore = true)
+            @Mapping(target = "latestDataStatisticsRequestTimestamp", ignore = true),
+            @Mapping(target = "expectedAnswers", ignore = true)
     })
     QueryEntity createVersionFromEntity(QueryEntity source);
 
@@ -139,11 +142,11 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
             @Mapping(target = "description", source = "request.description"),
             @Mapping(target = "queryString", source = "request", qualifiedByName = "dtoToQueryString"),
             @Mapping(target = "result", ignore = true),
-            @Mapping(target = "error", ignore = true),
             @Mapping(target = "hasResult", constant = "false"),
             @Mapping(target = "hasFired", constant = "false"),
             @Mapping(target = "latestDataStatisticsRequest", ignore = true),
-            @Mapping(target = "latestDataStatisticsRequestTimestamp", ignore = true)
+            @Mapping(target = "latestDataStatisticsRequestTimestamp", ignore = true),
+            @Mapping(target = "expectedAnswers", ignore = true)
     })
     QueryEntity createVersionFromRequest(QueryEntity source, QueryDTO request);
 
@@ -155,7 +158,7 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
      */
     @AfterMapping
     default void readQueryDocument(final QueryEntity entity, @MappingTarget final QueryDTO dto) {
-        Lang2QueryDocuments.readInto(entity.getQueryString(), dto);
+        dto.setQuery(QueryItemHelper.fromJson(entity.getQueryString()));
     }
 
     /**
@@ -166,7 +169,7 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
      */
     @AfterMapping
     default void readQueryDocument(final QueryEntity entity, @MappingTarget final QueryDetailDTO dto) {
-        Lang2QueryDocuments.readInto(entity.getQueryString(), dto);
+        dto.setQuery(QueryItemHelper.fromJson(entity.getQueryString()));
     }
 
     /**
@@ -177,7 +180,7 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
      */
     @Named("dtoToQueryString")
     default String dtoToQueryString(final QueryDTO dto) {
-        return Lang2QueryDocuments.toQueryString(dto);
+        return dto == null ? "" : QueryItemHelper.toJson(dto.getQuery());
     }
 
     /**

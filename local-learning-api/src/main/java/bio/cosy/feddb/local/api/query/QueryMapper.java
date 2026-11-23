@@ -1,7 +1,7 @@
 package bio.cosy.feddb.local.api.query;
 
-import bio.cosy.feddb.core.api.query.Lang2QueryDocuments;
-import bio.cosy.feddb.core.api.query.QueryItemDTO;
+import bio.cosy.feddb.core.api.query.item.QueryItemHelper;
+import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
 import bio.cosy.feddb.core.base.BaseMapper;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
 import bio.cosy.feddb.local.helper.QuarkusMappingConfig;
@@ -39,7 +39,7 @@ public interface QueryMapper extends BaseMapper<LocalQueryDTO, QueryEntity> {
 
     @AfterMapping
     default void readQueryDocument(QueryEntity entity, @MappingTarget LocalQueryDTO dto) {
-        dto.setQuery(Lang2QueryDocuments.parse(entity.getQueryString()));
+        dto.setQuery(QueryItemHelper.fromJson(entity.getQueryString()));
     }
 
     @Named("dtoToQueryString")
@@ -47,7 +47,7 @@ public interface QueryMapper extends BaseMapper<LocalQueryDTO, QueryEntity> {
         if (dto == null) {
             return "";
         }
-        return Lang2QueryDocuments.toQueryString(dto.getQuery());
+        return QueryItemHelper.toJson(dto.getQuery());
     }
 
 }
