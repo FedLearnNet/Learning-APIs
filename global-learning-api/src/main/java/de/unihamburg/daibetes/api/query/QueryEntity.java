@@ -36,14 +36,15 @@ public class QueryEntity extends BaseAuthEntity {
 
     private Integer result;
 
-    @Column(columnDefinition = "TEXT")
-    private String error;
-
     @Column(name = "has_result", columnDefinition = "boolean default false")
     private boolean hasResult;
 
     @Column(name = "has_fired", columnDefinition = "boolean default false")
     private boolean hasFired;
+
+    // clients connected at fire time; the result shows once all answered, at the latest at the deadline
+    @Column(name = "expected_answers")
+    private Integer expectedAnswers;
 
     @OneToMany(mappedBy = "query", cascade = {
             CascadeType.PERSIST,

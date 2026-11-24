@@ -94,7 +94,6 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
         QueryDTO dto = queryMapper.entityToDto(query);
         // Counts/results and ownership/membership information stay private until a disclosure policy is agreed.
         dto.setResult(null);
-        dto.setError(null);
         dto.setKeycloakId(null);
         dto.setProjectIds(Collections.emptySet());
         dto.setRoles(Collections.emptySet());

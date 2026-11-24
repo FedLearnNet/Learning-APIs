@@ -22,7 +22,6 @@ public class QueryAO implements PanacheRepository<QueryEntity> {
 
     private static final String COHORT_FILTER = " AND pm.cohort_id IN (:cohortIds)";
     private static final int MILLISECONDS_PER_SECOND = 1000;
-
     @ConfigProperty(name = "feddb.query.timeout-seconds", defaultValue = "120")
     int queryTimeoutSeconds;
 
@@ -56,6 +55,7 @@ public class QueryAO implements PanacheRepository<QueryEntity> {
         }
         return countPatients(patientMatchSql, true, cohortIds);
     }
+
 
     private List<QueryResultDTO> countPatients(
             final String patientMatchSql, final boolean restrictCohorts, final Collection<Long> cohortIds) {
