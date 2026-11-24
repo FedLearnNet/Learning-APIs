@@ -19,10 +19,12 @@ public class QueryClientResponseDTO {
     private String error;
     private SystemComputingInfoDTO system;
     private Set<ExecutionMode> supportedModes;
+    // the platform may show the client's Keycloak name, only for TRE
+    private Boolean shareName;
 
 
     public QueryClientResponseDTO(FedDBClientResponseType type, String globalUniqueQueryId, Long count, String error) {
-        this(type, globalUniqueQueryId, count, error, null, null);
+        this(type, globalUniqueQueryId, count, error, null, null, null);
     }
 
     public static QueryClientResponseDTO createErrorResponse(String errorMessage, String globalUniqueQueryId) {

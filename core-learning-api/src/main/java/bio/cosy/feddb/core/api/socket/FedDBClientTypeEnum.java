@@ -11,6 +11,7 @@ public enum FedDBClientTypeEnum {
     SYSTEM_INFO,
     RUN_METRICS,
     RELAY_CERT,
+    TRE_SOURCES,
     ERROR,
     NO_RESPONSE,
 }

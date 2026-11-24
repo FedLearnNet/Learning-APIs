@@ -11,17 +11,8 @@ public class CreateFLLearningRelayServerRequestDTO {
     public Integer maxNumClients;
     public RelayServerAppVersions appVersion;
 
-
-    public static CreateFLLearningRelayServerRequestDTO createForV1(Integer maxNumClients) {
-        return new CreateFLLearningRelayServerRequestDTO(maxNumClients, RelayServerAppVersions.v1);
-    }
-
-    public static CreateFLLearningRelayServerRequestDTO createForV2(Integer maxNumClients) {
+    public static CreateFLLearningRelayServerRequestDTO create(Integer maxNumClients) {
         return new CreateFLLearningRelayServerRequestDTO(maxNumClients, RelayServerAppVersions.v2);
-    }
-
-    public static CreateFLLearningRelayServerRequestDTO create(Integer maxNumClients, boolean isV1) {
-        return isV1 ? createForV1(maxNumClients) : createForV2(maxNumClients);
     }
 
 }

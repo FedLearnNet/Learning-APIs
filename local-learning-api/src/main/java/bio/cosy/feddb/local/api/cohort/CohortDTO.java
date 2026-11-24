@@ -42,4 +42,6 @@ public class CohortDTO extends BaseAuthDTO {
     private String globalSchemaId;
 
     private boolean deletionInProgress;
+
+    private ExternalDatabaseDTO externalDatabase;
 }

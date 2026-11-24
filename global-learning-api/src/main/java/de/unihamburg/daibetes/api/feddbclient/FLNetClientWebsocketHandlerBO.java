@@ -4,6 +4,8 @@ import bio.cosy.feddb.core.api.query.QueryClientResponseDTO;
 import bio.cosy.feddb.core.api.socket.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import bio.cosy.feddb.core.services.orch.dto.SystemComputingInfoDTO;
+import bio.cosy.feddb.core.api.tre.TreSourceDTO;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingBO;
@@ -27,6 +29,15 @@ public class FLNetClientWebsocketHandlerBO {
 
     public void removeSystem(String connectionId) {
         systems.remove(connectionId);
+        treSources.remove(connectionId);
+        queryResponseBO.removeClientName(connectionId);
+    }
+
+    // external databases of the connected clients
+    private final Map<String, List<TreSourceDTO>> treSources = new ConcurrentHashMap<>();
+
+    public List<TreSourceDTO> listTreSources() {
+        return treSources.values().stream().flatMap(List::stream).toList();
     }
 
     @Inject
@@ -65,6 +76,10 @@ public class FLNetClientWebsocketHandlerBO {
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.SYSTEM_INFO)) {
             systems.put(connectionId, objectMapper.convertValue(m.getMessage(), SystemComputingInfoDTO.class));
+        }
+
+        if (m.getMessageType().equals(FedDBClientTypeEnum.TRE_SOURCES)) {
+            treSources.put(connectionId, List.of(objectMapper.convertValue(m.getMessage(), TreSourceDTO[].class)));
         }
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.EXISTING_QUERY)) {

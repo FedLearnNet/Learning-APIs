@@ -42,7 +42,8 @@ public class FederatedLearningRequestCohortBO {
                                     String platformUserId,
                                     ExecutionMode mode,
                                     int certificationLevel,
-                                    boolean needsInternetAccess) {
+                                    boolean needsInternetAccess,
+                                    boolean needsHostAccess) {
         for (Long cohortId : cohortIds) {
             CohortEntity cohort = cohortAO.findByIdOptional(cohortId)
                     .orElseThrow(() -> new NotFoundException("Cohort not found with id: " + cohortId));
@@ -53,7 +54,8 @@ public class FederatedLearningRequestCohortBO {
             List<PermissionDTO> permissions = permissionBO.getActivePermissionsForCohort(platformUserId, cohortId);
             if (permissions.stream().noneMatch(p -> permissionBO.allowsTraining(p, mode))) {
                 decision.setStatus(FederatedLearningRequestCohortStatus.REJECTED);
-            } else if (permissionBO.grantsAutoTrainingAccess(permissions, mode, certificationLevel, needsInternetAccess)) {
+            } else if (permissionBO.grantsAutoTrainingAccess(permissions, mode, certificationLevel,
+                    needsInternetAccess, needsHostAccess)) {
                 decision.setStatus(FederatedLearningRequestCohortStatus.APPROVED);
             } else {
                 decision.setStatus(FederatedLearningRequestCohortStatus.PENDING);

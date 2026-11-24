@@ -59,8 +59,8 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
     }
 
     public boolean grantsAutoTrainingAccess(List<PermissionDTO> permissions, ExecutionMode mode, int certificationLevel,
-                                            boolean needsInternetAccess) {
-        if (permissions == null || needsInternetAccess) {
+                                            boolean needsInternetAccess, boolean needsHostAccess) {
+        if (permissions == null || needsInternetAccess || needsHostAccess) {
             return false;
         }
         return permissions.stream().filter(p -> allowsTraining(p, mode)).anyMatch(p -> grantsAutoTraining(
@@ -77,6 +77,11 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
         return permissions.stream()
                 .flatMap(p -> Stream.of(ExecutionMode.FEDERATED, ExecutionMode.TRE).filter(mode -> allowsTraining(p, mode)))
                 .collect(Collectors.toSet());
+    }
+
+    // Only a cohort open for TRE may name its client.
+    public boolean sharesName(List<PermissionDTO> permissions) {
+        return permissions.stream().anyMatch(p -> Boolean.TRUE.equals(p.getTreShareName()) && allowsTraining(p, ExecutionMode.TRE));
     }
 
     public List<PermissionDTO> getActivePermissionsForCohort(String userId, Long cohortId) {
@@ -170,6 +175,7 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
 
     public void setDefault(PermissionDTO permission, FLNetClientConfig.DefaultCohortPermission permissionConfig) {
         permission.setUserId(permissionConfig.globalUserId().orElse(null));
+        permission.setFederatedTrainingAccess(permissionConfig.federatedTrainingAccess());
         permission.setFederatedAutoTrainingAccess(permissionConfig.autoTrainingAccess());
         permission.setTreTrainingAccess(permissionConfig.treTrainingAccess());
         permission.setTreAutoTrainingAccess(permissionConfig.treAutoTrainingAccess());
@@ -182,6 +188,7 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
 
     public void setDefault(PermissionEntity permission, FLNetClientConfig.DefaultCohortPermission permissionConfig) {
         permission.setUserId(permissionConfig.globalUserId().orElse(null));
+        permission.setFederatedTrainingAccess(permissionConfig.federatedTrainingAccess());
         permission.setFederatedAutoTrainingAccess(permissionConfig.autoTrainingAccess());
         permission.setTreTrainingAccess(permissionConfig.treTrainingAccess());
         permission.setTreAutoTrainingAccess(permissionConfig.treAutoTrainingAccess());

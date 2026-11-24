@@ -1,4 +1,4 @@
-FROM gitlab.cosy.bio:5050/cosybio/federated-learning/federated_db/pyfedappwrap/base-python-dep:0.6.39
+FROM ghcr.io/fedlearnnet/python-tool-api/base-python-dep:0.7.16
 
 USER 0
 COPY requirements.txt .

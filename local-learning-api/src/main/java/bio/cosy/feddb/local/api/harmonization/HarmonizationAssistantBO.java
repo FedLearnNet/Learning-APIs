@@ -3,6 +3,7 @@ package bio.cosy.feddb.local.api.harmonization;
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.TransformerAgentStarter;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
+import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantStream;
 import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import bio.cosy.feddb.local.api.schema.schemanode.LocalSchemaNodeWithPathDTO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
@@ -37,14 +38,14 @@ public class HarmonizationAssistantBO {
     @Inject
     FLNetClientConfig config;
 
-    private final Map<Long, HarmonizationAssistantRun> runs = new ConcurrentHashMap<>();
+    private final Map<Long, TransformerAssistantStream> runs = new ConcurrentHashMap<>();
 
     public synchronized void start(HarmonizationDTO harmonization, Map<String, ColumnProfile> fileProfiles, String keycloakId) {
         if (isRunning(harmonization.getId())) {
             return;
         }
-        HarmonizationAssistantRun run = new HarmonizationAssistantRun();
-        Optional.ofNullable(runs.put(harmonization.getId(), run)).ifPresent(HarmonizationAssistantRun::close);
+        TransformerAssistantStream run = new TransformerAssistantStream();
+        Optional.ofNullable(runs.put(harmonization.getId(), run)).ifPresent(TransformerAssistantStream::close);
         agentStarter.start(SESSION_PREFIX + harmonization.getId(),
                 connectorMapper.toConnector(harmonization, config.connector().externalIdColumn()),
                 unmappedTargets(harmonization), fileProfiles, keycloakId, run::emit);
@@ -62,23 +63,23 @@ public class HarmonizationAssistantBO {
     }
 
     public boolean isRunning(Long id) {
-        HarmonizationAssistantRun run = runs.get(id);
+        TransformerAssistantStream run = runs.get(id);
         return run != null && run.isRunning();
     }
 
     public Multi<TransformerAssistantMessageDTO> events(Long id) {
-        return Optional.ofNullable(runs.get(id)).map(HarmonizationAssistantRun::events)
+        return Optional.ofNullable(runs.get(id)).map(TransformerAssistantStream::events)
                 .orElseThrow(() -> new NotFoundException("No assistant run of harmonization " + id));
     }
 
     public void message(Long id, TransformerAssistantMessageDTO message) {
         String sessionId = SESSION_PREFIX + id;
-        Optional<HarmonizationAssistantRun> run = Optional.ofNullable(runs.get(id));
+        Optional<TransformerAssistantStream> run = Optional.ofNullable(runs.get(id));
         switch (message.getType()) {
             case USER_MESSAGE -> agentStarter.message(sessionId, message);
             case STOP -> {
                 agentStarter.stop(sessionId);
-                run.ifPresent(HarmonizationAssistantRun::stop);
+                run.ifPresent(TransformerAssistantStream::stop);
             }
             case APPLY -> {
                 TransformerAssistantMessageDTO applied = new TransformerAssistantMessageDTO(APPLIED);
@@ -91,6 +92,6 @@ public class HarmonizationAssistantBO {
 
     @PreDestroy
     void closeAll() {
-        runs.values().forEach(HarmonizationAssistantRun::close);
+        runs.values().forEach(TransformerAssistantStream::close);
     }
 }

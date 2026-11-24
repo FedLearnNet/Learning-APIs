@@ -34,4 +34,8 @@ public class QueryResponseEntity extends BaseEntity {
     //TODO might be a problem, but cant come up with a better solution
     @Column(name = "connection_id")
     private String connectionId;
+
+    // Keycloak name of the client, only when it shares it for TRE
+    @Column(name = "client_name")
+    private String clientName;
 }

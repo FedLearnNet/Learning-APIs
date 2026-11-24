@@ -1,6 +1,7 @@
 package de.unihamburg.daibetes.api.project;
 
 import bio.cosy.feddb.core.api.project.PatientDataExportConfigDTO;
+import bio.cosy.feddb.core.api.tre.TreSourceDTO;
 import bio.cosy.feddb.core.base.BaseEntity;
 import de.unihamburg.daibetes.api.file.FileEntity;
 import de.unihamburg.daibetes.execution.experiment.ExecutionExperimentEntity;
@@ -42,6 +43,11 @@ public class ProjectEntity extends BaseEntity {
     @Column(name = "export_config", columnDefinition = "json")
     @JdbcTypeCode(SqlTypes.JSON)
     private PatientDataExportConfigDTO exportConfig;
+
+    // TRE on an external database a client offers, instead of the query's data
+    @Column(name = "tre_source", columnDefinition = "json")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private TreSourceDTO treSource;
 
     @Column(name = "coordinator_has_data", columnDefinition = "boolean default true")
     private Boolean coordinatorHasData;

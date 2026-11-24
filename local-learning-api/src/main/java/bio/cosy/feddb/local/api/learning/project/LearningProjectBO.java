@@ -8,15 +8,15 @@ import bio.cosy.feddb.core.execution.message.ExecutionMessageDTO;
 import bio.cosy.feddb.core.execution.message.RunMessageTypes;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
 import bio.cosy.feddb.local.api.cohort.patient.export.PatientDataExportBO;
-import bio.cosy.feddb.local.execution.message.ExecutionMessageAO;
-import bio.cosy.feddb.local.execution.run.ExecutionRunMapper;
-import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
 import bio.cosy.feddb.local.api.learning.request.LearningRequestEntity;
 import bio.cosy.feddb.local.api.query.QueryAO;
 import bio.cosy.feddb.local.api.search.SearchResultDTO;
 import bio.cosy.feddb.local.api.search.SearchResultType;
 import bio.cosy.feddb.local.api.search.SearchScoreUtil;
 import bio.cosy.feddb.local.api.workflow.WorkflowBO;
+import bio.cosy.feddb.local.execution.message.ExecutionMessageAO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunDTO;
+import bio.cosy.feddb.local.execution.run.ExecutionRunMapper;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -140,14 +140,17 @@ public class LearningProjectBO extends BaseBo<ProjectDetailDTO, LearningProjectE
     public LearningProjectEntity createForRequest(Long queryId, LearningRequestEntity request, ProjectDetailDTO projectVersion, WorkflowDTO workflow) {
         LearningProjectEntity entity = mapper.dtoToEntity(projectVersion);
         entity.setId(null);
-        entity.setQuery(queryAO.findById(queryId));
+        entity.setQuery(null);
+        if (queryId != null) {
+            entity.setQuery(queryAO.findById(queryId));
+        }
         entity.setRequest(request);
         entity.setWorkflow(workflowBO.createForProject(workflow));
         ao.persist(entity);
         return entity;
     }
 
-    public Path exportForLearning(Long projectId){
+    public Path exportForLearning(Long projectId) {
         LearningProjectEntity project = ao.findByIdOptional(projectId)
                 .orElseThrow(() -> new NotFoundException("Project with id " + projectId + " not found"));
         Long requestId = project.getRequest().getId();

@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.api.cohort;
 
 
+import bio.cosy.feddb.core.api.file.FileDTO;
 import bio.cosy.feddb.local.api.auth.UserIdentity;
 import bio.cosy.feddb.local.api.cohort.member.CohortAvailableUserDTO;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberCreateDTO;
@@ -15,6 +16,7 @@ import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
+import org.jboss.resteasy.reactive.multipart.FileUpload;
 
 import java.util.List;
 
@@ -29,6 +31,23 @@ public class CohortServiceImpl implements CohortService {
 
     @Inject
     CohortMemberBO cohortMemberBO;
+
+    @Inject
+    TreSourceBO treSourceBO;
+
+    @Override
+    public FileDTO uploadTestData(Long cohortId, FileUpload file) {
+        if (file == null) {
+            throw new BadRequestException("No file uploaded");
+        }
+        return treSourceBO.replaceTestDataFile(cohortId, file);
+    }
+
+    @Override
+    public Response deleteTestData(Long cohortId) {
+        treSourceBO.replaceTestDataFile(cohortId, null);
+        return Response.noContent().build();
+    }
 
     @Override
     @Transactional

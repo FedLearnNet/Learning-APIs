@@ -98,13 +98,17 @@ public class TransformerListTool {
     }
 
     private boolean resolveCodeTransformer(ConnectorTransformerDTO transformer, String patientIdColumn) {
+        Optional<CodeTransformerDTO> code = findCodeTransformer(transformer);
+        code.ifPresent(found -> configure(transformer, found, patientIdColumn));
+        return code.isPresent();
+    }
+
+    public Optional<CodeTransformerDTO> findCodeTransformer(ConnectorTransformerDTO transformer) {
         List<CodeTransformerDTO> ready = codeTransformers();
-        Optional<CodeTransformerDTO> code = ready.stream()
+        return ready.stream()
                 .filter(found -> Objects.equals(found.getImageName(), transformer.getAppImage()))
                 .findFirst()
                 .or(() -> ready.stream().filter(found -> Objects.equals(found.getName(), transformer.getMethodName())).findFirst());
-        code.ifPresent(found -> configure(transformer, found, patientIdColumn));
-        return code.isPresent();
     }
 
     public static void configure(ConnectorTransformerDTO transformer, CodeTransformerDTO code, String patientIdColumn) {

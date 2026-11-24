@@ -11,10 +11,12 @@ import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
@@ -51,6 +53,16 @@ public class CohortEntity extends BaseAuthEntity {
 
     @Column(name = "copyright_label")
     private String copyrightLabel;
+
+    // id the platform knows the external database by
+    @NotAudited
+    @Column(name = "tre_source_id", unique = true)
+    private String treSourceId;
+
+    @NotAudited
+    @Column(name = "external_database", columnDefinition = "json")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private ExternalDatabaseDTO externalDatabase;
 
     @OneToMany(mappedBy = "cohort", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<SchemaNodeEntity> schemaNodes;
