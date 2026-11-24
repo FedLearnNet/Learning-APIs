@@ -1,6 +1,7 @@
 package bio.cosy.feddb.core.execution.run.dto;
 
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -30,9 +31,23 @@ public class FederatedRunConfigDTO {
 
     // Flower-only (CommunicationEngine.FLOWER): the platform's own externally-reachable SuperLink
     // address, host:port - what a clinic's SuperNode connects to instead of joining the FL-Net
-    // relay. The platform currently runs its SuperLink in --insecure mode (see
-    // Flower_Integration_Plan.md's flagged TLS gap), so there is no CA cert to carry yet; the app
-    // (pyfedappwrap)'s FederatedRunConfigDTO already has superlinkRootCertificatesPath/
-    // supernodeAuthPrivateKeyPath fields ready for when that provisioning exists.
+    // relay. Also sent to the platform's OWN aggregator attempt (same field, reused as "my own
+    // address" rather than "the address to reach" - see FederatedTrainingFlowerAggregatorBO),
+    // since the SuperLink's TLS leaf cert needs it as a SAN entry.
     private String superlinkAddress;
+
+    // Flower-only: the platform's cached SuperLink CA certificate content (PEM text), if one has
+    // been generated and cached yet (see FederatedTrainingSetupBO#flowerClinicSlots) - what a
+    // clinic's SuperNode uses as --root-certificates. Null on the platform's very first Flower
+    // run ever; the app (pyfedappwrap) falls back to --insecure in that case, same as before this
+    // field existed. The app's own FederatedRunConfigDTO also keeps
+    // superlinkRootCertificatesPath/supernodeAuthPrivateKeyPath fields for a locally-provided
+    // path (SuperNode auth registration, separately scoped) rather than wire content.
+    private String caCertificate;
+
+    // Flower-only, the platform's OWN aggregator attempt only - never a clinic: the private key
+    // of caCertificate above, so the aggregator signs each run's SuperLink leaf cert with the same
+    // CA clinics were already given (see FederatedTrainingFlowerAggregatorBO#customizeStartup).
+    @ToString.Exclude
+    private String caPrivateKey;
 }

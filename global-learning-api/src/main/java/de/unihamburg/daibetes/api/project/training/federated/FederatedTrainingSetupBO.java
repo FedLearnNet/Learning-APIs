@@ -94,6 +94,9 @@ public class FederatedTrainingSetupBO {
     FederatedTrainingFlowerAggregatorBO flowerAggregatorBO;
 
     @Inject
+    FlowerPlatformCertificateAO flowerCertificateAO;
+
+    @Inject
     QueryResponseBO queryResponseBO;
 
     @Inject
@@ -280,15 +283,21 @@ public class FederatedTrainingSetupBO {
 
     // Every clinic gets the platform's SuperLink address instead of a relay slot; the aggregator
     // (always the platform for a Flower step, see FederatedTrainingFlowerAggregatorBO) needs none.
+    // The CA certificate is the one the platform has stored - null on its very first Flower run
+    // ever (nothing generated/reported yet), populated on every run after that. The run's own
+    // aggregator signs its SuperLink leaf with this same CA - see FlowerPlatformCertificateEntity.
     private Map<String, FederatedLearningRelayInfoDTO> flowerClinicSlots(ExecutionRunEntity run, ExecutionRunStepEntity step) {
         String superlinkAddress = config.federatedLearning().flower().superlinkAddress()
                 .orElseThrow(() -> new IllegalStateException(
                         "flnet.federated-learning.flower.superlink-address is not configured; step " + step.getId()
                                 + " uses a Flower tool and needs it to reach clinics"));
+        String caCertificate = flowerCertificateAO.findStored()
+                .map(FlowerPlatformCertificateEntity::getCaCertificate).orElse(null);
         Map<String, FederatedLearningRelayInfoDTO> clinics = new HashMap<>();
         run.getParticipants().forEach(participant -> {
             FederatedLearningRelayInfoDTO slot = new FederatedLearningRelayInfoDTO();
             slot.setSuperlinkAddress(superlinkAddress);
+            slot.setCaCertificate(caCertificate);
             clinics.put(participant.getParticipantId(), slot);
         });
         return clinics;

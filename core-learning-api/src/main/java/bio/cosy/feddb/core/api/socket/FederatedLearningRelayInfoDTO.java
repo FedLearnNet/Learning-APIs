@@ -27,6 +27,12 @@ public class FederatedLearningRelayInfoDTO {
     // (see LearningSetupBO#customizeStartup), since channel/id/key are all null for a Flower slot.
     private String superlinkAddress;
 
+    // Flower-only: the platform's cached SuperLink CA certificate (PEM text), if one has been
+    // generated and cached yet - see FederatedTrainingSetupBO#flowerClinicSlots. Null on the
+    // platform's very first Flower run ever (nothing cached yet, clinic falls back to
+    // --insecure, same as before this field existed); populated on every run after that.
+    private String caCertificate;
+
     /**
      * Null-safe accessor. The flag is a nullable Boolean (the mapper may leave it unset), so callers
      * must not unbox it directly. Overrides the Lombok getter and returns a primitive boolean,
@@ -49,6 +55,7 @@ public class FederatedLearningRelayInfoDTO {
         config.setOrderClientIds(orderClientIds != null ? new ArrayList<>(orderClientIds) : null);
         config.setAppVersion(appVersion != null ? appVersion.name() : null);
         config.setSuperlinkAddress(superlinkAddress);
+        config.setCaCertificate(caCertificate);
         return config;
     }
 }

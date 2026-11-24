@@ -17,8 +17,11 @@ import jakarta.inject.Inject;
 import de.unihamburg.daibetes.api.development.run.federated.HostedFederatedTestBO;
 import de.unihamburg.daibetes.api.development.run.federated.FederatedParticipantUpdateDTO;
 import de.unihamburg.daibetes.api.development.run.federated.FederatedRoundMessageCreateDTO;
+import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingFlowerAggregatorBO;
+import de.unihamburg.daibetes.api.project.training.federated.FlowerPlatformCertificateAO;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
+import io.quarkus.logging.Log;
 
 // type = AppConnectionTypesEnum; runId is the attempt the app runs: an analysis or a training on the platform.
 @WebSocket(path = "/execution/{mode}/{runId}/{type}")
@@ -33,6 +36,12 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
     ExecutionAttemptLifecycle lifecycle;
 
     @Inject HostedFederatedTestBO hostedTests;
+
+    @Inject
+    ExecutionAttemptAO attemptAO;
+
+    @Inject
+    FlowerPlatformCertificateAO flowerCertificateAO;
 
     @OnOpen
     @Blocking
@@ -102,5 +111,20 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
     @Override
     protected WebSocketConnection connection() {
         return connection;
+    }
+
+    /**
+     * Only the platform's own Flower aggregator attempt ever reports one; store it so later runs
+     * hand the certificate to their clinics and the certificate and key back to their aggregator.
+     */
+    @Override
+    protected void onFlowerCaReported(Long attemptId, String caCertificate, String caPrivateKey) {
+        ExecutionAttemptEntity attempt = attemptAO.findById(attemptId);
+        if (attempt == null || !FederatedTrainingFlowerAggregatorBO.isFlowerAggregator(attempt)) {
+            Log.warnf("Ignoring a reported Flower CA certificate from attempt %d, which is not a Flower aggregator", attemptId);
+            return;
+        }
+        flowerCertificateAO.storeTransactional(caCertificate, caPrivateKey);
+        Log.infof("Stored a new Flower platform CA reported by aggregator attempt %d", attemptId);
     }
 }

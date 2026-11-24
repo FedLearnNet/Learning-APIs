@@ -83,6 +83,9 @@ public abstract class BaseAttemptAppServer extends BaseAppServer {
                     update.setError(federated.getError());
                     updateRun(attemptId, update, runType);
                 }
+                if (federated.getCaCertificate() != null && federated.getCaPrivateKey() != null) {
+                    onFlowerCaReported(attemptId, federated.getCaCertificate(), federated.getCaPrivateKey());
+                }
             }
             case FINISH_FEDERATED_RUN -> {
                 FederatedRunLifecycleDTO federated = decode(m.getMessage(), FederatedRunLifecycleDTO.class);
@@ -134,5 +137,12 @@ public abstract class BaseAttemptAppServer extends BaseAppServer {
 
     protected Long attemptId(WebSocketConnection connection) {
         return Long.parseLong(connection.pathParam("runId"));
+    }
+
+    /**
+     * Flower aggregator attempts only; a no-op here since storing the reported CA is a platform
+     * (global-learning-api) concern - overridden there. Clinics never report one.
+     */
+    protected void onFlowerCaReported(Long attemptId, String caCertificate, String caPrivateKey) {
     }
 }

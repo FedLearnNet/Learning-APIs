@@ -2,10 +2,12 @@ package de.unihamburg.daibetes.api.project.training.federated;
 
 import bio.cosy.feddb.core.api.app.CommunicationEngine;
 import bio.cosy.feddb.core.execution.event.ExecutionEventPublisher;
+import bio.cosy.feddb.core.execution.run.dto.FederatedRunConfigDTO;
 import bio.cosy.feddb.core.execution.run.dto.FederatedRunEnricher;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
+import de.unihamburg.daibetes.config.FLNetConfig;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptAO;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
@@ -14,6 +16,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.util.LinkedHashMap;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -31,6 +34,12 @@ public class FederatedTrainingFlowerAggregatorBO {
 
     @Inject
     ExecutionEventPublisher events;
+
+    @Inject
+    FLNetConfig config;
+
+    @Inject
+    FlowerPlatformCertificateAO certificateAO;
 
     /** True for a workflow node built from a Flower-tagged tool. */
     public static boolean isFlowerNode(WorkflowNodeEntity node) {
@@ -70,11 +79,32 @@ public class FederatedTrainingFlowerAggregatorBO {
     }
 
     /**
-     * The platform holds no patient data, its aggregator only aggregates. It needs no SuperLink
-     * address of its own - it runs the SuperLink directly - so the config carries nothing.
+     * The platform holds no patient data, its aggregator only aggregates - it needs no SuperLink
+     * address to reach, since it runs the SuperLink directly. It still needs to know its OWN
+     * configured external address, though: the SuperLink's TLS leaf certificate must carry it as
+     * a SAN entry, or a clinic's SuperNode will fail hostname verification against the address it
+     * actually dials even with the right CA. Carried on the same {@code superlinkAddress} field a
+     * clinic's config uses, re-used here as "my own address" rather than "the address to reach".
+     * <p>
+     * It also gets the platform's stored CA, certificate and key, if there is one: it signs this
+     * run's SuperLink leaf certificate with it, so the SuperLink presents a certificate the run's
+     * clinics - given the same stored certificate - already trust. Without one it generates a new
+     * CA and reports it back (see ExecutionAttemptWebsocketService#onFlowerCaReported).
      */
     public void customizeStartup(ExecutionAttemptEntity attempt, StartRunDTO start) {
         start.setInputFilePaths(new LinkedHashMap<>());
-        FederatedRunEnricher.enrichWithFlower(start, true, null);
+        Optional<String> ownAddress = config.federatedLearning().flower().superlinkAddress();
+        Optional<FlowerPlatformCertificateEntity> storedCa = certificateAO.findStored();
+        if (ownAddress.isEmpty() && storedCa.isEmpty()) {
+            FederatedRunEnricher.enrichWithFlower(start, true, null);
+            return;
+        }
+        FederatedRunConfigDTO flowerConfig = new FederatedRunConfigDTO();
+        flowerConfig.setSuperlinkAddress(ownAddress.orElse(null));
+        storedCa.ifPresent(ca -> {
+            flowerConfig.setCaCertificate(ca.getCaCertificate());
+            flowerConfig.setCaPrivateKey(ca.getCaPrivateKey());
+        });
+        FederatedRunEnricher.enrichWithFlower(start, true, flowerConfig);
     }
 }
