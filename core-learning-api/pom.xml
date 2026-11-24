@@ -78,7 +78,7 @@
         <dependency>
             <groupId>io.quarkiverse.tika</groupId>
             <artifactId>quarkus-tika</artifactId>
-            <version>2.3.1</version>
+            <version>2.3.2</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-csv -->
         <dependency>
@@ -105,7 +105,7 @@
         <dependency>
             <groupId>org.apache.datasketches</groupId>
             <artifactId>datasketches-java</artifactId>
-            <version>9.0.0</version>
+            <version>9.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
