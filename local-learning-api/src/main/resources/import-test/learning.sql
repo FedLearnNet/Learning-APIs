@@ -5,7 +5,7 @@ INSERT INTO workflow_node (id, created_at, global_app_id, global_app_version_id,
                            updated_at, version, workflow_id, hyperparams, imagename, node_id, "position")
 VALUES (1, '2025-10-25 22:30:22.513', 6, 10, NULL, '2025-10-25 22:30:22.513', 0, 1,
         '{"binarization_method":"kmeans","p_value":0.05,"clustering_method":"WGCNA","deep_split":2,"dynamic_tree_cut":0.5,"ceiling":3,"bidirectional":"true","seed":42,"similarity_cutoff_mode":"automatic"}',
-        'gitlab.cosy.bio:5050/cosybio/posymed/apps/posymed-unpast/model:latest', '9ec73a8d-e545-4881-a705-81a10f2a86ac',
+        'unpast:1178532691186bb85d9593239376f9efd40afeb8', '9ec73a8d-e545-4881-a705-81a10f2a86ac',
         '{"x":550,"y":200}');
 
 

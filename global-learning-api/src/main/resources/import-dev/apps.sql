@@ -13,7 +13,7 @@ VALUES (1, NOW(), NOW(), 0, 'Tag1', false),
 INSERT INTO federated_apps (id, created_at, updated_at, version, name, slug, type, source_url, icon,
                             supports_federated_learning, unique_app_id)
 VALUES (1, NOW(), NOW(), 0, 'US-diabetes-130', 'us-d-130', 'EXTRACTOR',
-        'https://gitlab.cosy.bio/cosybio/federated-learning/federated_db/apps/import-diabetes-130-us-hospitals-for-years-1999-2008',
+        'https://github.com/FedLearnNet/tool-import-diabetes-130-us-hospitals-for-years-1999-2008',
         NULL, false, 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d'),
        (2, NOW(), NOW(), 0, 'FC-RF', 'fc-rf', 'ANALYSIS', 'https://github.com/FeatureCloud/fc-fed-random-forest',
         NULL, true, 'b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e'),
