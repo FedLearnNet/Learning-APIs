@@ -41,9 +41,6 @@ public class FederatedAppEntity extends BaseEntity {
 
     private String icon;
 
-    @Column(name = "old_fc_version", nullable = true)
-    private Boolean oldFCVersion;
-
     @ManyToMany
     @JoinTable(
             name = "federated_apps_tags",
