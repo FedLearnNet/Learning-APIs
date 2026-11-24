@@ -110,7 +110,7 @@ public class HostedFederatedTestBO {
                 .filter(attempt -> roleOf(attempt) == FederatedParticipantType.CLIENT)
                 .toList();
         CreateFLLearningRelayServerResponseDTO created = globalRelayService.setupFL(
-                CreateFLLearningRelayServerRequestDTO.createForV2(clients.size()));
+                CreateFLLearningRelayServerRequestDTO.create(clients.size()));
         // Channel first, so failure cleanup can still stop it.
         federation.getConfig().setChannel(created.getChannel());
         List<String> clientIds = List.copyOf(created.getClientIds());

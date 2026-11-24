@@ -19,6 +19,7 @@ import bio.cosy.feddb.local.api.importer.run.preview.ConnectorPreviewRunnerBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerStatics;
+import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerDTO;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationBO;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO;
 import bio.cosy.feddb.local.api.importer.validation.PreviewValidationBO;
@@ -204,6 +205,67 @@ class TransformerValidateToolTest {
     }
 
     @Test
+    void flagsCodesOfAboutTheSameCountThatBecomeDifferentValues() {
+        List<String> insulin = new ArrayList<>();
+        insulin.addAll(Collections.nCopies(348, "0"));
+        insulin.addAll(Collections.nCopies(98, "1"));
+        insulin.addAll(Collections.nCopies(249, "2"));
+        insulin.addAll(Collections.nCopies(88, "3"));
+        init("insulin_rx", List.of("0", "2"), DataTypes.CATEGORICAL, List.of("No", "Down", "Steady", "Up"));
+        withFileProfiles("insulin_rx", insulin);
+        ConnectorSelectedTransformer swapped = ConnectorSelectedTransformer.mapping("insulin_rx", List.of(
+                replaceIn("insulin_rx", "0", "No"), replaceIn("insulin_rx", "1", "Up"),
+                replaceIn("insulin_rx", "2", "Steady"), replaceIn("insulin_rx", "3", "Down")));
+
+        String guessed = tool.flagGuessedCodes(swapped);
+
+        assertEquals("'1' x98 -> 'Up' and '3' x88 -> 'Down'", guessed);
+        assertTrue(context.steps().getLast().startsWith("codes told apart only by their shares"), context.steps().getLast());
+    }
+
+    @Test
+    void labelsAndRareCodesAreNoGuess() {
+        init("insulin_de", List.of("Nein"), DataTypes.CATEGORICAL, List.of("No", "Up"));
+        List<String> labels = new ArrayList<>(Collections.nCopies(20, "Nein"));
+        labels.addAll(Collections.nCopies(18, "Erhoeht"));
+        withFileProfiles("insulin_de", labels);
+        assertEquals("", tool.flagGuessedCodes(ConnectorSelectedTransformer.mapping("insulin_de", List.of(
+                replaceIn("insulin_de", "Nein", "No"), replaceIn("insulin_de", "Erhoeht", "Up")))));
+
+        init("repaglinide_rx", List.of("0"), DataTypes.CATEGORICAL, List.of("No", "Down", "Up"));
+        withFileProfiles("repaglinide_rx", List.of("0", "0", "0", "1", "3", "3"));
+        assertEquals("", tool.flagGuessedCodes(ConnectorSelectedTransformer.mapping("repaglinide_rx", List.of(
+                replaceIn("repaglinide_rx", "0", "No"), replaceIn("repaglinide_rx", "1", "Up"), replaceIn("repaglinide_rx", "3", "Down")))));
+    }
+
+    @Test
+    void rejectsSavedCodeCheckedOnOtherLabels() {
+        init("Rx_glipizide", List.of("-", "="), DataTypes.STRING, null);
+        withFileProfiles("Rx_glipizide", List.of("-", "=", "+", "x"));
+        ConnectorTransformerDTO code = savedCode(Map.of("insulin", List.of("Nein", "Stabil", "Erhoeht", "Reduziert")));
+
+        ConnectorValidationResultDTO result = tool.validate(ConnectorSelectedTransformer.mapping("Rx_glipizide", List.of(code)));
+
+        assertFalse(result.isValid());
+        assertTrue(result.getMessage().startsWith("The custom code transformer 'German dosage mapper' was checked on")
+                && result.getMessage().contains("'nein'") && result.getMessage().contains("'='"), result.getMessage());
+        verify(previewRunnerBO, never()).run(any(), any());
+    }
+
+    @Test
+    void reusesSavedCodeCheckedOnTheSameLabels() {
+        init("insulin_de", List.of("Nein", "Stabil"), DataTypes.STRING, null);
+        withFileProfiles("insulin_de", List.of("nein ", "Stabil", "Erhoeht"));
+        ConnectorTransformerDTO code = savedCode(Map.of("insulin", List.of("Nein", "Stabil", "Erhoeht", "Reduziert")));
+        code.setInputMapping(new LinkedHashMap<>(Map.of("value", "insulin_de")));
+        code.setReturnMapping(new LinkedHashMap<>(Map.of("value", "insulin_de")));
+
+        ConnectorValidationResultDTO result = tool.validate(ConnectorSelectedTransformer.mapping("insulin_de", List.of(code)));
+
+        assertTrue(result.isValid(), result.getMessage());
+    }
+
+    @Test
     void rejectsAFunctionThatDoesNotExist() {
         init("payer_code", List.of("MC"), DataTypes.STRING, null);
         ConnectorTransformerDTO invented = replace("?", "null");
@@ -331,6 +393,34 @@ class TransformerValidateToolTest {
 
     @Test
     void judgesAChainOverSeveralColumnsOnThePreviewRows() {
+        initAge();
+        Map<String, Object> inputs = new LinkedHashMap<>();
+        inputs.put("first", "age_low");
+        inputs.put("second", "age_high");
+
+        ConnectorValidationResultDTO result = tool.validate(ConnectorSelectedTransformer.mapping("age",
+                List.of(function(ROW_FUNCTION, inputs, Map.of("value", "age")))));
+
+        assertTrue(result.isValid(), result.getMessage());
+    }
+
+    @Test
+    void rejectsAChainOverSeveralColumnsThatEmptiesThePreview() {
+        initAge();
+        // A fixed text as first input, like a merge that reads no column into its value
+        Map<String, Object> inputs = new LinkedHashMap<>();
+        inputs.put("parts", "[VALUE][\"merged\"]");
+        inputs.put("first", "age_low");
+        inputs.put("second", "age_high");
+
+        ConnectorValidationResultDTO result = tool.validate(ConnectorSelectedTransformer.mapping("age",
+                List.of(function(ROW_FUNCTION, inputs, Map.of("value", "age")))));
+
+        assertFalse(result.isValid());
+        assertTrue(result.getMessage().startsWith("Every value of 'age' is empty"), result.getMessage());
+    }
+
+    private void initAge() {
         init("age", List.of(), DataTypes.CATEGORICAL, List.of("[70"));
         previewRows = List.of(Map.of("age_low", "[70", "age_high", "80)"));
         Map<String, ColumnProfile> profiles = new HashMap<>();
@@ -343,14 +433,6 @@ class TransformerValidateToolTest {
         // A value row of '[60' keeps the '80)' of the first row, a combination no row of the file holds
         tool.init(context, node, dataType, List.of("age_low", "age_high"), TransformerHelper.valueRows(
                 new TableSample(List.of("age_low", "age_high"), previewRows, null), List.of("age_low", "age_high"), profiles, null));
-        Map<String, Object> inputs = new LinkedHashMap<>();
-        inputs.put("first", "age_low");
-        inputs.put("second", "age_high");
-
-        ConnectorValidationResultDTO result = tool.validate(ConnectorSelectedTransformer.mapping("age",
-                List.of(function(ROW_FUNCTION, inputs, Map.of("value", "age")))));
-
-        assertTrue(result.isValid(), result.getMessage());
     }
 
     @Test
@@ -366,6 +448,21 @@ class TransformerValidateToolTest {
         String losses = tool.losses(ConnectorSelectedTransformer.mapping("diag_3", List.of(cut, replaceIn("diag_3", "Not measured", "null"))));
         assertTrue(losses.startsWith("1 of the 4 values") && losses.contains("'Not measured'") && losses.contains("become one"), losses);
         assertEquals("", tool.losses(ConnectorSelectedTransformer.mapping("diag_3", List.of())));
+    }
+
+    private ConnectorTransformerDTO savedCode(Map<String, List<Object>> checkedValues) {
+        ConnectorTransformerDTO transformer = new ConnectorTransformerDTO();
+        transformer.setModuleName(ConnectorTransformerStatics.CODE_MODULE);
+        transformer.setMethodName("German dosage mapper");
+        transformer.setAppImage("code/german-dosage-mapper");
+        transformer.setColumn(node.getName());
+        transformer.setHyperparams(new LinkedHashMap<>());
+        CodeTransformerDTO code = new CodeTransformerDTO();
+        code.setName("German dosage mapper");
+        code.setData(checkedValues);
+        lenient().when(listTool.resolveAppTransformer(eq(transformer), any())).thenReturn(true);
+        lenient().when(listTool.findCodeTransformer(transformer)).thenReturn(Optional.of(code));
+        return transformer;
     }
 
     private void initMedications() {

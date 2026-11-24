@@ -1,10 +1,10 @@
 package de.unihamburg.daibetes.api.project.training.federated;
 
-import bio.cosy.feddb.core.api.tre.ExternalDatabaseAccess;
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.project.ProjectStatus;
 import bio.cosy.feddb.core.api.socket.FederatedLearningRelayInfoDTO;
 import bio.cosy.feddb.core.api.socket.ProjectFederatedExperimentForLocalDTO;
+import bio.cosy.feddb.core.api.tre.ExternalDatabaseAccess;
 import bio.cosy.feddb.core.api.tre.TreSourceDTO;
 import bio.cosy.feddb.core.api.workflow.WorkflowDTO;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
@@ -103,7 +103,9 @@ public class FederatedTrainingSetupBO {
     @ConfigProperty(name = "quarkus.rest-client.relay-api.url", defaultValue = "Default Relay Server")
     String relayServerAddress;
 
-    /** A training on a copy of the project's workflow; the clinics are asked to accept it. */
+    /**
+     * A training on a copy of the project's workflow; the clinics are asked to accept it.
+     */
     public ExecutionRunEntity create(Long projectId, ExecutionMode mode, CreateProjectExperimentDTO create, String keycloakId, Set<String> roles) {
         String connectionId = null;
         if (mode == ExecutionMode.TRE) {
@@ -198,7 +200,9 @@ public class FederatedTrainingSetupBO {
         return true;
     }
 
-    /** Starts a training enough clinics accepted; the platform or one of them, chosen at random, coordinates it. */
+    /**
+     * Starts a training enough clinics accepted; the platform or one of them, chosen at random, coordinates it.
+     */
     public void start(ExecutionExperimentEntity experiment, ExecutionRunEntity run) {
         if (experiment.getStatus() != ProjectStatus.READY) {
             throw new NotAllowedException("Experiment is not ready");
@@ -222,7 +226,9 @@ public class FederatedTrainingSetupBO {
         broadcastBO.sendAfterCommit("Start of training " + run.getId(), () -> broadcastBO.startLearning(globalUniqueId, coordinatorId, modelCanBePublic));
     }
 
-    /** All clinics are ready for the step: its relay run is set up and the clinics start it; false when the relay failed. */
+    /**
+     * All clinics are ready for the step: its relay run is set up and the clinics start it; false when the relay failed.
+     */
     public boolean startStep(ExecutionExperimentEntity experiment, ExecutionRunEntity run, ExecutionRunStepEntity step) {
         RelaySetup relay;
         try {
@@ -247,7 +253,9 @@ public class FederatedTrainingSetupBO {
         return true;
     }
 
-    /** The clinics set up the next step and report once they are ready for it. */
+    /**
+     * The clinics set up the next step and report once they are ready for it.
+     */
     public void prepareStep(ExecutionExperimentEntity experiment, ExecutionRunEntity run, ExecutionRunStepEntity next) {
         next.setStatus(RunStatusTypes.INITIALIZED);
         WorkflowNodeEntity node = next.getWorkflowNode();
@@ -318,7 +326,8 @@ public class FederatedTrainingSetupBO {
     }
 
     // Relay slot per clinic, and the coordinator slot for the platform's aggregator if it coordinates.
-    private record RelaySetup(Map<String, FederatedLearningRelayInfoDTO> clinics, FederatedLearningRelayInfoDTO platform) {
+    private record RelaySetup(Map<String, FederatedLearningRelayInfoDTO> clinics,
+                              FederatedLearningRelayInfoDTO platform) {
     }
 
     // The relay run of the step if its app learns across clinics.
@@ -331,34 +340,24 @@ public class FederatedTrainingSetupBO {
             Log.infof("App version %d of step %d needs no relay run", appVersion.getId(), step.getId());
             return new RelaySetup(withoutRelay(run), null);
         }
-        boolean v1 = Boolean.TRUE.equals(appVersion.getFederatedApp().getOldFCVersion());
-        RelayServerAppVersions version = v1 ? RelayServerAppVersions.v1 : RelayServerAppVersions.v2;
+        RelayServerAppVersions version = RelayServerAppVersions.v2;
         List<ExecutionParticipantEntity> participants = run.getParticipants();
         boolean platform = experiment.isPlatformIsCoordinator();
         long coordinators = participants.stream().filter(ExecutionParticipantEntity::isCoordinator).count();
         // v2 has an aggregator slot of its own for the coordinator, v1 lets the first client coordinate; a platform
         // coordinating v1 needs that first client on top of the clinics.
-        int clients = v1 ? participants.size() + (platform ? 1 : 0) : Math.max(1, participants.size() - (int) coordinators);
-        CreateFLLearningRelayServerResponseDTO response = globalRelayService.setupFL(CreateFLLearningRelayServerRequestDTO.create(clients, v1));
+        int clients = Math.max(1, participants.size() - (int) coordinators);
+        CreateFLLearningRelayServerResponseDTO response = globalRelayService.setupFL(CreateFLLearningRelayServerRequestDTO.create(clients));
 
         Deque<FederatedLearningRelayInfoDTO> clientSlots = new ArrayDeque<>();
         FederatedLearningRelayInfoDTO coordinatorSlot = null;
         for (String clientId : response.getClientIds()) {
             FederatedLearningRelayInfoDTO slot = response.relayInfoFor(version, clientId, response.getClientId2ClientKey().get(clientId));
-            if (v1 && coordinatorSlot == null) {
-                slot.setCoordinator(true);
-                coordinatorSlot = slot;
-            } else {
-                clientSlots.add(slot);
-            }
+            clientSlots.add(slot);
         }
-        if (!v1) {
-            coordinatorSlot = response.relayInfoFor(version, response.getCoordinatorId(), response.getCoordinatorKey());
-            coordinatorSlot.setCoordinator(true);
-        }
-        if (platform && coordinatorSlot == null) {
-            throw new IllegalStateException("Relay server returned no coordinator slot for the aggregator of step " + step.getId());
-        }
+
+        coordinatorSlot = response.relayInfoFor(version, response.getCoordinatorId(), response.getCoordinatorKey());
+        coordinatorSlot.setCoordinator(true);
 
         Map<String, FederatedLearningRelayInfoDTO> relays = new HashMap<>();
         for (ExecutionParticipantEntity participant : participants) {
@@ -373,8 +372,8 @@ public class FederatedTrainingSetupBO {
         federation.setRelayClientIds(relays.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getId())));
         federation.setRelayStopped(false);
-        Log.infof("Relay run of step %d: %d clinics, %d client slots (v1=%b, platform coordinates=%b)",
-                step.getId(), participants.size(), clients, v1, platform);
+        Log.infof("Relay run of step %d: %d clinics, %d client slots (platform coordinates=%b)",
+                step.getId(), participants.size(), clients, platform);
         return new RelaySetup(relays, platform ? coordinatorSlot : null);
     }
 }
