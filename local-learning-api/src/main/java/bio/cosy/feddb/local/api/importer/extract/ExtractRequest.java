@@ -17,6 +17,7 @@ public class ExtractRequest {
     private Map<String, UploadInfoDTO> uploadInfo;
     private Integer limit;
     private boolean preview;
+    private boolean filledRowsFirst;
 
     /**
      * Connector run this extraction belongs to, when it is part of an import run.

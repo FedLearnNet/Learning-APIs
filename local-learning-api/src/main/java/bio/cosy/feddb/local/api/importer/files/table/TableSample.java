@@ -1,7 +1,7 @@
 package bio.cosy.feddb.local.api.importer.files.table;
 
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
-import bio.cosy.feddb.local.api.importer.run.preview.PreviewCells;
+import bio.cosy.feddb.core.api.file.analytics.RowProfiler;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -93,12 +93,11 @@ public class TableSample {
     }
 
     /**
-     * The first {@code headRows} rows, followed by "filler" rows from further down: for every column
-     * that is still empty in the rows taken so far, the first later row that has a value in it (one
-     * row can fill several columns). At most {@code maxFillers} fillers are added. The rows stay in
-     * file order, so asking for the first {@code headRows} or fewer rows never returns a filler.
+     * The first {@code headRows} rows, plus for each column still empty in them the first later row
+     * with a value (at most {@code maxFillers} rows, searching at most {@code maxScanRows} rows).
      */
-    public static TableSample withFillers(TableData tableData, int headRows, int maxFillers) {
+    public static TableSample withFillers(final TableData tableData, final int headRows,
+                                          final int maxFillers, final int maxScanRows) {
         if (tableData == null) {
             return null;
         }
@@ -106,24 +105,32 @@ public class TableSample {
         Set<String> empty = new LinkedHashSet<>(columns);
         List<Map<String, Object>> sampledRows = new ArrayList<>();
         int fillers = 0;
+        int scanned = 0;
         try (var rows = tableData.streamRows()) {
             Iterator<Map<String, Object>> iterator = rows.iterator();
             while (iterator.hasNext()) {
                 Map<String, Object> row = iterator.next();
-                if (sampledRows.size() < Math.max(0, headRows)) {
+                if (sampledRows.size() < headRows) {
                     sampledRows.add(row);
-                    empty.removeIf(column -> PreviewCells.hasValue(row, column));
-                    continue;
-                }
-                if (empty.isEmpty() || fillers >= maxFillers) {
+                    empty.removeIf(column -> hasValue(row, column));
+                } else if (empty.isEmpty() || fillers >= maxFillers || scanned++ >= maxScanRows) {
                     break;
-                }
-                if (empty.removeIf(column -> PreviewCells.hasValue(row, column))) {
+                } else if (empty.removeIf(column -> hasValue(row, column))) {
                     sampledRows.add(row);
                     fillers++;
                 }
             }
         }
         return new TableSample(columns, sampledRows, tableData.getColumnProfiles());
+    }
+
+    /** Whether a row has a value in a column; blank, NA, null, ... and {@code ?} count as empty. */
+    public static boolean hasValue(final Map<String, Object> row, final String column) {
+        Object value = row == null ? null : row.get(column);
+        if (value == null) {
+            return false;
+        }
+        String text = String.valueOf(value);
+        return !RowProfiler.isMissing(text) && !"?".equals(text.trim());
     }
 }

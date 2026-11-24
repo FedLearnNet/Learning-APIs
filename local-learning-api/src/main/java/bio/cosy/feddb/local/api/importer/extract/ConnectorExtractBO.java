@@ -17,7 +17,6 @@ import bio.cosy.feddb.local.api.importer.files.read.TableReadSpec;
 import bio.cosy.feddb.local.api.importer.files.read.TabularFileReaderBO;
 import bio.cosy.feddb.local.api.importer.files.table.SheetMergePlan;
 import bio.cosy.feddb.local.api.importer.files.table.TableData;
-import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadSettingsDTO;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
 import bio.cosy.feddb.local.api.importer.run.ConnectorAppOutputDTO;
 import bio.cosy.feddb.local.api.importer.run.ConnectorAppRunBO;
@@ -38,6 +37,7 @@ import jakarta.ws.rs.NotFoundException;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.IntStream;
 
 import static bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerBO.APP_OUTPUT_TIMEOUT;
 
@@ -128,6 +128,22 @@ public class ConnectorExtractBO {
     ) {
         return load(new ExtractRequest(
                 config, cohortId, mergeConfig, pivotConfig, uploadInfo, maxRows, true));
+    }
+
+    /** Like the above; with {@code filledRowsFirst} the stored sample's rows with data come first. */
+    public TableData loadPreviewData(
+            ConnectorInputConfigDTO config,
+            Long cohortId,
+            int maxRows,
+            SheetMergeResultDTO mergeConfig,
+            PivotConfigDTO pivotConfig,
+            Map<String, UploadInfoDTO> uploadInfo,
+            boolean filledRowsFirst
+    ) {
+        ExtractRequest request = new ExtractRequest(
+                config, cohortId, mergeConfig, pivotConfig, uploadInfo, maxRows, true);
+        request.setFilledRowsFirst(filledRowsFirst);
+        return load(request);
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
@@ -338,16 +354,8 @@ public class ConnectorExtractBO {
                         "Stored preview data is unavailable; upload or re-analyze the file first"
                 );
             }
-            if (storedPreviewTooShort(sourceTables, request.getLimit())) {
-                // Uploaded before samples grew past ten rows: read the first rows from the file instead.
-                ResolvedFileInput input = self.get().loadFileTransactional(fileSettings, request.getCohortId());
-                return fileHandlerBO.getFirstTableData(
-                        input.file(),
-                        TableReadSpec.of(input.parsingSettings(), request.getLimit(), true),
-                        request.getMergeConfig(),
-                        request.getPivotConfig(),
-                        request.getUploadInfo()
-                );
+            if (request.isFilledRowsFirst()) {
+                sourceTables = filledRowsFirst(sourceTables);
             }
             if (request.getUploadInfo() == null || request.getUploadInfo().isEmpty()) {
                 return fileHandlerBO.getFirstPreviewTableData(
@@ -379,17 +387,27 @@ public class ConnectorExtractBO {
     }
 
 
-    /**
-     * Whether a stored sample is the ten-row sample of a file uploaded before the preview could show
-     * more rows, while the request asks for more than that.
-     */
-    static boolean storedPreviewTooShort(Map<String, TableSample> sourceTables, Integer limit) {
-        if (limit == null || limit <= ConnectorFileUploadSettingsDTO.DEFAULT_PREVIEW_ROWS
-                || sourceTables == null || sourceTables.isEmpty()) {
-            return false;
-        }
-        TableSample first = sourceTables.values().iterator().next();
-        return first != null && first.getRows().size() == ConnectorFileUploadSettingsDTO.DEFAULT_PREVIEW_ROWS;
+    /** Rows with the most values first; a value counts more the fewer rows have one in its column. */
+    static Map<String, TableSample> filledRowsFirst(final Map<String, TableSample> tables) {
+        Map<String, TableSample> ranked = new LinkedHashMap<>();
+        tables.forEach((name, sample) -> {
+            if (sample == null) {
+                ranked.put(name, null);
+                return;
+            }
+            List<Map<String, Object>> rows = sample.getRows();
+            Map<String, Long> valuesPerColumn = new HashMap<>();
+            sample.getColumns().forEach(column -> valuesPerColumn.put(column,
+                    rows.stream().filter(row -> TableSample.hasValue(row, column)).count()));
+            double[] score = rows.stream().mapToDouble(row -> sample.getColumns().stream()
+                    .filter(column -> TableSample.hasValue(row, column))
+                    .mapToDouble(column -> 1.0 / valuesPerColumn.get(column)).sum()).toArray();
+            List<Map<String, Object>> ordered = IntStream.range(0, rows.size()).boxed()
+                    .sorted(Comparator.<Integer>comparingDouble(i -> score[i]).reversed())
+                    .map(rows::get).toList();
+            ranked.put(name, new TableSample(sample.getColumns(), ordered, sample.getColumnProfiles()));
+        });
+        return ranked;
     }
 
     public TableData loadFromApp(AppBasedUploadSettingsDTO appSettings,

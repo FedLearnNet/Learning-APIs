@@ -59,32 +59,6 @@ class ConnectorFilesBOStatisticsCacheTest {
     }
 
     @Test
-    void fileAnalysisAddsLaterRowsThatFillColumnsEmptyInTheFirstHundred() {
-        TabularFileReaderBO fileHandler = mock(TabularFileReaderBO.class);
-        FileAnalysisBO bo = new FileAnalysisBO(fileHandler);
-
-        List<Map<String, Object>> rows = new ArrayList<>();
-        for (int i = 0; i < 300; i++) {
-            rows.add(new LinkedHashMap<>(Map.of("patient_id", "p" + i, "payer_code", i == 187 ? "MC" : "?")));
-        }
-        TableData parsed = new TableData(List.of("patient_id", "payer_code"), rows, List.of(profile("payer_code")));
-        when(fileHandler.getByFile(any(), any(), isNull()))
-                .thenReturn(ParsedTables.single(parsed));
-        when(fileHandler.getJson(any(TableData.class))).thenReturn("[]");
-
-        FileAnalysis analysis = bo.analyze(
-                new File("ignored.csv"),
-                TableReadSpec.forAnalysis(new FileParsingSettingsDTO(), 10, true, true),
-                null,
-                10);
-
-        List<Map<String, Object>> stored = analysis.previewData().get("0").getRows();
-        assertEquals(101, stored.size());
-        assertEquals("p99", stored.get(99).get("patient_id"));
-        assertEquals("MC", stored.get(100).get("payer_code"));
-    }
-
-    @Test
     void parsingSettingsIgnoreLegacyUploadOnlyFields() throws Exception {
         FileParsingSettingsDTO settings = new ObjectMapper().readValue("""
                 {

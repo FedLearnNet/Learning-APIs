@@ -24,19 +24,9 @@ public class ConnectorConfigDTO {
     private SheetMergeResultDTO mergeConfig;
     private PivotConfigDTO pivotConfig;
 
-    /**
-     * How many rows the wizard preview shows. Display-only: never stored with the connector.
-     * {@code null} means {@link ConnectorFileUploadSettingsDTO#DEFAULT_PREVIEW_ROWS}.
-     */
+    /** Rows the wizard preview shows (display only, never stored); {@code null} means 10. */
     private Integer previewRows;
 
-    /**
-     * Whether the preview should pick the rows that fill the most columns instead of the first ones.
-     * Display-only; {@code null} means {@code false}.
-     */
-    private Boolean previewNonEmpty;
-
-    /** The connector configuration itself; the preview settings stay at their defaults. */
     public ConnectorConfigDTO(Long connectorId,
                               Long cohortId,
                               ConnectorInputConfigDTO inputConfig,
@@ -55,7 +45,6 @@ public class ConnectorConfigDTO {
         this.pivotConfig = pivotConfig;
     }
 
-    /** The requested preview row count, clamped to 1..{@link ConnectorFileUploadSettingsDTO#MAX_PREVIEW_ROWS}. */
     public int previewRowsOrDefault() {
         if (previewRows == null) {
             return ConnectorFileUploadSettingsDTO.DEFAULT_PREVIEW_ROWS;
@@ -63,7 +52,4 @@ public class ConnectorConfigDTO {
         return Math.max(1, Math.min(ConnectorFileUploadSettingsDTO.MAX_PREVIEW_ROWS, previewRows));
     }
 
-    public boolean previewNonEmptyOrDefault() {
-        return Boolean.TRUE.equals(previewNonEmpty);
-    }
 }

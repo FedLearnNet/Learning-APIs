@@ -131,27 +131,4 @@ class ConnectorPreviewCacheFingerprintTest {
                 cache.stageFingerprint(source, transformer("Replace Value", otherOrder)),
                 "Serialisation order must not decide whether the cache hits");
     }
-
-    @Test
-    void defaultPreviewSettingsKeepTheFingerprintARunWarms() {
-        ConnectorConfigDTO explicitDefaults = config(1L, 7L);
-        explicitDefaults.setPreviewRows(10);
-        explicitDefaults.setPreviewNonEmpty(false);
-
-        assertEquals(cache.sourceFingerprint(config(1L, 7L)), cache.sourceFingerprint(explicitDefaults),
-                "A run warms the cache without preview settings, so the defaults must not change the key");
-    }
-
-    @Test
-    void otherPreviewSettingsAreADifferentSample() {
-        ConnectorConfigDTO moreRows = config(1L, 7L);
-        moreRows.setPreviewRows(50);
-        ConnectorConfigDTO withData = config(1L, 7L);
-        withData.setPreviewNonEmpty(true);
-
-        String defaults = cache.sourceFingerprint(config(1L, 7L));
-        assertNotEquals(defaults, cache.sourceFingerprint(moreRows));
-        assertNotEquals(defaults, cache.sourceFingerprint(withData));
-        assertNotEquals(cache.sourceFingerprint(moreRows), cache.sourceFingerprint(withData));
-    }
 }

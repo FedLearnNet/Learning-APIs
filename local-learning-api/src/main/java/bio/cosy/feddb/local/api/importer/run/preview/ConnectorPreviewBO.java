@@ -3,7 +3,6 @@ package bio.cosy.feddb.local.api.importer.run.preview;
 import bio.cosy.feddb.local.api.importer.files.table.ColumnNames;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
 import bio.cosy.feddb.local.api.importer.extract.ConnectorExtractBO;
-import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadSettingsDTO;
 import bio.cosy.feddb.local.api.importer.files.read.TabularFileReaderBO;
 import bio.cosy.feddb.local.api.importer.files.table.TableData;
 import bio.cosy.feddb.local.api.importer.functions.FunctionExecutionMode;
@@ -127,13 +126,11 @@ public class ConnectorPreviewBO {
                                       BiFunction<ConnectorTransformerDTO, List<Map<String, Object>>, List<Map<String, Object>>> appRunner) {
         boolean patientPreview = hasPatientTransformation(transformers);
         String patientIdColumn = patientPreview ? requirePatientIdColumn(config) : null;
-        // Rows the user asked to see; "prefer rows with data" would split patients, so not for those.
         int previewRows = config.previewRowsOrDefault();
-        boolean nonEmpty = config.previewNonEmptyOrDefault() && !patientPreview;
 
         Long connectorId = config.getConnectorId();
         ConnectorPreviewTransformationStageData stage = loadSourceStage(config, connectorId,
-                cacheBO.sourceFingerprint(config), patientPreview, patientIdColumn, previewRows, nonEmpty);
+                cacheBO.sourceFingerprint(config), patientPreview, patientIdColumn, previewRows);
         String fingerprint = cacheBO.sampleFingerprint(limitPreviewRows(stage.getRows(), previewRows), stage.getColumns());
 
         Integer blockedBy = null;
@@ -248,8 +245,7 @@ public class ConnectorPreviewBO {
                                                                     String fingerprint,
                                                                     boolean patientPreview,
                                                                     String patientIdColumn,
-                                                                    int previewRows,
-                                                                    boolean nonEmpty) {
+                                                                    int previewRows) {
         Optional<ConnectorPreviewTransformationCacheStage> cached = cacheBO.find(
                 connectorId, ConnectorPreviewTransformationCacheBO.SOURCE_STEP, fingerprint);
         if (cached.isPresent()) {
@@ -260,25 +256,20 @@ public class ConnectorPreviewBO {
         TableData data = extractBO.loadPreviewData(
                 config.getInputConfig(),
                 config.getCohortId(),
-                // With "prefer rows with data" the selector chooses from the whole stored sample,
-                // filler rows included.
-                nonEmpty ? ConnectorFileUploadSettingsDTO.PREVIEW_POOL_ROWS : previewRows,
+                previewRows,
                 config.getMergeConfig(),
                 config.getPivotConfig(),
-                uploadInfoOf(config)
+                uploadInfoOf(config),
+                // rows with data first, except for patient previews, which keep patients together
+                !patientPreview
         );
         try {
             if (data == null || data.longSize() == 0) {
                 throw new BadRequestException("File not found or empty");
             }
-            List<Map<String, Object>> rows;
-            if (patientPreview) {
-                rows = selectPatientPreviewRows(data, patientIdColumn, previewRows);
-            } else if (nonEmpty) {
-                rows = PreviewRowSelector.select(data.getRows(), data.getColumns(), previewRows);
-            } else {
-                rows = data.getRows();
-            }
+            List<Map<String, Object>> rows = patientPreview
+                    ? selectPatientPreviewRows(data, patientIdColumn, previewRows)
+                    : data.getRows();
             ConnectorPreviewTransformationStageData stage = new ConnectorPreviewTransformationStageData(rows, data.getColumns(), data.getColumnProfiles());
             cacheBO.store(connectorId, ConnectorPreviewTransformationCacheBO.SOURCE_STEP, null,
                     fingerprint, limitPreviewRows(rows, previewRows), data.getColumns());
