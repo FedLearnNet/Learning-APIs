@@ -322,6 +322,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         queryDTO.setGlobalUniqueId(query.getGlobalQueryId());
         queryDTO.setKeycloakId(keycloakId);
         queryDTO.setQuery(query.getQuery());
+        queryDTO.setId(query.getId());
         try {
             return runQuery(queryDTO, allowedCohortIds);
         } catch (QueryRejectedException e) {

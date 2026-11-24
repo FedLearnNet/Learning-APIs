@@ -155,7 +155,7 @@ public class PatientDataExportBO {
     }
 
     public List<PatientDataEntryExportDTO> getDataForProject(Long learningRequestId, List<SelectedDataIdsDTO> selectedDataIds) {
-        List<PatientEntity> patients = patientAO.findAllByLearningRequestId(learningRequestId);
+        List<PatientEntity> patients = patientAO.findApprovedByLearningRequestId(learningRequestId);
         List<Long> patientIds = patients.stream()
                 .map(PatientEntity::getId)
                 .toList();
