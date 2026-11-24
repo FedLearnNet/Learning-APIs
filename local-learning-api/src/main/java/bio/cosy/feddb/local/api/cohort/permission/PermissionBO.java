@@ -59,8 +59,8 @@ public class PermissionBO extends BaseBo<PermissionDTO, PermissionEntity, Permis
     }
 
     public boolean grantsAutoTrainingAccess(List<PermissionDTO> permissions, ExecutionMode mode, int certificationLevel,
-                                            boolean needsInternetAccess) {
-        if (permissions == null || needsInternetAccess) {
+                                            boolean needsInternetAccess, boolean needsHostAccess) {
+        if (permissions == null || needsInternetAccess || needsHostAccess) {
             return false;
         }
         return permissions.stream().filter(p -> allowsTraining(p, mode)).anyMatch(p -> grantsAutoTraining(
