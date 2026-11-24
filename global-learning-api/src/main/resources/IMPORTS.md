@@ -21,28 +21,17 @@ records. Those aliases are consolidated into single canonical definitions.
 OpenCRAVAT has a new deterministic UUID derived from its repository URL.
 The unfinished RDKit scaffold is deliberately excluded from runnable imports.
 
-All original definitions are preserved byte-for-byte as Git moves:
+The original tool definitions, test fixtures and workflow exports are only kept
+in Git history. The two unmigrated US-130 neural-network variants were dropped
+with them.
 
-- Previously archived tools: `archived-tool-imports/legacy/`.
-- Previous active agglomerative/GMM tools: `archived-tool-imports/previous-active/`.
-- Previous test fixtures: `src/test/resources/archived-tool-imports/`.
-- Original workflow exports: `archived-workflow-imports/`.
-
-The two neural-network variants outside the preceding repository migration remain
-at the top level of `archived-tool-imports` until their real repositories are
-migrated. The original archived federated NN is preserved under `legacy`; its
-GitHub definition is already active. Archive directories are outside the
-configured import paths.
-
-Test fixtures were moved out of `tool-imports` because classpath scanning also
-loads test resource roots. Tests now use the main active catalog, while all
-original test JSON files remain available in their inactive archive.
+Test fixtures are no longer kept under `tool-imports` because classpath scanning
+also loads test resource roots. Tests use the main active catalog.
 
 ## Workflows
 
 All eleven workflows resolve explicit version hashes from the active catalog.
-Their updated files have descriptive names under `workflow-imports`; the original
-exports retain their original names and contents under `archived-workflow-imports`.
+Their updated files have descriptive names under `workflow-imports`.
 GMM parameters use `output_labels` and `output_responsibilities`; the retired
 BIRCH `copy` parameter is removed. Boolean values are JSON booleans.
 File connections use the current named ports and matching file types. Uploaded

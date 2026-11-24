@@ -188,6 +188,10 @@ public interface FLNetClientConfig {
         @WithName("global-user-id")
         Optional<String> globalUserId();
 
+        @WithName("federated-training-access")
+        @WithDefault("ENABLED")
+        TrainingAccess federatedTrainingAccess();
+
         @WithName("auto-training-access")
         @WithDefault("ALL")
         AutoTrainingAccess autoTrainingAccess();

@@ -42,9 +42,6 @@ public class FederatedAppEntity extends BaseEntity {
 
     private String icon;
 
-    @Column(name = "old_fc_version", nullable = true)
-    private Boolean oldFCVersion;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "communication_engine")
     private CommunicationEngine communicationEngine;

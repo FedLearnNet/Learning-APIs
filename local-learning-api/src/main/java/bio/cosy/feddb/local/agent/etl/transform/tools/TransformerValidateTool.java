@@ -12,6 +12,7 @@ import bio.cosy.feddb.local.api.importer.functions.managed.AbstractManagedFuncti
 import bio.cosy.feddb.local.api.importer.run.preview.ConnectorPreviewRunnerBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
+import bio.cosy.feddb.local.api.importer.transformer.code.CodeTransformerDTO;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationBO;
 import bio.cosy.feddb.local.api.importer.validation.ConnectorValidationResultDTO;
 import bio.cosy.feddb.local.api.importer.validation.PreviewValidationBO;
@@ -24,11 +25,15 @@ import io.quarkus.arc.Arc;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -38,6 +43,10 @@ public class TransformerValidateTool {
 
     private static final int MAX_REPORTED_ERRORS = 10;
     private static final int MAX_REPORTED_CONVERSIONS = 30;
+    // Codes without labels, e.g. '3', 'R9' or '+'
+    private static final Pattern CODE = Pattern.compile("^([A-Za-z]{0,2}\\d{1,3}|[^\\p{L}\\p{N}\\s])$");
+    private static final double SIMILAR_COUNTS = 0.25;
+    private static final int MIN_CODE_COUNT = 10;
 
     @Inject
     AgentDataPrivacy dataPrivacy;
@@ -64,6 +73,8 @@ public class TransformerValidateTool {
     private List<Map<String, Object>> valueRows;
     // The value rows after the transformers of the last check, null when they did not run on them
     private List<Map<String, Object>> convertedValueRows;
+    // The execution preview after the transformers of the last check, null for a direct mapping
+    private List<Map<String, Object>> previewRows;
 
     public void init(TransformerRunContext context, LocalSchemaNodeDTO schemaNode, DataTypeNodeDTO dataType,
                      List<String> selectedColumns, List<Map<String, Object>> valueRows) {
@@ -104,6 +115,7 @@ public class TransformerValidateTool {
     private ConnectorValidationResultDTO check(ConnectorSelectedTransformer selected) {
         Long schemaId = schemaNode.getId();
         convertedValueRows = null;
+        previewRows = null;
         if (selected == null || !selected.isFoundTransformer()) {
             return new ConnectorValidationResultDTO("No transformer selected", schemaId);
         }
@@ -125,6 +137,11 @@ public class TransformerValidateTool {
                     + "methodName exactly from getAllDetail, or describe the needed function with foundTransformer false.", schemaId);
         }
 
+        String mismatchedCode = mismatchedCode(transformers);
+        if (mismatchedCode != null) {
+            return new ConnectorValidationResultDTO(mismatchedCode, schemaId);
+        }
+
         String column = selected.getMappedColumn();
         String mappedBefore = context.mappedColumns().get(column);
         if (mappedBefore != null) {
@@ -142,6 +159,7 @@ public class TransformerValidateTool {
             } catch (RuntimeException e) {
                 return new ConnectorValidationResultDTO("Running the transformer failed: " + e.getMessage(), schemaId);
             }
+            previewRows = rows;
             // The preview runs on the real file, so the values the agent did not see are replaced
             Map<Object, String> real = previewValidationBO.rejectedValues(rows, column, schemaId, dataType);
             rejected = real == null ? null : dataPrivacy.rejected(real, context.fileProfiles());
@@ -175,11 +193,76 @@ public class TransformerValidateTool {
 
     /**
      * Whether the transformers turn every value of the selected columns into an empty one, judged on the values of the
-     * whole file: the preview holds only its first rows, which can all be missing markers.
+     * whole file: the preview holds only its first rows, which can all be missing markers. Chains over several columns
+     * and store tools do not run on these values and are judged on the execution preview.
      */
     private boolean emptiesEveryValue(String column) {
-        return convertedValueRows != null && valueRows.stream().anyMatch(row -> selectedColumns.stream().anyMatch(source -> hasValue(row.get(source))))
-                && convertedValueRows.stream().noneMatch(row -> hasValue(row.get(column)));
+        if (convertedValueRows != null) {
+            return valueRows.stream().anyMatch(row -> selectedColumns.stream().anyMatch(source -> hasValue(row.get(source))))
+                    && convertedValueRows.stream().noneMatch(row -> hasValue(row.get(column)));
+        }
+        // A source written in place shows its converted value in the preview, so only the other sources count
+        List<String> sources = selectedColumns.stream().filter(source -> !source.equals(column)).toList();
+        return previewRows != null && !previewRows.isEmpty()
+                && previewRows.stream().anyMatch(row -> sources.stream().anyMatch(source -> hasValue(row.get(source))))
+                && previewRows.stream().noneMatch(row -> hasValue(row.get(column)));
+    }
+
+
+    private String mismatchedCode(List<ConnectorTransformerDTO> transformers) {
+        for (ConnectorTransformerDTO transformer : transformers) {
+            if (!transformer.isCodeTransformer()) {
+                continue;
+            }
+            CodeTransformerDTO code = listTool.findCodeTransformer(transformer).orElse(null);
+            if (code == null || code.getData() == null) {
+                continue;
+            }
+            Set<String> checked = code.getData().values().stream()
+                    .filter(Objects::nonNull)
+                    .flatMap(List::stream)
+                    .filter(this::hasValue)
+                    .map(TransformerValidateTool::label)
+                    .collect(Collectors.toCollection(TreeSet::new));
+            Set<String> current = ConnectorHelper.transformerInputs(transformer).stream()
+                    .flatMap(column -> columnValues(column).stream())
+                    .map(TransformerValidateTool::label)
+                    .collect(Collectors.toCollection(TreeSet::new));
+            // Numbers are compared by the code, not by label
+            if (checked.isEmpty() || current.isEmpty() || checked.stream().anyMatch(TransformerValidateTool::isNumber)
+                    || current.stream().anyMatch(checked::contains)) {
+                continue;
+            }
+            return "The custom code transformer '" + code.getName() + "' was checked on the values "
+                    + shownValues(checked) + ", but the columns it reads hold none of them: " + shownValues(current)
+                    + ". It was written for another coding. Select another transformer or write new code for these values.";
+        }
+        return null;
+    }
+
+    private List<Object> columnValues(String column) {
+        ColumnProfile profile = context.fileProfiles().get(column);
+        Stream<Object> values = profile != null
+                ? TransformerHelper.valueCounts(profile).stream().map(Map.Entry::getKey)
+                : valueRows.stream().map(row -> row.get(column));
+        return values.filter(this::hasValue).toList();
+    }
+
+    private static String label(Object value) {
+        return String.valueOf(value).trim().toLowerCase(Locale.ROOT);
+    }
+
+    private static boolean isNumber(String value) {
+        try {
+            Double.parseDouble(value);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private static String shownValues(Set<String> values) {
+        return values.stream().limit(MAX_REPORTED_ERRORS).map(value -> "'" + value + "'").collect(Collectors.joining(", ", "[", "]"));
     }
 
     private boolean hasValue(Object value) {
@@ -283,6 +366,57 @@ public class TransformerValidateTool {
             return "";
         }
         return (emptied(selected.getMappedColumn()) + merged(selected.getMappedColumn())).replaceFirst("^\\. ", "");
+    }
+
+
+    public String flagGuessedCodes(ConnectorSelectedTransformer selected) {
+        if (selected == null || !check(selected).isValid()) {
+            return "";
+        }
+        boolean categorical = dataType != null && dataType.getOptions() != null && !dataType.getOptions().isEmpty();
+        if (!categorical || convertedValueRows == null || selectedColumns.size() != 1) {
+            return "";
+        }
+        String source = selectedColumns.getFirst();
+        ColumnProfile profile = context.fileProfiles().get(source);
+        if (profile == null) {
+            return "";
+        }
+        Map<String, Integer> counts = TransformerHelper.valueCounts(profile).stream()
+                .filter(entry -> entry.getKey() != null && entry.getValue() != null && hasValue(entry.getKey()))
+                .collect(Collectors.toMap(entry -> entry.getKey().trim(), Map.Entry::getValue, Integer::sum, LinkedHashMap::new));
+        if (counts.size() < 2 || !counts.keySet().stream().allMatch(value -> CODE.matcher(value).matches())) {
+            return "";
+        }
+        Map<String, String> becomes = new LinkedHashMap<>();
+        for (int index = 0; index < valueRows.size(); index++) {
+            String value = String.valueOf(valueRows.get(index).get(source)).trim();
+            Object converted = convertedValueRows.get(index).get(selected.getMappedColumn());
+            if (counts.containsKey(value) && hasValue(converted)) {
+                becomes.putIfAbsent(value, String.valueOf(converted));
+            }
+        }
+        List<String> codes = List.copyOf(becomes.keySet());
+        List<String> guessed = new ArrayList<>();
+        for (int first = 0; first < codes.size(); first++) {
+            for (int second = first + 1; second < codes.size(); second++) {
+                String a = codes.get(first);
+                String b = codes.get(second);
+                int countA = counts.get(a);
+                int countB = counts.get(b);
+                if (Math.min(countA, countB) >= MIN_CODE_COUNT && !becomes.get(a).equals(becomes.get(b))
+                        && Math.abs(countA - countB) <= SIMILAR_COUNTS * Math.max(countA, countB)) {
+                    guessed.add("'" + a + "' x" + countA + " -> '" + becomes.get(a) + "' and '" + b + "' x" + countB
+                            + " -> '" + becomes.get(b) + "'");
+                }
+            }
+        }
+        if (guessed.isEmpty()) {
+            return "";
+        }
+        String text = String.join("; ", guessed);
+        context.step("codes told apart only by their shares: %s", text);
+        return text;
     }
 
     private static String shown(Object value) {

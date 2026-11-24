@@ -1,12 +1,12 @@
 package bio.cosy.feddb.local.api.learning.request;
 
 import bio.cosy.feddb.core.api.socket.LearningQueryClientResponseDTO;
-import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.core.api.socket.ProjectFederatedExperimentForLocalDTO;
 import bio.cosy.feddb.core.api.tre.TreSourceDTO;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.core.base.PagedResponse;
+import bio.cosy.feddb.core.execution.ExecutionMode;
 import bio.cosy.feddb.local.api.cohort.TreSourceBO;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.learning.PatientLearningBO;
@@ -225,9 +225,11 @@ public class LearningRequestBO extends BaseBo<LearningRequestDTO, LearningReques
         boolean needsInternetAccess = requestLearning.getWorkflow().getNodes().stream()
                 .filter(Objects::nonNull)
                 .anyMatch(WorkflowNodeDetailDTO::needsInternetAccess);
-
+        boolean needsHostAccess = requestLearning.getWorkflow().getNodes().stream()
+                .filter(Objects::nonNull)
+                .anyMatch(WorkflowNodeDetailDTO::needsHostAccess);
         Set<Long> pendingCohortIds = initCohortDecisionsTransactional(
-                id, requestLearning.getKeycloakId(), requestLearning.getMode(), certificationLevel, needsInternetAccess);
+                id, requestLearning.getKeycloakId(), requestLearning.getMode(), certificationLevel, needsInternetAccess, needsHostAccess);
 
         // Auto-approved cohorts: send their patients to global now. Request stays PENDING while any
         // cohort is still manual; flips to APPROVED only when every cohort is decided.
@@ -269,7 +271,9 @@ public class LearningRequestBO extends BaseBo<LearningRequestDTO, LearningReques
     @Transactional
     public Set<Long> initCohortDecisionsTransactional(Long id, String platformUserId, ExecutionMode mode,
                                                       int certificationLevel,
-                                                      boolean needsInternetAccess) {
+                                                      boolean needsInternetAccess,
+                                                      boolean needsHostAccess) {
+
         LearningRequestEntity entity = ao.findByIdOptional(id)
                 .orElseThrow(() -> new NotFoundException("FederatedLearningRequest not found"));
         Set<Long> cohortIds = patientLearningBO.getCohortIdsForRequests(List.of(id));
@@ -277,7 +281,7 @@ public class LearningRequestBO extends BaseBo<LearningRequestDTO, LearningReques
             cohortIds = getPatientCohortIds(entity);
         }
         Set<Long> pending = cohortDecisionBO.initForRequest(entity, cohortIds, platformUserId, mode,
-                certificationLevel, needsInternetAccess);
+                certificationLevel, needsInternetAccess, needsHostAccess);
         // cohorts without training access for the mode never take part
         Set<Long> rejected = cohortDecisionBO.getRejectedCohortIds(id);
         if (!rejected.isEmpty()) {

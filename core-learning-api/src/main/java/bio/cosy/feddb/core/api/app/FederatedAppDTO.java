@@ -62,9 +62,6 @@ public class FederatedAppDTO extends BaseDTO {
     // PENDING or RUNNING build of the latest version, only set while a published version has no image
     private PipelineStatus buildStatus;
 
-    //OLD FC VERSION
-    private Boolean oldFCVersion;
-
     private CommunicationEngine communicationEngine;
 
     //rating

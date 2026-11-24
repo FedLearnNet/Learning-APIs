@@ -92,6 +92,7 @@ class TransformerGuardrailTest {
                 MAPPER.equals(invocation.<ConnectorTransformerDTO>getArgument(0).getMethodName()));
         lenient().when(listTool.builtInFunctionNames()).thenReturn(List.of("Replace Value", MAPPER));
         lenient().when(validateTool.losses(any())).thenReturn("");
+        lenient().when(validateTool.flagGuessedCodes(any())).thenReturn("");
         lenient().when(agentConfig.reviewAgents()).thenReturn(true);
     }
 
@@ -109,6 +110,19 @@ class TransformerGuardrailTest {
         String feedback = assertInstanceOf(AnswerRejectedException.class, first.getFirstFailureException()).getMessage();
         assertTrue(feedback.contains("it becomes 'None'") && feedback.contains("askUser"), feedback);
         assertTrue(second.isSuccess(), "the review is given once per schema node");
+    }
+
+    @Test
+    void asksOnceAboutCodesOnlyTheirSharesTellApart() {
+        when(validateTool.flagGuessedCodes(any())).thenReturn("'1' x98 -> 'Up' and '3' x88 -> 'Down'");
+
+        OutputGuardrailResult first = selectGuardrail.validate(request(found(transformer(MAPPER))));
+        OutputGuardrailResult second = selectGuardrail.validate(request(found(transformer(MAPPER))));
+
+        assertFalse(first.isSuccess());
+        String feedback = assertInstanceOf(AnswerRejectedException.class, first.getFirstFailureException()).getMessage();
+        assertTrue(feedback.contains("'1' x98 -> 'Up'") && feedback.contains("askUser"), feedback);
+        assertTrue(second.isSuccess(), "the question is given once per schema node");
     }
 
     @Test

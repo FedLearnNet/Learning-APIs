@@ -1,4 +1,4 @@
 # FL-Net tool SDK, imported as `pyfedappwrap`
-FL-Net-Python-Tool-API~=0.7.12
+FL-Net-Python-Tool-API~=0.7.16
 
 # Add the dependencies of your tool below

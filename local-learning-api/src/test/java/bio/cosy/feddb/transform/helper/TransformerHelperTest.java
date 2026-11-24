@@ -3,6 +3,7 @@ package bio.cosy.feddb.transform.helper;
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageDTO;
 import bio.cosy.feddb.local.agent.etl.transform.assistant.TransformerAssistantMessageType;
+import bio.cosy.feddb.local.agent.etl.transform.helper.PackedValues;
 import bio.cosy.feddb.local.agent.etl.transform.helper.TransformerHelper;
 import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransformer;
 import bio.cosy.feddb.local.agent.etl.transform.model.VisitMapping;
@@ -65,6 +66,27 @@ class TransformerHelperTest {
 
         assertEquals("repaglinide_rx (783 rows, 0 empty): '0' x750, '2' x24, '1' x9",
                 TransformerHelper.describeFileValues(List.of("repaglinide_rx", "unknown"), Map.of("repaglinide_rx", codes)));
+    }
+
+    @Test
+    void packedCodesAreNamedInTheDescription() {
+        ColumnProfile codes = profile("EncounterCodes", 783, 0, 100,
+                List.of(Map.entry("1-1-7", 218), Map.entry("3-1-1", 68), Map.entry("1-18-7", 31)));
+
+        assertTrue(TransformerHelper.describeFileValues(codes, 30)
+                .endsWith(" Packed: each cell joins 3 values by '-', e.g. '1-1-7'; the column can hold several schema nodes, Split Column splits it."));
+        assertTrue(PackedValues.note(List.of("786|250|401", "414|401|250", "250.8|707|682")).contains("3 values by '|'"));
+    }
+
+    @Test
+    void datesIdsRangesAndListsAreNotPacked() {
+        assertEquals("", PackedValues.note(List.of("2014-03-20", "1982-10-25", "2020-01-01 10:00")));
+        assertEquals("", PackedValues.note(List.of("b0a06ead-cc42-aa48-dad6-841d4aa679fa", "5ff84b1d-2c3e-4f3e-a0b5-16f1a62f2d29")));
+        assertEquals("", PackedValues.note(List.of("70-79", "60-69", "-99")));
+        assertEquals("", PackedValues.note(List.of("a,b", "a,b,c,d", "c")));
+        assertEquals("", PackedValues.note(List.of("1-1-7")));
+        assertEquals("", PackedValues.note(List.of("999-76-6866", "999-12-3456", "999-40-1234")));
+        assertEquals("", PackedValues.note(List.of("C3L-00006-01", "C3N-01234-02", "C3L-00451-01")));
     }
 
     @Test
