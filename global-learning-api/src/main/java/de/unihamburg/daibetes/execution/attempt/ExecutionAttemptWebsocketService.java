@@ -19,6 +19,8 @@ import de.unihamburg.daibetes.api.development.run.federated.FederatedParticipant
 import de.unihamburg.daibetes.api.development.run.federated.FederatedRoundMessageCreateDTO;
 import de.unihamburg.daibetes.api.project.training.federated.FederatedTrainingFlowerAggregatorBO;
 import de.unihamburg.daibetes.api.project.training.federated.FlowerPlatformCertificateAO;
+import de.unihamburg.daibetes.api.feddbclient.FlowerSupernodeRegistrationBO;
+import bio.cosy.feddb.core.execution.run.dto.FlowerSupernodeRegisteredDTO;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageMetricDTO;
 import io.quarkus.logging.Log;
@@ -42,6 +44,9 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
 
     @Inject
     FlowerPlatformCertificateAO flowerCertificateAO;
+
+    @Inject
+    FlowerSupernodeRegistrationBO flowerSupernodeRegistrationBO;
 
     @OnOpen
     @Blocking
@@ -111,6 +116,12 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
     @Override
     protected WebSocketConnection connection() {
         return connection;
+    }
+
+    /** The platform's Flower aggregator answered a clinic's SuperNode registration; pass it back to the clinic. */
+    @Override
+    protected void onFlowerSupernodeRegistered(Long attemptId, FlowerSupernodeRegisteredDTO registered) {
+        flowerSupernodeRegistrationBO.answer(attemptId, registered);
     }
 
     /**

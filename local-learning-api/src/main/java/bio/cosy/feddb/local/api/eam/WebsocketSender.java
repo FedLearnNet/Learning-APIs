@@ -86,6 +86,16 @@ public class WebsocketSender {
         client.fireAndForget(message);
     }
 
+    /**
+     * Asks the global server to have the platform's Flower aggregator register a SuperNode of this clinic.
+     */
+    public void sendFlowerSupernodeKey(final FlowerSupernodeKeyRequestDTO request) {
+        FedDBClientDataDTO<FlowerSupernodeKeyRequestDTO> message = new FedDBClientDataDTO<>();
+        message.setMessageType(FedDBClientTypeEnum.FLOWER_SUPERNODE_KEY);
+        message.setMessage(request);
+        client.fireAndForget(message);
+    }
+
     public void sendCurrentLearnings(List<String> currentGlobalUqLearningIds) {
         CurrentLearningClientSyncResponseDTO syncResponse = CurrentLearningClientSyncResponseDTO.createResponse(currentGlobalUqLearningIds);
         FedDBClientDataDTO<CurrentLearningClientSyncResponseDTO> response = new FedDBClientDataDTO<>();

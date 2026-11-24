@@ -4,7 +4,9 @@ import bio.cosy.feddb.core.api.query.QueryClientResponseDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.socket.*;
 import bio.cosy.feddb.local.api.learning.project.run.LearningRunBO;
+import bio.cosy.feddb.core.execution.run.dto.FlowerSupernodeRegisteredDTO;
 import bio.cosy.feddb.local.api.learning.project.run.federated.FederatedLearningProgressBO;
+import bio.cosy.feddb.local.api.learning.project.run.federated.FlowerSupernodeRegistrationBO;
 import bio.cosy.feddb.local.api.learning.request.LearningRequestBO;
 import bio.cosy.feddb.local.api.learning.request.metrics.RequestRunMetricsBO;
 import bio.cosy.feddb.local.api.query.QueryBO;
@@ -40,6 +42,9 @@ public class WebsocketClient {
 
     @Inject
     FederatedLearningProgressBO federatedLearningProgressBO;
+
+    @Inject
+    FlowerSupernodeRegistrationBO flowerSupernodeRegistrationBO;
 
     @Inject
     WebSocketClientState state;
@@ -189,6 +194,10 @@ public class WebsocketClient {
             if (m.getMessageType().equals(FedDBClientTypeEnum.RUN_METRICS)) {
                 ProjectFederatedRequestRunMetricsDTO request = objectMapper.convertValue(m.getMessage(), ProjectFederatedRequestRunMetricsDTO.class);
                 requestRunMetricsBO.createAndCheckAutoAccessTransactional(request);
+                return noResponse();
+            }
+            if (m.getMessageType().equals(FedDBClientTypeEnum.FLOWER_SUPERNODE_REGISTERED)) {
+                flowerSupernodeRegistrationBO.forwardAnswer(objectMapper.convertValue(m.getMessage(), FlowerSupernodeRegisteredDTO.class));
                 return noResponse();
             }
             if (m.getMessageType().equals(FedDBClientTypeEnum.RELAY_CERT)) {

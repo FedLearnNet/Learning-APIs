@@ -5,6 +5,7 @@ import bio.cosy.feddb.core.execution.message.ConsoleStdOutDTO;
 import bio.cosy.feddb.core.execution.message.ExecutionMessageLogDTO;
 import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
 import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
+import bio.cosy.feddb.core.execution.run.dto.FlowerSupernodeKeyDTO;
 import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
 import bio.cosy.feddb.core.execution.server.BaseAttemptAppServer;
 import bio.cosy.feddb.core.security.Scope;
@@ -13,6 +14,7 @@ import bio.cosy.feddb.core.security.ToolAuthenticated;
 import bio.cosy.feddb.local.api.importer.run.ConnectorAppRunBO;
 import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerContainerBO;
 import bio.cosy.feddb.local.api.importer.transformer.code.runner.CodeTransformerRequestBO;
+import bio.cosy.feddb.local.api.learning.project.run.federated.FlowerSupernodeRegistrationBO;
 import io.quarkus.logging.Log;
 import io.quarkus.websockets.next.*;
 import io.smallrye.common.annotation.Blocking;
@@ -40,6 +42,9 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
 
     @Inject
     CodeTransformerContainerBO codeTransformerContainerBO;
+
+    @Inject
+    FlowerSupernodeRegistrationBO flowerSupernodeRegistrationBO;
 
     @OnOpen
     @Blocking
@@ -98,6 +103,12 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
         if (!connectorAppRunBO.isSessionAttempt(attemptId)) {
             super.finishRun(attemptId, finish, runType);
         }
+    }
+
+    // A clinic's Flower app asks the platform to register its SuperNode.
+    @Override
+    protected void onFlowerSupernodeKey(Long attemptId, FlowerSupernodeKeyDTO key) {
+        flowerSupernodeRegistrationBO.forwardKeyTransactional(attemptId, key);
     }
 
     @Override

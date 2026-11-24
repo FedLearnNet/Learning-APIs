@@ -87,6 +87,9 @@ public abstract class BaseAttemptAppServer extends BaseAppServer {
                     onFlowerCaReported(attemptId, federated.getCaCertificate(), federated.getCaPrivateKey());
                 }
             }
+            case FLOWER_SUPERNODE_KEY -> onFlowerSupernodeKey(attemptId, decode(m.getMessage(), FlowerSupernodeKeyDTO.class));
+            case FLOWER_SUPERNODE_REGISTERED ->
+                    onFlowerSupernodeRegistered(attemptId, decode(m.getMessage(), FlowerSupernodeRegisteredDTO.class));
             case FINISH_FEDERATED_RUN -> {
                 FederatedRunLifecycleDTO federated = decode(m.getMessage(), FederatedRunLifecycleDTO.class);
                 FinishRunDTO finish = new FinishRunDTO();
@@ -144,5 +147,15 @@ public abstract class BaseAttemptAppServer extends BaseAppServer {
      * (global-learning-api) concern - overridden there. Clinics never report one.
      */
     protected void onFlowerCaReported(Long attemptId, String caCertificate, String caPrivateKey) {
+    }
+
+    /** A clinic's Flower app asks to have its SuperNode registered; local forwards it to global. */
+    protected void onFlowerSupernodeKey(Long attemptId, FlowerSupernodeKeyDTO key) {
+        Log.warnf("Ignoring a Flower SuperNode key from attempt %d, this server does not forward them", attemptId);
+    }
+
+    /** The platform's Flower aggregator answered a registration; global forwards it to the clinic. */
+    protected void onFlowerSupernodeRegistered(Long attemptId, FlowerSupernodeRegisteredDTO registered) {
+        Log.warnf("Ignoring a Flower SuperNode registration from attempt %d, this server does not forward them", attemptId);
     }
 }

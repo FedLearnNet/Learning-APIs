@@ -62,6 +62,8 @@ public class FLNetClientWebsocket {
         try {
             if (FedDBClientTypeEnum.RELAY_CERT.equals(m.getMessageType())) {
                 handlerBO.handleRelayCert(m, connection.id());
+            } else if (FedDBClientTypeEnum.FLOWER_SUPERNODE_KEY.equals(m.getMessageType())) {
+                handlerBO.handleFlowerSupernodeKey(m, connection.id());
             } else {
                 handlerBO.handle(m, connection.id());
             }

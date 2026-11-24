@@ -3,6 +3,7 @@ package de.unihamburg.daibetes.api.feddbclient;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.socket.*;
 import bio.cosy.feddb.core.execution.helper.AfterCommitTask;
+import bio.cosy.feddb.core.execution.run.dto.FlowerSupernodeRegisteredDTO;
 import de.unihamburg.daibetes.api.observer.FLNetClientObserverEmitter;
 import de.unihamburg.daibetes.api.observer.FLNetClientObserverEventDTO;
 import io.quarkus.arc.log.LoggerName;
@@ -94,6 +95,25 @@ public class FLNetClientBroadcastBO {
         }
         Set<String> experiments = learningConnectionMap.get(connectionId);
         return experiments != null && experiments.contains(globalUniqueExperimentId);
+    }
+
+    /**
+     * Answers a Flower SuperNode registration request on the connection it was received from.
+     */
+    public void sendFlowerSupernodeRegistered(final String connectionId, final FlowerSupernodeRegisteredDTO registered) {
+        FedDBClientDataDTO<FlowerSupernodeRegisteredDTO> message = new FedDBClientDataDTO<>(
+                FedDBClientTypeEnum.FLOWER_SUPERNODE_REGISTERED, registered);
+        connections.findByEndpointId(ENDPOINT_ID).stream()
+                .filter(c -> c.id().equals(connectionId))
+                .forEach(c -> {
+                    try {
+                        c.sendTextAndAwait(message);
+                        observerEmitter.emit(FLNetClientObserverEventDTO.sent(
+                                c.id(), FedDBClientTypeEnum.FLOWER_SUPERNODE_REGISTERED.name(), registered));
+                    } catch (Exception e) {
+                        logger.errorf("Failed to send Flower SuperNode registration answer to connection %s: %s", c.id(), e.getMessage());
+                    }
+                });
     }
 
     /**

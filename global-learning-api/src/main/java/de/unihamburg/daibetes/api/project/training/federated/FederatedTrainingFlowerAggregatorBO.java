@@ -14,6 +14,7 @@ import de.unihamburg.daibetes.execution.step.ExecutionRunStepEntity;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import java.util.LinkedHashMap;
 import java.util.Optional;
@@ -57,6 +58,26 @@ public class FederatedTrainingFlowerAggregatorBO {
      */
     public static boolean isFlowerAggregator(ExecutionAttemptEntity attempt) {
         return FederatedTrainingAggregatorBO.isAggregator(attempt) && attempt.getFederation().getRelayConfig() == null;
+    }
+
+    /**
+     * The Flower aggregator attempt of the step of a training that a clinic takes part in, for registering that
+     * clinic's SuperNode with it - empty if the clinic is no participant, or the step isn't a Flower step.
+     */
+    @Transactional
+    public Optional<Long> findAggregatorAttemptIdTransactional(String globalUniqueId, String nodeId, String clinicId) {
+        if (globalUniqueId == null || nodeId == null || clinicId == null) {
+            return Optional.empty();
+        }
+        return attemptAO.<ExecutionAttemptEntity>find("from ExecutionAttemptEntity a where a.step.run.experiment.globalUniqueId = ?1"
+                                + " and a.step.workflowNode.nodeId = ?2 and exists ("
+                                + "from ExecutionParticipantEntity p where p.run = a.step.run and p.participantId = ?3) order by a.id desc",
+                        globalUniqueId, nodeId, clinicId)
+                .stream()
+                .filter(FederatedTrainingFlowerAggregatorBO::isFlowerAggregator)
+                .filter(attempt -> isFlowerStep(attempt.getStep()))
+                .map(ExecutionAttemptEntity::getId)
+                .findFirst();
     }
 
     /** Adds the aggregator to the step; it starts once the step is committed, same as any other attempt. */

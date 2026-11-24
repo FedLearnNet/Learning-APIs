@@ -36,6 +36,10 @@ public enum AppMessageTypeEnum {
     FINISH_FEDERATED_RUN,
     FEDERATED_PARTICIPANT_UPDATE,
     FEDERATED_ROUND_MESSAGE,
+    // Flower SuperNode auth registration: a clinic's key goes to the platform's aggregator app as
+    // FLOWER_SUPERNODE_KEY, the result comes back as FLOWER_SUPERNODE_REGISTERED.
+    FLOWER_SUPERNODE_KEY,
+    FLOWER_SUPERNODE_REGISTERED,
 
     TRANSFORMATION_CHECK,
     TRANSFORMATION_CHECK_RESULT,

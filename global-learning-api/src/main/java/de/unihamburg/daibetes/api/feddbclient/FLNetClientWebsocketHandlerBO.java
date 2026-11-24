@@ -58,6 +58,9 @@ public class FLNetClientWebsocketHandlerBO {
     @Inject
     RelayCertSignBO relayCertSignBO;
 
+    @Inject
+    FlowerSupernodeRegistrationBO flowerSupernodeRegistrationBO;
+
     @LoggerName("FLNetClientWebsocketHandler")
     Logger logger;
 
@@ -68,6 +71,15 @@ public class FLNetClientWebsocketHandlerBO {
     public <T> void handleRelayCert(final FedDBClientDataDTO<T> m, final String connectionId) {
         RelayCertSignRequestDTO request = new ObjectMapper().convertValue(m.getMessage(), RelayCertSignRequestDTO.class);
         broadcastBO.sendRelayCertResponse(connectionId, relayCertSignBO.sign(request, connectionId));
+    }
+
+    /**
+     * Forwards a clinic's Flower SuperNode key to the step's aggregator; the answer comes back asynchronously.
+     * Not transactional on purpose: it talks to the aggregator's connection.
+     */
+    public <T> void handleFlowerSupernodeKey(final FedDBClientDataDTO<T> m, final String connectionId) {
+        FlowerSupernodeKeyRequestDTO request = new ObjectMapper().convertValue(m.getMessage(), FlowerSupernodeKeyRequestDTO.class);
+        flowerSupernodeRegistrationBO.forward(request, connectionId);
     }
 
     @Transactional
