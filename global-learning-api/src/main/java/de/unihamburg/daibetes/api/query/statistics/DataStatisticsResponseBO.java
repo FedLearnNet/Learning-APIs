@@ -19,7 +19,7 @@ public class DataStatisticsResponseBO extends BaseBo<DataStatisticsResponseDTO, 
     QueryAO queryAO;
 
     public void saveResponse(DataStatisticsResponseClientDTO request) {
-        Optional<QueryEntity> queryEntityOptional = queryAO.findByGlobalUniqueID(request.getGlobalQueryId());
+        Optional<QueryEntity> queryEntityOptional = queryAO.findByGlobalUniqueId(request.getGlobalQueryId());
         if (queryEntityOptional.isEmpty()) {
             Log.errorf("Query with global id %s not found for client cant save statistics", request.getGlobalQueryId());
             return;

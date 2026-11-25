@@ -1,8 +1,11 @@
 package bio.cosy.feddb.local.api.schema.schemanode;
 
+import bio.cosy.feddb.core.api.datamodler.datatype.DataTypes;
 import bio.cosy.feddb.core.api.project.PatientExportFeatureDTO;
 import bio.cosy.feddb.core.api.project.ProjectDetailDTO;
 import bio.cosy.feddb.core.api.project.SelectedDataIdsDTO;
+import bio.cosy.feddb.core.api.query.QueryRejectedException;
+import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.local.api.learning.project.LearningProjectBO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
@@ -14,6 +17,7 @@ import bio.cosy.feddb.local.api.search.SearchScoreUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -110,19 +114,31 @@ public class SchemaNodeBO extends BaseBo<LocalSchemaNodeDTO, SchemaNodeEntity, S
                         .orElseThrow(() -> new NotFoundException("No export configuration found for project")));
     }
 
-
-    public List<SimpleLocalSchemaNodeDTO> findSimpleByIds(Set<Long> schemaNodeIds) {
-        return ao.findByIds(schemaNodeIds).stream()
-                .map(mapper::entityToSimpleDto)
-                .toList();
+    /** Schema nodes of the ontology in all cohorts, of every data type when dataTypeId is blank; none without ontologyId. */
+    public List<SchemaNodeEntity> findSchemaNodes(String ontologyId, String dataTypeId) {
+        if (StringUtils.isBlank(ontologyId)) {
+            return List.of();
+        }
+        if (StringUtils.isBlank(dataTypeId)) {
+            return ao.findByOntologyGlobalId(ontologyId);
+        }
+        return ao.findByOntologyAndDatatypeGlobalId(ontologyId, dataTypeId);
     }
 
-    public Map<Long, SimpleLocalSchemaNodeDTO> findSimpleMapByIds(Set<Long> schemaNodeIds) {
-        return ao.findByIds(schemaNodeIds).stream()
-                .filter(Objects::nonNull)
-                .filter(node -> node.getId() != null)
-                .collect(Collectors.toMap(SchemaNodeEntity::getId, mapper::entityToSimpleDto));
+    public Map<DataTypes, List<Long>> findSchemaForQuery(QueryItemDTO leaf, Collection<Long> cohortIds) {
+        if (cohortIds == null) {
+            throw new QueryRejectedException("Cohort IDs must be provided to find schema node IDs by type");
+        }
+        if (StringUtils.isEmpty(leaf.getOntologyId()) || StringUtils.isEmpty(leaf.getDataTypeId())) {
+            throw new QueryRejectedException("Ontology ID and Data Type ID must be provided to find schema node IDs by type");
+        }
+        List<SchemaNodeEntity> schemaNodes = ao.findByOntologyAndDatatypeGlobalIdAndCohortIds(leaf.getOntologyId(), leaf.getDataTypeId(), cohortIds);
+        if (schemaNodes.isEmpty()) {
+            throw new QueryRejectedException("Required condition cannot be found on this node");
+        }
+        return schemaNodes.stream().collect(Collectors.groupingBy(
+                schemaNode -> schemaNode.getDataType().getType(),
+                LinkedHashMap::new,
+                Collectors.mapping(SchemaNodeEntity::getId, Collectors.toList())));
     }
-
-
 }

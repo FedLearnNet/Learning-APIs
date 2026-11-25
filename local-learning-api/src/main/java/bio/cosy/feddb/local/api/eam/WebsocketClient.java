@@ -61,6 +61,10 @@ public class WebsocketClient {
     @Inject
     ComputingInfoBO computingInfo;
 
+    // Quarkus mapper: java.time support, unknown fields ignored
+    @Inject
+    ObjectMapper objectMapper;
+
 
     @OnOpen
     public void onOpen(WebSocketClientConnection connection) {
@@ -122,7 +126,6 @@ public class WebsocketClient {
 
     private <T> Object processMessage(FedDBClientDataDTO<T> m) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             Log.info("Received global message message: " + m.getMessageType());
             if (m.getMessageType().equals(FedDBClientTypeEnum.EXISTING_QUERY)) {
                 QueryDTO query = objectMapper.convertValue(m.getMessage(), QueryDTO.class);

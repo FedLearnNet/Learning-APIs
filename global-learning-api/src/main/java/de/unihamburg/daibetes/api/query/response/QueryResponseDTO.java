@@ -13,10 +13,7 @@ import java.util.Set;
 @Data
 public class QueryResponseDTO extends BaseDTO {
 
-    private Long queryId;
-    private String globalUniqueQueryId;
     private Integer count;
-    private String error;
     private SystemComputingInfoReducedDTO system;
     private Set<ExecutionMode> supportedModes;
     private String clientName;

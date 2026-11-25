@@ -1,31 +1,42 @@
 package unit;
 
-import bio.cosy.feddb.core.api.query.Lang2QueryDocuments;
-import bio.cosy.feddb.core.api.query.Lang2QueryNodeDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
-import bio.cosy.feddb.core.api.query.QueryItemDTO;
-import bio.cosy.feddb.core.api.query.QueryOperatorDTO;
 import bio.cosy.feddb.core.api.query.QueryOperatorTypes;
-import bio.cosy.feddb.core.api.query.TemporalRelationDTO;
+import bio.cosy.feddb.core.api.query.item.ConnectingOperator;
+import bio.cosy.feddb.core.api.query.item.IntervalPartDTO;
+import bio.cosy.feddb.core.api.query.item.IntervalUnit;
+import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
+import bio.cosy.feddb.core.api.query.item.QueryItemHelper;
+import bio.cosy.feddb.core.api.query.item.TemporalRelationDTO;
+import bio.cosy.feddb.core.api.query.item.TemporalRelationship;
+import bio.cosy.feddb.core.api.query.item.TimeAggregationMethod;
+import bio.cosy.feddb.core.api.query.item.TimeFilterDTO;
+import bio.cosy.feddb.core.api.query.item.ValueAggregationMethod;
+import bio.cosy.feddb.core.api.query.item.ValueMode;
 import bio.cosy.feddb.local.api.query.LocalQueryDTO;
 import bio.cosy.feddb.local.api.query.QueryAO;
 import bio.cosy.feddb.local.api.query.QueryBO;
-import bio.cosy.feddb.local.api.query.QueryBuilderBO;
-import bio.cosy.feddb.local.api.query.QueryRejectedException;
+import bio.cosy.feddb.core.api.query.QueryRejectedException;
 import bio.cosy.feddb.local.api.query.QueryResultWrapperDTO;
+import bio.cosy.feddb.local.api.query.builder.QueryBuilderBO;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.TestTransaction;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @QuarkusTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class QueryBuilderTest {
+
+    private static final List<Long> COHORT_IDS = List.of(1L, 5L);
 
     @Inject
     QueryBuilderBO queryBuilderBO;
@@ -42,19 +53,17 @@ public class QueryBuilderTest {
     @Test
     @Order(1)
     void testQueryGenerated() {
-        final String result = "SELECT DISTINCT patient_id FROM (((SELECT DISTINCT patient_id FROM patient_data WHERE schema_node_id = 3 AND value_string = 'Diabetes Type 1'))) AS query_result";
-        QueryOperatorDTO op = new QueryOperatorDTO();
-        op.setOperator(QueryOperatorTypes.EQUAL);
-        op.setValue("Diabetes Type 1");
-        QueryItemDTO item = new QueryItemDTO();
-        item.setOntologyId("2001");
-        item.setDataTypeId("1001");
-        item.setOperator(Collections.singletonList(op));
+        final String result = "SELECT DISTINCT patient_id FROM ((SELECT DISTINCT patient_id FROM "
+                + "((SELECT patient_id, schema_node_id, visit_timestamp, id, occurrence_key, visit_id, import_schema_group_id "
+                + "FROM (SELECT * FROM (SELECT patient_id, schema_node_id, visit_timestamp, id, "
+                + "id AS occurrence_key, visit_id, import_schema_group_id, value_string AS agg_value FROM patient_data WHERE schema_node_id IN (3) AND value_string IS NOT NULL) "
+                + "WHERE agg_value = 'Diabetes Type 1'))))) AS query_result";
+        QueryItemDTO item = leaf("2001", "1001", QueryOperatorTypes.EQUAL, "Diabetes Type 1");
         QueryDTO queryDTO = new QueryDTO();
-        queryDTO.setQuery(Lang2QueryDocuments.andGroup(item));
+        queryDTO.setQuery(QueryItemHelper.andGroup(item));
 
 
-        String query = queryBuilderBO.buildCountDistinctSql(queryDTO);
+        String query = queryBuilderBO.buildCountDistinctSql(queryDTO, COHORT_IDS);
         System.out.println("Generated Query: " + query);
         Assertions.assertEquals(result.trim(), query.trim());
         assertSqlExecutes(query);
@@ -86,9 +95,9 @@ public class QueryBuilderTest {
     @Order(3)
     void testEmptyQueryReturnsNoResults() {
         QueryDTO queryDTO = new QueryDTO();
-        queryDTO.setQuery(Lang2QueryDocuments.andGroup());
+        queryDTO.setQuery(QueryItemHelper.andGroup());
 
-        String query = queryBuilderBO.buildCountDistinctSql(queryDTO);
+        String query = queryBuilderBO.buildCountDistinctSql(queryDTO, COHORT_IDS);
         Assertions.assertEquals(
                 "SELECT DISTINCT patient_id FROM patient_data WHERE 1 = 0",
                 query
@@ -120,9 +129,9 @@ public class QueryBuilderTest {
         QueryDTO queryDTO = new QueryDTO();
         // Two patiennts exist, one with age 25,26,27, diagnosis diabetes and one with age 30, 31, daignosis asthma
         // Find only the younger one
-        queryDTO.setQuery(Lang2QueryDocuments.andGroup(
-                queryItem("2001", "1001", List.of(operator(QueryOperatorTypes.EXISTS, null))),
-                queryItem("2002", "1002", List.of(operator(QueryOperatorTypes.SMALLER, "28")))
+        queryDTO.setQuery(QueryItemHelper.andGroup(
+                leaf("2001", "1001", QueryOperatorTypes.EXISTS, null),
+                leaf("2002", "1002", QueryOperatorTypes.SMALLER, "28")
         ));
 
         QueryResultWrapperDTO response = queryBO.runQuery(queryDTO, List.of(1L, 5L));
@@ -134,9 +143,9 @@ public class QueryBuilderTest {
 
         // find both
         QueryDTO queryDTO2 = new QueryDTO();
-        queryDTO2.setQuery(Lang2QueryDocuments.andGroup(
-                queryItem("2001", "1001", List.of(operator(QueryOperatorTypes.EXISTS, null))),
-                queryItem("2002", "1002", List.of(operator(QueryOperatorTypes.SMALLER, "50")))
+        queryDTO2.setQuery(QueryItemHelper.andGroup(
+                leaf("2001", "1001", QueryOperatorTypes.EXISTS, null),
+                leaf("2002", "1002", QueryOperatorTypes.SMALLER, "50")
         ));
         QueryResultWrapperDTO response2 = queryBO.runQuery(queryDTO2, List.of(1L, 5L));
         Assertions.assertNotNull(response2);
@@ -154,7 +163,7 @@ public class QueryBuilderTest {
         // An AND-conjunct whose schema node cannot be resolved must reject the query
         // instead of silently collapsing the INTERSECT to an empty result.
         Assertions.assertThrows(QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryDTO));
+                () -> queryBuilderBO.buildCountDistinctSql(queryDTO, COHORT_IDS));
     }
 
     @Test
@@ -178,39 +187,39 @@ public class QueryBuilderTest {
     void testExistsClauseSupportsMultipleDatatypesPerOntologyInLocalSchema() {
         // date query
         QueryDTO dateQuery = singleItemQuery("2008", "1006", QueryOperatorTypes.EXISTS, null);
-        String sqlDateQuery = queryBuilderBO.buildCountDistinctSql(dateQuery);
+        String sqlDateQuery = queryBuilderBO.buildCountDistinctSql(dateQuery, COHORT_IDS);
         System.out.println("SQL for date query: " + sqlDateQuery);
-        Assertions.assertTrue(sqlDateQuery.contains("value_date IS NOT NULL"));
+        Assertions.assertTrue(sqlDateQuery.contains("value_date AS agg_value"));
         assertSqlExecutes(sqlDateQuery);
 
         // date_time query
         QueryDTO dateTimeQuery = singleItemQuery("2008", "1007", QueryOperatorTypes.EXISTS, null);
-        String sqlDateTimeQuery = queryBuilderBO.buildCountDistinctSql(dateTimeQuery);
-        Assertions.assertTrue(sqlDateTimeQuery.contains("value_date_time IS NOT NULL"));
+        String sqlDateTimeQuery = queryBuilderBO.buildCountDistinctSql(dateTimeQuery, COHORT_IDS);
+        Assertions.assertTrue(sqlDateTimeQuery.contains("value_date_time AS agg_value"));
         assertSqlExecutes(sqlDateTimeQuery);
 
         // boolean query
         QueryDTO booleanQuery = singleItemQuery("2008", "1004", QueryOperatorTypes.EXISTS, null);
-        String sqlBooleanQuery = queryBuilderBO.buildCountDistinctSql(booleanQuery);
-        Assertions.assertTrue(sqlBooleanQuery.contains("value_boolean IS NOT NULL"));
+        String sqlBooleanQuery = queryBuilderBO.buildCountDistinctSql(booleanQuery, COHORT_IDS);
+        Assertions.assertTrue(sqlBooleanQuery.contains("value_boolean AS agg_value"));
         assertSqlExecutes(sqlBooleanQuery);
 
         // string query
         QueryDTO stringQuery = singleItemQuery("2008", "1001", QueryOperatorTypes.EXISTS, null);
-        String sqlStringQuery = queryBuilderBO.buildCountDistinctSql(stringQuery);
-        Assertions.assertTrue(sqlStringQuery.contains("value_string IS NOT NULL"));
+        String sqlStringQuery = queryBuilderBO.buildCountDistinctSql(stringQuery, COHORT_IDS);
+        Assertions.assertTrue(sqlStringQuery.contains("value_string AS agg_value"));
         assertSqlExecutes(sqlStringQuery);
     }
 
     @Test
     @Order(9)
-    void testLang2QueryAndMatchesLegacyIntersect() {
+    void testAndGroupIntersects() {
         QueryDTO lang2 = queryTree(and(
-                leaf("2001", "1001", "exists", null),
-                leaf("2002", "1002", "<", 28)
+                leaf("2001", "1001", QueryOperatorTypes.EXISTS, null),
+                leaf("2002", "1002", QueryOperatorTypes.SMALLER, 28)
         ));
 
-        String lang2Sql = queryBuilderBO.buildCountDistinctSql(lang2);
+        String lang2Sql = queryBuilderBO.buildCountDistinctSql(lang2, COHORT_IDS);
         Assertions.assertTrue(lang2Sql.contains("INTERSECT"));
         assertSqlExecutes(lang2Sql);
 
@@ -220,13 +229,13 @@ public class QueryBuilderTest {
 
     @Test
     @Order(10)
-    void testLang2QueryOrUnionsPatients() {
+    void testOrGroupUnionsPatients() {
         QueryDTO lang2 = queryTree(or(
-                leaf("2008", "1001", "=", "Diabetes Type 1"),
-                leaf("2002", "1002", "<", 28)
+                leaf("2008", "1001", QueryOperatorTypes.EQUAL, "Diabetes Type 1"),
+                leaf("2002", "1002", QueryOperatorTypes.SMALLER, 28)
         ));
 
-        String sql = queryBuilderBO.buildCountDistinctSql(lang2);
+        String sql = queryBuilderBO.buildCountDistinctSql(lang2, COHORT_IDS);
         Assertions.assertTrue(sql.contains(" UNION "));
         assertSqlExecutes(sql);
 
@@ -236,16 +245,16 @@ public class QueryBuilderTest {
 
     @Test
     @Order(11)
-    void testLang2QueryNestedAndOr() {
+    void testNestedAndOr() {
         QueryDTO lang2 = queryTree(and(
-                leaf("2001", "1001", "exists", null),
+                leaf("2001", "1001", QueryOperatorTypes.EXISTS, null),
                 or(
-                        leaf("2002", "1002", "<", 28),
-                        leaf("2008", "1001", "=", "Diabetes Type 1")
+                        leaf("2002", "1002", QueryOperatorTypes.SMALLER, 28),
+                        leaf("2008", "1001", QueryOperatorTypes.EQUAL, "Diabetes Type 1")
                 )
         ));
 
-        String sql = queryBuilderBO.buildCountDistinctSql(lang2);
+        String sql = queryBuilderBO.buildCountDistinctSql(lang2, COHORT_IDS);
         Assertions.assertTrue(sql.contains("INTERSECT"));
         Assertions.assertTrue(sql.contains(" UNION "));
         assertSqlExecutes(sql);
@@ -256,69 +265,57 @@ public class QueryBuilderTest {
 
     @Test
     @Order(12)
-    void testLang2QueryRejectsInvalidTemporalRelations() {
-        Lang2QueryNodeDTO group = and(leaf("2001", "1001", "exists", null));
-        group.setTemporalRelations(List.of(relation(0, 1, "same visit")));
+    void testRejectsInvalidTemporalRelations() {
+        QueryItemDTO group = and(leaf("2001", "1001", QueryOperatorTypes.EXISTS, null));
+        group.setTemporalRelations(List.of(relation(0, 1, TemporalRelationship.SAME_VISIT, null)));
         QueryDTO lang2 = queryTree(group);
 
         Assertions.assertThrows(QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(lang2));
+                () -> queryBuilderBO.buildCountDistinctSql(lang2, COHORT_IDS));
     }
 
     @Test
     @Order(13)
     void testTimeFilterAnytimeAddsNoVisitPredicate() {
-        Lang2QueryNodeDTO anytime = leaf("2001", "1001", "exists", null);
-        anytime.setTimeFilter("anytime");
+        QueryItemDTO anytime = leaf("2001", "1001", QueryOperatorTypes.EXISTS, null);
+        anytime.setTimeFilter(null);
         QueryDTO queryDTO = queryTree(anytime);
 
-        String sql = queryBuilderBO.buildCountDistinctSql(queryDTO);
-        Assertions.assertFalse(sql.contains("visit_timestamp"));
+        String sql = queryBuilderBO.buildCountDistinctSql(queryDTO, COHORT_IDS);
+        Assertions.assertFalse(sql.contains("visit_timestamp >"));
+        Assertions.assertFalse(sql.contains("visit_timestamp <"));
+        Assertions.assertFalse(sql.contains("visit_timestamp IS NOT NULL"));
         assertSqlExecutes(sql);
     }
 
     @Test
     @Order(14)
     void testTimeFilterAfterBeforeAndRange() {
-        Lang2QueryNodeDTO after = leaf("2001", "1001", "exists", null);
-        after.setTimeFilter(Map.of("after", "2020-01-01"));
-        String afterSql = queryBuilderBO.buildCountDistinctSql(queryTree(after));
+        QueryItemDTO after = leaf("2001", "1001", QueryOperatorTypes.EXISTS, null);
+        after.setTimeFilter(new TimeFilterDTO(LocalDate.of(2020, 1, 1), null));
+        String afterSql = queryBuilderBO.buildCountDistinctSql(queryTree(after), COHORT_IDS);
         Assertions.assertTrue(afterSql.contains("visit_timestamp > date '2020-01-01'"));
         assertSqlExecutes(afterSql);
 
-        Lang2QueryNodeDTO before = leaf("2001", "1001", "exists", null);
-        before.setTimeFilter(Map.of("before", "2020-01-01"));
-        String beforeSql = queryBuilderBO.buildCountDistinctSql(queryTree(before));
+        QueryItemDTO before = leaf("2001", "1001", QueryOperatorTypes.EXISTS, null);
+        before.setTimeFilter(new TimeFilterDTO(null, LocalDate.of(2020, 1, 1)));
+        String beforeSql = queryBuilderBO.buildCountDistinctSql(queryTree(before), COHORT_IDS);
         Assertions.assertTrue(beforeSql.contains("visit_timestamp < date '2020-01-01'"));
         assertSqlExecutes(beforeSql);
 
-        Lang2QueryNodeDTO range = leaf("2001", "1001", "exists", null);
-        range.setTimeFilter(Map.of("after", "2020-01-01", "before", "2021-01-01"));
-        String rangeSql = queryBuilderBO.buildCountDistinctSql(queryTree(range));
+        QueryItemDTO range = leaf("2001", "1001", QueryOperatorTypes.EXISTS, null);
+        range.setTimeFilter(new TimeFilterDTO(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 1, 1)));
+        String rangeSql = queryBuilderBO.buildCountDistinctSql(queryTree(range), COHORT_IDS);
         Assertions.assertTrue(rangeSql.contains("visit_timestamp > date '2020-01-01'"));
         Assertions.assertTrue(rangeSql.contains("visit_timestamp < date '2021-01-01'"));
         assertSqlExecutes(rangeSql);
     }
 
     @Test
-    @Order(15)
-    void testTimeFilterRejectsInvalidValues() {
-        Lang2QueryNodeDTO invalidText = leaf("2001", "1001", "exists", null);
-        invalidText.setTimeFilter("last 30 days");
-        Assertions.assertThrows(QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(invalidText)));
-
-        Lang2QueryNodeDTO invalidDate = leaf("2001", "1001", "exists", null);
-        invalidDate.setTimeFilter(Map.of("after", "01-01-2020"));
-        Assertions.assertThrows(QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(invalidDate)));
-    }
-
-    @Test
     @Order(16)
     void testAbsoluteValueModeMatchesRawAge() {
-        Lang2QueryNodeDTO age = leaf("2002", "1002", "<", 28);
-        age.setValueMode("absolute");
+        QueryItemDTO age = leaf("2002", "1002", QueryOperatorTypes.SMALLER, 28);
+        age.setValueMode(ValueMode.ABSOLUTE);
 
         QueryResultWrapperDTO response = queryBO.runQuery(queryTree(age), List.of(1L, 5L));
         Assertions.assertEquals(List.of(1L), matchedPatientIds(response));
@@ -327,20 +324,20 @@ public class QueryBuilderTest {
     @Test
     @Order(17)
     void testDeltaMatchesConsecutiveAgeIncrease() {
-        Lang2QueryNodeDTO age = leaf("2002", "1002", ">", 0);
-        age.setValueMode("delta");
+        QueryItemDTO age = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        age.setValueMode(ValueMode.DELTA);
 
-        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(age));
+        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(age), COHORT_IDS);
         Assertions.assertTrue(sql.contains("COALESCE(value_int,"));
-        Assertions.assertTrue(sql.contains("LAG(numeric_value)"));
+        Assertions.assertTrue(sql.contains("LAG(agg_value)"));
         Assertions.assertFalse(sql.contains("interval "));
         assertSqlExecutes(sql);
 
         QueryResultWrapperDTO response = queryBO.runQuery(queryTree(age), List.of(1L, 5L));
         Assertions.assertEquals(List.of(1L, 2L), matchedPatientIds(response));
 
-        Lang2QueryNodeDTO tooLarge = leaf("2002", "1002", ">", 2);
-        tooLarge.setValueMode("delta");
+        QueryItemDTO tooLarge = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 2);
+        tooLarge.setValueMode(ValueMode.DELTA);
         QueryResultWrapperDTO none = queryBO.runQuery(queryTree(tooLarge), List.of(1L, 5L));
         Assertions.assertEquals(List.of(), matchedPatientIds(none));
     }
@@ -348,9 +345,10 @@ public class QueryBuilderTest {
     @Test
     @Order(18)
     void testDeltaWindowUsesVisitGap() {
-        Lang2QueryNodeDTO withinWeek = leaf("2002", "1002", ">", 0);
-        withinWeek.setValueMode("delta 7 days");
-        String weekSql = queryBuilderBO.buildCountDistinctSql(queryTree(withinWeek));
+        QueryItemDTO withinWeek = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        withinWeek.setValueMode(ValueMode.DELTA);
+        withinWeek.setDeltaInterval(interval("7 days"));
+        String weekSql = queryBuilderBO.buildCountDistinctSql(queryTree(withinWeek), COHORT_IDS);
         Assertions.assertTrue(weekSql.contains(
                 "later.visit_timestamp <= earlier.visit_timestamp + interval '7 days'"));
         Assertions.assertFalse(weekSql.contains("LAG("));
@@ -358,9 +356,10 @@ public class QueryBuilderTest {
         QueryResultWrapperDTO week = queryBO.runQuery(queryTree(withinWeek), List.of(1L, 5L));
         Assertions.assertEquals(List.of(), matchedPatientIds(week));
 
-        Lang2QueryNodeDTO withinFortyDays = leaf("2002", "1002", ">", 0);
-        withinFortyDays.setValueMode("delta 40 days");
-        String fortySql = queryBuilderBO.buildCountDistinctSql(queryTree(withinFortyDays));
+        QueryItemDTO withinFortyDays = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        withinFortyDays.setValueMode(ValueMode.DELTA);
+        withinFortyDays.setDeltaInterval(interval("40 days"));
+        String fortySql = queryBuilderBO.buildCountDistinctSql(queryTree(withinFortyDays), COHORT_IDS);
         Assertions.assertTrue(fortySql.contains(
                 "later.visit_timestamp <= earlier.visit_timestamp + interval '40 days'"));
         assertSqlExecutes(fortySql);
@@ -371,18 +370,18 @@ public class QueryBuilderTest {
     @Test
     @Order(19)
     void testChangeOperatorsUseConsecutiveValues() {
-        Lang2QueryNodeDTO changed = leaf("2001", "1001", "has_changed", null);
-        changed.setValueMode("delta");
+        QueryItemDTO changed = leaf("2001", "1001", QueryOperatorTypes.HAS_CHANGED, null);
+        changed.setValueMode(ValueMode.DELTA);
         QueryResultWrapperDTO changedResponse = queryBO.runQuery(queryTree(changed), List.of(1L, 5L));
         Assertions.assertEquals(List.of(1L), matchedPatientIds(changedResponse));
 
-        Lang2QueryNodeDTO fromDiabetes = leaf("2001", "1001", "changed_from", "Diabetes Type 2");
-        fromDiabetes.setValueMode("delta");
+        QueryItemDTO fromDiabetes = leaf("2001", "1001", QueryOperatorTypes.CHANGED_FROM, "Diabetes Type 2");
+        fromDiabetes.setValueMode(ValueMode.DELTA);
         QueryResultWrapperDTO fromResponse = queryBO.runQuery(queryTree(fromDiabetes), List.of(1L, 5L));
         Assertions.assertEquals(List.of(1L), matchedPatientIds(fromResponse));
 
-        Lang2QueryNodeDTO toHypertension = leaf("2001", "1001", "changed_to", "Hypertension");
-        toHypertension.setValueMode("delta");
+        QueryItemDTO toHypertension = leaf("2001", "1001", QueryOperatorTypes.CHANGED_TO, "Hypertension");
+        toHypertension.setValueMode(ValueMode.DELTA);
         QueryResultWrapperDTO toResponse = queryBO.runQuery(queryTree(toHypertension), List.of(1L, 5L));
         Assertions.assertEquals(List.of(1L), matchedPatientIds(toResponse));
     }
@@ -390,52 +389,44 @@ public class QueryBuilderTest {
     @Test
     @Order(20)
     void testValueModeRejectsGroupsWindowsAndNonNumericDelta() {
-        Lang2QueryNodeDTO group = and(leaf("2002", "1002", ">", 0));
-        group.setValueMode("delta");
+        QueryItemDTO group = and(leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0));
+        group.setValueMode(ValueMode.DELTA);
         Assertions.assertThrows(QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(group)));
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(group), COHORT_IDS));
 
-        Lang2QueryNodeDTO badInterval = leaf("2002", "1002", ">", 0);
-        badInterval.setValueMode("delta yesterday");
+        QueryItemDTO badInterval = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        badInterval.setValueMode(ValueMode.DELTA);
+        badInterval.setDeltaInterval(List.of(new IntervalPartDTO(0, IntervalUnit.DAYS)));
         Assertions.assertThrows(QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(badInterval)));
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(badInterval), COHORT_IDS));
 
-        Lang2QueryNodeDTO absoluteChange = leaf("2001", "1001", "has_changed", null);
+        QueryItemDTO absoluteChange = leaf("2001", "1001", QueryOperatorTypes.HAS_CHANGED, null);
         Assertions.assertThrows(QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(absoluteChange)));
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(absoluteChange), COHORT_IDS));
 
-        Lang2QueryNodeDTO stringDelta = leaf("2001", "1001", ">", 0);
-        stringDelta.setValueMode("delta");
-        String stringSql = queryBuilderBO.buildCountDistinctSql(queryTree(stringDelta));
+        QueryItemDTO stringDelta = leaf("2001", "1001", QueryOperatorTypes.BIGGER, 0);
+        stringDelta.setValueMode(ValueMode.DELTA);
+        String stringSql = queryBuilderBO.buildCountDistinctSql(queryTree(stringDelta), COHORT_IDS);
         Assertions.assertTrue(stringSql.contains("btrim(value_string)::numeric"));
         assertSqlExecutes(stringSql);
     }
 
     @Test
     @Order(21)
-    void testDeltaParsesStringValuesWhenDatatypeIsNumeric() {
-        Lang2QueryNodeDTO asFloat = leaf("2001", "1001", ">", 0);
-        asFloat.setValueMode("delta 3 minutes");
-        asFloat.setDatatype("Float");
-        String floatSql = queryBuilderBO.buildCountDistinctSql(queryTree(asFloat));
-        Assertions.assertTrue(floatSql.contains("btrim(value_string)::numeric"));
-        Assertions.assertTrue(floatSql.contains("btrim(value_string) ~ '^-?[0-9]+([.][0-9]+)?$'"));
-        Assertions.assertTrue(floatSql.contains("interval '3 minutes'"));
-        assertSqlExecutes(floatSql);
-        Assertions.assertEquals(List.of(), matchedPatientIds(queryBO.runQuery(queryTree(asFloat), List.of(1L, 5L))));
+    void testDeltaParsesStringValues() {
+        QueryItemDTO stringColumn = leaf("2001", "1001", QueryOperatorTypes.BIGGER, 0);
+        stringColumn.setValueMode(ValueMode.DELTA);
+        stringColumn.setDeltaInterval(interval("3 minutes"));
+        String stringSql = queryBuilderBO.buildCountDistinctSql(queryTree(stringColumn), COHORT_IDS);
+        Assertions.assertTrue(stringSql.contains("btrim(value_string)::numeric"));
+        Assertions.assertTrue(stringSql.contains("btrim(value_string) ~ '^-?[0-9]+([.][0-9]+)?$'"));
+        Assertions.assertTrue(stringSql.contains("interval '3 minutes'"));
+        assertSqlExecutes(stringSql);
+        Assertions.assertEquals(List.of(), matchedPatientIds(queryBO.runQuery(queryTree(stringColumn), List.of(1L, 5L))));
 
-        Lang2QueryNodeDTO asInteger = leaf("2001", "1001", ">", 0);
-        asInteger.setValueMode("delta");
-        asInteger.setDatatype("Integer");
-        String integerSql = queryBuilderBO.buildCountDistinctSql(queryTree(asInteger));
-        Assertions.assertTrue(integerSql.contains("btrim(value_string) ~ '^-?[0-9]+$'"));
-        Assertions.assertFalse(integerSql.contains("([.][0-9]+)?"));
-        assertSqlExecutes(integerSql);
-
-        Lang2QueryNodeDTO numericColumn = leaf("2002", "1002", ">", 0);
-        numericColumn.setValueMode("delta");
-        numericColumn.setDatatype("Float");
-        String numericSql = queryBuilderBO.buildCountDistinctSql(queryTree(numericColumn));
+        QueryItemDTO numericColumn = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        numericColumn.setValueMode(ValueMode.DELTA);
+        String numericSql = queryBuilderBO.buildCountDistinctSql(queryTree(numericColumn), COHORT_IDS);
         Assertions.assertTrue(numericSql.contains("COALESCE(value_int,"));
         Assertions.assertTrue(numericSql.contains("btrim(value_string)::numeric"));
         QueryResultWrapperDTO response = queryBO.runQuery(queryTree(numericColumn), List.of(1L, 5L));
@@ -446,19 +437,19 @@ public class QueryBuilderTest {
     @Order(22)
     void testTimeAggregationFirstAndLast() {
         // Patient 1 age: 25, 26, 27. Patient 2 age: 30, 31.
-        Lang2QueryNodeDTO first = leaf("2002", "1002", "<", 26);
-        first.setTimeAggregationMethod("first");
-        String firstSql = queryBuilderBO.buildCountDistinctSql(queryTree(first));
+        QueryItemDTO first = leaf("2002", "1002", QueryOperatorTypes.SMALLER, 26);
+        first.setTimeAggregationMethod(TimeAggregationMethod.FIRST);
+        String firstSql = queryBuilderBO.buildCountDistinctSql(queryTree(first), COHORT_IDS);
         Assertions.assertTrue(firstSql.contains("ROW_NUMBER() OVER"));
-        Assertions.assertTrue(firstSql.contains("ORDER BY event_time ASC, id ASC"));
+        Assertions.assertTrue(firstSql.contains("ORDER BY visit_timestamp ASC, id ASC"));
         Assertions.assertTrue(firstSql.contains("rn = 1"));
         assertSqlExecutes(firstSql);
         Assertions.assertEquals(List.of(1L), matchedPatientIds(queryBO.runQuery(queryTree(first), List.of(1L, 5L))));
 
-        Lang2QueryNodeDTO last = leaf("2002", "1002", ">", 30);
-        last.setTimeAggregationMethod("last");
-        String lastSql = queryBuilderBO.buildCountDistinctSql(queryTree(last));
-        Assertions.assertTrue(lastSql.contains("ORDER BY event_time DESC, id DESC"));
+        QueryItemDTO last = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 30);
+        last.setTimeAggregationMethod(TimeAggregationMethod.LAST);
+        String lastSql = queryBuilderBO.buildCountDistinctSql(queryTree(last), COHORT_IDS);
+        Assertions.assertTrue(lastSql.contains("ORDER BY visit_timestamp DESC, id DESC"));
         assertSqlExecutes(lastSql);
         Assertions.assertEquals(List.of(2L), matchedPatientIds(queryBO.runQuery(queryTree(last), List.of(1L, 5L))));
     }
@@ -467,11 +458,11 @@ public class QueryBuilderTest {
     @Order(23)
     void testValueAggregationAverageOverWholeSeries() {
         // Patient 1 avg age = 26, patient 2 avg age = 30.5.
-        Lang2QueryNodeDTO average = leaf("2002", "1002", ">", 28);
-        average.setValueAggregationMethod("average");
-        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(average));
+        QueryItemDTO average = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 28);
+        average.setValueAggregationMethod(ValueAggregationMethod.AVERAGE);
+        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(average), COHORT_IDS);
         Assertions.assertTrue(sql.contains("GROUP BY"));
-        Assertions.assertTrue(sql.contains("HAVING AVG(s.agg_value) > 28"));
+        Assertions.assertTrue(sql.contains("GROUP BY patient_id, schema_node_id) WHERE agg_value > 28"));
         assertSqlExecutes(sql);
         Assertions.assertEquals(List.of(2L), matchedPatientIds(queryBO.runQuery(queryTree(average), List.of(1L, 5L))));
     }
@@ -479,12 +470,13 @@ public class QueryBuilderTest {
     @Test
     @Order(24)
     void testTimeAggregationWithinXRequiresAverageAndUsesSlidingWindow() {
-        Lang2QueryNodeDTO withinAvg = leaf("2002", "1002", ">=", 30);
-        withinAvg.setTimeAggregationMethod("within 40 days");
-        withinAvg.setValueAggregationMethod("average");
-        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(withinAvg));
+        QueryItemDTO withinAvg = leaf("2002", "1002", QueryOperatorTypes.BIGGER_EQUAL, 30);
+        withinAvg.setTimeAggregationMethod(TimeAggregationMethod.WITHIN);
+        withinAvg.setTimeWindow(interval("40 days"));
+        withinAvg.setValueAggregationMethod(ValueAggregationMethod.AVERAGE);
+        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(withinAvg), COHORT_IDS);
         Assertions.assertTrue(sql.contains("interval '40 days'"));
-        Assertions.assertTrue(sql.contains("HAVING AVG(r.agg_value) >= 30"));
+        Assertions.assertTrue(sql.contains(") WHERE agg_value >= 30"));
         assertSqlExecutes(sql);
         // Patient 1's best 40-day window average tops out at 26.5; patient 2's reaches 30.5.
         Assertions.assertEquals(
@@ -495,21 +487,25 @@ public class QueryBuilderTest {
     @Order(25)
     void testTimeAggregationWithinCountWorksOnDelta() {
         // Patient 1 has two consecutive +1 age steps 59 days apart; patient 2 has only one step.
-        Lang2QueryNodeDTO withinCount = leaf("2002", "1002", ">", 0);
-        withinCount.setValueMode("delta");
-        withinCount.setTimeAggregationMethod("within 70 days at least 2 times");
-        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(withinCount));
+        QueryItemDTO withinCount = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        withinCount.setValueMode(ValueMode.DELTA);
+        withinCount.setTimeAggregationMethod(TimeAggregationMethod.WITHIN_AT_LEAST);
+        withinCount.setTimeWindow(interval("70 days"));
+        withinCount.setTimeWindowCount(2);
+        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(withinCount), COHORT_IDS);
         Assertions.assertTrue(sql.contains("interval '70 days'"));
         Assertions.assertTrue(sql.contains("window_count >= 2"));
         assertSqlExecutes(sql);
         Assertions.assertEquals(
                 List.of(1L), matchedPatientIds(queryBO.runQuery(queryTree(withinCount), List.of(1L, 5L))));
 
-        Lang2QueryNodeDTO atMost = leaf("2002", "1002", ">", 0);
-        atMost.setValueMode("delta");
-        atMost.setTimeAggregationMethod("within 70 days at most 1 times");
-        String atMostSql = queryBuilderBO.buildCountDistinctSql(queryTree(atMost));
-        Assertions.assertTrue(atMostSql.contains("HAVING MAX(window_count) <= 1"));
+        QueryItemDTO atMost = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        atMost.setValueMode(ValueMode.DELTA);
+        atMost.setTimeAggregationMethod(TimeAggregationMethod.WITHIN_AT_MOST);
+        atMost.setTimeWindow(interval("70 days"));
+        atMost.setTimeWindowCount(1);
+        String atMostSql = queryBuilderBO.buildCountDistinctSql(queryTree(atMost), COHORT_IDS);
+        Assertions.assertTrue(atMostSql.contains("max_window_count <= 1"));
         assertSqlExecutes(atMostSql);
     }
 
@@ -517,48 +513,46 @@ public class QueryBuilderTest {
     @Order(26)
     void testAggregationMethodsRejectInvalidCombinations() {
         // Not allowed on a group.
-        Lang2QueryNodeDTO group = and(leaf("2002", "1002", ">", 0));
-        group.setTimeAggregationMethod("first");
+        QueryItemDTO group = and(leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0));
+        group.setTimeAggregationMethod(TimeAggregationMethod.FIRST);
         Assertions.assertThrows(QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(group)));
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(group), COHORT_IDS));
 
         // "within X" plain requires value_aggregation_method = average.
-        Lang2QueryNodeDTO withinNoAverage = leaf("2002", "1002", ">", 0);
-        withinNoAverage.setTimeAggregationMethod("within 1 week");
+        QueryItemDTO withinNoAverage = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        withinNoAverage.setTimeAggregationMethod(TimeAggregationMethod.WITHIN);
+        withinNoAverage.setTimeWindow(interval("1 week"));
         Assertions.assertThrows(QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(withinNoAverage)));
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(withinNoAverage), COHORT_IDS));
 
         // "within X at least/at most" is not allowed with value_aggregation_method = average.
-        Lang2QueryNodeDTO withinCountAverage = leaf("2002", "1002", ">", 0);
-        withinCountAverage.setTimeAggregationMethod("within 1 week at least 2 times");
-        withinCountAverage.setValueAggregationMethod("average");
+        QueryItemDTO withinCountAverage = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        withinCountAverage.setTimeAggregationMethod(TimeAggregationMethod.WITHIN_AT_LEAST);
+        withinCountAverage.setTimeWindow(interval("1 week"));
+        withinCountAverage.setTimeWindowCount(2);
+        withinCountAverage.setValueAggregationMethod(ValueAggregationMethod.AVERAGE);
         Assertions.assertThrows(QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(withinCountAverage)));
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(withinCountAverage), COHORT_IDS));
 
         // value_aggregation_method = average requires value_mode = absolute.
-        Lang2QueryNodeDTO averageOnDelta = leaf("2002", "1002", ">", 0);
-        averageOnDelta.setValueMode("delta");
-        averageOnDelta.setValueAggregationMethod("average");
+        QueryItemDTO averageOnDelta = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        averageOnDelta.setValueMode(ValueMode.DELTA);
+        averageOnDelta.setValueAggregationMethod(ValueAggregationMethod.AVERAGE);
         Assertions.assertThrows(QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(averageOnDelta)));
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(averageOnDelta), COHORT_IDS));
 
         // Aggregation methods do not combine with change operators yet.
-        Lang2QueryNodeDTO changeWithAggregation = leaf("2001", "1001", "has_changed", null);
-        changeWithAggregation.setValueMode("delta");
-        changeWithAggregation.setTimeAggregationMethod("first");
+        QueryItemDTO changeWithAggregation = leaf("2001", "1001", QueryOperatorTypes.HAS_CHANGED, null);
+        changeWithAggregation.setValueMode(ValueMode.DELTA);
+        changeWithAggregation.setTimeAggregationMethod(TimeAggregationMethod.FIRST);
         Assertions.assertThrows(QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(changeWithAggregation)));
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(changeWithAggregation), COHORT_IDS));
 
-        // Unsupported literal values are rejected, not ignored.
-        Lang2QueryNodeDTO badTimeAggregation = leaf("2002", "1002", ">", 0);
-        badTimeAggregation.setTimeAggregationMethod("yesterday");
+        QueryItemDTO missingWindowCount = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        missingWindowCount.setTimeAggregationMethod(TimeAggregationMethod.WITHIN_AT_LEAST);
+        missingWindowCount.setTimeWindow(interval("1 week"));
         Assertions.assertThrows(QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(badTimeAggregation)));
-
-        Lang2QueryNodeDTO badValueAggregation = leaf("2002", "1002", ">", 0);
-        badValueAggregation.setValueAggregationMethod("median");
-        Assertions.assertThrows(QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(badValueAggregation)));
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(missingWindowCount), COHORT_IDS));
     }
 
     @Test
@@ -566,11 +560,12 @@ public class QueryBuilderTest {
     void testTimeAggregationFirstLastCombineWithDeltaWindow() {
         // delta X ("delta 3 minutes") step source crossed with first/last: just needs to compile
         // and execute; the seed's monthly gaps mean no pair matches delta 3 minutes anyway.
-        Lang2QueryNodeDTO firstOnDeltaWindow = leaf("2002", "1002", ">", 0);
-        firstOnDeltaWindow.setValueMode("delta 3 minutes");
-        firstOnDeltaWindow.setTimeAggregationMethod("first");
-        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(firstOnDeltaWindow));
-        Assertions.assertTrue(sql.contains("later.numeric_value - earlier.numeric_value"));
+        QueryItemDTO firstOnDeltaWindow = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        firstOnDeltaWindow.setValueMode(ValueMode.DELTA);
+        firstOnDeltaWindow.setDeltaInterval(interval("3 minutes"));
+        firstOnDeltaWindow.setTimeAggregationMethod(TimeAggregationMethod.FIRST);
+        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(firstOnDeltaWindow), COHORT_IDS);
+        Assertions.assertTrue(sql.contains("agg_value - previous_value"));
         Assertions.assertTrue(sql.contains("rn = 1"));
         assertSqlExecutes(sql);
         Assertions.assertEquals(
@@ -579,61 +574,51 @@ public class QueryBuilderTest {
 
     @Test
     @Order(28)
-    void testAbsoluteComparisonParsesNumericDatatypeHintInsteadOfComparingText() {
-        // Age (schema node 2) is INT: the hinted path must COALESCE to the typed column and
-        // keep matching exactly like the unhinted comparison (regression safety).
-        Lang2QueryNodeDTO ageHinted = leaf("2002", "1002", ">", 24);
-        ageHinted.setDatatype("Float");
-        String ageSql = queryBuilderBO.buildCountDistinctSql(queryTree(ageHinted));
+    void testAbsoluteComparisonWithNumberParsesInsteadOfComparingText() {
+        // age (schema node 2) is INT, text holding a number counts as well
+        QueryItemDTO age = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 24);
+        String ageSql = queryBuilderBO.buildCountDistinctSql(queryTree(age), COHORT_IDS);
         Assertions.assertTrue(ageSql.contains("COALESCE(value_int,"));
         assertSqlExecutes(ageSql);
         Assertions.assertEquals(
-                List.of(1L, 2L), matchedPatientIds(queryBO.runQuery(queryTree(ageHinted), List.of(1L, 5L))));
+                List.of(1L, 2L), matchedPatientIds(queryBO.runQuery(queryTree(age), List.of(1L, 5L))));
 
-        // Diagnosis (schema node 3) is STRING with non-numeric text ("Diabetes Type 2", ...).
-        // Without the hint this used to compare lexicographically (e.g. "D..." > '0' is true,
-        // the exact bug: text starting with a high character code looks "bigger" than a
-        // number). With the hint it must only compare rows that actually parse as a number,
-        // so unparseable diagnosis strings are excluded rather than wrongly matched.
-        Lang2QueryNodeDTO diagnosisHinted = leaf("2001", "1001", ">", "0");
-        diagnosisHinted.setDatatype("Float");
-        String diagnosisSql = queryBuilderBO.buildCountDistinctSql(queryTree(diagnosisHinted));
+        // diagnosis (schema node 3) is STRING without numbers; compared as text "Diabetes..." > '0' would match
+        QueryItemDTO diagnosis = leaf("2001", "1001", QueryOperatorTypes.BIGGER, "0");
+        String diagnosisSql = queryBuilderBO.buildCountDistinctSql(queryTree(diagnosis), COHORT_IDS);
         Assertions.assertTrue(diagnosisSql.contains("btrim(value_string) ~ '^-?[0-9]+([.][0-9]+)?$'"));
-        Assertions.assertFalse(diagnosisSql.contains("value_string > '0'"));
+        Assertions.assertFalse(diagnosisSql.contains("agg_value > '0'"));
         assertSqlExecutes(diagnosisSql);
         Assertions.assertEquals(
-                List.of(), matchedPatientIds(queryBO.runQuery(queryTree(diagnosisHinted), List.of(1L, 5L))));
+                List.of(), matchedPatientIds(queryBO.runQuery(queryTree(diagnosis), List.of(1L, 5L))));
 
-        // Without the datatype hint, behavior is unchanged: a plain text comparison.
-        Lang2QueryNodeDTO diagnosisUnhinted = leaf("2001", "1001", ">", "0");
-        String unhintedSql = queryBuilderBO.buildCountDistinctSql(queryTree(diagnosisUnhinted));
-        Assertions.assertTrue(unhintedSql.contains("value_string > '0'"));
-        assertSqlExecutes(unhintedSql);
+        // a value that is not a number stays a text comparison
+        QueryItemDTO diagnosisText = leaf("2001", "1001", QueryOperatorTypes.BIGGER, "A");
+        String textSql = queryBuilderBO.buildCountDistinctSql(queryTree(diagnosisText), COHORT_IDS);
+        Assertions.assertTrue(textSql.contains("agg_value > 'A'"));
+        assertSqlExecutes(textSql);
     }
 
     @Test
     @Order(29)
-    void testFirstLastAggregationHonorsNumericDatatypeHint() {
-        // Same hint-gated numeric parsing must apply on the first/last/within-count absolute
-        // path (buildAggregatedColumnClause), not just the plain buildClause path.
-        Lang2QueryNodeDTO firstHinted = leaf("2002", "1002", "<", 26);
-        firstHinted.setDatatype("Float");
-        firstHinted.setTimeAggregationMethod("first");
-        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(firstHinted));
+    void testFirstLastAggregationParsesNumbers() {
+        // numeric parsing also applies on the first/last path
+        QueryItemDTO first = leaf("2002", "1002", QueryOperatorTypes.SMALLER, 26);
+        first.setTimeAggregationMethod(TimeAggregationMethod.FIRST);
+        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(first), COHORT_IDS);
         Assertions.assertTrue(sql.contains("COALESCE(value_int,"));
         assertSqlExecutes(sql);
         Assertions.assertEquals(
-                List.of(1L), matchedPatientIds(queryBO.runQuery(queryTree(firstHinted), List.of(1L, 5L))));
+                List.of(1L), matchedPatientIds(queryBO.runQuery(queryTree(first), List.of(1L, 5L))));
 
-        Lang2QueryNodeDTO diagnosisFirstHinted = leaf("2001", "1001", ">", "0");
-        diagnosisFirstHinted.setDatatype("Float");
-        diagnosisFirstHinted.setTimeAggregationMethod("first");
-        String diagnosisSql = queryBuilderBO.buildCountDistinctSql(queryTree(diagnosisFirstHinted));
+        QueryItemDTO diagnosisFirst = leaf("2001", "1001", QueryOperatorTypes.BIGGER, "0");
+        diagnosisFirst.setTimeAggregationMethod(TimeAggregationMethod.FIRST);
+        String diagnosisSql = queryBuilderBO.buildCountDistinctSql(queryTree(diagnosisFirst), COHORT_IDS);
         Assertions.assertTrue(diagnosisSql.contains("btrim(value_string) ~"));
         assertSqlExecutes(diagnosisSql);
         Assertions.assertEquals(
                 List.of(),
-                matchedPatientIds(queryBO.runQuery(queryTree(diagnosisFirstHinted), List.of(1L, 5L))));
+                matchedPatientIds(queryBO.runQuery(queryTree(diagnosisFirst), List.of(1L, 5L))));
     }
 
     @Test
@@ -648,13 +633,13 @@ public class QueryBuilderTest {
                     WHEN 7 THEN 'AGE_ONLY_2' ELSE import_schema_group_id END
                 WHERE id IN (1, 2, 4, 5, 6, 7, 8)
                 """).executeUpdate();
-        Lang2QueryNodeDTO diagnosis = leaf("2001", "1001", "=", "Diabetes Type 2");
-        Lang2QueryNodeDTO age = leaf("2002", "1002", ">", 24);
-        age.setTimeAggregationMethod("first");
-        Lang2QueryNodeDTO group = and(diagnosis, age);
-        group.setTemporalRelations(List.of(relation(0, 1, "same group")));
+        QueryItemDTO diagnosis = leaf("2001", "1001", QueryOperatorTypes.EQUAL, "Diabetes Type 2");
+        QueryItemDTO age = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 24);
+        age.setTimeAggregationMethod(TimeAggregationMethod.FIRST);
+        QueryItemDTO group = and(diagnosis, age);
+        group.setTemporalRelations(List.of(relation(0, 1, TemporalRelationship.SAME_GROUP, null)));
 
-        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(group));
+        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(group), COHORT_IDS);
         Assertions.assertTrue(sql.contains("import_schema_group_id"));
         Assertions.assertTrue(sql.contains("same_group_source"));
         assertSqlExecutes(sql);
@@ -663,23 +648,23 @@ public class QueryBuilderTest {
 
         // The patient's global first age is 25 and fails >25. Correlation must happen
         // first, leaving age 26 in the Hypertension group as the scoped "first".
-        Lang2QueryNodeDTO hypertension = leaf("2001", "1001", "=", "Hypertension");
-        Lang2QueryNodeDTO scopedFirst = leaf("2002", "1002", ">", 25);
-        scopedFirst.setTimeAggregationMethod("first");
-        Lang2QueryNodeDTO correlateBeforeFirst = and(hypertension, scopedFirst);
-        correlateBeforeFirst.setTemporalRelations(List.of(relation(0, 1, "same group")));
+        QueryItemDTO hypertension = leaf("2001", "1001", QueryOperatorTypes.EQUAL, "Hypertension");
+        QueryItemDTO scopedFirst = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 25);
+        scopedFirst.setTimeAggregationMethod(TimeAggregationMethod.FIRST);
+        QueryItemDTO correlateBeforeFirst = and(hypertension, scopedFirst);
+        correlateBeforeFirst.setTemporalRelations(List.of(relation(0, 1, TemporalRelationship.SAME_GROUP, null)));
         Assertions.assertEquals(
                 List.of(1L),
                 matchedPatientIds(queryBO.runQuery(queryTree(correlateBeforeFirst), List.of(1L))));
 
         // Patient 2 has age 31, but it belongs to a different import group than the
         // Asthma row. Independent AND matches; same-group correlation must not.
-        Lang2QueryNodeDTO asthma = leaf("2001", "1001", "=", "Asthma respiratory disease");
-        Lang2QueryNodeDTO laterAge = leaf("2002", "1002", ">", 30);
-        Lang2QueryNodeDTO independent = and(asthma, laterAge);
+        QueryItemDTO asthma = leaf("2001", "1001", QueryOperatorTypes.EQUAL, "Asthma respiratory disease");
+        QueryItemDTO laterAge = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 30);
+        QueryItemDTO independent = and(asthma, laterAge);
         Assertions.assertEquals(
                 List.of(2L), matchedPatientIds(queryBO.runQuery(queryTree(independent), List.of(1L))));
-        independent.setTemporalRelations(List.of(relation(0, 1, "same group")));
+        independent.setTemporalRelations(List.of(relation(0, 1, TemporalRelationship.SAME_GROUP, null)));
         Assertions.assertEquals(
                 List.of(), matchedPatientIds(queryBO.runQuery(queryTree(independent), List.of(1L))));
     }
@@ -687,45 +672,45 @@ public class QueryBuilderTest {
     @Test
     @Order(31)
     void testTemporalTimeVisitAndFollowingRelationships() {
-        Lang2QueryNodeDTO height = leaf("2003", "1002", "=", 175);
-        Lang2QueryNodeDTO weight = leaf("2004", "1002", "=", 70);
+        QueryItemDTO height = leaf("2003", "1002", QueryOperatorTypes.EQUAL, 175);
+        QueryItemDTO weight = leaf("2004", "1002", QueryOperatorTypes.EQUAL, 70);
 
-        Lang2QueryNodeDTO sameVisit = and(height, weight);
-        sameVisit.setTemporalRelations(List.of(relation(0, 1, "same visit")));
+        QueryItemDTO sameVisit = and(height, weight);
+        sameVisit.setTemporalRelations(List.of(relation(0, 1, TemporalRelationship.SAME_VISIT, null)));
         Assertions.assertEquals(
                 List.of(3L), matchedPatientIds(queryBO.runQuery(queryTree(sameVisit), List.of(2L))));
 
-        Lang2QueryNodeDTO sameTime = and(height, weight);
-        sameTime.setTemporalRelations(List.of(relation(0, 1, "same time")));
+        QueryItemDTO sameTime = and(height, weight);
+        sameTime.setTemporalRelations(List.of(relation(0, 1, TemporalRelationship.SAME_TIME, null)));
         Assertions.assertEquals(
                 List.of(3L), matchedPatientIds(queryBO.runQuery(queryTree(sameTime), List.of(2L))));
 
-        Lang2QueryNodeDTO multiple = or(height, weight);
+        QueryItemDTO multiple = or(height, weight);
         multiple.setTemporalRelations(List.of(
-                relation(0, 1, "same visit"),
-                relation(0, 1, "same time")));
+                relation(0, 1, TemporalRelationship.SAME_VISIT, null),
+                relation(0, 1, TemporalRelationship.SAME_TIME, null)));
         Assertions.assertEquals(
                 List.of(3L), matchedPatientIds(queryBO.runQuery(queryTree(multiple), List.of(2L))));
 
-        Lang2QueryNodeDTO age25 = leaf("2002", "1002", "=", 25);
-        Lang2QueryNodeDTO hypertension = leaf("2001", "1001", "=", "Hypertension");
-        Lang2QueryNodeDTO following = and(age25, hypertension);
-        following.setTemporalRelations(List.of(relation(0, 1, "in the following 40 days")));
+        QueryItemDTO age25 = leaf("2002", "1002", QueryOperatorTypes.EQUAL, 25);
+        QueryItemDTO hypertension = leaf("2001", "1001", QueryOperatorTypes.EQUAL, "Hypertension");
+        QueryItemDTO following = and(age25, hypertension);
+        following.setTemporalRelations(List.of(relation(0, 1, TemporalRelationship.IN_THE_FOLLOWING, interval("40 days"))));
         Assertions.assertEquals(
                 List.of(1L), matchedPatientIds(queryBO.runQuery(queryTree(following), List.of(1L))));
 
-        following.setTemporalRelations(List.of(relation(0, 1, "in the following 20 days")));
+        following.setTemporalRelations(List.of(relation(0, 1, TemporalRelationship.IN_THE_FOLLOWING, interval("20 days"))));
         Assertions.assertEquals(
                 List.of(), matchedPatientIds(queryBO.runQuery(queryTree(following), List.of(1L))));
 
-        following.setTemporalRelations(List.of(relation(0, 1, "anytime after")));
+        following.setTemporalRelations(List.of(relation(0, 1, TemporalRelationship.ANYTIME_AFTER, null)));
         Assertions.assertEquals(
                 List.of(1L), matchedPatientIds(queryBO.runQuery(queryTree(following), List.of(1L))));
 
-        Lang2QueryNodeDTO increasingAge = leaf("2002", "1002", ">", 0);
-        increasingAge.setValueMode("delta");
-        Lang2QueryNodeDTO deltaAtDiagnosis = and(increasingAge, hypertension);
-        deltaAtDiagnosis.setTemporalRelations(List.of(relation(0, 1, "same time")));
+        QueryItemDTO increasingAge = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        increasingAge.setValueMode(ValueMode.DELTA);
+        QueryItemDTO deltaAtDiagnosis = and(increasingAge, hypertension);
+        deltaAtDiagnosis.setTemporalRelations(List.of(relation(0, 1, TemporalRelationship.SAME_TIME, null)));
         Assertions.assertEquals(
                 List.of(1L),
                 matchedPatientIds(queryBO.runQuery(queryTree(deltaAtDiagnosis), List.of(1L))));
@@ -734,17 +719,17 @@ public class QueryBuilderTest {
     @Test
     @Order(32)
     void testTemporalWithinCountsAndValidation() {
-        Lang2QueryNodeDTO age25 = leaf("2002", "1002", "=", 25);
-        Lang2QueryNodeDTO diagnosisExists = leaf("2001", "1001", "exists", null);
-        Lang2QueryNodeDTO group = and(age25, diagnosisExists);
+        QueryItemDTO age25 = leaf("2002", "1002", QueryOperatorTypes.EQUAL, 25);
+        QueryItemDTO diagnosisExists = leaf("2001", "1001", QueryOperatorTypes.EXISTS, null);
+        QueryItemDTO group = and(age25, diagnosisExists);
 
-        TemporalRelationDTO twice = relation(0, 1, "within 40 days");
+        TemporalRelationDTO twice = relation(0, 1, TemporalRelationship.WITHIN, interval("40 days"));
         twice.setAtLeast(2);
         group.setTemporalRelations(List.of(twice));
         Assertions.assertEquals(
                 List.of(1L), matchedPatientIds(queryBO.runQuery(queryTree(group), List.of(1L))));
 
-        TemporalRelationDTO atMostOne = relation(0, 1, "within 40 days");
+        TemporalRelationDTO atMostOne = relation(0, 1, TemporalRelationship.WITHIN, interval("40 days"));
         atMostOne.setAtMost(1);
         group.setTemporalRelations(List.of(atMostOne));
         Assertions.assertEquals(
@@ -753,30 +738,30 @@ public class QueryBuilderTest {
         // Patient 1 has one diagnosis source followed by two age targets and another
         // source followed by one. At-most is universal, so the low-count source must not
         // hide the over-limit source. Patient 2 has only one following age target.
-        Lang2QueryNodeDTO diagnoses = leaf("2001", "1001", "exists", null);
-        Lang2QueryNodeDTO ages = leaf("2002", "1002", "exists", null);
-        Lang2QueryNodeDTO universalAtMost = and(diagnoses, ages);
-        TemporalRelationDTO followingAtMost = relation(0, 1, "in the following 70 days");
+        QueryItemDTO diagnoses = leaf("2001", "1001", QueryOperatorTypes.EXISTS, null);
+        QueryItemDTO ages = leaf("2002", "1002", QueryOperatorTypes.EXISTS, null);
+        QueryItemDTO universalAtMost = and(diagnoses, ages);
+        TemporalRelationDTO followingAtMost = relation(0, 1, TemporalRelationship.IN_THE_FOLLOWING, interval("70 days"));
         followingAtMost.setAtMost(1);
         universalAtMost.setTemporalRelations(List.of(followingAtMost));
         Assertions.assertEquals(
                 List.of(2L),
                 matchedPatientIds(queryBO.runQuery(queryTree(universalAtMost), List.of(1L))));
 
-        TemporalRelationDTO invalid = relation(0, 0, "same visit");
+        TemporalRelationDTO invalid = relation(0, 0, TemporalRelationship.SAME_VISIT, null);
         group.setTemporalRelations(List.of(invalid));
         Assertions.assertThrows(
-                QueryRejectedException.class, () -> queryBuilderBO.buildCountDistinctSql(queryTree(group)));
+                QueryRejectedException.class, () -> queryBuilderBO.buildCountDistinctSql(queryTree(group), COHORT_IDS));
 
-        TemporalRelationDTO unknown = relation(0, 1, "nearby");
+        TemporalRelationDTO unknown = relation(0, 1, null, null);
         group.setTemporalRelations(List.of(unknown));
         Assertions.assertThrows(
-                QueryRejectedException.class, () -> queryBuilderBO.buildCountDistinctSql(queryTree(group)));
+                QueryRejectedException.class, () -> queryBuilderBO.buildCountDistinctSql(queryTree(group), COHORT_IDS));
 
-        Lang2QueryNodeDTO nested = and(age25, and(diagnosisExists));
-        nested.setTemporalRelations(List.of(relation(0, 1, "same group")));
+        QueryItemDTO nested = and(age25, and(diagnosisExists));
+        nested.setTemporalRelations(List.of(relation(0, 1, TemporalRelationship.SAME_GROUP, null)));
         Assertions.assertThrows(
-                QueryRejectedException.class, () -> queryBuilderBO.buildCountDistinctSql(queryTree(nested)));
+                QueryRejectedException.class, () -> queryBuilderBO.buildCountDistinctSql(queryTree(nested), COHORT_IDS));
     }
 
     @Test
@@ -793,23 +778,22 @@ public class QueryBuilderTest {
                 """).executeUpdate();
 
         // Patient 1 has one age above 26. Patient 2 has two. Everyone else has none.
-        Lang2QueryNodeDTO age = leaf("2002", "1002", ">", 26);
-        String omittedSql = queryBuilderBO.buildCountDistinctSql(queryTree(age));
-        Assertions.assertFalse(omittedSql.contains("COUNT(DISTINCT occurrence_key)"));
+        QueryItemDTO age = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 26);
+        String omittedSql = queryBuilderBO.buildCountDistinctSql(queryTree(age), COHORT_IDS);
+        Assertions.assertFalse(omittedSql.contains("COUNT(DISTINCT counted.occurrence_key)"));
         Assertions.assertEquals(
                 List.of(1L, 2L), matchedPatientIds(queryBO.runQuery(queryTree(age), List.of(1L, 2L))));
 
         age.setAtLeast(2);
-        String atLeastSql = queryBuilderBO.buildCountDistinctSql(queryTree(age));
-        Assertions.assertTrue(atLeastSql.contains("COUNT(DISTINCT occurrence_key) >= 2"));
-        Assertions.assertFalse(atLeastSql.contains("patient_meta"));
+        String atLeastSql = queryBuilderBO.buildCountDistinctSql(queryTree(age), COHORT_IDS);
+        Assertions.assertTrue(atLeastSql.contains("COUNT(DISTINCT counted.occurrence_key) >= 2"));
         assertSqlExecutes(atLeastSql);
         Assertions.assertEquals(
                 List.of(2L), matchedPatientIds(queryBO.runQuery(queryTree(age), List.of(1L, 2L))));
 
         age.setAtLeast(null);
         age.setAtMost(1);
-        String atMostSql = queryBuilderBO.buildCountDistinctSql(queryTree(age));
+        String atMostSql = queryBuilderBO.buildCountDistinctSql(queryTree(age), COHORT_IDS);
         Assertions.assertTrue(atMostSql.contains("LEFT JOIN"));
         Assertions.assertTrue(atMostSql.contains("patient_meta"));
         Assertions.assertTrue(atMostSql.contains("COUNT(DISTINCT counted.occurrence_key) <= 1"));
@@ -821,24 +805,22 @@ public class QueryBuilderTest {
 
         age.setAtLeast(1);
         age.setAtMost(1);
-        String rangeSql = queryBuilderBO.buildCountDistinctSql(queryTree(age));
-        Assertions.assertTrue(rangeSql.contains("COUNT(DISTINCT occurrence_key) >= 1"));
-        Assertions.assertTrue(rangeSql.contains("COUNT(DISTINCT occurrence_key) <= 1"));
-        Assertions.assertFalse(rangeSql.contains("patient_meta"));
+        String rangeSql = queryBuilderBO.buildCountDistinctSql(queryTree(age), COHORT_IDS);
+        Assertions.assertTrue(rangeSql.contains("COUNT(DISTINCT counted.occurrence_key) >= 1 AND COUNT(DISTINCT counted.occurrence_key) <= 1"));
         assertSqlExecutes(rangeSql);
         Assertions.assertEquals(
                 List.of(1L), matchedPatientIds(queryBO.runQuery(queryTree(age), List.of(1L, 2L))));
 
         // The relation still has to hold. Patient 1 has three ages above 20 and a
         // same-group diabetes row, so at_least 2 matches and at_least 4 does not.
-        Lang2QueryNodeDTO diabetes = leaf("2001", "1001", "=", "Diabetes Type 2");
-        Lang2QueryNodeDTO countedAge = leaf("2002", "1002", ">", 20);
+        QueryItemDTO diabetes = leaf("2001", "1001", QueryOperatorTypes.EQUAL, "Diabetes Type 2");
+        QueryItemDTO countedAge = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 20);
         countedAge.setAtLeast(2);
-        Lang2QueryNodeDTO sameGroup = and(diabetes, countedAge);
-        sameGroup.setTemporalRelations(List.of(relation(0, 1, "same group")));
-        String sameGroupSql = queryBuilderBO.buildCountDistinctSql(queryTree(sameGroup));
+        QueryItemDTO sameGroup = and(diabetes, countedAge);
+        sameGroup.setTemporalRelations(List.of(relation(0, 1, TemporalRelationship.SAME_GROUP, null)));
+        String sameGroupSql = queryBuilderBO.buildCountDistinctSql(queryTree(sameGroup), COHORT_IDS);
         Assertions.assertTrue(sameGroupSql.contains("import_schema_group_id"));
-        Assertions.assertTrue(sameGroupSql.contains("COUNT(DISTINCT occurrence_key) >= 2"));
+        Assertions.assertTrue(sameGroupSql.contains("COUNT(DISTINCT counted.occurrence_key) >= 2"));
         assertSqlExecutes(sameGroupSql);
         Assertions.assertEquals(
                 List.of(1L), matchedPatientIds(queryBO.runQuery(queryTree(sameGroup), List.of(1L))));
@@ -848,104 +830,89 @@ public class QueryBuilderTest {
 
         // Patient 2's age above 30 is in a different group from Asthma, so the count
         // alone must not satisfy the same-group relation.
-        Lang2QueryNodeDTO asthma = leaf("2001", "1001", "=", "Asthma respiratory disease");
-        Lang2QueryNodeDTO laterAge = leaf("2002", "1002", ">", 30);
+        QueryItemDTO asthma = leaf("2001", "1001", QueryOperatorTypes.EQUAL, "Asthma respiratory disease");
+        QueryItemDTO laterAge = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 30);
         laterAge.setAtLeast(1);
-        Lang2QueryNodeDTO asthmaGroup = and(asthma, laterAge);
-        asthmaGroup.setTemporalRelations(List.of(relation(0, 1, "same group")));
+        QueryItemDTO asthmaGroup = and(asthma, laterAge);
+        asthmaGroup.setTemporalRelations(List.of(relation(0, 1, TemporalRelationship.SAME_GROUP, null)));
         Assertions.assertEquals(
                 List.of(), matchedPatientIds(queryBO.runQuery(queryTree(asthmaGroup), List.of(1L))));
 
-        Lang2QueryNodeDTO booleanHint = leaf("2002", "1002", ">", 26);
-        booleanHint.setDatatype("Boolean");
-        String booleanSql = queryBuilderBO.buildCountDistinctSql(queryTree(booleanHint));
-        Assertions.assertFalse(booleanSql.contains("COUNT(DISTINCT occurrence_key)"));
-        assertSqlExecutes(booleanSql);
-        Assertions.assertEquals(
-                List.of(1L, 2L),
-                matchedPatientIds(queryBO.runQuery(queryTree(booleanHint), List.of(1L, 2L))));
-
-        Lang2QueryNodeDTO negative = leaf("2002", "1002", ">", 26);
+        QueryItemDTO negative = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 26);
         negative.setAtLeast(-1);
         Assertions.assertThrows(
-                QueryRejectedException.class, () -> queryBuilderBO.buildCountDistinctSql(queryTree(negative)));
+                QueryRejectedException.class, () -> queryBuilderBO.buildCountDistinctSql(queryTree(negative), COHORT_IDS));
 
-        Lang2QueryNodeDTO inverted = leaf("2002", "1002", ">", 26);
+        QueryItemDTO inverted = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 26);
         inverted.setAtLeast(5);
         inverted.setAtMost(1);
         Assertions.assertThrows(
-                QueryRejectedException.class, () -> queryBuilderBO.buildCountDistinctSql(queryTree(inverted)));
+                QueryRejectedException.class, () -> queryBuilderBO.buildCountDistinctSql(queryTree(inverted), COHORT_IDS));
 
-        Lang2QueryNodeDTO groupCount = and(leaf("2002", "1002", ">", 26));
+        QueryItemDTO groupCount = and(leaf("2002", "1002", QueryOperatorTypes.BIGGER, 26));
         groupCount.setAtLeast(1);
         Assertions.assertThrows(
-                QueryRejectedException.class, () -> queryBuilderBO.buildCountDistinctSql(queryTree(groupCount)));
-
-        Lang2QueryNodeDTO unknownDatatype = leaf("2002", "1002", ">", 26);
-        unknownDatatype.setDatatype("Date");
-        Assertions.assertThrows(
-                QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(unknownDatatype)));
+                QueryRejectedException.class, () -> queryBuilderBO.buildCountDistinctSql(queryTree(groupCount), COHORT_IDS));
     }
 
     @Test
     @Order(34)
     void testNumericAndBooleanValuesAreValidatedAsLiterals() {
-        Lang2QueryNodeDTO age = leaf("2002", "1002", "<", 28);
-        String ageSql = queryBuilderBO.buildCountDistinctSql(queryTree(age));
-        Assertions.assertTrue(ageSql.contains("value_int < 28"));
+        QueryItemDTO age = leaf("2002", "1002", QueryOperatorTypes.SMALLER, 28);
+        String ageSql = queryBuilderBO.buildCountDistinctSql(queryTree(age), COHORT_IDS);
+        Assertions.assertTrue(ageSql.contains("agg_value < 28"));
         assertSqlExecutes(ageSql);
         Assertions.assertEquals(
                 List.of(1L), matchedPatientIds(queryBO.runQuery(queryTree(age), List.of(1L, 5L))));
 
-        Lang2QueryNodeDTO injectedAge = leaf("2002", "1002", "<", "28 OR pg_sleep(1)");
+        QueryItemDTO injectedAge = leaf("2002", "1002", QueryOperatorTypes.SMALLER, "28 OR pg_sleep(1)");
         Assertions.assertThrows(
                 QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(injectedAge)));
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(injectedAge), COHORT_IDS));
 
-        Lang2QueryNodeDTO injectedList = leaf("2002", "1002", "in", "25, 1 OR 1=1");
+        QueryItemDTO injectedList = leaf("2002", "1002", QueryOperatorTypes.IN, "25, 1 OR 1=1");
         Assertions.assertThrows(
                 QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(injectedList)));
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(injectedList), COHORT_IDS));
 
-        Lang2QueryNodeDTO injectedBoolean = leaf("2008", "1004", "=", "true OR pg_sleep(1)");
+        QueryItemDTO injectedBoolean = leaf("2008", "1004", QueryOperatorTypes.EQUAL, "true OR pg_sleep(1)");
         Assertions.assertThrows(
                 QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(injectedBoolean)));
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(injectedBoolean), COHORT_IDS));
 
-        Lang2QueryNodeDTO booleanLeaf = leaf("2008", "1004", "=", "true");
-        String booleanSql = queryBuilderBO.buildCountDistinctSql(queryTree(booleanLeaf));
-        Assertions.assertTrue(booleanSql.contains("value_boolean = true"));
+        QueryItemDTO booleanLeaf = leaf("2008", "1004", QueryOperatorTypes.EQUAL, "true");
+        String booleanSql = queryBuilderBO.buildCountDistinctSql(queryTree(booleanLeaf), COHORT_IDS);
+        Assertions.assertTrue(booleanSql.contains("agg_value = true"));
         Assertions.assertFalse(booleanSql.contains("pg_sleep"));
         assertSqlExecutes(booleanSql);
 
-        Lang2QueryNodeDTO firstInjected = leaf("2002", "1002", ">", "0; SELECT pg_sleep(1)");
-        firstInjected.setTimeAggregationMethod("first");
+        QueryItemDTO firstInjected = leaf("2002", "1002", QueryOperatorTypes.BIGGER, "0; SELECT pg_sleep(1)");
+        firstInjected.setTimeAggregationMethod(TimeAggregationMethod.FIRST);
         Assertions.assertThrows(
                 QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(firstInjected)));
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(firstInjected), COHORT_IDS));
     }
 
     @Test
     @Order(35)
     void testInvalidRegexIsRejectedBeforeExecution() {
-        Lang2QueryNodeDTO invalid = leaf("2001", "1001", "regex", "(");
+        QueryItemDTO invalid = leaf("2001", "1001", QueryOperatorTypes.REGEX, "(");
         QueryRejectedException rejected = Assertions.assertThrows(
                 QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(invalid)));
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(invalid), COHORT_IDS));
         Assertions.assertEquals("Regular expression is not valid", rejected.getMessage());
 
-        Lang2QueryNodeDTO valid = leaf("2001", "1001", "regex", "Diabetes");
-        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(valid));
-        Assertions.assertTrue(sql.contains("value_string ~ 'Diabetes'"));
+        QueryItemDTO valid = leaf("2001", "1001", QueryOperatorTypes.REGEX, "Diabetes");
+        String sql = queryBuilderBO.buildCountDistinctSql(queryTree(valid), COHORT_IDS);
+        Assertions.assertTrue(sql.contains("agg_value ~ 'Diabetes'"));
         assertSqlExecutes(sql);
     }
 
     @Test
     @Order(36)
     void testCountsAreLimitedToTheAllowedCohorts() {
-        Lang2QueryNodeDTO age = leaf("2002", "1002", ">", 26);
-        String unscoped = queryBuilderBO.buildCountDistinctSql(queryTree(age));
+        QueryItemDTO age = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 26);
+        String unscoped = queryBuilderBO.buildCountDistinctSql(queryTree(age), COHORT_IDS);
         Assertions.assertFalse(queryAO.findPatientCountsByCohort(unscoped).isEmpty());
         Assertions.assertTrue(queryAO.findPatientCountsByCohort(unscoped, List.of(2L)).isEmpty());
         Assertions.assertTrue(queryAO.findPatientCountsByCohort(unscoped, List.of()).isEmpty());
@@ -954,7 +921,7 @@ public class QueryBuilderTest {
                 List.of(1L, 2L),
                 matchedPatientIds(queryBO.runQuery(queryTree(age), List.of(1L))));
 
-        Lang2QueryNodeDTO tooTall = leaf("2003", "1002", ">", 1000);
+        QueryItemDTO tooTall = leaf("2003", "1002", QueryOperatorTypes.BIGGER, 1000);
         QueryResultWrapperDTO none = queryBO.runQuery(queryTree(tooTall), List.of(2L));
         Assertions.assertTrue(none.getResult().isEmpty());
 
@@ -966,116 +933,114 @@ public class QueryBuilderTest {
     @Test
     @Order(37)
     void testIntervalsBeyondTwoHundredYearsAreRejected() {
-        Lang2QueryNodeDTO temporal = and(leaf("2001", "1001", "exists", null), leaf("2002", "1002", ">", 0));
-        temporal.setTemporalRelations(List.of(relation(0, 1, "within 300000 years")));
+        QueryItemDTO temporal = and(leaf("2001", "1001", QueryOperatorTypes.EXISTS, null), leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0));
+        temporal.setTemporalRelations(List.of(relation(0, 1, TemporalRelationship.WITHIN, interval("300000 years"))));
         assertIntervalTooLarge(temporal);
 
-        Lang2QueryNodeDTO following = and(leaf("2001", "1001", "exists", null), leaf("2002", "1002", ">", 0));
-        following.setTemporalRelations(List.of(relation(0, 1, "in the following 300000 years")));
+        QueryItemDTO following = and(leaf("2001", "1001", QueryOperatorTypes.EXISTS, null), leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0));
+        following.setTemporalRelations(List.of(relation(0, 1, TemporalRelationship.IN_THE_FOLLOWING, interval("300000 years"))));
         assertIntervalTooLarge(following);
 
-        Lang2QueryNodeDTO withinCount = leaf("2002", "1002", ">", 0);
-        withinCount.setValueMode("delta");
-        withinCount.setTimeAggregationMethod("within 300000 years at least 1 times");
+        QueryItemDTO withinCount = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        withinCount.setValueMode(ValueMode.DELTA);
+        withinCount.setTimeAggregationMethod(TimeAggregationMethod.WITHIN_AT_LEAST);
+        withinCount.setTimeWindow(interval("300000 years"));
+        withinCount.setTimeWindowCount(1);
         assertIntervalTooLarge(withinCount);
 
-        Lang2QueryNodeDTO withinAverage = leaf("2002", "1002", ">=", 30);
-        withinAverage.setTimeAggregationMethod("within 300000 years");
-        withinAverage.setValueAggregationMethod("average");
+        QueryItemDTO withinAverage = leaf("2002", "1002", QueryOperatorTypes.BIGGER_EQUAL, 30);
+        withinAverage.setTimeAggregationMethod(TimeAggregationMethod.WITHIN);
+        withinAverage.setTimeWindow(interval("300000 years"));
+        withinAverage.setValueAggregationMethod(ValueAggregationMethod.AVERAGE);
         assertIntervalTooLarge(withinAverage);
 
-        Lang2QueryNodeDTO window = leaf("2002", "1002", ">", 0);
-        window.setValueMode("delta 300000 years");
+        QueryItemDTO window = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        window.setValueMode(ValueMode.DELTA);
+        window.setDeltaInterval(interval("300000 years"));
         assertIntervalTooLarge(window);
 
-        Lang2QueryNodeDTO summedParts = leaf("2002", "1002", ">", 0);
-        summedParts.setValueMode("delta 150 years 60 years");
+        QueryItemDTO summedParts = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        summedParts.setValueMode(ValueMode.DELTA);
+        summedParts.setDeltaInterval(interval("150 years 60 years"));
         assertIntervalTooLarge(summedParts);
 
-        Lang2QueryNodeDTO intMaxWeeks = leaf("2002", "1002", ">", 0);
-        intMaxWeeks.setValueMode("delta 2147483647 weeks");
+        QueryItemDTO intMaxWeeks = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        intMaxWeeks.setValueMode(ValueMode.DELTA);
+        intMaxWeeks.setDeltaInterval(interval("2147483647 weeks"));
         assertIntervalTooLarge(intMaxWeeks);
 
-        Lang2QueryNodeDTO atLimit = and(leaf("2001", "1001", "exists", null), leaf("2002", "1002", ">", 0));
-        atLimit.setTemporalRelations(List.of(relation(0, 1, "within 200 years")));
-        assertSqlExecutes(queryBuilderBO.buildCountDistinctSql(queryTree(atLimit)));
+        QueryItemDTO atLimit = and(leaf("2001", "1001", QueryOperatorTypes.EXISTS, null), leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0));
+        atLimit.setTemporalRelations(List.of(relation(0, 1, TemporalRelationship.WITHIN, interval("200 years"))));
+        assertSqlExecutes(queryBuilderBO.buildCountDistinctSql(queryTree(atLimit), COHORT_IDS));
 
-        Lang2QueryNodeDTO windowAtLimit = leaf("2002", "1002", ">", 0);
-        windowAtLimit.setValueMode("delta 200 years");
-        assertSqlExecutes(queryBuilderBO.buildCountDistinctSql(queryTree(windowAtLimit)));
+        QueryItemDTO windowAtLimit = leaf("2002", "1002", QueryOperatorTypes.BIGGER, 0);
+        windowAtLimit.setValueMode(ValueMode.DELTA);
+        windowAtLimit.setDeltaInterval(interval("200 years"));
+        assertSqlExecutes(queryBuilderBO.buildCountDistinctSql(queryTree(windowAtLimit), COHORT_IDS));
     }
 
-    private void assertIntervalTooLarge(Lang2QueryNodeDTO root) {
+    private void assertIntervalTooLarge(QueryItemDTO root) {
         QueryRejectedException rejected = Assertions.assertThrows(
                 QueryRejectedException.class,
-                () -> queryBuilderBO.buildCountDistinctSql(queryTree(root)));
+                () -> queryBuilderBO.buildCountDistinctSql(queryTree(root), COHORT_IDS));
         Assertions.assertTrue(
                 rejected.getMessage().contains("exceeds the maximum of 200 years"),
                 rejected.getMessage());
     }
 
-    private QueryDTO queryTree(Lang2QueryNodeDTO root) {
+    private QueryDTO queryTree(QueryItemDTO root) {
         QueryDTO queryDTO = new QueryDTO();
         queryDTO.setQuery(root);
         return queryDTO;
     }
 
-    private Lang2QueryNodeDTO and(Lang2QueryNodeDTO... conditions) {
-        return group("$and", conditions);
+    private QueryItemDTO and(QueryItemDTO... conditions) {
+        return group(ConnectingOperator.AND, conditions);
     }
 
-    private Lang2QueryNodeDTO or(Lang2QueryNodeDTO... conditions) {
-        return group("$or", conditions);
+    private QueryItemDTO or(QueryItemDTO... conditions) {
+        return group(ConnectingOperator.OR, conditions);
     }
 
-    private Lang2QueryNodeDTO group(String connectingOperator, Lang2QueryNodeDTO... conditions) {
-        Lang2QueryNodeDTO group = new Lang2QueryNodeDTO();
+    private QueryItemDTO group(ConnectingOperator connectingOperator, QueryItemDTO... conditions) {
+        QueryItemDTO group = new QueryItemDTO();
         group.setConnectingOperator(connectingOperator);
         group.setConditions(List.of(conditions));
         return group;
     }
 
-    private Lang2QueryNodeDTO leaf(String ontologyId, String dataTypeId, String operator, Object value) {
-        Lang2QueryNodeDTO leaf = new Lang2QueryNodeDTO();
+    private QueryItemDTO leaf(String ontologyId, String dataTypeId, QueryOperatorTypes operator, Object value) {
+        QueryItemDTO leaf = new QueryItemDTO();
         leaf.setOntologyId(ontologyId);
         leaf.setDataTypeId(dataTypeId);
         leaf.setOperator(operator);
-        leaf.setValue(value);
+        leaf.setValue(value == null ? null : String.valueOf(value));
         return leaf;
     }
 
-    private TemporalRelationDTO relation(int source, int target, String relationship) {
+    private TemporalRelationDTO relation(
+            int source, int target, TemporalRelationship relationship, List<IntervalPartDTO> interval) {
         TemporalRelationDTO relation = new TemporalRelationDTO();
         relation.setSourceCondition(source);
         relation.setTargetCondition(target);
         relation.setRelationship(relationship);
+        relation.setInterval(interval);
         return relation;
     }
 
+    // "2 weeks 3 days" as interval parts
+    private List<IntervalPartDTO> interval(String text) {
+        List<IntervalPartDTO> parts = new ArrayList<>();
+        Matcher matcher = Pattern.compile("(\\d+)\\s+(\\w+?)s?\\b").matcher(text);
+        while (matcher.find()) {
+            IntervalUnit unit = IntervalUnit.valueOf(matcher.group(2).toUpperCase(Locale.ROOT) + "S");
+            parts.add(new IntervalPartDTO(Integer.parseInt(matcher.group(1)), unit));
+        }
+        return parts;
+    }
+
     private QueryDTO singleItemQuery(String ontologyId, String dataTypeId, QueryOperatorTypes operator, String value) {
-        QueryDTO queryDTO = new QueryDTO();
-        queryDTO.setQuery(Lang2QueryDocuments.andGroup(queryItem(
-                ontologyId,
-                dataTypeId,
-                Collections.singletonList(this.operator(operator, value))
-        )));
-        return queryDTO;
-    }
-
-    private QueryItemDTO queryItem(String ontologyId, String dataTypeId, List<QueryOperatorDTO> operators) {
-        QueryItemDTO item = new QueryItemDTO();
-        item.setOntologyId(ontologyId);
-        item.setDataTypeId(dataTypeId);
-        item.setOperator(operators);
-        return item;
-    }
-
-    private QueryOperatorDTO operator(QueryOperatorTypes operator, String value) {
-        QueryOperatorDTO op = new QueryOperatorDTO();
-        op.setOperator(operator);
-        op.setValue(value);
-        return op;
-
+        return queryTree(QueryItemHelper.andGroup(leaf(ontologyId, dataTypeId, operator, value)));
     }
 
     private void assertSqlExecutes(String sql) {

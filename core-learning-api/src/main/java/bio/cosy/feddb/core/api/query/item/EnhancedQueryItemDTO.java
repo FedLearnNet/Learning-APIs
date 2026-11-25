@@ -1,4 +1,4 @@
-package bio.cosy.feddb.core.api.query;
+package bio.cosy.feddb.core.api.query.item;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

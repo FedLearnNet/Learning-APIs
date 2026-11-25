@@ -1,10 +1,9 @@
 package unit;
 
-import bio.cosy.feddb.core.api.query.Lang2QueryDocuments;
 import bio.cosy.feddb.core.api.query.QueryClientResponseDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
-import bio.cosy.feddb.core.api.query.QueryItemDTO;
-import bio.cosy.feddb.core.api.query.QueryOperatorDTO;
+import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
+import bio.cosy.feddb.core.api.query.item.QueryItemHelper;
 import bio.cosy.feddb.core.api.query.QueryOperatorTypes;
 import bio.cosy.feddb.core.api.socket.FedDBClientResponseType;
 import bio.cosy.feddb.local.api.cohort.permission.PermissionBO;
@@ -44,22 +43,20 @@ class QueryPermissionScopeTest {
         when(permissionBO.getAllowedToQueryCohortIds(any())).thenReturn(List.of(permission));
         when(cohortQueryAbilityBO.filterQueryableCohortIds(any(), any())).thenReturn(List.of());
 
-        QueryOperatorDTO operator = new QueryOperatorDTO();
-        operator.setOperator(QueryOperatorTypes.BIGGER);
-        operator.setValue("26");
         QueryItemDTO item = new QueryItemDTO();
         item.setOntologyId("2002");
         item.setDataTypeId("1002");
-        item.setOperator(List.of(operator));
+        item.setOperator(QueryOperatorTypes.BIGGER);
+        item.setValue("26");
 
         QueryDTO query = new QueryDTO();
         query.setGlobalUniqueId(UUID.randomUUID().toString());
         query.setKeycloakId("query-ability-user");
-        query.setQuery(Lang2QueryDocuments.andGroup(item));
+        query.setQuery(QueryItemHelper.andGroup(item));
 
         QueryClientResponseDTO response = queryBO.handleQuery(query);
 
         assertEquals(FedDBClientResponseType.ERROR, response.getType());
-        assertEquals("Permission denied", response.getError());
+        assertEquals(0L, response.getCount());
     }
 }

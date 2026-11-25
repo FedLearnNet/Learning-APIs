@@ -30,7 +30,6 @@ public class FLNetClientWebsocketHandlerBO {
     public void removeSystem(String connectionId) {
         systems.remove(connectionId);
         treSources.remove(connectionId);
-        queryResponseBO.removeClientName(connectionId);
     }
 
     // external databases of the connected clients
@@ -83,7 +82,7 @@ public class FLNetClientWebsocketHandlerBO {
     }
 
     @Transactional
-    public <T> void handle(FedDBClientDataDTO<T> m, String connectionId) {
+    public <T> void handle(FedDBClientDataDTO<T> m, String connectionId, String clientName) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.SYSTEM_INFO)) {
@@ -97,7 +96,7 @@ public class FLNetClientWebsocketHandlerBO {
         if (m.getMessageType().equals(FedDBClientTypeEnum.EXISTING_QUERY)) {
             QueryClientResponseDTO query = objectMapper.convertValue(m.getMessage(), QueryClientResponseDTO.class);
             Log.infof("Received query response from %s", query);
-            queryResponseBO.saveResponse(query, connectionId);
+            queryResponseBO.saveResponse(query, connectionId, clientName);
         }
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.DATA_STATISTICS)) {
