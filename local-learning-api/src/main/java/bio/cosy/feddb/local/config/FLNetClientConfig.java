@@ -188,6 +188,10 @@ public interface FLNetClientConfig {
         @WithName("global-user-id")
         Optional<String> globalUserId();
 
+        @WithName("federated-training-access")
+        @WithDefault("ENABLED")
+        TrainingAccess federatedTrainingAccess();
+
         @WithName("auto-training-access")
         @WithDefault("ALL")
         AutoTrainingAccess autoTrainingAccess();
@@ -268,6 +272,18 @@ public interface FLNetClientConfig {
         @WithName("min-count")
         @WithDefault("100")
         int minCount();
+
+        @WithName("max-conditions")
+        @WithDefault("30")
+        int maxConditions();
+
+        @WithName("max-temporal-relations")
+        @WithDefault("5")
+        int maxTemporalRelations();
+
+        @WithName("max-depth")
+        @WithDefault("6")
+        int maxDepth();
     }
 
     interface StatisticsPrivacyConfig {

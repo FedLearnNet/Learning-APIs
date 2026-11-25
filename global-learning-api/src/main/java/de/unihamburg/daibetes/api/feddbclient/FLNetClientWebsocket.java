@@ -6,7 +6,6 @@ import de.unihamburg.daibetes.api.observer.FLNetClientObserverEmitter;
 import de.unihamburg.daibetes.api.observer.FLNetClientObserverEventDTO;
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.logging.Log;
-import de.unihamburg.daibetes.api.query.response.QueryResponseBO;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.websockets.next.*;
@@ -24,9 +23,6 @@ public class FLNetClientWebsocket {
     FLNetClientObserverEmitter observerEmitter;
 
     @Inject
-    QueryResponseBO queryResponseBO;
-
-    @Inject
     SecurityIdentity identity;
 
     @LoggerName("FLNetClientWebsocket")
@@ -35,7 +31,6 @@ public class FLNetClientWebsocket {
     @OnOpen
     public void onOpen(WebSocketConnection connection) {
         logger.info("Connection opened: " + connection.id());
-        queryResponseBO.putClientName(connection.id(), nameOf(identity));
         observerEmitter.emit(FLNetClientObserverEventDTO.connected(connection.id()));
     }
 
@@ -63,7 +58,7 @@ public class FLNetClientWebsocket {
             if (FedDBClientTypeEnum.RELAY_CERT.equals(m.getMessageType())) {
                 handlerBO.handleRelayCert(m, connection.id());
             } else {
-                handlerBO.handle(m, connection.id());
+                handlerBO.handle(m, connection.id(), nameOf(identity));
             }
         } catch (Exception e) {
             logger.error("Error handling message from " + connection.id() + ": " + e.getMessage());
@@ -72,7 +67,7 @@ public class FLNetClientWebsocket {
     }
 
 
-    // full name of the platform account the client logs in with, else its user name
+    // full name of the platform account the client logs in with, else its user name; never taken from the message
     private static String nameOf(SecurityIdentity identity) {
         if (identity == null || identity.isAnonymous()) {
             return null;

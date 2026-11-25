@@ -1,5 +1,6 @@
 package bio.cosy.feddb.core.api.query;
 
+import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
 import bio.cosy.feddb.core.base.BaseAuthDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -19,12 +20,11 @@ public class QueryDTO extends BaseAuthDTO {
     private String groupId;
     private String globalUniqueId;
 
-    private Lang2QueryNodeDTO query;
+    private QueryItemDTO query;
 
     private String description;
     private String name;
     private Integer result;
-    private String error;
     private boolean hasResult;
     private boolean hasFired;
 

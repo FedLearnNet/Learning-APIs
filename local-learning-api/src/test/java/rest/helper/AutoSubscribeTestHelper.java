@@ -100,6 +100,11 @@ public final class AutoSubscribeTestHelper {
                     }
 
                     @Override
+                    public TrainingAccess federatedTrainingAccess() {
+                        return TrainingAccess.ENABLED;
+                    }
+
+                    @Override
                     public AutoTrainingAccess autoTrainingAccess() {
                         return AutoTrainingAccess.ALL;
                     }

@@ -53,7 +53,7 @@ public class FedDBClientExistingQueryE2ETest {
         CountDownLatch messageLatch = new CountDownLatch(1);
 
         Long result = 10l;
-        QueryClientResponseDTO response = new QueryClientResponseDTO(FedDBClientResponseType.QUERY, null, result, null);
+        QueryClientResponseDTO response = QueryClientResponseDTO.createResponse(result, null);
         Vertx vertx = Vertx.vertx();
         WebSocketClient client = vertx.createWebSocketClient();
         ObjectMapper objectMapper = new ObjectMapper();

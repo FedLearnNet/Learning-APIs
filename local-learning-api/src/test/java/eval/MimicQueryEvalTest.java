@@ -1,10 +1,9 @@
 package eval;
 
 import bio.cosy.feddb.core.api.datamodler.schema.SchemaStructureDTO;
-import bio.cosy.feddb.core.api.query.Lang2QueryDocuments;
 import bio.cosy.feddb.core.api.query.QueryDTO;
-import bio.cosy.feddb.core.api.query.QueryItemDTO;
-import bio.cosy.feddb.core.api.query.QueryOperatorDTO;
+import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
+import bio.cosy.feddb.core.api.query.item.QueryItemHelper;
 import bio.cosy.feddb.core.api.query.QueryOperatorTypes;
 import bio.cosy.feddb.local.api.cohort.AutoSubscriberBO;
 import bio.cosy.feddb.local.api.cohort.CohortAO;
@@ -319,20 +318,17 @@ public class MimicQueryEvalTest {
         SchemaRef ref = schemaByName.get(schemaName);
         assertNotNull(ref, "No resolved schema reference for '" + schemaName + "'");
 
-        QueryOperatorDTO op = new QueryOperatorDTO();
-        op.setOperator(operator);
-        op.setValue(value);
-
         QueryItemDTO queryItem = new QueryItemDTO();
         queryItem.setOntologyId(ref.ontologyGlobalId());
         queryItem.setDataTypeId(ref.dataTypeGlobalId());
-        queryItem.setOperator(List.of(op));
+        queryItem.setOperator(operator);
+        queryItem.setValue(value);
         return queryItem;
     }
 
     private QueryDTO query(QueryItemDTO... items) {
         QueryDTO dto = new QueryDTO();
-        dto.setQuery(Lang2QueryDocuments.andGroup(items));
+        dto.setQuery(QueryItemHelper.andGroup(items));
         return dto;
     }
 

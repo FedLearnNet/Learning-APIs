@@ -41,6 +41,8 @@ public interface FLNetConfig {
     @WithName("federated-learning")
     FederatedLearningConfig federatedLearning();
 
+    QueryConfig query();
+
     @WithName("pipeline.builder.image")
     Optional<String> pipelineBuilderImage();
 
@@ -223,6 +225,19 @@ public interface FLNetConfig {
         @WithDefault("false")
         boolean ignoreStartUpCheck();
 
+    }
+
+    interface QueryConfig {
+
+        // non TRE clients with matches needed before a result shows
+        @WithDefault("3")
+        @WithName("min-query-results")
+        int minQueryResults();
+
+        // the result shows once all clients answered, at the latest after this; later answers are rejected
+        @WithDefault("PT5M")
+        @WithName("release-timeout")
+        Duration releaseTimeout();
     }
 
     interface FederatedLearningConfig {

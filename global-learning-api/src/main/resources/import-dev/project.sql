@@ -6,33 +6,33 @@ VALUES (1, NOW(), NOW(), 0,
         '6cd039c0-363f-4aa9-a99b-c7f02e529945', '6cd039c0-363f-4aa9-a99b-c7f02e529945', 'test', 'Weight Loss Query',
         'Weight loss of more than 5 kg over a 6 month period',
         '{
-  "connecting_operator": "$and",
+  "connectingOperator": "AND",
   "conditions": [
     {
-      "ontology_id": "57cba292-ab9a-59b3-bd21-d17a327881d9",
-      "data_type_id": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
-      "operator": "<",
-      "value_mode": "delta 6 months",
-      "time_aggregation_method": "None",
-      "value_aggregation_method": "None",
+      "ontologyId": "57cba292-ab9a-59b3-bd21-d17a327881d9",
+      "dataTypeId": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+      "operator": "SMALLER",
       "value": -5,
-      "datatype": "Float"
+      "valueMode": "DELTA",
+      "deltaInterval": [
+        {
+          "count": 6,
+          "unit": "MONTHS"
+        }
+      ]
     },
     {
-      "ontology_id": "77fd29aa-47ab-5eb8-a1b6-21ae28be7e68",
-      "data_type_id": "725625ba-93e4-5b08-9d0a-31aa22320e59",
-      "operator": "=",
-      "value_mode": "absolute",
-      "time_aggregation_method": "None",
-      "value_aggregation_method": "None",
+      "ontologyId": "77fd29aa-47ab-5eb8-a1b6-21ae28be7e68",
+      "dataTypeId": "725625ba-93e4-5b08-9d0a-31aa22320e59",
+      "operator": "EQUAL",
       "value": "3141-9"
     }
   ],
-  "temporal_relations": [
+  "temporalRelations": [
     {
-      "source_condition": 1,
-      "target_condition": 0,
-      "relationship": "same group"
+      "sourceCondition": 1,
+      "targetCondition": 0,
+      "relationship": "SAME_GROUP"
     }
   ]
 }'),
@@ -40,139 +40,124 @@ VALUES (1, NOW(), NOW(), 0,
         '7cd039c0-363f-4aa9-a99b-c7f02e529945', '7cd039c0-363f-4aa9-a99b-c7f02e529945', 'test', 'Heart-rate delta family combined with sex / region',
         '(HR delta 3 min < -20 AND female) OR (HR delta (any gap) > 20 AND LAZIO) OR (HR delta 3 min >= 20 AND region != LOMBARDIA)',
         '{
-  "connecting_operator": "$or",
+  "connectingOperator": "OR",
   "conditions": [
     {
-      "connecting_operator": "$and",
+      "connectingOperator": "AND",
       "conditions": [
         {
-          "connecting_operator": "$and",
+          "connectingOperator": "AND",
           "conditions": [
             {
-              "ontology_id": "6442751d-e654-5b16-9e81-0110587ff4eb",
-              "data_type_id": "725625ba-93e4-5b08-9d0a-31aa22320e59",
-              "operator": "=",
-              "value_mode": "absolute",
-              "time_aggregation_method": "None",
-              "value_aggregation_method": "None",
+              "ontologyId": "6442751d-e654-5b16-9e81-0110587ff4eb",
+              "dataTypeId": "725625ba-93e4-5b08-9d0a-31aa22320e59",
+              "operator": "EQUAL",
               "value": "9999-9"
             },
             {
-              "ontology_id": "edb0b362-ce63-5d7d-8014-d67f9e48ab6d",
-              "data_type_id": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
-              "operator": "<",
-              "value_mode": "delta 3 minutes",
-              "time_aggregation_method": "None",
-              "value_aggregation_method": "None",
+              "ontologyId": "edb0b362-ce63-5d7d-8014-d67f9e48ab6d",
+              "dataTypeId": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+              "operator": "SMALLER",
               "value": -20,
-              "datatype": "Float"
+              "valueMode": "DELTA",
+              "deltaInterval": [
+                {
+                  "count": 3,
+                  "unit": "MINUTES"
+                }
+              ]
             }
           ],
-          "temporal_relations": [
+          "temporalRelations": [
             {
-              "source_condition": 0,
-              "target_condition": 1,
-              "relationship": "same group"
+              "sourceCondition": 0,
+              "targetCondition": 1,
+              "relationship": "SAME_GROUP"
             }
           ]
         },
         {
-          "ontology_id": "a1cbbfb8-a214-55c7-beb5-2c64fb1e1db9",
-          "data_type_id": "98233adb-7f45-5ab6-b14e-9dcd5bc02f9d",
-          "operator": "=",
-          "value_mode": "absolute",
-          "time_aggregation_method": "None",
-          "value_aggregation_method": "None",
+          "ontologyId": "a1cbbfb8-a214-55c7-beb5-2c64fb1e1db9",
+          "dataTypeId": "98233adb-7f45-5ab6-b14e-9dcd5bc02f9d",
+          "operator": "EQUAL",
           "value": "Female (finding)"
         }
       ]
     },
     {
-      "connecting_operator": "$and",
+      "connectingOperator": "AND",
       "conditions": [
         {
-          "connecting_operator": "$and",
+          "connectingOperator": "AND",
           "conditions": [
             {
-              "ontology_id": "6442751d-e654-5b16-9e81-0110587ff4eb",
-              "data_type_id": "725625ba-93e4-5b08-9d0a-31aa22320e59",
-              "operator": "=",
-              "value_mode": "absolute",
-              "time_aggregation_method": "None",
-              "value_aggregation_method": "None",
+              "ontologyId": "6442751d-e654-5b16-9e81-0110587ff4eb",
+              "dataTypeId": "725625ba-93e4-5b08-9d0a-31aa22320e59",
+              "operator": "EQUAL",
               "value": "9999-9"
             },
             {
-              "ontology_id": "edb0b362-ce63-5d7d-8014-d67f9e48ab6d",
-              "data_type_id": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
-              "operator": ">",
-              "value_mode": "delta",
-              "time_aggregation_method": "None",
-              "value_aggregation_method": "None",
+              "ontologyId": "edb0b362-ce63-5d7d-8014-d67f9e48ab6d",
+              "dataTypeId": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+              "operator": "BIGGER",
               "value": 20,
-              "datatype": "Float"
+              "valueMode": "DELTA"
             }
           ],
-          "temporal_relations": [
+          "temporalRelations": [
             {
-              "source_condition": 0,
-              "target_condition": 1,
-              "relationship": "same group"
+              "sourceCondition": 0,
+              "targetCondition": 1,
+              "relationship": "SAME_GROUP"
             }
           ]
         },
         {
-          "ontology_id": "8b37934e-2531-5069-b5c6-7c4e1eaba313",
-          "data_type_id": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
-          "operator": "=",
-          "value_mode": "absolute",
-          "time_aggregation_method": "None",
-          "value_aggregation_method": "None",
+          "ontologyId": "8b37934e-2531-5069-b5c6-7c4e1eaba313",
+          "dataTypeId": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+          "operator": "EQUAL",
           "value": "LAZIO"
         }
       ]
     },
     {
-      "connecting_operator": "$and",
+      "connectingOperator": "AND",
       "conditions": [
         {
-          "connecting_operator": "$and",
+          "connectingOperator": "AND",
           "conditions": [
             {
-              "ontology_id": "6442751d-e654-5b16-9e81-0110587ff4eb",
-              "data_type_id": "725625ba-93e4-5b08-9d0a-31aa22320e59",
-              "operator": "=",
-              "value_mode": "absolute",
-              "time_aggregation_method": "None",
-              "value_aggregation_method": "None",
+              "ontologyId": "6442751d-e654-5b16-9e81-0110587ff4eb",
+              "dataTypeId": "725625ba-93e4-5b08-9d0a-31aa22320e59",
+              "operator": "EQUAL",
               "value": "9999-9"
             },
             {
-              "ontology_id": "edb0b362-ce63-5d7d-8014-d67f9e48ab6d",
-              "data_type_id": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
-              "operator": ">=",
-              "value_mode": "delta 3 minutes",
-              "time_aggregation_method": "None",
-              "value_aggregation_method": "None",
+              "ontologyId": "edb0b362-ce63-5d7d-8014-d67f9e48ab6d",
+              "dataTypeId": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+              "operator": "BIGGER_EQUAL",
               "value": 20,
-              "datatype": "Float"
+              "valueMode": "DELTA",
+              "deltaInterval": [
+                {
+                  "count": 3,
+                  "unit": "MINUTES"
+                }
+              ]
             }
           ],
-          "temporal_relations": [
+          "temporalRelations": [
             {
-              "source_condition": 0,
-              "target_condition": 1,
-              "relationship": "same group"
+              "sourceCondition": 0,
+              "targetCondition": 1,
+              "relationship": "SAME_GROUP"
             }
           ]
         },
         {
-          "ontology_id": "8b37934e-2531-5069-b5c6-7c4e1eaba313",
-          "data_type_id": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
-          "operator": "!=",
-          "value_mode": "absolute",
-          "time_aggregation_method": "None",
-          "value_aggregation_method": "None",
+          "ontologyId": "8b37934e-2531-5069-b5c6-7c4e1eaba313",
+          "dataTypeId": "4dfb9a71-0d97-5d50-a40d-d77f1fe665f3",
+          "operator": "NOT_EQUAL",
           "value": "LOMBARDIA"
         }
       ]

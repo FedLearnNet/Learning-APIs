@@ -1,10 +1,9 @@
 package bio.cosy.feddb.local.api.cohort.queryability;
 
-import bio.cosy.feddb.core.api.query.QueryItemDTO;
-import bio.cosy.feddb.core.api.query.QueryOperatorDTO;
+import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
 import bio.cosy.feddb.core.api.query.QueryOperatorTypes;
 import bio.cosy.feddb.core.base.BaseBo;
-import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeAO;
+import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeBO;
 import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeEntity;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -20,7 +19,7 @@ import java.util.Optional;
 public class CohortQueryAbilityBO extends BaseBo<CohortQueryAbilityDTO, CohortQueryAbilityEntity, CohortQueryAbilityAO, CohortQueryAbilityMapper> {
 
     @Inject
-    SchemaNodeAO schemaNodeAO;
+    SchemaNodeBO schemaNodeBO;
 
     public List<CohortQueryAbilityDTO> list(long cohortId) {
         return mapper.entitiesToDtos(ao.findAll(cohortId));
@@ -32,7 +31,7 @@ public class CohortQueryAbilityBO extends BaseBo<CohortQueryAbilityDTO, CohortQu
         }
         List<ResolvedQueryItem> resolvedItems = queryItems.stream()
                 .filter(Objects::nonNull)
-                .map(item -> new ResolvedQueryItem(item, findSchemaNodes(item)))
+                .map(item -> new ResolvedQueryItem(item, schemaNodeBO.findSchemaNodes(item.getOntologyId(), item.getDataTypeId())))
                 .toList();
 
         return cohortIds.stream()
@@ -109,33 +108,11 @@ public class CohortQueryAbilityBO extends BaseBo<CohortQueryAbilityDTO, CohortQu
                 .toList();
     }
 
-    private List<SchemaNodeEntity> findSchemaNodes(QueryItemDTO item) {
-        if (item.getOntologyId() == null || item.getOntologyId().isBlank()) {
-            return List.of();
-        }
-        if (item.getDataTypeId() == null || item.getDataTypeId().isBlank()) {
-            return schemaNodeAO.findByOntologyGlobalId(item.getOntologyId()).stream()
-                    .filter(Objects::nonNull)
-                    .toList();
-        }
-        return schemaNodeAO.findByOntologyAndDatatypeGlobalId(item.getOntologyId(), item.getDataTypeId()).stream()
-                .filter(Objects::nonNull)
-                .toList();
-    }
-
-    private boolean isQueryable(QueryAbility queryAbility, List<QueryOperatorDTO> operators) {
+    private boolean isQueryable(QueryAbility queryAbility, QueryOperatorTypes operator) {
         if (queryAbility == QueryAbility.VALUE) {
             return true;
         }
-        return queryAbility == QueryAbility.EXISTENCE && !needsValueAccess(operators);
-    }
-
-    private boolean needsValueAccess(List<QueryOperatorDTO> operators) {
-        return operators == null || operators.stream()
-                .filter(Objects::nonNull)
-                .map(QueryOperatorDTO::getOperator)
-                .anyMatch(operator -> operator != QueryOperatorTypes.EXISTS
-                        && operator != QueryOperatorTypes.NOT_EXISTS);
+        return queryAbility == QueryAbility.EXISTENCE && operator != null && !operator.readsValue();
     }
 
     public void delete(Long cohortId, Long id) {

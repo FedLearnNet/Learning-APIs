@@ -7,28 +7,20 @@ import bio.cosy.feddb.core.services.orch.dto.SystemComputingInfoReducedDTO;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
 
 @Mapper(config = QuarkusMappingConfig.class)
 public interface QueryResponseMapper extends BaseMapper<QueryResponseDTO, QueryResponseEntity> {
 
     SystemComputingInfoReducedDTO reduce(SystemComputingInfoDTO info);
 
-    @Mapping(target = "globalUniqueQueryId", source = "query.globalUniqueId")
-    @Mapping(target = "queryId", source = "query.id")
-    QueryResponseDTO entityToDto(QueryResponseEntity entity);
-
-    @Mapping(target = "query.id", source = "queryId")
-    QueryResponseEntity dtoToEntity(QueryResponseDTO dto);
-
-    @Mappings({
-            @Mapping(target = "version", ignore = true),
-            @Mapping(target = "updatedAt", ignore = true),
-            @Mapping(target = "createdAt", ignore = true),
-            @Mapping(target = "id", ignore = true),
-            @Mapping(target = "globalUniqueQueryId", source = "globalUniqueQueryId"),
-            @Mapping(target = "queryId", ignore = true)
-    })
-    QueryResponseDTO createDtoToDto(QueryClientResponseDTO dto);
-
+    // query, connection, count and name are set by QueryResponseBO
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "query", ignore = true)
+    @Mapping(target = "connectionId", ignore = true)
+    @Mapping(target = "count", ignore = true)
+    @Mapping(target = "clientName", ignore = true)
+    QueryResponseEntity clientToEntity(QueryClientResponseDTO dto);
 }

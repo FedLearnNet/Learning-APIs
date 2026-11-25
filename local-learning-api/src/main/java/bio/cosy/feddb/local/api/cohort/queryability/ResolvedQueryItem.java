@@ -1,6 +1,6 @@
 package bio.cosy.feddb.local.api.cohort.queryability;
 
-import bio.cosy.feddb.core.api.query.QueryItemDTO;
+import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
 import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;

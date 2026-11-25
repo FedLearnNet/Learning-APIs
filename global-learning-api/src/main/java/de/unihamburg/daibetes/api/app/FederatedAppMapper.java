@@ -78,7 +78,6 @@ public interface FederatedAppMapper extends BaseMapper<FederatedAppDTO, Federate
             @Mapping(target = "average", ignore = true),
             @Mapping(target = "count", ignore = true),
             @Mapping(target = "latestUnpublishedVersionId", ignore = true),
-            @Mapping(target = "oldFCVersion", ignore = true),
             @Mapping(target = "imageName", ignore = true),
             @Mapping(target = "needsInternetAccess", ignore = true),
             @Mapping(target = "icon", ignore = true),

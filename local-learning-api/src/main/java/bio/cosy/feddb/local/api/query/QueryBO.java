@@ -1,8 +1,9 @@
 package bio.cosy.feddb.local.api.query;
 
-import bio.cosy.feddb.core.api.query.Lang2QueryDocuments;
 import bio.cosy.feddb.core.api.query.QueryClientResponseDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
+import bio.cosy.feddb.core.api.query.QueryRejectedException;
+import bio.cosy.feddb.core.api.query.item.QueryItemHelper;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.query.QueryPatientBO;
@@ -10,7 +11,9 @@ import bio.cosy.feddb.local.api.cohort.permission.PermissionBO;
 import bio.cosy.feddb.local.api.cohort.permission.PermissionDTO;
 import bio.cosy.feddb.local.api.cohort.queryability.CohortQueryAbilityBO;
 import bio.cosy.feddb.local.api.privacy.PrivacyBO;
+import bio.cosy.feddb.local.api.query.builder.QueryBuilderBO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
+import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeAO;
 import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeEntity;
 import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeMapper;
 import bio.cosy.feddb.local.api.search.SearchResultDTO;
@@ -53,7 +56,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
     QueryBuilderBO queryBuilderBO;
 
     @Inject
-    QueryBuilderBO builderBO;
+    SchemaNodeAO schemaNodeAO;
 
     @Inject
     SchemaNodeMapper schemaNodeMapper;
@@ -63,6 +66,9 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
 
     @Inject
     CohortQueryAbilityBO cohortQueryAbilityBO;
+
+    @Inject
+    QueryCostGuardBO queryCostGuardBO;
 
     public LocalQueryDTO findById(Long id) {
         Optional<QueryEntity> entityOptional = ao.findByIdOptional(id);
@@ -127,9 +133,9 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         // Enhance the query with additional information if needed
         // This is a placeholder for any future enhancements
 
-        List<LocalQueryItemDTO> enhanced = Lang2QueryDocuments.flattenLeaves(query.getQuery()).stream()
+        List<LocalQueryItemDTO> enhanced = QueryItemHelper.leavesOf(query.getQuery()).stream()
                 .map(q -> {
-                    List<SchemaNodeEntity> schemaNodeEntities = builderBO.getSchemaNodesForQueryItem(q.getOntologyId(), q.getDataTypeId());
+                    List<SchemaNodeEntity> schemaNodeEntities = schemaNodeAO.findByOntologyAndDatatypeGlobalId(q.getOntologyId(), q.getDataTypeId());
                     List<LocalSchemaNodeDTO> schemaNodes = schemaNodeMapper.entitiesToDtos(schemaNodeEntities);
                     return mapper.localQueryEnhanced(q, schemaNodes);
                 }).toList();
@@ -177,15 +183,15 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
             String message = "User " + query.getKeycloakId() + " is not allowed to query";
             logger.warn(message);
             createTransactional(query, message, QueryStatusEnum.REJECTED_EAM_PRE_HARMONIZED);
-            return QueryClientResponseDTO.createErrorResponse("Permission denied", queryGlobalUniqueId);
+            return QueryClientResponseDTO.createErrorResponse(queryGlobalUniqueId);
         }
-        allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(Lang2QueryDocuments.leavesOf(query), allowedCohortIds);
+        allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(QueryItemHelper.leavesOf(query.getQuery()), allowedCohortIds);
 
         if (allowedCohortIds.isEmpty()) {
             String message = "Cohort QueryAbility is rejecting the query";
             logger.warn(message);
             createTransactional(query, message, QueryStatusEnum.REJECTED_EAM_PRE_HARMONIZED);
-            return QueryClientResponseDTO.createErrorResponse("Permission denied", queryGlobalUniqueId);
+            return QueryClientResponseDTO.createErrorResponse(queryGlobalUniqueId);
         }
 
 
@@ -205,7 +211,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
                     String message = "Query retry time not elapsed for all permitted cohorts. Please wait before retrying.";
                     logger.warn(message);
                     createTransactional(query, message, QueryStatusEnum.REJECTED_EAM_PRE_HARMONIZED);
-                    return QueryClientResponseDTO.createErrorResponse(message, queryGlobalUniqueId);
+                    return QueryClientResponseDTO.createErrorResponse(queryGlobalUniqueId);
                 }
                 logger.infof("Cohorts %s excluded from query due to retry time not elapsed", blocked);
             }
@@ -215,6 +221,8 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         LocalQueryDTO createdLocalQuery = createTransactional(query, "Query received by the EAM", QueryStatusEnum.RECEIVED_EAM);
         Long createdQueryId = createdLocalQuery.getId();
         QueryResultWrapperDTO harmonizedQueryResult;
+        // every query is answered, global releases once all clients did; rejections before the data is read
+        // answer ERROR, anything after it (no match, below threshold, SQL error, timeout) a plain 0
         try {
             harmonizedQueryResult = runQuery(query, resolvedCohortIds);
         } catch (QueryRejectedException e) {
@@ -223,14 +231,14 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
             createdLocalQuery.setStatus(QueryStatusEnum.REJECTED_HARMONIZED);
             createdLocalQuery.setStatusMessage(e.getMessage());
             updateTransactional(createdQueryId, createdLocalQuery);
-            return QueryClientResponseDTO.createErrorResponse(e.getMessage(), queryGlobalUniqueId);
+            return QueryClientResponseDTO.createErrorResponse(queryGlobalUniqueId);
         } catch (Exception e) {
             logger.error("Query could not be evaluated", e);
             createdLocalQuery.setQueriedCohortIds(new HashSet<>(resolvedCohortIds));
             createdLocalQuery.setStatus(QueryStatusEnum.REJECTED_HARMONIZED);
             createdLocalQuery.setStatusMessage(QUERY_COULD_NOT_BE_EVALUATED);
             updateTransactional(createdQueryId, createdLocalQuery);
-            return QueryClientResponseDTO.createErrorResponse(QUERY_COULD_NOT_BE_EVALUATED, queryGlobalUniqueId);
+            return QueryClientResponseDTO.createResponse(0L, queryGlobalUniqueId);
         }
         logger.info("Received query result: " + harmonizedQueryResult);
 
@@ -260,7 +268,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
             createdLocalQuery.setStatus(QueryStatusEnum.REJECTED_EAM_POST_HARMONIZED);
             createdLocalQuery.setStatusMessage("Query was rejected by privacy measures");
             updateTransactional(createdQueryId, createdLocalQuery);
-            return QueryClientResponseDTO.createErrorResponse(createdLocalQuery.getStatusMessage(), queryGlobalUniqueId);
+            return QueryClientResponseDTO.createResponse(0L, queryGlobalUniqueId);
         }
 
         createdLocalQuery.setQueriedCohortIds(new HashSet<>(resolvedCohortIds));
@@ -311,7 +319,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         }
 
         allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(
-                Lang2QueryDocuments.flattenLeaves(query.getQuery()),
+                QueryItemHelper.leavesOf(query.getQuery()),
                 allowedCohortIds);
         if (allowedCohortIds.isEmpty()) {
             logger.warn("Cohort QueryAbility is rejecting the query");
@@ -344,6 +352,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
             emptyResult.setResult(List.of());
             return emptyResult;
         }
+        queryCostGuardBO.checkShape(query.getQuery());
         String patientMatchSql = queryBuilderBO.buildCountDistinctSql(query, allowedCohortIds);
 
         QueryResultWrapperDTO queryResult = new QueryResultWrapperDTO();
