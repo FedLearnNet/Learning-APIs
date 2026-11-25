@@ -128,14 +128,21 @@ public class PatientAO implements PanacheRepository<PatientEntity> {
         return find("SELECT DISTINCT q.patient FROM QueryPatientEntity q WHERE q.query.id = ?1", queryId).list();
     }
 
-    public List<PatientEntity> findApprovedByLearningRequestId(Long requestId) {
-        return find("""
-                SELECT DISTINCT pat.patient FROM PatientLearningEntity pat, FederatedLearningRequestCohortEntity decision
-                WHERE pat.request.id = ?1
-                  AND decision.request.id = pat.request.id
-                  AND decision.cohort.id = pat.patient.cohort.id
-                  AND decision.status = ?2
-                """, requestId, FederatedLearningRequestCohortStatus.APPROVED).list();
+    public List<Long> findApprovedPatientIdsByLearningRequestId(Long requestId) {
+        return getEntityManager()
+                .createQuery("""
+                        SELECT pl.patient.id
+                        FROM PatientLearningEntity pl
+                        JOIN pl.patient p
+                        JOIN FederatedLearningRequestCohortEntity decision
+                          ON decision.request.id = pl.request.id
+                         AND decision.cohort.id = p.cohort.id
+                        WHERE pl.request.id = :requestId
+                          AND decision.status = :status
+                        """, Long.class)
+                .setParameter("requestId", requestId)
+                .setParameter("status", FederatedLearningRequestCohortStatus.APPROVED)
+                .getResultList();
     }
 
     public List<PatientEntity> findAllByCohortId(Long cohortId, int page, int pageSize) {
