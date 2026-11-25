@@ -104,9 +104,11 @@ public class FileAnalysisBO {
                 sheetIndex++;
                 TableData source = entry.getValue() == null ? TableData.empty() : entry.getValue();
                 TableData uploadSample = TableSample.from(source, uploadRows).toTableData();
-                TableSample previewSample = TableSample.from(
+                TableSample previewSample = TableSample.withFillers(
                         source,
-                        ConnectorFileUploadSettingsDTO.DEFAULT_PREVIEW_ROWS
+                        ConnectorFileUploadSettingsDTO.MAX_PREVIEW_ROWS,
+                        ConnectorFileUploadSettingsDTO.MAX_FILLER_ROWS,
+                        ConnectorFileUploadSettingsDTO.MAX_FILLER_SCAN_ROWS
                 );
                 TableData renamedSample = renameDuplicateColumns(uploadSample, sheetName, duplicateColumns);
                 if (renamedSample != uploadSample) {

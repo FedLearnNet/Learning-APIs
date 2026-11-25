@@ -3,7 +3,6 @@ package bio.cosy.feddb.local.api.importer.run.preview;
 import bio.cosy.feddb.local.api.importer.files.table.ColumnNames;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
 import bio.cosy.feddb.local.api.importer.extract.ConnectorExtractBO;
-import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadSettingsDTO;
 import bio.cosy.feddb.local.api.importer.files.read.TabularFileReaderBO;
 import bio.cosy.feddb.local.api.importer.files.table.TableData;
 import bio.cosy.feddb.local.api.importer.functions.FunctionExecutionMode;
@@ -31,7 +30,6 @@ import java.util.stream.Stream;
 @ApplicationScoped
 public class ConnectorPreviewBO {
 
-    private static final int DEFAULT_PREVIEW_ROWS = ConnectorFileUploadSettingsDTO.DEFAULT_PREVIEW_ROWS;
     private static final int DEFAULT_PREVIEW_PATIENTS = 10;
 
     @Inject
@@ -81,7 +79,7 @@ public class ConnectorPreviewBO {
                         .getStage();
 
         if (response.getJsons().isEmpty()) {
-            addTable(response, stage);
+            addTable(response, stage, config.previewRowsOrDefault());
         }
 
         return response;
@@ -128,11 +126,12 @@ public class ConnectorPreviewBO {
                                       BiFunction<ConnectorTransformerDTO, List<Map<String, Object>>, List<Map<String, Object>>> appRunner) {
         boolean patientPreview = hasPatientTransformation(transformers);
         String patientIdColumn = patientPreview ? requirePatientIdColumn(config) : null;
+        int previewRows = config.previewRowsOrDefault();
 
         Long connectorId = config.getConnectorId();
-        ConnectorPreviewTransformationStageData stage =
-                loadSourceStage(config, connectorId, cacheBO.sourceFingerprint(config), patientPreview, patientIdColumn);
-        String fingerprint = cacheBO.sampleFingerprint(limitPreviewRows(stage.getRows()), stage.getColumns());
+        ConnectorPreviewTransformationStageData stage = loadSourceStage(config, connectorId,
+                cacheBO.sourceFingerprint(config), patientPreview, patientIdColumn, previewRows);
+        String fingerprint = cacheBO.sampleFingerprint(limitPreviewRows(stage.getRows(), previewRows), stage.getColumns());
 
         Integer blockedBy = null;
 
@@ -153,7 +152,7 @@ public class ConnectorPreviewBO {
             } else if (appBased && appRunner != null && blockedBy == null) {
                 List<Map<String, Object>> rows = appRunner.apply(transformer, stage.getRows());
                 List<String> columns = ColumnNames.withRowColumns(stage.getColumns(), rows);
-                storeAppStage(connectorId, stepIndex, transformer, fingerprint, rows, columns);
+                storeAppStage(connectorId, stepIndex, transformer, fingerprint, rows, columns, previewRows);
                 stage = new ConnectorPreviewTransformationStageData(rows, columns, stage.getProfiles());
             } else if (appBased) {
                 // A preview never starts a container: the request would block for as long as the app
@@ -176,13 +175,13 @@ public class ConnectorPreviewBO {
                         rows, ColumnNames.withRowColumns(stage.getColumns(), rows), stage.getProfiles());
                 if (blockedBy == null) {
                     cacheBO.store(connectorId, stepIndex, transformer.getId(), fingerprint,
-                            limitPreviewRows(rows), stage.getColumns());
+                            limitPreviewRows(rows, previewRows), stage.getColumns());
                 }
                 addStage(response, stepIndex, transformer, false, fingerprint, null, rows, false, false, blockedBy);
             }
 
             if (response != null) {
-                addTable(response, stage);
+                addTable(response, stage, previewRows);
             }
         }
 
@@ -195,20 +194,21 @@ public class ConnectorPreviewBO {
                               ConnectorTransformerDTO transformer,
                               String fingerprint,
                               List<Map<String, Object>> rows,
-                              List<String> columns) {
+                              List<String> columns,
+                              int previewRows) {
         cacheBO.store(connectorId, stepIndex, transformer.getId(), fingerprint,
-                limitPreviewRows(rows), columns);
+                limitPreviewRows(rows, previewRows), columns);
         cacheBO.invalidateFrom(connectorId, stepIndex + 1);
     }
 
-    private void addTable(PreviewResponseDTO response, ConnectorPreviewTransformationStageData stage) {
-        response.getJsons().add(render(stage));
-        response.getColumns().add(ColumnNames.withRowColumns(List.of(), limitPreviewRows(stage.getRows())));
+    private void addTable(PreviewResponseDTO response, ConnectorPreviewTransformationStageData stage, int previewRows) {
+        response.getJsons().add(render(stage, previewRows));
+        response.getColumns().add(ColumnNames.withRowColumns(List.of(), limitPreviewRows(stage.getRows(), previewRows)));
     }
 
-    private String render(ConnectorPreviewTransformationStageData stage) {
+    private String render(ConnectorPreviewTransformationStageData stage, int previewRows) {
         try (TableData staged = new TableData(
-                stage.getColumns(), limitPreviewRows(stage.getRows()), stage.getProfiles())) {
+                stage.getColumns(), limitPreviewRows(stage.getRows(), previewRows), stage.getProfiles())) {
             return fileHandlerBO.getJson(staged);
         }
     }
@@ -244,7 +244,8 @@ public class ConnectorPreviewBO {
                                                                     Long connectorId,
                                                                     String fingerprint,
                                                                     boolean patientPreview,
-                                                                    String patientIdColumn) {
+                                                                    String patientIdColumn,
+                                                                    int previewRows) {
         Optional<ConnectorPreviewTransformationCacheStage> cached = cacheBO.find(
                 connectorId, ConnectorPreviewTransformationCacheBO.SOURCE_STEP, fingerprint);
         if (cached.isPresent()) {
@@ -255,21 +256,23 @@ public class ConnectorPreviewBO {
         TableData data = extractBO.loadPreviewData(
                 config.getInputConfig(),
                 config.getCohortId(),
-                DEFAULT_PREVIEW_ROWS,
+                previewRows,
                 config.getMergeConfig(),
                 config.getPivotConfig(),
-                uploadInfoOf(config)
+                uploadInfoOf(config),
+                // rows with data first, except for patient previews, which keep patients together
+                !patientPreview
         );
         try {
             if (data == null || data.longSize() == 0) {
                 throw new BadRequestException("File not found or empty");
             }
             List<Map<String, Object>> rows = patientPreview
-                    ? selectPatientPreviewRows(data, patientIdColumn)
+                    ? selectPatientPreviewRows(data, patientIdColumn, previewRows)
                     : data.getRows();
             ConnectorPreviewTransformationStageData stage = new ConnectorPreviewTransformationStageData(rows, data.getColumns(), data.getColumnProfiles());
             cacheBO.store(connectorId, ConnectorPreviewTransformationCacheBO.SOURCE_STEP, null,
-                    fingerprint, limitPreviewRows(rows), data.getColumns());
+                    fingerprint, limitPreviewRows(rows, previewRows), data.getColumns());
             return stage;
         } finally {
             if (data != null) {
@@ -333,6 +336,10 @@ public class ConnectorPreviewBO {
     }
 
     List<Map<String, Object>> selectPatientPreviewRows(TableData data, String patientIdColumn) {
+        return selectPatientPreviewRows(data, patientIdColumn, DEFAULT_PREVIEW_PATIENTS);
+    }
+
+    List<Map<String, Object>> selectPatientPreviewRows(TableData data, String patientIdColumn, int maxPatients) {
         if (patientIdColumn == null || patientIdColumn.isBlank()) {
             throw new BadRequestException(
                     "Patient transformations require a source column mapped to the external patient id"
@@ -346,7 +353,7 @@ public class ConnectorPreviewBO {
                 List<Map<String, Object>> patientRows = selectedPatients.get(patientId);
                 if (patientRows != null) {
                     patientRows.add(row);
-                } else if (selectedPatients.size() < DEFAULT_PREVIEW_PATIENTS) {
+                } else if (selectedPatients.size() < maxPatients) {
                     selectedPatients.put(patientId, new ArrayList<>(List.of(row)));
                 }
             });
@@ -389,10 +396,10 @@ public class ConnectorPreviewBO {
         return String.valueOf(patientId);
     }
 
-    private List<Map<String, Object>> limitPreviewRows(List<Map<String, Object>> rows) {
-        if (rows.size() <= DEFAULT_PREVIEW_ROWS) {
+    private static List<Map<String, Object>> limitPreviewRows(List<Map<String, Object>> rows, int previewRows) {
+        if (rows.size() <= previewRows) {
             return rows;
         }
-        return new ArrayList<>(rows.subList(0, DEFAULT_PREVIEW_ROWS));
+        return new ArrayList<>(rows.subList(0, previewRows));
     }
 }

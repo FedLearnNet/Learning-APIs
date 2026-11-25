@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 class ConnectorFilesBOStatisticsCacheTest {
 
     @Test
-    void fileAnalysisStoresAnIndependentTenRowTableDataPreview() {
+    void fileAnalysisStoresAnIndependentTableDataPreviewOfUpToAHundredRows() {
         TabularFileReaderBO fileHandler = mock(TabularFileReaderBO.class);
         FileAnalysisBO bo = new FileAnalysisBO(fileHandler);
 
@@ -52,7 +52,7 @@ class ConnectorFilesBOStatisticsCacheTest {
                 20);
 
         assertEquals("20", analysis.uploadInfo().getFirst().getJson());
-        assertEquals(10, analysis.previewData().get("0").getRows().size());
+        assertEquals(25, analysis.previewData().get("0").getRows().size());
         assertEquals(List.of("patient_id", "age"), analysis.previewData().get("0").getColumns());
         assertEquals(profile("age"), analysis.previewData().get("0").getColumnProfiles().getFirst());
         verify(fileHandler).getByFile(any(), any(), isNull());

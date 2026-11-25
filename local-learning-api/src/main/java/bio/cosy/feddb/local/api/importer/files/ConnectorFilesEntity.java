@@ -48,9 +48,9 @@ public class ConnectorFilesEntity extends BaseFileEntity {
     private FileParsingSettingsDTO uploadSettings;
 
     /**
-     * Representative raw source sample used for interactive previews. It is
-     * intentionally limited to ten physical rows per logical table and is not
-     * a complete patient history or a guarantee that every pivot value exists.
+     * Representative raw source sample used for interactive previews: the first rows per
+     * logical table plus filler rows (see {@code TableSample.withFillers}). It is not a
+     * complete patient history or a guarantee that every pivot value exists.
      */
     @Basic(fetch = FetchType.LAZY)
     @LazyGroup("previewData")
