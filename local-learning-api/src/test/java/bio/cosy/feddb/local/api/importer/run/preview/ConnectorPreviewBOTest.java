@@ -57,7 +57,7 @@ class ConnectorPreviewBOTest {
         FilterPatientByHitFunction filter = new FilterPatientByHitFunction();
         List<List<String>> transformedPatientIds = new ArrayList<>();
 
-        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull(), anyBoolean()))
                 .thenReturn(data);
         when(mappingBO.resolveExternalIdSourceColumn(isNull())).thenReturn("patient_nbr");
         when(functionRunnerBO.mode(same(transformer))).thenReturn(FunctionExecutionMode.PATIENT);
@@ -156,7 +156,7 @@ class ConnectorPreviewBOTest {
                 List.of(row("p1", "31")),
                 new ArrayList<>()
         );
-        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull(), anyBoolean()))
                 .thenReturn(pivoted);
         // Matched by type, not identity: each stage is rendered through a TableData built for it,
         // so the preview no longer hands the extractor's own instance to the serializer.
@@ -179,7 +179,7 @@ class ConnectorPreviewBOTest {
         source.put("2019", 5);
         source.put("sex", "f");
         ConnectorExtractBO extractBO = mock(ConnectorExtractBO.class);
-        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull(), anyBoolean()))
                 .thenReturn(new TableData(List.of("patient_id", "2019", "sex"), List.of(source), new ArrayList<>()));
 
         ConnectorPreviewBO previewBO = new ConnectorPreviewBO();
@@ -214,7 +214,7 @@ class ConnectorPreviewBOTest {
         ConnectorTransformationBO transformationBO = mock(ConnectorTransformationBO.class);
         FunctionRunnerBO functionRunnerBO = mock(FunctionRunnerBO.class);
 
-        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull(), anyBoolean()))
                 .thenReturn(data);
         when(transformationBO.applyBuiltInTransformation(same(afterIt), anyList(), isNull()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
@@ -258,7 +258,7 @@ class ConnectorPreviewBOTest {
         config.setTransformer(List.of(appTransformer, secondApp));
 
         ConnectorExtractBO extractBO = mock(ConnectorExtractBO.class);
-        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull(), anyBoolean()))
                 .thenReturn(new TableData(
                         List.of("patient_nbr", "race"),
                         new ArrayList<>(List.of(row("patient-1", "Caucasian"))),
@@ -283,7 +283,7 @@ class ConnectorPreviewBOTest {
         config.setTransformer(List.of(appTransformer, afterIt));
 
         ConnectorExtractBO extractBO = mock(ConnectorExtractBO.class);
-        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull(), anyBoolean()))
                 .thenReturn(new TableData(
                         List.of("patient_nbr", "race"),
                         new ArrayList<>(List.of(row("patient-1", "Caucasian"))),
@@ -321,7 +321,7 @@ class ConnectorPreviewBOTest {
         config.setTransformer(List.of(split));
 
         ConnectorExtractBO extractBO = mock(ConnectorExtractBO.class);
-        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull()))
+        when(extractBO.loadPreviewData(isNull(), isNull(), anyInt(), isNull(), isNull(), isNull(), anyBoolean()))
                 .thenReturn(new TableData(
                         List.of("patient_nbr", "race"),
                         new ArrayList<>(List.of(row("patient-1", "Caucasian"))),

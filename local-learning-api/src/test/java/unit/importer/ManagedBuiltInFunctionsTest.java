@@ -9,8 +9,10 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ManagedBuiltInFunctionsTest {
 
@@ -192,6 +194,90 @@ class ManagedBuiltInFunctionsTest {
         map.put("diag_1", diag1);
         map.put("diag_2", diag2);
         map.put("diag_combined", combined);
+        return map;
+    }
+
+    @Test
+    void wideToLongAddsOneRowPerFilledMeasurement() {
+        List<Map<String, Object>> rows = new ArrayList<>(List.of(labRow("6.1", "%", "", "mg/dL", "24.3")));
+
+        List<Map<String, Object>> result = new WideToLongFunction().apply(rows, null,
+                Map.of("patient id", "pid", "visit id", "visit", "start date", "date"),
+                Map.of("variable name", "lab name", "variable value", "lab value"),
+                Map.of("measurement columns", "{\"HbA1c\": \"HbA1c unit\", \"Glucose\": \"Glucose unit\", \"BMI\": null}"),
+                null, null, null);
+
+        assertEquals(3, result.size());
+        // The original row keeps its other data once, without the measurement columns
+        Map<String, Object> original = result.get(0);
+        assertEquals("female", original.get("sex"));
+        assertEquals("2024-05-17", original.get("date"));
+        assertEquals("1-12", original.get("HbA1c range"));
+        assertFalse(original.containsKey("HbA1c"));
+        assertFalse(original.containsKey("HbA1c unit"));
+        assertNull(original.get("lab name"));
+
+        Map<String, Object> hba1c = result.get(1);
+        assertNull(hba1c.get("sex"));
+        assertNull(hba1c.get("date"));
+        assertEquals("p1", hba1c.get("pid"));
+        assertEquals("v1", hba1c.get("visit"));
+        assertEquals("HbA1c", hba1c.get("lab name"));
+        assertEquals("6.1", hba1c.get("lab value"));
+        assertEquals("%", hba1c.get("variable unit"));
+        assertEquals("2024-05-17", hba1c.get("start date"));
+        assertNull(hba1c.get("end date"));
+
+        // Glucose is empty, so the next row is BMI, which has no unit column
+        Map<String, Object> bmi = result.get(2);
+        assertEquals("BMI", bmi.get("lab name"));
+        assertEquals("24.3", bmi.get("lab value"));
+        assertNull(bmi.get("variable unit"));
+    }
+
+    @Test
+    void wideToLongKeepsARowWithoutMeasurements() {
+        List<Map<String, Object>> rows = new ArrayList<>(List.of(labRow("", "%", "", "", null)));
+
+        List<Map<String, Object>> result = new WideToLongFunction().apply(rows, null, Map.of("patient id", "pid"),
+                null, Map.of("measurement columns", Map.of("HbA1c", "HbA1c unit")), null, null, null);
+
+        assertEquals(1, result.size());
+        assertEquals("female", result.get(0).get("sex"));
+        assertNull(result.get(0).get("variable name"));
+        assertNull(result.get(0).get("start date"));
+    }
+
+    @Test
+    void wideToLongExplainsWrongSettings() {
+        WideToLongFunction function = new WideToLongFunction();
+        List<Map<String, Object>> rows = new ArrayList<>(List.of(labRow("6.1", "%", "", "", null)));
+        Map<String, String> inputs = Map.of("patient id", "pid");
+
+        for (Object columns : List.of("{}", "[\"HbA1c\"]", List.of("HbA1c"), "not json")) {
+            IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                    () -> function.apply(rows, null, inputs, null, Map.of("measurement columns", columns), null, null, null));
+            assertTrue(error.getMessage().contains("\"HbA1c\": \"HbA1c unit\""), error.getMessage());
+        }
+        IllegalArgumentException noPatient = assertThrows(IllegalArgumentException.class,
+                () -> function.apply(rows, null, Map.of(), null,
+                        Map.of("measurement columns", "{\"HbA1c\": null}"), null, null, null));
+        assertTrue(noPatient.getMessage().contains("patient ID"), noPatient.getMessage());
+    }
+
+    private static Map<String, Object> labRow(Object hba1c, Object hba1cUnit, Object glucose, Object glucoseUnit,
+                                              Object bmi) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("pid", "p1");
+        map.put("visit", "v1");
+        map.put("date", "2024-05-17");
+        map.put("sex", "female");
+        map.put("HbA1c", hba1c);
+        map.put("HbA1c unit", hba1cUnit);
+        map.put("HbA1c range", "1-12");
+        map.put("Glucose", glucose);
+        map.put("Glucose unit", glucoseUnit);
+        map.put("BMI", bmi);
         return map;
     }
 

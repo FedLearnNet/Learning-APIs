@@ -13,6 +13,9 @@ import lombok.NoArgsConstructor;
 public class ConnectorFileUploadSettingsDTO extends FileParsingSettingsDTO {
     public static final int DEFAULT_PREVIEW_ROWS = 10;
     public static final int MAX_PREVIEW_ROWS = 100;
+    /** Extra rows stored for columns empty in the first rows, and how far to search for them. */
+    public static final int MAX_FILLER_ROWS = 50;
+    public static final int MAX_FILLER_SCAN_ROWS = 10_000;
 
     private Boolean hasSupportFile = false;
 

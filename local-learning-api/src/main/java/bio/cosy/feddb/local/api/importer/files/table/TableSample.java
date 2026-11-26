@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.api.importer.files.table;
 
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
+import bio.cosy.feddb.core.api.file.analytics.RowProfiler;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -89,5 +90,47 @@ public class TableSample {
                 .distinct()
                 .toList()));
         return values;
+    }
+
+    /**
+     * The first {@code headRows} rows, plus for each column still empty in them the first later row
+     * with a value (at most {@code maxFillers} rows, searching at most {@code maxScanRows} rows).
+     */
+    public static TableSample withFillers(final TableData tableData, final int headRows,
+                                          final int maxFillers, final int maxScanRows) {
+        if (tableData == null) {
+            return null;
+        }
+        List<String> columns = tableData.getColumns() == null ? List.of() : tableData.getColumns();
+        Set<String> empty = new LinkedHashSet<>(columns);
+        List<Map<String, Object>> sampledRows = new ArrayList<>();
+        int fillers = 0;
+        int scanned = 0;
+        try (var rows = tableData.streamRows()) {
+            Iterator<Map<String, Object>> iterator = rows.iterator();
+            while (iterator.hasNext()) {
+                Map<String, Object> row = iterator.next();
+                if (sampledRows.size() < headRows) {
+                    sampledRows.add(row);
+                    empty.removeIf(column -> hasValue(row, column));
+                } else if (empty.isEmpty() || fillers >= maxFillers || scanned++ >= maxScanRows) {
+                    break;
+                } else if (empty.removeIf(column -> hasValue(row, column))) {
+                    sampledRows.add(row);
+                    fillers++;
+                }
+            }
+        }
+        return new TableSample(columns, sampledRows, tableData.getColumnProfiles());
+    }
+
+    /** Whether a row has a value in a column; blank, NA, null, ... and {@code ?} count as empty. */
+    public static boolean hasValue(final Map<String, Object> row, final String column) {
+        Object value = row == null ? null : row.get(column);
+        if (value == null) {
+            return false;
+        }
+        String text = String.valueOf(value);
+        return !RowProfiler.isMissing(text) && !"?".equals(text.trim());
     }
 }

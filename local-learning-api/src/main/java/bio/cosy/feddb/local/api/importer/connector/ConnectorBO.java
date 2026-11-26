@@ -23,6 +23,8 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HexFormat;
@@ -31,6 +33,9 @@ import java.util.Optional;
 
 @ApplicationScoped
 public class ConnectorBO extends BaseBo<ConnectorDTO, ConnectorEntity, ConnectorAO, ConnectorMapper> {
+
+    static final String NAME_TAKEN_MESSAGE =
+            "The connector name '%s' is already taken. Please choose a different name.";
 
     @Inject
     ConnectorTransformerBO transformerBO;
@@ -90,6 +95,7 @@ public class ConnectorBO extends BaseBo<ConnectorDTO, ConnectorEntity, Connector
                 }
             }
         }
+        ensureNameAvailable(data.getName(), null);
         CohortDetailDTO cohort = cohortBO.findById(data.getCohortId());
         if (checkSchema) {
             data = connectorSchemaHelper.validateAndRematchMappingSchemaId(data, cohort);
@@ -188,6 +194,7 @@ public class ConnectorBO extends BaseBo<ConnectorDTO, ConnectorEntity, Connector
         if (entity.isEmpty()) {
             throw new NotFoundException("Connector with id " + id + " not found for patching");
         }
+        ensureNameAvailable(data.getName(), id);
         ConnectorDTO currentConnector = mapper.entityToDto(entity.get());
         data.setVersion(currentConnector.getVersion());
         ConnectorDTO connector = super.update(id, data);
@@ -204,6 +211,7 @@ public class ConnectorBO extends BaseBo<ConnectorDTO, ConnectorEntity, Connector
             setBaseValuesNull(data);
             return create(data, false, false);
         }
+        ensureNameAvailable(data.getName(), id);
         ConnectorDTO currentConnector = mapper.entityToDto(entity.get());
         data.setVersion(currentConnector.getVersion());
         ConnectorDTO connector = super.update(id, data);
@@ -260,6 +268,20 @@ public class ConnectorBO extends BaseBo<ConnectorDTO, ConnectorEntity, Connector
     public ConnectorDTO getFileCheckedById(Long id) {
         ConnectorDTO dto = getById(id);
         return enhanceDTO(dto);
+    }
+
+    /**
+     * Rejects a name another connector already uses with 409 and a message the UI can show.
+     *
+     * <p>Names are unique across all cohorts on this Client ({@code app_connectors.name}), so the
+     * clash may be with a connector the user cannot see. Without this check the insert/update
+     * reaches the database and the constraint violation surfaces as a 500 carrying the raw
+     * PostgreSQL error. Two saves racing with the same name can still hit the constraint.</p>
+     */
+    void ensureNameAvailable(String name, Long excludeId) {
+        if (name != null && ao.existsByNameExcludingId(name, excludeId)) {
+            throw new WebApplicationException(String.format(NAME_TAKEN_MESSAGE, name), Response.Status.CONFLICT);
+        }
     }
 
     private ConnectorDTO reloadConnector(Long id) {

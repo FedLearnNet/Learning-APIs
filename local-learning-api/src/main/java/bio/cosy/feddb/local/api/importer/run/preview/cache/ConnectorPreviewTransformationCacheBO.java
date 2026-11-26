@@ -28,12 +28,14 @@ public class ConnectorPreviewTransformationCacheBO extends BaseBo<
     public static final int SOURCE_STEP = 0;
 
     public String sourceFingerprint(ConnectorConfigDTO config) {
-        return hash(List.of(
+        List<String> parts = new ArrayList<>(List.of(
                 String.valueOf(config.getCohortId()),
                 json(config.getInputConfig()),
                 json(config.getMergeConfig()),
                 json(config.getPivotConfig()),
                 json(config.getFileInfo())));
+        parts.add("previewRows=" + config.previewRowsOrDefault());
+        return hash(parts);
     }
 
 
