@@ -7,6 +7,7 @@ import java.util.List;
 
 @Data
 public class SystemComputingInfoDTO {
+    private String flNetSoftwareVersion;
     private Boolean gpuAvailable;
     CpuComputingInfoDTO cpuDetails;
     RamComputingInfoDTO ramDetails;

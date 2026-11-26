@@ -28,8 +28,7 @@ public class ExecutionRunAO extends BaseExecutionRunAO<ExecutionRunEntity> {
     }
 
     private PanacheQuery<ExecutionRunEntity> openTrainings() {
-        return find("purpose = ?1 and status not in ?2", ExecutionPurpose.TRAINING,
-                List.of(RunStatusTypes.FINISHED, RunStatusTypes.STOPPED, RunStatusTypes.ERROR));
+        return find("purpose = ?1 and status not in ?2", ExecutionPurpose.TRAINING, RunStatusTypes.terminalStates());
     }
 
     public List<ExecutionRunEntity> listByCohort(Long cohortId) {

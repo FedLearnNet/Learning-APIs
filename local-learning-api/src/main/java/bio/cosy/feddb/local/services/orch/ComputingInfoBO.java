@@ -6,6 +6,7 @@ import io.quarkus.logging.Log;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 @ApplicationScoped
@@ -14,6 +15,9 @@ public class ComputingInfoBO {
     @Inject
     @RestClient
     ComputingInfoServiceClient client;
+
+    @ConfigProperty(name = "quarkus.application.version")
+    String version;
 
     private volatile SystemComputingInfoDTO cached;
 
@@ -24,7 +28,9 @@ public class ComputingInfoBO {
     @PostConstruct
     public synchronized void refresh() {
         try {
-            cached = client.getInfo();
+            SystemComputingInfoDTO info = client.getInfo();
+            info.setFlNetSoftwareVersion(version);
+            cached = info;
         } catch (Exception e) {
             Log.warn("Could not refresh computing info", e);
         }
