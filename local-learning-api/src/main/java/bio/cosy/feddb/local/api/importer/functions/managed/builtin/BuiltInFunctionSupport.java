@@ -4,18 +4,11 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
+import java.math.BigDecimal;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 final class BuiltInFunctionSupport {
 
@@ -25,6 +18,7 @@ final class BuiltInFunctionSupport {
      * the functions stay unit-testable without a CDI container.
      */
     private static final ObjectMapper JSON = new JsonMapper();
+    private static final double LONG_RANGE = 0x1p63;
 
     private static final Map<String, String> PYTHON_TO_JAVA_DATE_FORMATS = Map.ofEntries(
             Map.entry("%Y", "yyyy"),
@@ -76,12 +70,16 @@ final class BuiltInFunctionSupport {
         return DateTimeFormatter.ofPattern(format);
     }
 
-    /** True for {@code null} and for values whose text representation is blank. */
+    /**
+     * True for {@code null} and for values whose text representation is blank.
+     */
     static boolean isBlank(Object value) {
         return value == null || String.valueOf(value).strip().isEmpty();
     }
 
-    /** Parses a cell into a double, returning {@code null} for blank or non-numeric input. */
+    /**
+     * Parses a cell into a double, returning {@code null} for blank or non-numeric input.
+     */
     static Double toDouble(Object value) {
         if (value == null) {
             return null;
@@ -173,7 +171,9 @@ final class BuiltInFunctionSupport {
         }
     }
 
-    /** Reads a JSON array hyperparameter as a list of strings (an empty list when unset). */
+    /**
+     * Reads a JSON array hyperparameter as a list of strings (an empty list when unset).
+     */
     static List<String> readStringList(Object raw, String parameterName) {
         if (raw instanceof Map<?, ?> || raw instanceof String text && text.strip().startsWith("{")) {
             throw new IllegalArgumentException("Invalid '" + parameterName + "': expected a JSON array of strings, e.g. "
@@ -221,7 +221,7 @@ final class BuiltInFunctionSupport {
 
     private static String normalizeFloatingNumber(double value) {
         if (value == Math.floor(value)) {
-            return String.valueOf((long) value);
+            return BigDecimal.valueOf(value).toBigInteger().toString();
         }
         return String.valueOf(value);
     }
