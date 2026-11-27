@@ -1,13 +1,13 @@
 package bio.cosy.feddb.local.api.importer.connector;
 
 import bio.cosy.feddb.core.helper.ResourceLoader;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
+import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 
@@ -25,7 +25,7 @@ public class ConnectorRemoteHelper {
         try {
             return ResourceLoader.loadAsString(remoteUrl);
         } catch (IOException e) {
-            throw new NotFoundException("Unable to load remote resource: " + e.getMessage(), e);
+            throw new NotFoundException("Unable to load remote resource", e);
         }
     }
 
@@ -38,8 +38,8 @@ public class ConnectorRemoteHelper {
             }
 
             return root;
-        } catch (JsonProcessingException e) {
-            throw new BadRequestException("Invalid JSON: " + e.getMessage(), e);
+        } catch (JacksonException e) {
+            throw new BadRequestException("Invalid JSON", e);
         }
     }
 }

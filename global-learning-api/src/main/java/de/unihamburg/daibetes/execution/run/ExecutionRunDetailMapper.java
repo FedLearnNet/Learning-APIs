@@ -8,8 +8,7 @@ import bio.cosy.feddb.core.execution.file.ExecutionFileDirection;
 import bio.cosy.feddb.core.execution.message.*;
 import bio.cosy.feddb.core.execution.run.dto.RunMetaDTO;
 import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptEntity;
 import de.unihamburg.daibetes.execution.attempt.ExecutionAttemptMapper;
@@ -26,6 +25,7 @@ import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import de.unihamburg.daibetes.config.FLNetConfig;
 import jakarta.inject.Inject;
 import org.mapstruct.*;
+import tools.jackson.core.JacksonException;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -126,7 +126,7 @@ public abstract class ExecutionRunDetailMapper {
     public String mapFieldsToJson(LinkedHashMap<String, Object> fields) {
         try {
             return objectMapper.writeValueAsString(fields);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("Output is not valid JSON", e);
         }
     }
@@ -139,7 +139,7 @@ public abstract class ExecutionRunDetailMapper {
         }
         try {
             return objectMapper.readValue(json, objectMapper.getTypeFactory().constructMapType(LinkedHashMap.class, String.class, Object.class));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return new LinkedHashMap<>();
         }
     }

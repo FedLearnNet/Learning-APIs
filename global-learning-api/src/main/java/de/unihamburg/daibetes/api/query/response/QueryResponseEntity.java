@@ -30,7 +30,7 @@ public class QueryResponseEntity extends BaseEntity {
     @JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     private Set<ExecutionMode> supportedModes;
 
-    //TODO might be a problem, but cant come up with a better solution
+    // TODO might be a problem, but cant come up with a better solution
     @Column(name = "connection_id")
     private String connectionId;
 

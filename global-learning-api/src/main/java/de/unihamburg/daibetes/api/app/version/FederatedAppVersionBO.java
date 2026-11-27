@@ -86,7 +86,7 @@ public class FederatedAppVersionBO extends BaseBo<FederatedAppVersionDTO, Federa
 
         if (existingVersionEntity.getVersionPublishStatus().equalsName(PublishStatus.PUBLISHED)) {
             Log.errorf("Attempt to publish already published for app %d with version id %d", appVersionId, existingVersionEntity.getId());
-            //throw new BadRequestException("Version already published");
+            // throw new BadRequestException("Version already published");
         }
         if (StringUtils.isEmpty(existingVersionEntity.getImageName())) {
             Log.errorf("Attempt to publish version without image for app %d", appVersionId);
@@ -96,7 +96,7 @@ public class FederatedAppVersionBO extends BaseBo<FederatedAppVersionDTO, Federa
                 appVersionId,
                 existingVersionEntity.getId());
 
-        //version will be splitted into major, minor, patch inside each setter
+        // version will be splitted into major, minor, patch inside each setter
         existingVersionEntity.setPatchVersion(publishDTO.getVersion());
         existingVersionEntity.setMajorVersion(publishDTO.getVersion());
         existingVersionEntity.setMinorVersion(publishDTO.getVersion());
@@ -139,11 +139,11 @@ public class FederatedAppVersionBO extends BaseBo<FederatedAppVersionDTO, Federa
         newVersionEntity.setCertificationLevel(0);
         newVersionEntity.setPublishHash(null);
         setBaseValuesNull(newVersionEntity);
-        //version will be splitted into major, minor, patch inside each setter
+        // version will be splitted into major, minor, patch inside each setter
         newVersionEntity.setMajorVersion(version);
         newVersionEntity.setMinorVersion(version);
         newVersionEntity.setPatchVersion(version);
-        //increase patch version for the new unpublished version
+        // increase patch version for the new unpublished version
         newVersionEntity.increasePatchVersion();
 
         ao.persist(newVersionEntity);

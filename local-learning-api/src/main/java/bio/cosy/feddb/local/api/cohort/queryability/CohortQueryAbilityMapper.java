@@ -14,7 +14,7 @@ import org.mapstruct.Mappings;
 import java.util.List;
 
 @Mapper(config = QuarkusMappingConfig.class)
-public interface CohortQueryAbilityMapper extends BaseMapper<CohortQueryAbilityDTO,CohortQueryAbilityEntity> {
+public interface CohortQueryAbilityMapper extends BaseMapper<CohortQueryAbilityDTO, CohortQueryAbilityEntity> {
 
     @Mappings({
             @Mapping(target = "cohortId", source = "cohort.id"),

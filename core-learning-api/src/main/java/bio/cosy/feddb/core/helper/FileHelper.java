@@ -199,6 +199,7 @@ public class FileHelper {
             throw new UncheckedIOException("Failed to create file zip", e);
         }
     }
+
     private static boolean isValidBase64(String base64Content) {
         try {
             Base64.getDecoder().decode(base64Content);

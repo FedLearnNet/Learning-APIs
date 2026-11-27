@@ -73,7 +73,7 @@ public class WorkflowBO extends BaseBo<WorkflowDTO, WorkflowEntity, WorkflowAO, 
     }
 
     public WorkflowDTO create(WorkflowCreateDTO createDTO, String keycloakId) {
-        //TODO MORE COMPLEX LOGIC
+        // TODO MORE COMPLEX LOGIC
         WorkflowEntity entity = createEmptyEntity(keycloakId);
         ao.persist(entity);
         if (createDTO.getProjectId() != null) {

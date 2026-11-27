@@ -4,11 +4,13 @@ import bio.cosy.feddb.local.api.importer.extract.PivotConfigDTO;
 import bio.cosy.feddb.local.api.importer.extract.PivotMode;
 import bio.cosy.feddb.local.api.importer.extract.PivotValueFormat;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
+import tools.jackson.core.JacksonException;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -32,7 +34,7 @@ public class TableDataPivotBO {
 
     private static final int PIVOT_BATCH_SIZE = 1_024;
     private static final int MAX_OPEN_BATCH_WRITERS = 32;
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new JsonMapper();
     private static final TypeReference<List<Object>> VALUE_LIST_TYPE = new TypeReference<>() {
     };
 
@@ -271,6 +273,8 @@ public class TableDataPivotBO {
             }
         } catch (IOException e) {
             throw new UncheckedIOException("Could not spool pivot source rows", e);
+        } catch (JacksonException e) {
+            throw new UncheckedIOException("Could not spool pivot source rows", new IOException(e));
         }
     }
 
@@ -311,6 +315,8 @@ public class TableDataPivotBO {
                 }
             } catch (IOException e) {
                 throw new UncheckedIOException("Could not read pivot batch " + batchIndex, e);
+            } catch (JacksonException e) {
+                throw new UncheckedIOException("Could not read pivot batch " + batchIndex, new IOException(e));
             }
 
             batchRows.forEach(pivoted::appendRow);

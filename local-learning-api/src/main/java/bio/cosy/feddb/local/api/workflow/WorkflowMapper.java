@@ -17,7 +17,7 @@ public interface WorkflowMapper extends BaseMapper<WorkflowDTO, WorkflowEntity> 
 
 
     @Mappings({
-            @Mapping(target = "nodes", ignore = true), //will be later in bo
+            @Mapping(target = "nodes", ignore = true), // will be later in bo
             @Mapping(target = "connections", expression = "java(connectionMapper.entitiesToDtos(entity.getConnections()))"),
     })
     WorkflowDTO entityToDto(WorkflowEntity entity);

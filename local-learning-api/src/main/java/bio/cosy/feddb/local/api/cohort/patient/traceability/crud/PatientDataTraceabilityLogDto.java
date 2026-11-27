@@ -51,7 +51,7 @@ public class PatientDataTraceabilityLogDto {
         this.createdAt = Date.from(log.getChangeDate());
         this.changeType = log.getChangeType();
         this.cohortId = log.getCohortId();
-        this.dryRun = false; //if audited then cant be dry run
-        this.committed = true; //if audited then committed
+        this.dryRun = false; // if audited then cant be dry run
+        this.committed = true; // if audited then committed
     }
 }

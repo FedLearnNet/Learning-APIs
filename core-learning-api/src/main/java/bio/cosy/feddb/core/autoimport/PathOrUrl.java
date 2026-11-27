@@ -1,7 +1,7 @@
 package bio.cosy.feddb.core.autoimport;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -95,6 +95,7 @@ public class PathOrUrl {
                 }
             }
         } catch (IllegalArgumentException ignored) {
+            // not a URI, tried as a path below
         }
 
         try (InputStream in = Files.newInputStream(Path.of(spec))) {

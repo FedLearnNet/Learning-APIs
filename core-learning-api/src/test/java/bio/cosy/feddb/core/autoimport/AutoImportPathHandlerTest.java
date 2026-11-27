@@ -1,7 +1,8 @@
 package bio.cosy.feddb.core.autoimport;
 
 import bio.cosy.feddb.core.helper.ResourceScanner;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -21,7 +22,7 @@ class AutoImportPathHandlerTest {
 
     private AutoImportPathHandler handler() {
         AutoImportPathHandler handler = new AutoImportPathHandler();
-        handler.objectMapper = new ObjectMapper();
+        handler.objectMapper = new JsonMapper();
         handler.resourceScanner = new ResourceScanner();
         handler.init();
         return handler;

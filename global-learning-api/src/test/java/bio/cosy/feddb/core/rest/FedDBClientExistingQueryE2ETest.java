@@ -3,7 +3,8 @@ package bio.cosy.feddb.core.rest;
 import bio.cosy.feddb.core.api.query.QueryClientResponseDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.socket.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import de.unihamburg.daibetes.api.query.QueryBO;
 import de.unihamburg.daibetes.api.query.QueryCreateDTO;
 import de.unihamburg.daibetes.api.query.QueryService;
@@ -56,7 +57,7 @@ public class FedDBClientExistingQueryE2ETest {
         QueryClientResponseDTO response = QueryClientResponseDTO.createResponse(result, null);
         Vertx vertx = Vertx.vertx();
         WebSocketClient client = vertx.createWebSocketClient();
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new JsonMapper();
 
 
         try {

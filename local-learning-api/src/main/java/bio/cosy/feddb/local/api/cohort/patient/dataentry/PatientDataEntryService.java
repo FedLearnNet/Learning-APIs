@@ -46,7 +46,7 @@ public interface PatientDataEntryService {
     )
     @APIResponse(responseCode = "400", description = "Invalid input data")
     @APIResponse(responseCode = "404", description = "Data entry, patient, or cohort not found")
-    public Response updateDataEntries(
+    Response updateDataEntries(
             @PathParam("cohortId") Long cohortId,
             @PathParam("internalPatientId") Long internalPatientId,
             List<@Valid @ConvertGroup(to = ValidationGroups.Upsert.class) PatientDataEntryDTO> updateDTOs);
@@ -61,7 +61,7 @@ public interface PatientDataEntryService {
                     schema = @Schema(implementation = PatientDataEntryDTO.class)))
     @APIResponse(responseCode = "400", description = "Invalid input data")
     @APIResponse(responseCode = "404", description = "Patient or cohort not found")
-    public Response createMultipleDataEntries(
+    Response createMultipleDataEntries(
             @PathParam("cohortId") Long cohortId,
             @PathParam("internalPatientId") Long internalPatientId,
             List<@Valid @ConvertGroup(to = ValidationGroups.Post.class) PatientDataEntryDTO> createDTOs);
@@ -76,7 +76,7 @@ public interface PatientDataEntryService {
                     schema = @Schema(implementation = PatientDataEntryDTO.class)))
     @APIResponse(responseCode = "400", description = "Invalid input data")
     @APIResponse(responseCode = "404", description = "Patient or cohort not found")
-    public Response createSingleDataEntries(
+    Response createSingleDataEntries(
             @PathParam("cohortId") Long cohortId,
             @PathParam("internalPatientId") Long internalPatientId,
             @Valid @ConvertGroup(to = ValidationGroups.Post.class) PatientDataEntryDTO createDTO);
@@ -95,7 +95,7 @@ public interface PatientDataEntryService {
     )
     @APIResponse(responseCode = "400", description = "Invalid input data")
     @APIResponse(responseCode = "404", description = "Data entry, patient, or cohort not found")
-    public Response update(
+    Response update(
             @PathParam("cohortId") Long cohortId,
             @PathParam("internalPatientId") Long internalPatientId,
             @PathParam("id") Long id,
@@ -107,7 +107,7 @@ public interface PatientDataEntryService {
             description = "Deletes multiple data entries for the specified patient in the cohort in a single transaction")
     @APIResponse(responseCode = "200", description = "Data entries deleted successfully")
     @APIResponse(responseCode = "400", description = "Invalid input data")
-    public Response deleteMultipleDataEntries(
+    Response deleteMultipleDataEntries(
             @PathParam("cohortId") Long cohortId,
             @PathParam("internalPatientId") Long internalPatientId,
             Set<@NotNull Long> deleteIds);
@@ -118,7 +118,7 @@ public interface PatientDataEntryService {
             description = "Deletes single data entries for the specified patient in the cohort in a single transaction")
     @APIResponse(responseCode = "200", description = "Data entries deleted successfully")
     @APIResponse(responseCode = "400", description = "Invalid input data")
-    public Response deleteDataEntry(
+    Response deleteDataEntry(
             @PathParam("cohortId") Long cohortId,
             @PathParam("internalPatientId") Long internalPatientId,
             @PathParam("id") Long id);

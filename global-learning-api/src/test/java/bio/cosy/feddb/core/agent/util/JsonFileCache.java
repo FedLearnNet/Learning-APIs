@@ -1,8 +1,10 @@
 package bio.cosy.feddb.core.agent.util;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import io.quarkus.logging.Log;
+import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,7 +15,9 @@ import java.util.Optional;
 
 public final class JsonFileCache {
 
-    private static final ObjectMapper OM = new ObjectMapper().findAndRegisterModules();
+    private static final ObjectMapper OM = JsonMapper.builder()
+            .findAndAddModules()
+            .build();
 
     private JsonFileCache() {
     }
@@ -24,7 +28,7 @@ public final class JsonFileCache {
                 return new ArrayList<>();
             }
             return OM.readValue(path.toFile(), typeReference);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             Log.errorf(e, "Failed to read cache file %s", path);
             throw new RuntimeException("Failed to read cache file " + path, e);
         }
@@ -34,7 +38,7 @@ public final class JsonFileCache {
         try {
             Files.createDirectories(path.getParent());
             OM.writerWithDefaultPrettyPrinter().writeValue(path.toFile(), value);
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             Log.errorf(e, "Failed to write cache file %s", path);
             throw new RuntimeException("Failed to write cache file " + path, e);
         }

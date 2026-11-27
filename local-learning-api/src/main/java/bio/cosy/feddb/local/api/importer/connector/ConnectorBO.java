@@ -13,10 +13,8 @@ import bio.cosy.feddb.local.api.notification.WebsocketClientNotificationBO;
 import bio.cosy.feddb.local.api.search.SearchResultDTO;
 import bio.cosy.feddb.local.api.search.SearchResultType;
 import bio.cosy.feddb.local.api.search.SearchScoreUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -26,6 +24,7 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
+import tools.jackson.core.JacksonException;
 
 import java.util.HexFormat;
 import java.util.List;
@@ -240,14 +239,13 @@ public class ConnectorBO extends BaseBo<ConnectorDTO, ConnectorEntity, Connector
 
         JsonNode root = remoteHelper.parseJsonObject(raw);
 
-        ObjectMapper mapper = objectMapper.copy()
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ObjectMapper mapper = objectMapper.rebuild().build();
 
         ConnectorDTO connectorDTO;
         try {
             connectorDTO = mapper.treeToValue(root, ConnectorDTO.class);
-        } catch (JsonProcessingException e) {
-            throw new BadRequestException("Invalid connector payload: " + e.getMessage(), e);
+        } catch (JacksonException e) {
+            throw new BadRequestException("Invalid connector payload", e);
         }
 
         if (connectorDTO == null) {

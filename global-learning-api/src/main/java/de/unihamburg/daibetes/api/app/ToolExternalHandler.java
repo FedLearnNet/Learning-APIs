@@ -5,9 +5,9 @@ import bio.cosy.feddb.core.api.model.ModelDetailDTO;
 import bio.cosy.feddb.core.autoimport.AutoImportPathHandler;
 import bio.cosy.feddb.core.autoimport.OnParseError;
 import bio.cosy.feddb.core.autoimport.PathOrUrl;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import de.unihamburg.daibetes.api.model.ModelBO;
 import de.unihamburg.daibetes.config.FLNetConfig;
 import de.unihamburg.daibetes.helper.ToolExternalCleaner;
@@ -128,10 +128,11 @@ public class ToolExternalHandler {
         try {
             JsonNode root = objectMapper.readTree(outFile.get().toFile());
             JsonNode version = StreamSupport.stream(root.path("versions").spliterator(), false)
-                    .filter(value -> Objects.equals(value.path("appVersion").asText(), tool.getLatestVersion()))
+                    .filter(value -> Objects.equals(value.path("appVersion").asString(), tool.getLatestVersion()))
                     .findFirst().orElse(root.path("versions").path(0));
-            if (!(version instanceof ObjectNode target) || tool.getPublishInfo() == null || tool.getImageName() == null)
+            if (!(version instanceof ObjectNode target) || tool.getPublishInfo() == null || tool.getImageName() == null) {
                 return Optional.empty();
+            }
             target.set("publishInfo", objectMapper.valueToTree(tool.getPublishInfo()));
             target.put("imageName", tool.getImageName());
             makeImageReferencesPortable((ObjectNode) root);
@@ -143,7 +144,7 @@ public class ToolExternalHandler {
     }
 
     private void makeImageReferencesPortable(ObjectNode tool) {
-        String slug = tool.path("slug").asText(null);
+        String slug = tool.path("slug").asString(null);
         if (StringUtils.isBlank(slug)) {
             return;
         }
@@ -152,7 +153,7 @@ public class ToolExternalHandler {
                     || !(version.path("publishInfo") instanceof ObjectNode publishInfo)) {
                 continue;
             }
-            String commitHash = publishInfo.path("commitHash").asText(null);
+            String commitHash = publishInfo.path("commitHash").asString(null);
             if (StringUtils.isBlank(commitHash)) {
                 continue;
             }

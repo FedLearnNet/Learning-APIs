@@ -160,7 +160,7 @@ public class FederatedAppCreateImportBO {
         }
         List<FederatedAppVersionEntity> versions = versionAO.findAllByAppId(entity.getId());
 
-        if(versions.size() == 1){
+        if (versions.size() == 1) {
             return Optional.of(versions.getFirst());
         }
 

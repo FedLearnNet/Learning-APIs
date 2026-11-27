@@ -6,7 +6,7 @@ import org.hibernate.validator.constraints.URL;
 
 @Setter
 @Getter
-public class URLDTO{
+public class URLDTO {
     @URL(message = "Invalid URL format")
     private String url;
 

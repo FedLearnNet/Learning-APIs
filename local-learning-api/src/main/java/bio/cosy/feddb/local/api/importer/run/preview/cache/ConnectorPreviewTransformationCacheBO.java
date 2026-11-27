@@ -3,10 +3,9 @@ package bio.cosy.feddb.local.api.importer.run.preview.cache;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -163,7 +162,6 @@ public class ConnectorPreviewTransformationCacheBO extends BaseBo<
 
     private ObjectMapper canonicalMapper() {
         return JsonMapper.builder()
-                .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
                 .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
                 .build();
     }

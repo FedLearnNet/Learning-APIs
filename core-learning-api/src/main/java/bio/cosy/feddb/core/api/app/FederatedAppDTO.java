@@ -30,7 +30,7 @@ public class FederatedAppDTO extends BaseDTO {
     private String slug;
 
 
-    //based on latest version;
+    // based on latest version;
     private AppPublishInfoDTO publishInfo;
     private String shortDescription;
     private String longDescription;
@@ -53,7 +53,7 @@ public class FederatedAppDTO extends BaseDTO {
 
     private Integer certificationLevel;
 
-    //only internal
+    // only internal
     private Long latestUnpublishedVersionId;
 
     private Long latestVersionId;
@@ -62,7 +62,7 @@ public class FederatedAppDTO extends BaseDTO {
     // PENDING or RUNNING build of the latest version, only set while a published version has no image
     private PipelineStatus buildStatus;
 
-    //rating
+    // rating
     private int count;
     private float average;
 

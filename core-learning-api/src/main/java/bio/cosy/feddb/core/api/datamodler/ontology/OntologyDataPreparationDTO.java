@@ -8,6 +8,6 @@ import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class OntologyDataPreparationDTO extends OntologyNodeDTO{
+public class OntologyDataPreparationDTO extends OntologyNodeDTO {
     private List<DataTypeUsagesDTO> datatypes;
 }

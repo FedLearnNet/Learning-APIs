@@ -200,7 +200,7 @@ public class UmlsParser {
         dto.setLat(lat);
         dto.addCode(code);
         dto.addSab(sab);
-        //ensure reproducible UUID for the same CUI,
+        // ensure reproducible UUID for the same CUI,
         // so that we can link edges to nodes without having to do a separate lookup
         dto.setId(UUID.nameUUIDFromBytes(cui.getBytes(StandardCharsets.UTF_8)));
 

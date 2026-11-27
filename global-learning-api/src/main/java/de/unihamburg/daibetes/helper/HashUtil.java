@@ -1,6 +1,7 @@
 package de.unihamburg.daibetes.helper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import io.quarkus.logging.Log;
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -9,7 +10,7 @@ import java.util.HexFormat;
 
 public class HashUtil {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new JsonMapper();
     private static final SecureRandom RANDOM = new SecureRandom();
 
     public static String sha256(Object obj) {

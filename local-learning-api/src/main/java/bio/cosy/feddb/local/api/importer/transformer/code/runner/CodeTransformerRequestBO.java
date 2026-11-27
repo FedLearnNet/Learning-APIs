@@ -7,7 +7,7 @@ import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerC
 import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerCheckResultDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.save.CodeTransformerSaveDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.save.CodeTransformerSaveResultDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -40,7 +40,7 @@ public class CodeTransformerRequestBO {
     }
 
     public void complete(Object message) {
-        String requestId = objectMapper.valueToTree(message).path("requestId").asText();
+        String requestId = objectMapper.valueToTree(message).path("requestId").asString();
         CompletableFuture<Object> answer = pending.get(requestId);
         if (answer != null) {
             answer.complete(message);

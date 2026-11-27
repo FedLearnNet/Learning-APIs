@@ -46,7 +46,7 @@ public class WorkflowBO extends BaseBo<WorkflowDTO, WorkflowEntity, WorkflowAO, 
         WorkflowDTO dto = mapper.entityToDto(entity);
         if (dto.getNodes() == null) {
             dto.setNodes(List.of());
-        }else{
+        } else {
             dto.setNodes(workflowNodeBO.toDetailDto(entity.getNodes()));
         }
 
@@ -62,7 +62,7 @@ public class WorkflowBO extends BaseBo<WorkflowDTO, WorkflowEntity, WorkflowAO, 
     }
 
     public WorkflowDTO create(WorkflowCreateDTO createDTO, String keycloakId) {
-        //TODO IF WE HAVE MORE COMPLEX LOGIC LATER
+        // TODO IF WE HAVE MORE COMPLEX LOGIC LATER
         WorkflowEntity entity = createEmptyEntity(keycloakId);
         ao.persist(entity);
         if (createDTO.getProjectId() != null) {

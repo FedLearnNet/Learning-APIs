@@ -33,8 +33,9 @@ public class ToolConfigsDTO {
         if (this.hyperparams != null) {
             for (int i = 0; i < this.hyperparams.size(); i++) {
                 if (this.hyperparams.get(i) == null && other.hyperparams.get(i) != null) return false;
-                if (this.hyperparams.get(i) != null && !this.hyperparams.get(i).equals(other.hyperparams.get(i)))
+                if (this.hyperparams.get(i) != null && !this.hyperparams.get(i).equals(other.hyperparams.get(i))) {
                     return false;
+                }
             }
         }
 

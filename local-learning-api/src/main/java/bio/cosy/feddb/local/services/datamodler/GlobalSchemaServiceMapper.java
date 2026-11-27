@@ -34,18 +34,18 @@ public interface GlobalSchemaServiceMapper {
     LocalSchemaRootNodeDTO globalHeadRootToLocalRootDto(SchemaNodeDetailDTO globalSchemaNode);
 
     @Mappings({
-            //BaseDTO
+            // BaseDTO
             @Mapping(target = "createdAt", ignore = true),
             @Mapping(target = "id", ignore = true),
             @Mapping(target = "updatedAt", ignore = true),
             @Mapping(target = "version", ignore = true),
 
-            //Schema
+            // Schema
             @Mapping(target = "globalId", source = "id", qualifiedByName = "mapUUIDToString"),
             @Mapping(target = "name", source = "name"),
             @Mapping(target = "description", source = "description"),
             @Mapping(target = "type", source = "type"),
-            @Mapping(target = "parentId", ignore = true), //Schema internal parentId not in global
+            @Mapping(target = "parentId", ignore = true), // Schema internal parentId not in global
 
             // Ontology (nested)
             @Mapping(target = "ontology.id", ignore = true),
@@ -82,7 +82,7 @@ public interface GlobalSchemaServiceMapper {
 
 
     @Mappings({
-            //BaseDTO
+            // BaseDTO
             @Mapping(target = "createdAt", ignore = true),
             @Mapping(target = "id", ignore = true),
             @Mapping(target = "updatedAt", ignore = true),

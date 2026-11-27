@@ -23,7 +23,7 @@ public class StartWorkflowNodeDTO {
     private Boolean isFistNode = false;
     private Boolean isLastNode = false;
 
-    //Network settings
+    // Network settings
     private Boolean needsInternetAccess = false;
     private Boolean needsHostAccess = false;
     private Boolean needsFederatedLearningAccess = false;

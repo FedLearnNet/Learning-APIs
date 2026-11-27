@@ -23,7 +23,7 @@ public class PatientDTO extends BaseDTO {
     @NotBlank
     @NotNull
     private String externalPatientId;
-        // Either of these IDs must be provided
+    // Either of these IDs must be provided
     private Set<PatientDataEntryDTO> dataEntries;
     private Long dataEntriesVersion;
     private LocalDateTime lastQueriedAt;

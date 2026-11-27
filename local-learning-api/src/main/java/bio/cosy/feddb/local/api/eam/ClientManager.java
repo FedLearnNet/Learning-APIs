@@ -60,8 +60,9 @@ public class ClientManager {
 
     private void sendSystemInfo(WebSocketClientConnection target) {
         var info = computingInfo.get();
-        if (info != null && target != null && target.isOpen())
+        if (info != null && target != null && target.isOpen()) {
             fireAndForget(new FedDBClientDataDTO<>(FedDBClientTypeEnum.SYSTEM_INFO, info), target);
+        }
     }
 
     public void sendTreSources() {
@@ -69,8 +70,9 @@ public class ClientManager {
     }
 
     private void sendTreSources(WebSocketClientConnection target) {
-        if (target != null && target.isOpen())
+        if (target != null && target.isOpen()) {
             fireAndForget(new FedDBClientDataDTO<>(FedDBClientTypeEnum.TRE_SOURCES, treSourceBO.listTransactional()), target);
+        }
     }
 
     void connect() {
@@ -282,7 +284,7 @@ public class ClientManager {
     }
 
     public void fireAndForget(FedDBClientDataDTO<?> dto, WebSocketClientConnection connection) {
-        //Fire and forget
+        // Fire and forget
         Log.infof("Sending message: %s", dto);
         if (connection != null && connection.isOpen()) {
             Log.infof("Websocket connection is open, sending message: %s", dto);

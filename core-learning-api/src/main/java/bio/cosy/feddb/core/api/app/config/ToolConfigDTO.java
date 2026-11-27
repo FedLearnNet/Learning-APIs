@@ -17,7 +17,7 @@ public class ToolConfigDTO extends BaseDTO {
 
     private ToolConfigModeType mode = ToolConfigModeType.BOTH;
 
-    //FOR CSV or TSV
+    // FOR CSV or TSV
     private String delimiter;
     private Boolean hasHeader;
     private Integer indexCol;

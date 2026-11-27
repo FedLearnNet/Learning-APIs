@@ -28,7 +28,7 @@ import static org.jboss.resteasy.reactive.RestResponse.StatusCode.CREATED;
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Patient", description = "Service for managing Patients")
 public interface PatientService {
-    static final String PATH = CohortService.PATH + "/{cohortId}/data/patient";
+    String PATH = CohortService.PATH + "/{cohortId}/data/patient";
     // Bulk addition of patients is handled in the CohortServices as the bulk addition
     // is always per one cohort.
 

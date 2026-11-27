@@ -83,7 +83,7 @@ public class CohortServiceImpl implements CohortService {
             throw new BadRequestException("Cohort Creation failed");
         } catch (Exception e) {
             Log.error("Cohort Creation failed" + e.getMessage(), e);
-            throw new InternalServerErrorException(e.getMessage());
+            throw new InternalServerErrorException("Cohort Creation failed");
         }
     }
 
@@ -100,7 +100,7 @@ public class CohortServiceImpl implements CohortService {
             throw new BadRequestException("Cohort update failed");
         } catch (Exception e) {
             Log.error("Cohort update failed" + e.getMessage(), e);
-            throw new InternalServerErrorException(e.getMessage());
+            throw new InternalServerErrorException("Cohort update failed");
         }
     }
 
@@ -140,7 +140,7 @@ public class CohortServiceImpl implements CohortService {
             throw e;
         } catch (Exception e) {
             Log.error("Cohort deletion failed", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Cohort deletion failed").build();
         }
     }
 }

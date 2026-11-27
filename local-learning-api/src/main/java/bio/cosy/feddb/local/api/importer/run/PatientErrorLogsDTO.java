@@ -14,7 +14,7 @@ public class PatientErrorLogsDTO {
     private String message;
     private String externalPatientId;
     private boolean updated = false;
-        // if not set, no changes were made to this patient
-        // updated includes if new data entries were added
+    // if not set, no changes were made to this patient
+    // updated includes if new data entries were added
     private List<RunErrorFieldLogDTO> errorFields = new ArrayList<>();
 }

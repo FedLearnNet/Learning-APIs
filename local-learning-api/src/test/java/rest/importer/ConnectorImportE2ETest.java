@@ -19,7 +19,7 @@ import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
 import bio.cosy.feddb.local.api.importer.run.RunErrorLogListResponseDTO;
 import bio.cosy.feddb.local.api.importer.run.patientlog.ConnectorRunPatientLogDTO;
 import bio.cosy.feddb.local.api.importer.run.patientlog.ConnectorRunPatientLogType;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -31,6 +31,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import rest.helper.RestAssuredConfigUtil;
 import rest.resource.PatientDataTestResource;
+import tools.jackson.core.JacksonException;
 
 import java.io.File;
 import java.net.URI;
@@ -590,7 +591,7 @@ public class ConnectorImportE2ETest {
                     return objectMapper.readTree(info.getJson()).size() == 2
                             && !info.getColumnProfiles().isEmpty()
                             && info.getColumnProfiles().stream().allMatch(profile -> profile.count() == 3);
-                } catch (IOException exception) {
+                } catch (JacksonException exception) {
                     throw new AssertionError(exception);
                 }
             }));

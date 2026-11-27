@@ -5,7 +5,7 @@ import bio.cosy.feddb.local.api.cohort.AutoSubscriberBO;
 import bio.cosy.feddb.local.api.cohort.CohortAO;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import bio.cosy.feddb.local.services.datamodler.GlobalSchemaSubscriptionService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.scheduler.Scheduler;
 import io.quarkus.test.junit.QuarkusMock;

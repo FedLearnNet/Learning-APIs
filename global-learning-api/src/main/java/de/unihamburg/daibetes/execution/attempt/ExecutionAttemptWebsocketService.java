@@ -95,8 +95,9 @@ public class ExecutionAttemptWebsocketService extends BaseAttemptAppServer {
     @Override
     protected void logMessage(Long attemptId, ExecutionMessageLogDTO log, AppRunTypeEnum runType) {
         super.logMessage(attemptId, log, runType);
-        if (runType == AppRunTypeEnum.FEDERATED_TEST_RUN || runType == AppRunTypeEnum.TEST_RUN)
+        if (runType == AppRunTypeEnum.FEDERATED_TEST_RUN || runType == AppRunTypeEnum.TEST_RUN) {
             hostedTests.publishTransactional(attemptId, AppMessageTypeEnum.LOG_MESSAGE, log);
+        }
     }
 
     @Override

@@ -2,7 +2,8 @@ package de.unihamburg.daibetes.api.workflow.export;
 
 
 import bio.cosy.feddb.core.api.workflow.node.WorkflowPositionDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import de.unihamburg.daibetes.api.app.config.FederatedAppConfigNameMapper;
 import de.unihamburg.daibetes.api.app.config.input.FederatedAppInputConfigEntity;
 import de.unihamburg.daibetes.api.app.config.output.FederatedAppOutputConfigEntity;
@@ -14,8 +15,8 @@ import de.unihamburg.daibetes.api.workflow.node.WorkflowNodeEntity;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
+import tools.jackson.core.JacksonException;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -23,7 +24,7 @@ import java.util.Set;
 public interface WorkflowExportMapper {
 
     HyperParamMapper hyperParamMapper = Mappers.getMapper(HyperParamMapper.class);
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = new JsonMapper();
     FederatedAppConfigNameMapper nameMapper = Mappers.getMapper(FederatedAppConfigNameMapper.class);
 
     @Mappings({
@@ -95,7 +96,7 @@ public interface WorkflowExportMapper {
         }
         try {
             return objectMapper.readValue(jsonString, WorkflowPositionDTO.class);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             return new WorkflowPositionDTO(0, 0);
         }
     }

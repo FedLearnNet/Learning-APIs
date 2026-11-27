@@ -9,7 +9,7 @@ public class NullValuePolicyDTO {
     // truly missing CSV fields (empty between delimiters), e.g. `a,,c`
     private Boolean prohibitedEmptyCell;
 
-    //prohibited empty string values after parsing, e.g. "" (quoted empty)
+    // prohibited empty string values after parsing, e.g. "" (quoted empty)
     private Boolean prohibitedEmptyString;
 
     // prohibited whitespace-only strings like "   " (before/after trimming — define in backend

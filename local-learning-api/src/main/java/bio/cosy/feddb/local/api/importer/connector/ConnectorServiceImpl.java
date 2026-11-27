@@ -139,7 +139,7 @@ public class ConnectorServiceImpl implements ConnectorService {
     public Multi<ConnectorRunDTO> runConnector(Long id, boolean deleteExistingPatients, boolean dry) {
         String keycloakId = userIdentity.getKeycloakId();
 
-        //TODO SUPPORT SSE, replace the code and change fe
+        // TODO SUPPORT SSE, replace the code and change fe
         /*
         Uni.createFrom().item(() -> runBO.startRun(id, deleteExistingPatients, dry, keycloakId))
                 .runSubscriptionOn(Infrastructure.getDefaultExecutor())

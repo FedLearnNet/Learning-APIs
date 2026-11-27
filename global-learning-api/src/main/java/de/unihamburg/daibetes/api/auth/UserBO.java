@@ -12,9 +12,9 @@ public class UserBO {
     @Inject
     KeycloakService keycloakService;
 
-    //@Inject
-    //TODO if we save variabels
-    //UserInfo userInfo;
+    // @Inject
+    // TODO if we save variabels
+    // UserInfo userInfo;
 
 
     public boolean hasUserRole(String keycloakId, String role) {

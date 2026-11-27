@@ -31,7 +31,7 @@ import bio.cosy.feddb.local.execution.run.ExecutionRunEntity;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import bio.cosy.feddb.local.services.datamodler.GlobalSchemaSubscriptionService;
 import bio.cosy.feddb.local.services.GlobalAPIStoreService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;

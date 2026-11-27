@@ -143,7 +143,7 @@ public class ModelSubBO extends BaseBo<ModelSubDTO, ModelSubEntity, ModelSubAO, 
 
     public void addModelSubData(ModelSubDTO subDto, bio.cosy.feddb.core.api.model.ModelSubDataDTO data, String keycloakId) {
         File file = data.getFile().uploadedFile().toFile();
-        modelSubFileBO.create(file, subDto.getId(), data.getFilePath(),keycloakId);
+        modelSubFileBO.create(file, subDto.getId(), data.getFilePath(), keycloakId);
     }
 
     public ModelSubDTO getByRunId(Long id, String keycloakId) {

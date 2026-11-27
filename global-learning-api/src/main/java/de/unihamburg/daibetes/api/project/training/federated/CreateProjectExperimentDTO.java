@@ -13,10 +13,10 @@ public class CreateProjectExperimentDTO {
 
     private Boolean modelNeedToBePublic;
 
-    //IF not set, the platform will decide randomly which client is coordinator
+    // IF not set, the platform will decide randomly which client is coordinator
     private Boolean platformIsCoordinator;
 
-    //TRE: the query response of the clinic to train on
+    // TRE: the query response of the clinic to train on
     private Long queryResponseId;
 
 }

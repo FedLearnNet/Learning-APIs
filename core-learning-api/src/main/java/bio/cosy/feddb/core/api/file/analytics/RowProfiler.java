@@ -1,6 +1,6 @@
 package bio.cosy.feddb.core.api.file.analytics;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.apache.commons.statistics.descriptive.DoubleStatistics;
 import org.apache.commons.statistics.descriptive.Quantile;
 import org.apache.commons.statistics.descriptive.Statistic;
@@ -197,7 +197,7 @@ public final class RowProfiler {
 
     static String jsonValueAsString(JsonNode v) {
         if (v == null || v.isNull()) return null;
-        if (v.isTextual()) return v.asText();
+        if (v.isString()) return v.asString();
         if (v.isNumber()) return v.numberValue().toString();
         if (v.isBoolean()) return String.valueOf(v.asBoolean());
         // arrays/objects -> compact JSON
@@ -328,7 +328,9 @@ public final class RowProfiler {
             if (c >= '0' && c <= '9') continue;
             switch (c) {
                 case '-', ':' -> separator = true;
-                case '.', '+', 'T', 'Z', 't', 'z', ' ' -> { /* allowed */ }
+                case '.', '+', 'T', 'Z', 't', 'z', ' ' -> {
+                    // allowed
+                }
                 // A zone region suffix such as [Europe/Berlin] may hold arbitrary
                 // text; leave the rest of the token to the parsers.
                 case '[' -> {
@@ -375,6 +377,7 @@ public final class RowProfiler {
                 }
                 return true;
             } catch (Exception ignore) {
+                // not this format, next one tried
             }
         }
         return false;
@@ -667,8 +670,8 @@ public final class RowProfiler {
             }
 
             // Treat empty string as missing to match CSV behavior
-            if (node.isTextual() && isMissing(node.asText())) {
-                countMissing(node.asText());
+            if (node.isString() && isMissing(node.asString())) {
+                countMissing(node.asString());
                 return;
             }
 
@@ -690,7 +693,7 @@ public final class RowProfiler {
                 return;
             }
 
-            if (node.isTextual() && isDateTimeToken(node.asText())) {
+            if (node.isString() && isDateTimeToken(node.asString())) {
                 datetimeCount++;
             }
         }
@@ -770,7 +773,13 @@ public final class RowProfiler {
                 type = "TEXT";
             }
 
-            Double mean = null, std = null, min = null, p25 = null, median = null, p75 = null, max = null;
+            Double mean = null;
+            Double std = null;
+            Double min = null;
+            Double p25 = null;
+            Double median = null;
+            Double p75 = null;
+            Double max = null;
             List<Map.Entry<String, Integer>> top = null;
             List<Map.Entry<String, Integer>> valueCounts = valueCounts();
 

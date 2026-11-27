@@ -1,12 +1,11 @@
 package bio.cosy.feddb.core.api.file.analytics;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.deser.std.StdDeserializer;
+import tools.jackson.databind.DatabindException;
 
-import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.Map;
 
@@ -25,9 +24,8 @@ public final class StringIntegerEntryDeserializer
     }
 
     @Override
-    public Map.Entry<String, Integer> deserialize(JsonParser parser, DeserializationContext context)
-            throws IOException {
-        JsonNode node = parser.getCodec().readTree(parser);
+    public Map.Entry<String, Integer> deserialize(JsonParser parser, DeserializationContext context) {
+        JsonNode node = parser.objectReadContext().readTree(parser);
 
         if (node.isArray() && node.size() == 2) {
             return entry(parser, node.get(0), node.get(1));
@@ -49,21 +47,21 @@ public final class StringIntegerEntryDeserializer
             }
         }
 
-        throw JsonMappingException.from(parser, "Expected a string/integer entry");
+        throw DatabindException.from(parser, "Expected a string/integer entry");
     }
 
     private Map.Entry<String, Integer> entry(JsonParser parser, JsonNode key, JsonNode value)
-            throws JsonMappingException {
+            throws DatabindException {
         if (key == null || key.isNull() || !key.isValueNode()) {
-            throw JsonMappingException.from(parser, "Entry key must be a string value");
+            throw DatabindException.from(parser, "Entry key must be a string value");
         }
-        return new AbstractMap.SimpleImmutableEntry<>(key.asText(), integerValue(parser, value));
+        return new AbstractMap.SimpleImmutableEntry<>(key.asString(), integerValue(parser, value));
     }
 
-    private Integer integerValue(JsonParser parser, JsonNode value) throws JsonMappingException {
+    private Integer integerValue(JsonParser parser, JsonNode value) throws DatabindException {
         if (value != null && value.isIntegralNumber() && value.canConvertToInt()) {
             return value.intValue();
         }
-        throw JsonMappingException.from(parser, "Entry value must be an integer");
+        throw DatabindException.from(parser, "Entry value must be an integer");
     }
 }

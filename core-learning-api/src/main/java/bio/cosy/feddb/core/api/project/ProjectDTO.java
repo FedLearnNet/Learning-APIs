@@ -31,9 +31,9 @@ public class ProjectDTO extends BaseDTO {
     // TRE on an external database of a client instead of the query's data
     private TreSourceDTO treSource;
 
-    //For the controller, that he can decide if the controller needs data
+    // For the controller, that he can decide if the controller needs data
     private boolean coordinatorHasData = false;
 
-    //People can upload one file tom project for experiments and coordinator data but dont need to
+    // People can upload one file tom project for experiments and coordinator data but dont need to
     private FileDTO file;
 }

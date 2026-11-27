@@ -86,7 +86,7 @@ public class ToolAuditBO extends BaseBo<ToolAuditDTO, ToolAuditEntity, ToolAudit
 
     public void updateCertificationLevel(ToolAuditEntity entity) {
         FederatedAppVersionEntity versionEntity = federatedAppVersionAO.findById(entity.getAppVersion().getId());
-        if(versionEntity == null) {
+        if (versionEntity == null) {
             return;
         }
         long accepted = Optional.ofNullable(versionEntity
@@ -95,7 +95,7 @@ public class ToolAuditBO extends BaseBo<ToolAuditDTO, ToolAuditEntity, ToolAudit
                 .count();
         long currentLevel = versionEntity.getCertificationLevel();
         if (accepted >= config.auditMinAcceptanceAmount() && currentLevel < 1) {
-            if(accepted >= 5){
+            if (accepted >= 5) {
                 accepted = 5;
             }
             versionEntity.setCertificationLevel((int) accepted);

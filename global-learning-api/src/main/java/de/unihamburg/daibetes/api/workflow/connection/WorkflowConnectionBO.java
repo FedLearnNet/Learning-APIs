@@ -89,7 +89,7 @@ public class WorkflowConnectionBO extends BaseBo<WorkflowConnectionDTO, Workflow
 
     @Override
     public WorkflowConnectionEntity mergeEntity(WorkflowConnectionEntity foundEntity, WorkflowConnectionEntity entity) {
-        //TODO IF WE HAVE SOME PROP LATERS
+        // TODO IF WE HAVE SOME PROP LATERS
         return foundEntity;
     }
 

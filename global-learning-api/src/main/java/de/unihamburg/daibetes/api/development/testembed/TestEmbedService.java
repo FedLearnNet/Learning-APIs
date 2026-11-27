@@ -13,7 +13,7 @@ import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
 import bio.cosy.feddb.core.security.ToolApiKeyAuthenticationMechanism;
 import bio.cosy.feddb.core.security.ToolApiKeyService;
 import bio.cosy.feddb.core.security.Scope;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import de.unihamburg.daibetes.api.app.author.FederatedAppAuthorBO;
 import de.unihamburg.daibetes.api.auth.UserIdentity;
 import de.unihamburg.daibetes.api.development.engine.TestEngineRunBO;
@@ -236,6 +236,7 @@ public class TestEmbedService {
                 break;
             case NOTIFY_START_EXPERIMENT:
                 testRunLauncher.launchPending(appId);
+                break;
             default:
                 break;
 

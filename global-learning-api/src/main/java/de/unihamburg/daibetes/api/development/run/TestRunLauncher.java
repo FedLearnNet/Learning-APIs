@@ -100,6 +100,7 @@ public class TestRunLauncher {
                 .map(attempt -> attempt.getStep().getFederatedAppVersion().getFederatedApp().getId())
                 .orElse(null);
     }
+
     // Claims the attempt, for a federated test run every pending participant, so a repeated event starts nothing twice.
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     TestRunLaunchDTO claimTransactional(Long attemptId) {
@@ -144,6 +145,7 @@ public class TestRunLauncher {
         return new TestRunLaunchDTO(appId,
                 new AppMessageWrapperDTO<>(AppMessageTypeEnum.START_RUN, start, runType));
     }
+
     private void withCredential(StartRunDTO start, Long attemptId) {
         start.setExecutionId(attemptId);
         start.setExecutionApiKey(apiKeys.issue(Scope.EXECUTION_ATTEMPT, attemptId));

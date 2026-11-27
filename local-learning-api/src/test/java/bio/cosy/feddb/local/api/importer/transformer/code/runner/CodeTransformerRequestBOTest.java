@@ -5,7 +5,8 @@ import bio.cosy.feddb.core.execution.run.dto.AppMessageWrapperDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerCheckDTO;
 import bio.cosy.feddb.local.api.importer.transformer.code.check.CodeTransformerCheckResultDTO;
 import bio.cosy.feddb.local.api.importer.run.AppTransformerSessionFailure;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import io.quarkus.websockets.next.WebSocketConnection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,7 @@ class CodeTransformerRequestBOTest {
     @BeforeEach
     void setUp() {
         requestBO.containerBO = containerBO;
-        requestBO.objectMapper = new ObjectMapper();
+        requestBO.objectMapper = new JsonMapper();
         when(containerBO.connection("user")).thenReturn(connection);
     }
 

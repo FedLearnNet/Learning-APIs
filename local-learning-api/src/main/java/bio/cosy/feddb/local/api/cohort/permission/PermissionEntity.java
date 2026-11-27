@@ -32,7 +32,7 @@ public class PermissionEntity extends BaseEntity {
     @Column(name = "query_sample_threshold")
     private Integer querySampleThreshold;
 
-    //for FL-Net
+    // for FL-Net
     @Enumerated(EnumType.STRING)
     @Column(name = "federated_auto_training_access")
     private AutoTrainingAccess federatedAutoTrainingAccess;
@@ -41,7 +41,7 @@ public class PermissionEntity extends BaseEntity {
     @Column(name = "federated_training_access")
     private TrainingAccess federatedTrainingAccess;
 
-    //for SiteCoffer (TRE (Trusted Research Environment))
+    // for SiteCoffer (TRE (Trusted Research Environment))
     @Enumerated(EnumType.STRING)
     @Column(name = "tre_auto_training_access")
     private AutoTrainingAccess treAutoTrainingAccess;

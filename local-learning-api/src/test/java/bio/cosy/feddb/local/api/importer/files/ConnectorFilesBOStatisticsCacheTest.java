@@ -10,8 +10,9 @@ import bio.cosy.feddb.local.api.importer.files.read.TableReadSpec;
 import bio.cosy.feddb.local.api.importer.files.table.TableData;
 import bio.cosy.feddb.local.api.importer.files.table.ParsedTables;
 import bio.cosy.feddb.local.api.importer.files.table.TableSample;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -60,7 +61,7 @@ class ConnectorFilesBOStatisticsCacheTest {
 
     @Test
     void parsingSettingsIgnoreLegacyUploadOnlyFields() throws Exception {
-        FileParsingSettingsDTO settings = new ObjectMapper().readValue("""
+        FileParsingSettingsDTO settings = new JsonMapper().readValue("""
                 {
                   "fileType":"CSV",
                   "delimiter":",",
@@ -78,7 +79,7 @@ class ConnectorFilesBOStatisticsCacheTest {
     @Test
     void columnProfileRoundTripsThroughDatabaseJsonShape() throws Exception {
         ColumnProfile profile = profile("age");
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
 
         String json = mapper.writeValueAsString(List.of(profile));
         List<ColumnProfile> restored = mapper.readValue(
@@ -97,7 +98,7 @@ class ConnectorFilesBOStatisticsCacheTest {
                 List.of(Map.of("patient_id", "p1", "age", 42)),
                 List.of(profile("age"))
         );
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
 
         String json = mapper.writeValueAsString(Map.of("Patients", preview));
         Map<String, TableSample> restored = mapper.readValue(json, new TypeReference<>() {
@@ -108,7 +109,7 @@ class ConnectorFilesBOStatisticsCacheTest {
 
     @Test
     void readsTemporaryCacheDtoEntryShape() throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
         String json = """
                 [{
                   "name":"age","type":"TEXT","count":1,"missing":0,"uniqueValues":1,

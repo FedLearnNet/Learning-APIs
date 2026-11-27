@@ -44,6 +44,22 @@ public class QueryItemDTO {
         return connectingOperator != null;
     }
 
+    public static QueryItemDTO andGroup(final QueryItemDTO... items) {
+        return andGroup(items == null ? List.of() : List.of(items));
+    }
+
+    public static QueryItemDTO andGroup(final List<QueryItemDTO> items) {
+        QueryItemDTO group = new QueryItemDTO();
+        group.setConnectingOperator(ConnectingOperator.AND);
+        group.setConditions(items == null ? List.of() : List.copyOf(items));
+        return group;
+    }
+
+    // empty for a missing tree
+    public static List<QueryItemDTO> leavesOf(final QueryItemDTO query) {
+        return query == null ? List.of() : query.leaves();
+    }
+
     // leaf conditions below this node, ignoring group structure
     public List<QueryItemDTO> leaves() {
         if (!isGroup()) {

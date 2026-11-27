@@ -8,7 +8,7 @@ import org.mapstruct.Mapper;
 public interface FederatedAppConfigNameMapper {
 
     default String sanitizeVariableName(String name) {
-        if(StringUtils.isEmpty(name)){
+        if (StringUtils.isEmpty(name)) {
             return name;
         }
         // Convert camelCase or PascalCase to snake_case
@@ -17,7 +17,7 @@ public interface FederatedAppConfigNameMapper {
         String sanitized = snakeCase.replaceAll("\\.", "__");
         sanitized = sanitized.replaceAll("[^0-9a-zA-Z_]", "_");
         // Variable names must not start with a digit
-        if(StringUtils.isEmpty(sanitized)){
+        if (StringUtils.isEmpty(sanitized)) {
             return sanitized;
         }
         if (Character.isDigit(sanitized.charAt(0))) {

@@ -35,7 +35,9 @@ final class RowProgress {
     private long nextLogNanos = startedNanos + LOG_INTERVAL_NANOS;
     private long nextListenNanos = startedNanos + LISTEN_INTERVAL_NANOS;
 
-    /** @param detail appended to the log line, e.g. how many columns and threads are doing the work */
+    /**
+     * @param detail appended to the log line, e.g. how many columns and threads are doing the work
+     */
     RowProgress(String phase, String source, String detail, RowScanListener listener) {
         this.phase = phase;
         this.source = source;

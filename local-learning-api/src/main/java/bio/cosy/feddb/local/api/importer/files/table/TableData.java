@@ -2,10 +2,10 @@ package bio.cosy.feddb.local.api.importer.files.table;
 
 
 import bio.cosy.feddb.core.api.file.analytics.ColumnProfile;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
 import lombok.AccessLevel;
 import lombok.Getter;

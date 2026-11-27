@@ -3,7 +3,6 @@ package bio.cosy.feddb.core.api.query;
 import bio.cosy.feddb.core.api.query.item.IntervalPartDTO;
 import bio.cosy.feddb.core.api.query.item.IntervalUnit;
 import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
-import bio.cosy.feddb.core.api.query.item.QueryItemHelper;
 import bio.cosy.feddb.core.api.query.item.TemporalRelationDTO;
 import bio.cosy.feddb.core.api.query.item.TemporalRelationship;
 import bio.cosy.feddb.core.api.query.item.TimeAggregationMethod;
@@ -24,14 +23,14 @@ class QueryValidationBOTest {
     @Test
     void emptyQueries() {
         assertTrue(validationBO.isEmptyQuery(null));
-        assertTrue(validationBO.isEmptyQuery(QueryItemHelper.andGroup()));
+        assertTrue(validationBO.isEmptyQuery(QueryItemDTO.andGroup()));
         assertFalse(validationBO.isEmptyQuery(leaf()));
-        assertFalse(validationBO.isEmptyQuery(QueryItemHelper.andGroup(leaf())));
+        assertFalse(validationBO.isEmptyQuery(QueryItemDTO.andGroup(leaf())));
     }
 
     @Test
     void acceptsValidTree() {
-        assertDoesNotThrow(() -> validationBO.validateTree(QueryItemHelper.andGroup(leaf())));
+        assertDoesNotThrow(() -> validationBO.validateTree(QueryItemDTO.andGroup(leaf())));
     }
 
     @Test
@@ -40,7 +39,7 @@ class QueryValidationBOTest {
         within.setTimeAggregationMethod(TimeAggregationMethod.WITHIN);
 
         QueryRejectedException e = assertThrows(QueryRejectedException.class,
-                () -> validationBO.validateTree(QueryItemHelper.andGroup(within)));
+                () -> validationBO.validateTree(QueryItemDTO.andGroup(within)));
         assertTrue(e.getMessage().contains("WITHIN requires valueAggregationMethod AVERAGE"));
     }
 
@@ -50,7 +49,7 @@ class QueryValidationBOTest {
         bounded.setAtLeast(3);
         bounded.setAtMost(1);
 
-        assertThrows(QueryRejectedException.class, () -> validationBO.validateTree(QueryItemHelper.andGroup(bounded)));
+        assertThrows(QueryRejectedException.class, () -> validationBO.validateTree(QueryItemDTO.andGroup(bounded)));
     }
 
     @Test
@@ -58,19 +57,19 @@ class QueryValidationBOTest {
         QueryItemDTO missingWindow = leaf();
         missingWindow.setTimeAggregationMethod(TimeAggregationMethod.WITHIN_AT_LEAST);
         missingWindow.setTimeWindowCount(2);
-        assertRejected(QueryItemHelper.andGroup(missingWindow), "timeWindow is missing");
+        assertRejected(QueryItemDTO.andGroup(missingWindow), "timeWindow is missing");
 
         QueryItemDTO zeroDelta = leaf();
         zeroDelta.setValueMode(ValueMode.DELTA);
         zeroDelta.setDeltaInterval(List.of(new IntervalPartDTO(0, IntervalUnit.DAYS)));
-        assertRejected(QueryItemHelper.andGroup(zeroDelta), "deltaInterval must be positive");
+        assertRejected(QueryItemDTO.andGroup(zeroDelta), "deltaInterval must be positive");
 
         TemporalRelationDTO tooLong = new TemporalRelationDTO();
         tooLong.setSourceCondition(0);
         tooLong.setTargetCondition(1);
         tooLong.setRelationship(TemporalRelationship.WITHIN);
         tooLong.setInterval(List.of(new IntervalPartDTO(201, IntervalUnit.YEARS)));
-        QueryItemDTO group = QueryItemHelper.andGroup(leaf(), leaf());
+        QueryItemDTO group = QueryItemDTO.andGroup(leaf(), leaf());
         group.setTemporalRelations(List.of(tooLong));
         assertRejected(group, "relation interval exceeds the maximum of 200 years");
     }

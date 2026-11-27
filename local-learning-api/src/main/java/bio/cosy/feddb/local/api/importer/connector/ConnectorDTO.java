@@ -9,7 +9,7 @@ import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonDeserialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -45,7 +45,7 @@ public class ConnectorDTO extends BaseDTO {
     private TriggerSettingsDTO triggerSettings;
     private ScheduleSettingsDTO scheduleSettings;
 
-    //based on runs
+    // based on runs
     private ConnectorRunDTO lastRun;
 
     public List<ConnectorMappingDTO> getSchemaMapping() {

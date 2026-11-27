@@ -19,7 +19,7 @@ import java.util.UUID;
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "SchemaService", description = "Service for reading the global schema")
 public interface SchemaService {
-    public static final String PATH = "/schema";
+    String PATH = "/schema";
 
     @GET
     @Operation(summary = "List all global schema root nodes", description = "Returns a list of all global schema root nodes. " +

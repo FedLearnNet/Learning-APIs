@@ -5,7 +5,7 @@ import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 import io.smallrye.config.WithName;
 
-//Intended for all custom properties with a "flnet" prefix
+// Intended for all custom properties with a "flnet" prefix
 @ConfigMapping(prefix = "flnet")
 public interface FLNetConfig {
 

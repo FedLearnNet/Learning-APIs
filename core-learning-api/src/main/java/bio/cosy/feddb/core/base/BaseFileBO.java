@@ -6,7 +6,8 @@ import bio.cosy.feddb.core.api.file.FileResult;
 import bio.cosy.feddb.core.api.file.analytics.FileAnalytics;
 import bio.cosy.feddb.core.api.file.analytics.FileProfile;
 import bio.cosy.feddb.core.api.file.analytics.FileTypeAnalyzer;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
@@ -278,7 +279,7 @@ public abstract class BaseFileBO<Dto extends BaseDTO, Entity extends BaseFileEnt
                 }
             case CSV, TSV, JSON: {
                 FileProfile profile = getFileStatistics(entity);
-                ObjectMapper mapper = new ObjectMapper();
+                ObjectMapper mapper = new JsonMapper();
                 try {
                     return mapper.writeValueAsString(profile);
                 } catch (Exception e) {

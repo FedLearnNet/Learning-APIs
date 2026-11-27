@@ -20,11 +20,11 @@ import bio.cosy.feddb.local.api.importer.mapping.ConnectorMappingDTO;
 import bio.cosy.feddb.local.api.importer.mapping.MappingBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 import io.quarkus.narayana.jta.runtime.TransactionConfiguration;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -464,7 +464,7 @@ public class TransformedStatisticsBO {
         }
         ObjectNode result = JsonNodeFactory.instance.objectNode();
         List<String> fieldNames = new ArrayList<>();
-        node.fieldNames().forEachRemaining(fieldNames::add);
+        node.propertyNames().iterator().forEachRemaining(fieldNames::add);
         fieldNames.stream().sorted().forEach(name -> result.set(name, canonicalize(node.get(name))));
         return result;
     }

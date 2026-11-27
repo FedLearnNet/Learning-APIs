@@ -41,7 +41,7 @@ public class ModelSubEntity extends BaseEntity {
     @Column(name = "model_path", length = 255)
     private String modelPath;
 
-    //TRAINING
+    // TRAINING
     /*@ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "federated_training_id")
     private ExecutionAttemptEntity federatedExperimentRun; */

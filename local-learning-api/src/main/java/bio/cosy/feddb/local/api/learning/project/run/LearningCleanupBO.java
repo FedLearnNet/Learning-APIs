@@ -10,7 +10,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
-public class LearningCleanupBO{
+public class LearningCleanupBO {
 
     @Inject
     WorkflowExecutionBO workflowExecutionBO;

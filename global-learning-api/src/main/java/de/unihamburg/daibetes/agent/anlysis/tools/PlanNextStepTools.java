@@ -5,8 +5,8 @@ import bio.cosy.feddb.core.api.app.config.ToolHyperParamConfigDTO;
 import bio.cosy.feddb.core.api.app.config.ToolInputConfigDTO;
 import bio.cosy.feddb.core.api.model.chat.ToolDTO;
 import bio.cosy.feddb.core.api.store.StoreDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import de.unihamburg.daibetes.agent.store.StoreIngestor;
 import de.unihamburg.daibetes.api.analysis.chat.DataAnalysisChatMessageBO;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionBO;
@@ -19,6 +19,7 @@ import dev.langchain4j.data.document.Document;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import tools.jackson.core.JacksonException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -115,10 +116,10 @@ public class PlanNextStepTools {
                 .orElse(null);
 
         String resultString = null;
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
         try {
             resultString = mapper.writeValueAsString(result);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             resultString = "Error serializing StoreDTO";
         }
         toolDTO.addContent(resultString);
@@ -152,8 +153,8 @@ public class PlanNextStepTools {
                         ),
                         map -> {
                             try {
-                                return new ObjectMapper().writeValueAsString(map);
-                            } catch (JsonProcessingException e) {
+                                return new JsonMapper().writeValueAsString(map);
+                            } catch (JacksonException e) {
                                 return null;
                             }
                         }
@@ -189,8 +190,8 @@ public class PlanNextStepTools {
                         ),
                         map -> {
                             try {
-                                return new ObjectMapper().writeValueAsString(map);
-                            } catch (JsonProcessingException e) {
+                                return new JsonMapper().writeValueAsString(map);
+                            } catch (JacksonException e) {
                                 return null;
                             }
                         }

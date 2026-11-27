@@ -14,7 +14,7 @@ public class FederatedAppAO implements PanacheRepository<FederatedAppEntity> {
 
 
 
-    //For distinct queries use normal JPQL
+    // For distinct queries use normal JPQL
     public List<FederatedAppEntity> getAllPublished() {
         return find("select distinct f from FederatedAppEntity f " +
                 "join f.versions v where v.versionPublishStatus = ?1 order by f.id desc", PublishStatus.PUBLISHED).list();

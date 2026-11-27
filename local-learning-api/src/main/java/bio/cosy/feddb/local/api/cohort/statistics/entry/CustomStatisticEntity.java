@@ -3,7 +3,7 @@ package bio.cosy.feddb.local.api.cohort.statistics.entry;
 import bio.cosy.feddb.core.base.BaseEntity;
 import bio.cosy.feddb.local.api.cohort.statistics.dashboard.CustomStatisticsDashboardEntity;
 import bio.cosy.feddb.local.api.cohort.statistics.entry.config.CustomStatisticConfig;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

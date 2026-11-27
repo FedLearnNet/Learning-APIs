@@ -44,7 +44,7 @@ public class FederatedAppInputConfigBO {
                         return create(dto, app);
                     } else {
                         if (configEntity.isPresent() && !updatedIds.contains(configEntity.get().getId())) {
-                            if(ToolTypeConfigPolicy.canOnlyEditSchema(appType)){
+                            if (ToolTypeConfigPolicy.canOnlyEditSchema(appType)) {
                                 updatedIds.add(configEntity.get().getId());
                                 return updateSchema(dto, configEntity.get(), app);
                             }

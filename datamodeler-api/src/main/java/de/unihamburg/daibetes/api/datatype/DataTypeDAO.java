@@ -62,6 +62,7 @@ public class DataTypeDAO extends BaseDAO<DataTypeNodeDTO, DataTypeEdgeDTO, DataT
                 ))
                 .map(mapper::fromDetailRecord);
     }
+
     public Uni<PagedResponse<DataTypeNodeDetailDTO>> getAllPaged(int page, int pageSize, String search) {
         int safePage = Math.max(0, page);
         int safePageSize = Math.max(1, pageSize);
@@ -122,6 +123,7 @@ public class DataTypeDAO extends BaseDAO<DataTypeNodeDTO, DataTypeEdgeDTO, DataT
                     return new PagedResponse<>(items, safePage, safePageSize, total);
                 });
     }
+
     public Multi<DataTypeNodeDetailDTO> getAllByOntology(UUID ontologyId, String search) {
         String q = search == null ? "" : search.trim().toLowerCase();
 

@@ -56,6 +56,7 @@ public class DataAnalysisRunResultBO {
                 .map(run -> mapper.mapRunEntityToResultDTO(run, false))
                 .toList();
     }
+
     @Transactional
     public DataAnalysisResultDTO findResultTransactional(Long runId, String keycloakId) {
         return mapper.mapRunEntityToAnalysisResultDTO(runAO.findByIdAndKeycloakId(runId, keycloakId));

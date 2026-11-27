@@ -21,8 +21,8 @@ import bio.cosy.feddb.local.api.importer.run.ImportStatusEnum;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
 import bio.cosy.feddb.local.services.datamodler.GlobalSchemaSubscriptionService;
 import bio.cosy.feddb.local.services.GlobalAPIStoreService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -363,7 +363,7 @@ public class AppTransformerBatchingE2ETest {
                 buffer.setLength(0);
                 try {
                     JsonNode envelope = mapper.readTree(payload);
-                    if (!"START_PREDICTION".equals(envelope.path("type").asText())) {
+                    if (!"START_PREDICTION".equals(envelope.path("type").asString())) {
                         return null;
                     }
                     handleRun(envelope.path("message"));
@@ -376,7 +376,7 @@ public class AppTransformerBatchingE2ETest {
             private void handleRun(JsonNode message) throws Exception {
                 long batchId = message.path("id").asLong();
                 JsonNode hyperParams = message.path("hyperParams");
-                String delimiter = hyperParams.path("delimiter").asText("|");
+                String delimiter = hyperParams.path("delimiter").asString("|");
                 Map<String, String> inputMapping = mapOf(hyperParams.path("input_mapping"));
                 Map<String, String> returnMapping = mapOf(hyperParams.path("return_mapping"));
 
@@ -461,7 +461,7 @@ public class AppTransformerBatchingE2ETest {
 
         private static Map<String, String> mapOf(JsonNode node) {
             Map<String, String> map = new java.util.LinkedHashMap<>();
-            node.properties().forEach(e -> map.put(e.getKey(), e.getValue().asText()));
+            node.properties().forEach(e -> map.put(e.getKey(), e.getValue().asString()));
             return map;
         }
 

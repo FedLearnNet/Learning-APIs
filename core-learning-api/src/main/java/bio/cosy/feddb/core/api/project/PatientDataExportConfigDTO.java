@@ -10,18 +10,18 @@ import java.util.List;
 @Data
 public class PatientDataExportConfigDTO {
     private boolean appBased;
-    //for native export
+    // for native export
     private boolean wideFormat;
     private EnumSet<PatientDataPivotJoinField> joinFields;
     private PatientDataPivotDuplicatePolicy duplicatePolicy;
-    //For app based export
+    // For app based export
     private LinkedHashMap<String, Object> hyperParams;
     private Long globalAppVersionId;
 
-    //For selection
+    // For selection
     private List<PatientExportFeatureDTO> features;
 
-    //Narrows the exported patients; null or empty means every patient of the cohort
+    // Narrows the exported patients; null or empty means every patient of the cohort
     @Valid
     private PatientExportFilterDTO patientFilter;
 }

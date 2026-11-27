@@ -2,11 +2,12 @@ package bio.cosy.feddb.local.api.importer.functions;
 
 import bio.cosy.feddb.local.api.importer.functions.managed.AbstractManagedFunction;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
+import tools.jackson.core.JacksonException;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -16,7 +17,7 @@ import java.util.Map;
 @ApplicationScoped
 public class FunctionRunnerBO {
 
-    private static final ObjectMapper JSON = new ObjectMapper();
+    private static final ObjectMapper JSON = new JsonMapper();
 
     @Inject
     FunctionRegistry registry;
@@ -90,7 +91,7 @@ public class FunctionRunnerBO {
         }
         try {
             return JSON.writeValueAsString(value);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return String.valueOf(value);
         }
     }

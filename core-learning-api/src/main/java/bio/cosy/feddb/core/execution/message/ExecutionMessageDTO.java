@@ -11,13 +11,13 @@ import lombok.EqualsAndHashCode;
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.EXISTING_PROPERTY,
-        property = "type", //the enum: RunMessageTypes
+        property = "type", // the enum: RunMessageTypes
         visible = true
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(
                 value = ExecutionMessageLogDTO.class,
-                name = "LOG" //based on the enum RunMessageTypes parsing
+                name = "LOG" // based on the enum RunMessageTypes parsing
         ),
         @JsonSubTypes.Type(
                 value = ExecutionMessageMetricDTO.class,
@@ -36,6 +36,6 @@ public class ExecutionMessageDTO extends BaseDTO {
 
     private Long runId;
 
-    //for federated runs, the workerId is the participantId
+    // for federated runs, the workerId is the participantId
     private String workerId;
 }

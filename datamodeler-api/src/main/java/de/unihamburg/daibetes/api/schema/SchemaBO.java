@@ -102,8 +102,7 @@ public class SchemaBO {
 
     private Uni<SchemaNodeDTO> persist(SchemaNodeDTO dto) {
         return schemaDAO.create(dto)
-                .flatMap(created ->
-                {
+                .flatMap(created -> {
                     if (dto.getOntologyId() != null && dto.getDataTypeId() != null) {
                         return ontologyDAO.addOntologyToDataTypesEdges(dto.getOntologyId(), List.of(dto.getDataTypeId()))
                                 .flatMap(v -> schemaDAO.updateEdges(dto))

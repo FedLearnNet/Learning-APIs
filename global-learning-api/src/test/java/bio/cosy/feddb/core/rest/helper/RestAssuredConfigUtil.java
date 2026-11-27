@@ -1,23 +1,25 @@
 package bio.cosy.feddb.core.rest.helper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.util.StdDateFormat;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.EnumFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.util.StdDateFormat;
 import io.restassured.RestAssured;
 import io.restassured.mapper.ObjectMapperType;
 
 public class RestAssuredConfigUtil {
 
     public static void initMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        objectMapper.setDateFormat(new StdDateFormat().withColonInTimeZone(true));
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        ObjectMapper objectMapper = JsonMapper.builder()
+                .defaultDateFormat(new StdDateFormat().withColonInTimeZone(true))
+                .disable(EnumFeature.READ_ENUMS_USING_TO_STRING)
+                .disable(EnumFeature.WRITE_ENUMS_USING_TO_STRING)
+                .build();
         RestAssured.config = RestAssured.config()
                 .objectMapperConfig(
                         RestAssured.config().getObjectMapperConfig()
-                                .defaultObjectMapperType(ObjectMapperType.JACKSON_2)
-                                .jackson2ObjectMapperFactory((cls, charset) -> objectMapper)
+                                .defaultObjectMapperType(ObjectMapperType.JACKSON_3)
+                                .jackson3ObjectMapperFactory((cls, charset) -> objectMapper)
                 );
     }
 

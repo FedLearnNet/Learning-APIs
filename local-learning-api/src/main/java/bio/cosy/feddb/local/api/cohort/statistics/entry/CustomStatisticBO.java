@@ -6,8 +6,8 @@ import bio.cosy.feddb.local.api.cohort.statistics.dashboard.CustomStatisticsDash
 import bio.cosy.feddb.local.api.cohort.statistics.entry.config.CustomStatisticConfig;
 import bio.cosy.feddb.local.api.cohort.statistics.entry.data.CustomStatisticData;
 import bio.cosy.feddb.local.api.statistics.DataStatisticsBO;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

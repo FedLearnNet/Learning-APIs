@@ -29,7 +29,7 @@ import bio.cosy.feddb.local.api.schema.datatype.DataTypeDTO;
 import bio.cosy.feddb.local.api.schema.datatype.DataTypeEntityMapper;
 import bio.cosy.feddb.local.agent.text.SapbertSimilartity;
 import bio.cosy.feddb.local.helper.text.TextSimilarity;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;

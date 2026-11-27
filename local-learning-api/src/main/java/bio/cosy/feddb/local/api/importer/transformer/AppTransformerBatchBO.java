@@ -9,11 +9,11 @@ import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import bio.cosy.feddb.local.api.importer.files.table.TableDataGroup;
 import bio.cosy.feddb.local.api.importer.run.AppTransformerSessionFailure;
 import bio.cosy.feddb.local.config.FLNetClientConfig;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import tools.jackson.core.JacksonException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -129,7 +129,7 @@ public class AppTransformerBatchBO {
     private byte[] jsonBytes(Object value) {
         try {
             return objectMapper.writeValueAsBytes(value);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new AppTransformerSessionFailure("Could not serialize app transformer input", e);
         }
     }

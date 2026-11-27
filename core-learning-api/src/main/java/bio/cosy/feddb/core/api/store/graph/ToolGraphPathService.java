@@ -19,14 +19,14 @@ public class ToolGraphPathService {
         if (many == 1) return List.of(toPath(from, to, first));
 
         // 2) Yen's algorithm for k shortest loopless paths
-        List<List<ToolGraphEdgeDTO>> A = new ArrayList<>(); // found paths
-        A.add(first);
+        List<List<ToolGraphEdgeDTO>> foundPaths = new ArrayList<>();
+        foundPaths.add(first);
 
         // candidate paths with ordering by hops (then tie-breaker)
-        PriorityQueue<PathCandidate> B = new PriorityQueue<>();
+        PriorityQueue<PathCandidate> candidates = new PriorityQueue<>();
 
         for (int k = 1; k < many; k++) {
-            List<ToolGraphEdgeDTO> prevPath = A.get(k - 1);
+            List<ToolGraphEdgeDTO> prevPath = foundPaths.get(k - 1);
 
             // build node sequence for prevPath
             List<Long> prevNodes = edgesToNodes(from, prevPath);
@@ -44,7 +44,7 @@ public class ToolGraphPathService {
 
                 // remove edges that would recreate previously found paths with same root
                 Set<EdgeKey> bannedEdges = new HashSet<>();
-                for (List<ToolGraphEdgeDTO> p : A) {
+                for (List<ToolGraphEdgeDTO> p : foundPaths) {
                     List<Long> pNodes = edgesToNodes(from, p);
                     if (pNodes.size() > i && samePrefix(pNodes, prevNodes, i)) {
                         // ban the next edge out of spur node in that path
@@ -61,28 +61,28 @@ public class ToolGraphPathService {
                 List<ToolGraphEdgeDTO> total = new ArrayList<>(rootEdges);
                 total.addAll(spurEdges);
 
-                B.add(new PathCandidate(total));
+                candidates.add(new PathCandidate(total));
             }
 
-            if (B.isEmpty()) break;
+            if (candidates.isEmpty()) break;
 
             // next shortest candidate
-            List<ToolGraphEdgeDTO> next = B.poll().edges;
+            List<ToolGraphEdgeDTO> next = candidates.poll().edges;
 
             // dedupe (important when multiple spurs create same path)
-            if (!containsPath(A, next)) {
-                A.add(next);
+            if (!containsPath(foundPaths, next)) {
+                foundPaths.add(next);
             } else {
                 // if duplicated, keep polling until unique or empty
-                while (!B.isEmpty() && containsPath(A, next)) {
-                    next = B.poll().edges;
+                while (!candidates.isEmpty() && containsPath(foundPaths, next)) {
+                    next = candidates.poll().edges;
                 }
-                if (!containsPath(A, next)) A.add(next);
+                if (!containsPath(foundPaths, next)) foundPaths.add(next);
                 else break;
             }
         }
 
-        return A.stream()
+        return foundPaths.stream()
                 .map(p -> toPath(from, to, p))
                 .collect(Collectors.toList());
     }
@@ -93,7 +93,7 @@ public class ToolGraphPathService {
         Map<Long, List<ToolGraphEdgeDTO>> adj = new HashMap<>();
         for (ToolGraphEdgeDTO e : safe(graph.getEdges())) {
             if (e == null || e.getFromAppId() == null || e.getToAppId() == null) continue;
-            adj.computeIfAbsent(e.getFromAppId(), __ -> new ArrayList<>()).add(e);
+            adj.computeIfAbsent(e.getFromAppId(), k -> new ArrayList<>()).add(e);
         }
         return adj;
     }
@@ -223,6 +223,7 @@ public class ToolGraphPathService {
             if (!(o instanceof EdgeKey k)) return false;
             return Objects.equals(from, k.from) && Objects.equals(to, k.to);
         }
+
         @Override public int hashCode() {
             return Objects.hash(from, to);
         }

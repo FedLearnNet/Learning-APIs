@@ -1,10 +1,13 @@
 package de.unihamburg.daibetes.api.query;
 
+import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
 import bio.cosy.feddb.core.base.BaseAuthEntity;
 import de.unihamburg.daibetes.api.project.ProjectEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.Date;
 import java.util.Set;
@@ -31,8 +34,9 @@ public class QueryEntity extends BaseAuthEntity {
     @Column(name = "latest_data_statistics_request_timestamp")
     private Date latestDataStatisticsRequestTimestamp;
 
-    @Column(name = "query_string", columnDefinition = "TEXT")
-    private String queryString;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "query_string", columnDefinition = "jsonb")
+    private QueryItemDTO query;
 
     private Integer result;
 

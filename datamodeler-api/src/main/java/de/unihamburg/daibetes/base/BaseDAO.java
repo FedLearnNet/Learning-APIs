@@ -355,14 +355,14 @@ public abstract class BaseDAO<NODE extends BaseNodeDTO, EDGE extends BaseEdgeDTO
                 .toUni();
     }
 
-    public Uni<NODE> update(NODE NODE) {
-        if (NODE.getId() == null) {
+    public Uni<NODE> update(NODE node) {
+        if (node.getId() == null) {
             return Uni.createFrom().failure(
                     new IllegalArgumentException("DTO ID must not be null for update.")
             );
         }
 
-        Map<String, Object> props = mapper.toNodeProperties(NODE);
+        Map<String, Object> props = mapper.toNodeProperties(node);
         props.remove(idPropertyName);
 
         String cypher = CypherTemplate.of("""
@@ -374,7 +374,7 @@ public abstract class BaseDAO<NODE extends BaseNodeDTO, EDGE extends BaseEdgeDTO
                 .bind("ID_PROP", idPropertyName)
                 .build();
 
-        return write(cypher, Values.parameters("id", NODE.getId().toString(), "props", props))
+        return write(cypher, Values.parameters("id", node.getId().toString(), "props", props))
                 .map(mapper::fromNodeRecord)
                 .collect().last();
     }

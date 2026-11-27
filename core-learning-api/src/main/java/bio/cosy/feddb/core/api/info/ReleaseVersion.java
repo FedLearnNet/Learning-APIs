@@ -20,7 +20,7 @@ public class ReleaseVersion implements Comparable<ReleaseVersion> {
             .thenComparing(ReleaseVersion::getStage)
             .thenComparingInt(ReleaseVersion::getRc);
 
-    public enum Stage {DEV, RC, RELEASE}
+    public enum Stage { DEV, RC, RELEASE }
 
     private final int major;
     private final int minor;

@@ -30,7 +30,7 @@ import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeEntity;
 @Audited
 @Getter
 @Setter
-public class MetaPatientDataEntryEntity extends BaseEntity{
+public class MetaPatientDataEntryEntity extends BaseEntity {
     // 1:1 mapping to PatientDataEntryEntity
     @ManyToOne
     @JoinColumn(name = "patient_data_entry_id", nullable = false)
@@ -50,8 +50,8 @@ public class MetaPatientDataEntryEntity extends BaseEntity{
 
     @Column(name = "value_lob")
     private String valueBlob;
-        // Large Object, e.g. for files, images, etc.
-        // Use b64 encoding
+    // Large Object, e.g. for files, images, etc.
+    // Use b64 encoding
     @Column(name = "value_date")
     private LocalDate valueDate;
     @Column(name = "value_date_time")

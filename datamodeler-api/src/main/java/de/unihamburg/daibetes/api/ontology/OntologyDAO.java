@@ -113,7 +113,7 @@ public class OntologyDAO extends BaseDAO<OntologyNodeDTO, OntologyEdgeDTO, Ontol
                 .bind("EDGE_LABEL", getEdgeLabel())
                 .build();
 
-        //explicitly specify Record type to avoid type erasure issues
+        // explicitly specify Record type to avoid type erasure issues
         return write(cypher, Values.parameters("edges", edgeMaps))
                 .collect().last()
                 .replaceWithVoid();
@@ -128,7 +128,7 @@ public class OntologyDAO extends BaseDAO<OntologyNodeDTO, OntologyEdgeDTO, Ontol
                         """)
                 .bind("LABEL", getNodeLabel())
                 .build();
-        //explicitly specify Record type to avoid type erasure issues
+        // explicitly specify Record type to avoid type erasure issues
         return read(cypher, Values.parameters("code", code))
                 .collect().last()
                 .onItem().transform(record -> {

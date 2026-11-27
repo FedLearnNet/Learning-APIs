@@ -25,7 +25,7 @@ public class BaseWorkflowNodeEntity extends BaseEntity {
     @Column(name = "execution_order")
     private Integer executionOrder;
 
-    //by default false
+    // by default false
     public boolean isSupportsFederatedLearning() {
         return false;
     }

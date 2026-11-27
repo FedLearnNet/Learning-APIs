@@ -76,7 +76,7 @@ public abstract class BaseBo<Dto extends BaseDTO, Entity extends BaseEntity, Ao 
             throw new ClientErrorException("The entity was updated by another transaction", Response.Status.FORBIDDEN);
         }
         entity = mergeEntity(foundEntity, entity);
-        //update entity in database
+        // update entity in database
         entity.setUpdatedAt(new Date());
         return ao.getEntityManager().merge(entity);
     }

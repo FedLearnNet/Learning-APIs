@@ -5,7 +5,8 @@ import bio.cosy.feddb.local.agent.etl.transform.model.TransformerRunContext;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerColumnTool;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorConfigDTO;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TransformerColumnToolTest {
 
     @Spy
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = new JsonMapper();
 
     @InjectMocks
     TransformerColumnTool tool;

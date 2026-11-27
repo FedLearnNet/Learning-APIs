@@ -12,12 +12,12 @@ import java.util.List;
 public class DataAnalysisResultDTO extends DataAnalysisPredictionDTO {
     private DataAnalysisRunModesEnum runMode;
 
-    //for workflows
+    // for workflows
     private Long maxWorkflowSteps;
     private Long currentWorkflowStep;
     private Long currentWorkflowStepId;
     private Long workflowRunId;
     private Long executionOrder;
 
-    //TODO private List<DataAnalysisResultDTO> prevSteps;
+    // TODO private List<DataAnalysisResultDTO> prevSteps;
 }

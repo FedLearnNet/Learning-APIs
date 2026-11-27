@@ -14,7 +14,7 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 public class InfoBO {
 
     @ConfigProperty(name = "quarkus.application.version")
-    String version; //its the pom.xml version
+    String version; // its the pom.xml version
 
     @ConfigProperty(name = "quarkus.rest-client.global-api.url")
     String globalApiUrl;

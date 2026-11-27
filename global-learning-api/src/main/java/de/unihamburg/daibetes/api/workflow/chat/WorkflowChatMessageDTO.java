@@ -25,7 +25,7 @@ public class WorkflowChatMessageDTO {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private Date createdAt;
 
-    public WorkflowChatMessageDTO(Long workflowId){
+    public WorkflowChatMessageDTO(Long workflowId) {
         this.workflowId = workflowId;
         this.id = UUID.randomUUID().toString();
         this.createdAt = new Date();

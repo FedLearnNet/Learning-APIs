@@ -82,7 +82,7 @@ public class AuditBO {
         List<TracabilityDataChangeLog> prevChanges = new ArrayList<>();
         Long version = overAllChange.getDataEntriesVersion();
         if (version > 0) {
-            //find revision for the previous data entries version
+            // find revision for the previous data entries version
             CustomRevisionEntity rev = auditAO.getRevForDataEntriesVersion(patientId, version - 1);
             if (rev != null) {
                 prevChanges = auditAO.getPatientDataChangesForRev(patientId, rev.getId());
@@ -128,7 +128,7 @@ public class AuditBO {
     private void validateParameters(Long cohortId, int page, int size,
                                     AuditFieldEnum sortField, SortDirectionEnum sortDirection) {
         if (cohortId == null || cohortId <= 0) {
-            //throw new IllegalArgumentException("Cohort ID must be a positive number, got: " + cohortId);
+            // throw new IllegalArgumentException("Cohort ID must be a positive number, got: " + cohortId);
         }
 
         if (page < 0) {

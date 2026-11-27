@@ -268,8 +268,9 @@ public class StoreIngestor {
                                 .append(", ").append(nz(String.valueOf(h.getMaxValue()))).append("]");
                     }
                     if (notBlank(h.getPattern())) sb.append(" | pattern: ").append(h.getPattern());
-                    if (notBlank(h.getDescription()))
+                    if (notBlank(h.getDescription())) {
                         sb.append("\n  desc: ").append(h.getDescription());
+                    }
                     sb.append('\n');
                 }
             } else sb.append("(none)\n");
@@ -289,8 +290,9 @@ public class StoreIngestor {
                         sb.append(" | valueRange: [").append(nz(i.getMinValue())).append(", ").append(nz(i.getMaxValue())).append("]");
                     }
                     if (notBlank(i.getShape())) sb.append(" | shape: ").append(i.getShape());
-                    if (notBlank(i.getDescription()))
+                    if (notBlank(i.getDescription())) {
                         sb.append("\n  desc: ").append(i.getDescription());
+                    }
                     sb.append('\n');
                 }
             } else sb.append("(none)\n");
@@ -303,15 +305,17 @@ public class StoreIngestor {
                     if (notBlank(o.getVariableName())) sb.append(" | var: ").append(o.getVariableName());
                     if (o.getType() != null) sb.append(" | type: ").append(o.getType().name());
                     if (o.getMode() != null) sb.append(" | mode: ").append(o.getMode().name());
-                    if (o.getHasHeader() != null && o.getHasHeader())
+                    if (o.getHasHeader() != null && o.getHasHeader()) {
                         sb.append(" | hasHeader: ").append(o.getHasHeader());
+                    }
                     if (notBlank(o.getDelimiter())) sb.append(" | delimiter: ").append(o.getDelimiter());
                     if (notBlank(o.getMinValue()) || notBlank(o.getMaxValue())) {
                         sb.append(" | valueRange: [").append(nz(o.getMinValue())).append(", ").append(nz(o.getMaxValue())).append("]");
                     }
                     if (notBlank(o.getShape())) sb.append(" | shape: ").append(o.getShape());
-                    if (notBlank(o.getDescription()))
+                    if (notBlank(o.getDescription())) {
                         sb.append("\n  desc: ").append(o.getDescription());
+                    }
                     sb.append('\n');
                 }
             } else sb.append("(none)\n");
@@ -355,8 +359,9 @@ public class StoreIngestor {
     private String buildModelMasterText(ModelDTO model, FederatedAppDTO appOrNull) {
         StringBuilder sb = new StringBuilder(1_500);
         sb.append("### Model: ").append(nz(model.getName())).append('\n');
-        if (notBlank(model.getShortDescription()))
+        if (notBlank(model.getShortDescription())) {
             sb.append("Short: ").append(model.getShortDescription()).append('\n');
+        }
         if (notBlank(model.getLongDescription())) sb.append("Long: ").append(model.getLongDescription()).append('\n');
         if (model.getLastVersion() != null && notBlank(model.getLastVersion().getModelVersion())) {
             sb.append("LastVersion: ").append(model.getLastVersion().getModelVersion()).append('\n');

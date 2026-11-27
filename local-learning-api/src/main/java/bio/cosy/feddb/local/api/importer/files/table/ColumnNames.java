@@ -8,7 +8,7 @@ import java.util.*;
 
 public final class ColumnNames {
 
-    //Separates a table name from a column name where a merged table has to disambiguate one.
+    // Separates a table name from a column name where a merged table has to disambiguate one.
     public static final String QUALIFIER = "::";
 
     // Byte-order mark and the zero-width characters exports leave in header cells.

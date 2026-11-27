@@ -22,7 +22,7 @@ public class WorkflowAgent {
             try {
                 em.emit(snapshot(content, c -> c.setStatusMessage("Starting to process your request...")));
 
-               /* String classy = requestClassifierBot.classify(request);
+                /* String classy = requestClassifierBot.classify(request);
                 RequestRoute route = RequestRoute.from(classy);
                 em.emit(snapshot(content, c -> c.setStatusMessage("Classified request as: " + route)));
                 Log.infof("Classified %s request as: %s", content, route);

@@ -6,10 +6,9 @@ import bio.cosy.feddb.core.api.pipeline.MalwareScanResultDTO;
 import bio.cosy.feddb.core.api.pipeline.SastFindingDTO;
 import bio.cosy.feddb.core.api.pipeline.SastScanResultDTO;
 import bio.cosy.feddb.core.api.pipeline.SecurityScanResultDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
 import de.unihamburg.daibetes.agent.audit.pojo.ToolLlmAuditInput;
 import de.unihamburg.daibetes.agent.audit.pojo.ToolLlmAuditSourceSection;
 import de.unihamburg.daibetes.agent.audit.source.ToolSourceFile;
@@ -20,6 +19,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import tools.jackson.core.JacksonException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,7 +60,7 @@ public class ToolLlmAuditContextBO {
 
     @PostConstruct
     void init() {
-        sortedMapper = objectMapper.copy().configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
+        sortedMapper = objectMapper.rebuild().enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS).build();
     }
 
     // Scan times are left out, a weekly rescan with equal results keeps the fingerprint
@@ -254,18 +254,18 @@ public class ToolLlmAuditContextBO {
             StringBuilder sb = new StringBuilder();
             int index = 0;
             for (JsonNode cell : cells) {
-                sb.append("# --- cell ").append(++index).append(" (").append(cell.path("cell_type").asText())
+                sb.append("# --- cell ").append(++index).append(" (").append(cell.path("cell_type").asString())
                         .append(") ---\n");
                 JsonNode source = cell.path("source");
                 if (source.isArray()) {
-                    source.forEach(part -> sb.append(part.asText()));
+                    source.forEach(part -> sb.append(part.asString()));
                 } else {
-                    sb.append(source.asText());
+                    sb.append(source.asString());
                 }
                 sb.append('\n');
             }
             return sb.toString();
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return "[notebook could not be parsed]";
         }
     }
@@ -351,7 +351,7 @@ public class ToolLlmAuditContextBO {
     private String json(Object value) {
         try {
             return sortedMapper.writeValueAsString(value);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return String.valueOf(value);
         }
     }

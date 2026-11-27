@@ -3,7 +3,7 @@ package bio.cosy.feddb.core.security;
 
 public final class Roles {
 
-    //GLOBAL + LOCAL
+    // GLOBAL + LOCAL
     public static final String ADMIN = "Admin";
 
     public static final String GLOBAL_AUDITOR = "Auditor";

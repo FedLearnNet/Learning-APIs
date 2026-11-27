@@ -1,13 +1,14 @@
 package bio.cosy.feddb.core.api.file.analytics;
 
 import bio.cosy.feddb.core.api.app.config.ToolConfigDataType;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -77,11 +78,11 @@ public class FileAnalytics {
             return new FileProfile("", 0L, List.of(), List.of());
         }
 
-        final ObjectMapper mapper = new ObjectMapper();
+        final ObjectMapper mapper = new JsonMapper();
         final JsonNode root;
         try {
             root = mapper.readTree(jsonContent);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("Invalid JSON content", e);
         }
 
@@ -98,7 +99,7 @@ public class FileAnalytics {
         LinkedHashSet<String> rawKeys = new LinkedHashSet<>();
         for (JsonNode r : rows) {
             if (r != null && r.isObject()) {
-                r.fieldNames().forEachRemaining(rawKeys::add);
+                r.propertyNames().iterator().forEachRemaining(rawKeys::add);
             }
         }
 

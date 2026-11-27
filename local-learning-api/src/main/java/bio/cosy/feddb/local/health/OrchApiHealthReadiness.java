@@ -32,7 +32,7 @@ public class OrchApiHealthReadiness implements HealthCheck {
             return HealthCheckResponse.named("orch-api-remote")
                     .status(false)
                     .withData("latencyMs", ms)
-                    .withData("error", e.getClass().getSimpleName() + ": " + e.getMessage())
+                    .withData("error", "Orchestration API unreachable")
                     .build();
         }
     }

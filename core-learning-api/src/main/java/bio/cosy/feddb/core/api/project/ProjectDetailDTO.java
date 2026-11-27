@@ -6,7 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.Date;
-//TODO REMOVE DONT ADD SOMETHING ADD THE MOMENT
+
+// TODO REMOVE DONT ADD SOMETHING ADD THE MOMENT
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class ProjectDetailDTO extends ProjectDTO {
@@ -17,7 +18,7 @@ public class ProjectDetailDTO extends ProjectDTO {
 
     private boolean isAudited = false;
 
-    //Will be automatically set at start learning process (can not be changed by the user)
+    // Will be automatically set at start learning process (can not be changed by the user)
     @JsonProperty("isCoordinator")
     private Boolean isCoordinator;
 

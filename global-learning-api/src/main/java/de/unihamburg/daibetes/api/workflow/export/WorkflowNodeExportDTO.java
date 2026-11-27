@@ -24,6 +24,6 @@ public class WorkflowNodeExportDTO {
     private boolean hasChildren = false;
     private boolean hasParent = false;
 
-    //will be calculated on create/update
+    // will be calculated on create/update
     private Integer executionOrder;
 }

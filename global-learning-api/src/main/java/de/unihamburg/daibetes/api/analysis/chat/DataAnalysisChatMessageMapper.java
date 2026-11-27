@@ -36,7 +36,7 @@ public interface DataAnalysisChatMessageMapper extends BaseMapper<ModelWorkflowC
 
     @Named("mapHITL")
     default List<HumanInTheLoopDTO> mapHITL(Set<HumanInTheLoopRequestEntity> humanInTheLoopRequests) {
-        if(humanInTheLoopRequests == null) {
+        if (humanInTheLoopRequests == null) {
             return new ArrayList<>();
         }
         return humanInTheLoopRequests.stream()
