@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Date;
 
 import bio.cosy.feddb.local.api.helper.IdChunks;
+import bio.cosy.feddb.local.api.learning.request.cohort.FederatedLearningRequestCohortStatus;
 import bio.cosy.feddb.local.api.cohort.patient.dataentry.PatientDataEntryAO;
 
 @ApplicationScoped
@@ -127,8 +128,21 @@ public class PatientAO implements PanacheRepository<PatientEntity> {
         return find("SELECT DISTINCT q.patient FROM QueryPatientEntity q WHERE q.query.id = ?1", queryId).list();
     }
 
-    public List<PatientEntity> findAllByLearningRequestId(Long requestId) {
-        return find("SELECT DISTINCT pat.patient FROM PatientLearningEntity pat WHERE pat.request.id = ?1", requestId).list();
+    public List<Long> findApprovedPatientIdsByLearningRequestId(Long requestId) {
+        return getEntityManager()
+                .createQuery("""
+                        SELECT pl.patient.id
+                        FROM PatientLearningEntity pl
+                        JOIN pl.patient p
+                        JOIN FederatedLearningRequestCohortEntity decision
+                          ON decision.request.id = pl.request.id
+                         AND decision.cohort.id = p.cohort.id
+                        WHERE pl.request.id = :requestId
+                          AND decision.status = :status
+                        """, Long.class)
+                .setParameter("requestId", requestId)
+                .setParameter("status", FederatedLearningRequestCohortStatus.APPROVED)
+                .getResultList();
     }
 
     public List<PatientEntity> findAllByCohortId(Long cohortId, int page, int pageSize) {

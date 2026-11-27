@@ -155,11 +155,11 @@ public class PatientDataExportBO {
     }
 
     public List<PatientDataEntryExportDTO> getDataForProject(Long learningRequestId, List<SelectedDataIdsDTO> selectedDataIds) {
-        List<PatientEntity> patients = patientAO.findAllByLearningRequestId(learningRequestId);
-        List<Long> patientIds = patients.stream()
-                .map(PatientEntity::getId)
-                .toList();
-        Log.info("Found " + patientIds.size() + " patients for learning request ID: " + learningRequestId);
+        List<Long> patientIds = patientAO.findApprovedPatientIdsByLearningRequestId(learningRequestId);
+        Log.info("Found " + patientIds.size() + " patients of approved cohorts for learning request ID: " + learningRequestId);
+        if (patientIds.isEmpty()) {
+            return List.of();
+        }
         return patientDataEntryBO.findByIdsAndDataIds(patientIds, selectedDataIds);
     }
 
