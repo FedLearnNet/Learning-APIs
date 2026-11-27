@@ -7,14 +7,14 @@ import bio.cosy.feddb.local.agent.etl.transform.model.ConnectorSelectedTransform
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerListTool;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.guardrail.OutputGuardrail;
 import dev.langchain4j.guardrail.OutputGuardrailRequest;
 import dev.langchain4j.guardrail.OutputGuardrailResult;
 import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
+import tools.jackson.core.JacksonException;
 
 import java.util.List;
 import java.util.Map;
@@ -120,7 +120,7 @@ public abstract class TransformerAnswerGuardrail implements OutputGuardrail {
         }
         try {
             return objectMapper.readValue(text.substring(start, end + 1), ConnectorSelectedTransformer.class);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return null;
         }
     }
@@ -128,7 +128,7 @@ public abstract class TransformerAnswerGuardrail implements OutputGuardrail {
     private String json(ConnectorSelectedTransformer answer) {
         try {
             return objectMapper.writeValueAsString(answer);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException("The answer cannot be written as JSON", e);
         }
     }

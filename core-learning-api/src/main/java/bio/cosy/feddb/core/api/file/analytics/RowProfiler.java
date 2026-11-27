@@ -1,6 +1,6 @@
 package bio.cosy.feddb.core.api.file.analytics;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.apache.commons.statistics.descriptive.DoubleStatistics;
 import org.apache.commons.statistics.descriptive.Quantile;
 import org.apache.commons.statistics.descriptive.Statistic;
@@ -197,7 +197,7 @@ public final class RowProfiler {
 
     static String jsonValueAsString(JsonNode v) {
         if (v == null || v.isNull()) return null;
-        if (v.isTextual()) return v.asText();
+        if (v.isString()) return v.asString();
         if (v.isNumber()) return v.numberValue().toString();
         if (v.isBoolean()) return String.valueOf(v.asBoolean());
         // arrays/objects -> compact JSON
@@ -667,8 +667,8 @@ public final class RowProfiler {
             }
 
             // Treat empty string as missing to match CSV behavior
-            if (node.isTextual() && isMissing(node.asText())) {
-                countMissing(node.asText());
+            if (node.isString() && isMissing(node.asString())) {
+                countMissing(node.asString());
                 return;
             }
 
@@ -690,7 +690,7 @@ public final class RowProfiler {
                 return;
             }
 
-            if (node.isTextual() && isDateTimeToken(node.asText())) {
+            if (node.isString() && isDateTimeToken(node.asString())) {
                 datetimeCount++;
             }
         }

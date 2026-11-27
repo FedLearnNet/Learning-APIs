@@ -4,7 +4,7 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionParameterDTO;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterType;
 import bio.cosy.feddb.local.api.importer.functions.managed.AbstractManagedCellFunction;
 import bio.cosy.feddb.local.api.importer.functions.managed.CellFunctionExecutionContext;
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.type.TypeReference;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.List;

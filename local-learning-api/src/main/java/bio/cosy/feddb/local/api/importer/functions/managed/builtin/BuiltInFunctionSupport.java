@@ -1,7 +1,8 @@
 package bio.cosy.feddb.local.api.importer.functions.managed.builtin;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -23,7 +24,7 @@ final class BuiltInFunctionSupport {
      * threshold bins, ...) the built-ins accept. Static rather than injected so
      * the functions stay unit-testable without a CDI container.
      */
-    private static final ObjectMapper JSON = new ObjectMapper();
+    private static final ObjectMapper JSON = new JsonMapper();
 
     private static final Map<String, String> PYTHON_TO_JAVA_DATE_FORMATS = Map.ofEntries(
             Map.entry("%Y", "yyyy"),

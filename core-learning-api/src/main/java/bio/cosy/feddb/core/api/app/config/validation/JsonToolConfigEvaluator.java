@@ -4,13 +4,14 @@ import bio.cosy.feddb.core.api.app.config.ToolConfigDTO;
 import bio.cosy.feddb.core.api.file.FileDTO;
 import bio.cosy.feddb.core.api.file.analytics.FileProfile;
 import bio.cosy.feddb.core.base.BaseValidationResultDTO;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
 public class JsonToolConfigEvaluator implements ToolConfigEvaluator {
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new JsonMapper();
 
     @Override
     public BaseValidationResultDTO evaluateProfile(ToolConfigDTO config, FileDTO file, FileProfile profile) {

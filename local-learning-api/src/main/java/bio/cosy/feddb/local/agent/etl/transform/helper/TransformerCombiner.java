@@ -6,10 +6,10 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionParameterDTO;
 import bio.cosy.feddb.local.api.importer.functions.FunctionParameterUsage;
 import bio.cosy.feddb.local.api.importer.functions.FunctionRegistry;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import tools.jackson.core.JacksonException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -118,7 +118,7 @@ public class TransformerCombiner {
         }
         try {
             return objectMapper.writeValueAsString(value);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return String.valueOf(value);
         }
     }

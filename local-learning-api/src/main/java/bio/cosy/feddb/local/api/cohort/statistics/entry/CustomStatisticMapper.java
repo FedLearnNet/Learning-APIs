@@ -4,8 +4,8 @@ import bio.cosy.feddb.core.base.BaseMapper;
 import bio.cosy.feddb.local.api.cohort.statistics.entry.config.CustomStatisticConfig;
 import bio.cosy.feddb.local.api.cohort.statistics.entry.data.CustomStatisticData;
 import bio.cosy.feddb.local.helper.QuarkusMappingConfig;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import org.mapstruct.*;
 

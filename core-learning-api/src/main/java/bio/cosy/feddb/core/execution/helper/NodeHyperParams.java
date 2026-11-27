@@ -1,8 +1,8 @@
 package bio.cosy.feddb.core.execution.helper;
 
 import bio.cosy.feddb.core.api.workflow.node.BaseWorkflowNodeEntity;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,7 +22,7 @@ public final class NodeHyperParams {
         try {
             return objectMapper.readValue(hyperParams,
                     objectMapper.getTypeFactory().constructMapType(LinkedHashMap.class, String.class, Object.class));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("Hyper parameters of node " + node.getNodeId() + " are not valid JSON", e);
         }
     }

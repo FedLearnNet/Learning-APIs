@@ -5,7 +5,7 @@ import bio.cosy.feddb.local.api.harmonization.HarmonizationProfileHelper;
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
 import bio.cosy.feddb.local.api.importer.run.ConnectorRunDTO;
 import bio.cosy.feddb.local.api.schema.schemanode.SchemaNodeBO;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import eval.agent.etl.transform.pipeline.TransformerWriterImporter;
 import eval.agent.etl.transform.pipeline.TransformerWriterUploader;
 import io.quarkus.logging.Log;
@@ -15,6 +15,7 @@ import jakarta.inject.Inject;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
+import tools.jackson.core.JacksonException;
 
 import java.io.File;
 import java.io.IOException;

@@ -9,8 +9,7 @@ import bio.cosy.feddb.core.execution.message.*;
 import bio.cosy.feddb.core.execution.run.dto.RunMetaDTO;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisResultDTO;
 import de.unihamburg.daibetes.api.analysis.file.DataAnalysisFileAO;
 import de.unihamburg.daibetes.api.analysis.file.DataAnalysisFileEntity;
@@ -30,6 +29,7 @@ import io.quarkus.logging.Log;
 import de.unihamburg.daibetes.config.FLNetConfig;
 import jakarta.inject.Inject;
 import org.mapstruct.*;
+import tools.jackson.core.JacksonException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -245,7 +245,7 @@ public abstract class DataAnalysisRunResultMapper {
         }
         try {
             return objectMapper.readValue(json, objectMapper.getTypeFactory().constructMapType(LinkedHashMap.class, String.class, Object.class));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return new LinkedHashMap<>();
         }
     }

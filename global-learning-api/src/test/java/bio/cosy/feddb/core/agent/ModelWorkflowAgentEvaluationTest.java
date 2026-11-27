@@ -8,7 +8,7 @@ import bio.cosy.feddb.core.agent.util.JsonFileCache;
 import bio.cosy.feddb.core.agent.util.JsonLoader;
 import bio.cosy.feddb.core.agent.util.LLMAgentEvalLogger;
 import bio.cosy.feddb.core.agent.util.LLMAgentQuestionResultUtils;
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.type.TypeReference;
 import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;

@@ -1,6 +1,6 @@
 package bio.cosy.feddb.core.api.file.analytics;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 import java.util.List;
 import java.util.Map;

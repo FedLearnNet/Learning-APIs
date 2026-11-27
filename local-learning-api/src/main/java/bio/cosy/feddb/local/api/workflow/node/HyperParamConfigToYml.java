@@ -1,14 +1,13 @@
 package bio.cosy.feddb.local.api.workflow.node;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class HyperParamConfigToYml {
 
-    public static String createYaml(LinkedHashMap<String, Object> hyperParams) throws JsonProcessingException {
+    public static String createYaml(LinkedHashMap<String, Object> hyperParams) {
         Map<String, Object> root = new LinkedHashMap<>();
         for (Map.Entry<String, Object> entry : hyperParams.entrySet()) {
             String varName = entry.getKey();

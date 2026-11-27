@@ -1,8 +1,10 @@
 package bio.cosy.feddb.core.agent.util;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import io.quarkus.logging.Log;
+import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +13,9 @@ import java.nio.file.Path;
 
 public final class JsonLoader {
 
-    private static final ObjectMapper OM = new ObjectMapper().findAndRegisterModules();
+    private static final ObjectMapper OM = JsonMapper.builder()
+            .findAndAddModules()
+            .build();
 
     private JsonLoader() {
     }
@@ -29,7 +33,7 @@ public final class JsonLoader {
                 }
                 return OM.readValue(is, typeReference);
             }
-        } catch (IOException e) {
+        } catch (JacksonException | IOException e) {
             Log.errorf(e, "Failed to load json from %s", path);
             throw new RuntimeException("Failed to load json from " + path, e);
         }

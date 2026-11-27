@@ -2,7 +2,7 @@ package bio.cosy.feddb.core.base;
 
 import bio.cosy.feddb.core.validation.constraints.Zero;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.PositiveOrZero;

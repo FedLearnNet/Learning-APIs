@@ -17,7 +17,7 @@ import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.services.controller.CreateFLLearningRelayServerRequestDTO;
 import bio.cosy.feddb.core.services.controller.CreateFLLearningRelayServerResponseDTO;
 import bio.cosy.feddb.core.services.controller.RelayServerAppVersions;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.feddbclient.FLNetClientBroadcastBO;
 import de.unihamburg.daibetes.api.project.ProjectAO;

@@ -15,9 +15,8 @@ import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.importer.extract.UploadInfoDTO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadInfoDTO;
 import bio.cosy.feddb.local.api.importer.files.table.SheetMergePlan;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -287,8 +286,7 @@ public class ConnectorPreviewBO {
         if (fileInfo == null) {
             return null;
         }
-        ObjectMapper lenient = objectMapper.copy()
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ObjectMapper lenient = objectMapper.rebuild().build();
         JsonNode node = lenient.valueToTree(fileInfo);
         if (node == null || !node.isObject()) {
             return null;

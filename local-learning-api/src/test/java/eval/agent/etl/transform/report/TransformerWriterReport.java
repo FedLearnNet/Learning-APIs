@@ -1,8 +1,9 @@
 package eval.agent.etl.transform.report;
 
 import bio.cosy.feddb.local.agent.etl.transform.model.VisitMapping;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 import eval.agent.etl.transform.judge.TransformerWriterVerdict;
 import eval.agent.etl.transform.pojo.TransformerWriterResult;
 import eval.agent.etl.transform.pojo.TransformerWriterReview;
@@ -22,7 +23,9 @@ import java.util.function.Predicate;
 public final class TransformerWriterReport {
 
     public static final String RESULTS_FILE = "transformer-writer.json";
-    private static final ObjectMapper JSON = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    private static final ObjectMapper JSON = JsonMapper.builder()
+            .enable(SerializationFeature.INDENT_OUTPUT)
+            .build();
 
     /** Only values exactly like the gold standard are correct. */
     public static final double CORRECT_SHIFT = 0;

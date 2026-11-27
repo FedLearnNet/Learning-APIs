@@ -5,9 +5,8 @@ import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDTO;
 import bio.cosy.feddb.core.api.datamodler.datatype.DataTypeNodeDetailDTO;
 import bio.cosy.feddb.core.api.datamodler.ontology.OntologyNodeDTO;
 import bio.cosy.feddb.core.api.datamodler.validation.DataTypeValidationDTO;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectReader;
 import de.unihamburg.daibetes.api.ontology.OntologyMapper;
 import de.unihamburg.daibetes.base.BaseMapper;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -16,6 +15,7 @@ import org.neo4j.driver.Record;
 import org.neo4j.driver.Value;
 import org.neo4j.driver.types.Node;
 import org.neo4j.driver.types.Relationship;
+import tools.jackson.databind.cfg.EnumFeature;
 
 import java.util.List;
 import java.util.Map;
@@ -120,10 +120,9 @@ public class DataTypeMapper extends BaseMapper<DataTypeNodeDTO, DataTypeEdgeDTO>
 
     private List<DataTypeValidationDTO> stringToValidations(String validation) {
         try {
-            ObjectReader reader = mapper.copy()
-                    .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
-                    .readerFor(mapper.getTypeFactory()
-                            .constructCollectionType(List.class, DataTypeValidationDTO.class));
+            ObjectReader reader = mapper.readerFor(mapper.getTypeFactory()
+                            .constructCollectionType(List.class, DataTypeValidationDTO.class))
+                    .with(EnumFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL);
 
             return reader.<List<DataTypeValidationDTO>>readValue(validation)
                     .stream()

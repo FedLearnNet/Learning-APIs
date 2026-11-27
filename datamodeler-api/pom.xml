@@ -58,7 +58,6 @@
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-embeddings</artifactId>
-            <version>1.20.0-beta30</version>
         </dependency>
         <dependency>
             <groupId>io.quarkiverse.langchain4j</groupId>

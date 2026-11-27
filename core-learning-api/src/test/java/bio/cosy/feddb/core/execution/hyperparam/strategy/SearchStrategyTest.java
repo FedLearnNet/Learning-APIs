@@ -3,7 +3,8 @@ package bio.cosy.feddb.core.execution.hyperparam.strategy;
 import bio.cosy.feddb.core.execution.hyperparam.config.HyperParamSearchDTO;
 import bio.cosy.feddb.core.execution.hyperparam.config.ParamDomainDTO;
 import bio.cosy.feddb.core.execution.hyperparam.config.SearchStrategyType;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -79,7 +80,7 @@ class SearchStrategyTest {
             double lr = (double) trial.getParams().get("lr");
             assertTrue(lr >= 1e-4 && lr <= 1e-1, "lr out of range: " + lr);
         });
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
         HyperParamSearchDTO stored = mapper.readValue(mapper.writeValueAsString(search), HyperParamSearchDTO.class);
         assertEquals(first, trials(stored));
     }
@@ -126,7 +127,7 @@ class SearchStrategyTest {
                           "loss":{"type":"CHOICE","values":["gini","entropy"]},
                           "epochs":{"type":"FIXED","value":10}}}
                 """;
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
 
         HyperParamSearchDTO search = mapper.readValue(json, HyperParamSearchDTO.class);
         String written = mapper.writeValueAsString(search);

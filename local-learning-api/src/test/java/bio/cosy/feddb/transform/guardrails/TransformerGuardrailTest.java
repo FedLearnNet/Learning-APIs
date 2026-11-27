@@ -16,7 +16,8 @@ import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerValidateTool;
 import bio.cosy.feddb.local.agent.etl.transform.tools.TransformerWriterTool;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
 import bio.cosy.feddb.local.api.schema.LocalSchemaNodeDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.guardrail.ChatExecutor;
 import dev.langchain4j.guardrail.GuardrailRequestParams;
@@ -72,7 +73,7 @@ class TransformerGuardrailTest {
     LossReviewBot lossReviewBot;
 
     @Spy
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = new JsonMapper();
 
     @Spy
     AnswerHints hints = new AnswerHints();

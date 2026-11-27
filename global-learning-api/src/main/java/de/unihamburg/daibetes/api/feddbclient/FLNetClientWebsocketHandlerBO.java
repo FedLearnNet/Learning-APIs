@@ -2,7 +2,8 @@ package de.unihamburg.daibetes.api.feddbclient;
 
 import bio.cosy.feddb.core.api.query.QueryClientResponseDTO;
 import bio.cosy.feddb.core.api.socket.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import bio.cosy.feddb.core.services.orch.dto.SystemComputingInfoDTO;
 import bio.cosy.feddb.core.api.tre.TreSourceDTO;
 import java.util.List;
@@ -65,13 +66,13 @@ public class FLNetClientWebsocketHandlerBO {
      * Not transactional on purpose: it calls the relay server.
      */
     public <T> void handleRelayCert(final FedDBClientDataDTO<T> m, final String connectionId) {
-        RelayCertSignRequestDTO request = new ObjectMapper().convertValue(m.getMessage(), RelayCertSignRequestDTO.class);
+        RelayCertSignRequestDTO request = new JsonMapper().convertValue(m.getMessage(), RelayCertSignRequestDTO.class);
         broadcastBO.sendRelayCertResponse(connectionId, relayCertSignBO.sign(request, connectionId));
     }
 
     @Transactional
     public <T> void handle(FedDBClientDataDTO<T> m, String connectionId, String clientName) {
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new JsonMapper();
 
         if (m.getMessageType().equals(FedDBClientTypeEnum.SYSTEM_INFO)) {
             systems.put(connectionId, objectMapper.convertValue(m.getMessage(), SystemComputingInfoDTO.class));

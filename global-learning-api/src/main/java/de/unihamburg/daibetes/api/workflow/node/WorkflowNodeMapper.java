@@ -9,8 +9,8 @@ import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDTO;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowPositionDTO;
 import bio.cosy.feddb.core.base.BaseMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import de.unihamburg.daibetes.api.app.FederatedAppMapper;
 import de.unihamburg.daibetes.api.app.version.FederatedAppVersionEntity;
 import de.unihamburg.daibetes.api.model.ModelMapper;
@@ -21,8 +21,8 @@ import de.unihamburg.daibetes.api.workflow.export.WorkflowNodeExportDTO;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
+import tools.jackson.core.JacksonException;
 
-import java.io.IOException;
 import java.util.List;
 
 @Mapper(config = QuarkusMappingConfig.class)
@@ -32,7 +32,7 @@ public interface WorkflowNodeMapper extends BaseMapper<WorkflowNodeDetailDTO, Wo
     FederatedAppMapper appMapper = Mappers.getMapper(FederatedAppMapper.class);
     ModelMapper modelMapper = Mappers.getMapper(ModelMapper.class);
     ModelVersionMapper modelVersionMapper = Mappers.getMapper(ModelVersionMapper.class);
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = new JsonMapper();
 
     @Mappings({
             @Mapping(target = "workflow.id", source = "workflowId"),
@@ -150,7 +150,7 @@ public interface WorkflowNodeMapper extends BaseMapper<WorkflowNodeDetailDTO, Wo
         }
         try {
             return objectMapper.readValue(jsonString, WorkflowPositionDTO.class);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             return new WorkflowPositionDTO(0, 0);
         }
     }
@@ -162,7 +162,7 @@ public interface WorkflowNodeMapper extends BaseMapper<WorkflowNodeDetailDTO, Wo
         }
         try {
             return objectMapper.writeValueAsString(position);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return "";
         }
     }

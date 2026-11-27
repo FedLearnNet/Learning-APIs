@@ -1,16 +1,16 @@
 package de.unihamburg.daibetes.helper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.mapstruct.Mapper;
+import tools.jackson.core.JacksonException;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 
 @Mapper(config = QuarkusMappingConfig.class)
 public interface HyperParamMapper {
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = new JsonMapper();
 
 
     default LinkedHashMap<String, Object> jsonStringToHyperparamsAllowError(String jsonString) {
@@ -19,7 +19,7 @@ public interface HyperParamMapper {
         }
         try {
             return objectMapper.readValue(jsonString, objectMapper.getTypeFactory().constructMapType(LinkedHashMap.class, String.class, Object.class));
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             return new LinkedHashMap<>();
         }
     }
@@ -30,7 +30,7 @@ public interface HyperParamMapper {
         }
         try {
             return objectMapper.readValue(jsonString, objectMapper.getTypeFactory().constructMapType(LinkedHashMap.class, String.class, String.class));
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             return new LinkedHashMap<>();
         }
     }
@@ -41,7 +41,7 @@ public interface HyperParamMapper {
         }
         try {
             return objectMapper.readValue(jsonString, objectMapper.getTypeFactory().constructMapType(LinkedHashMap.class, String.class, Object.class));
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Error parsing JSON string to LinkedHashMap", e);
         }
     }
@@ -52,7 +52,7 @@ public interface HyperParamMapper {
         }
         try {
             return objectMapper.writeValueAsString(hyperparams);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Error converting LinkedHashMap to JSON string", e);
         }
     }
@@ -63,7 +63,7 @@ public interface HyperParamMapper {
         }
         try {
             return objectMapper.writeValueAsString(hyperparams);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return "";
         }
     }
@@ -74,7 +74,7 @@ public interface HyperParamMapper {
         }
         try {
             return objectMapper.writeValueAsString(hyperparams);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return "";
         }
     }

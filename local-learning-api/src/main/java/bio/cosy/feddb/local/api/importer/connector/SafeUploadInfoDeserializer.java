@@ -2,22 +2,19 @@ package bio.cosy.feddb.local.api.importer.connector;
 
 import bio.cosy.feddb.local.api.importer.extract.UploadInfoDTO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFileUploadInfoDTO;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ValueDeserializer;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class SafeUploadInfoDeserializer extends JsonDeserializer<Map<String, UploadInfoDTO>> {
+public class SafeUploadInfoDeserializer extends ValueDeserializer<Map<String, UploadInfoDTO>> {
 
     @Override
-    public Map<String, UploadInfoDTO> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-        ObjectCodec codec = p.getCodec();
-        JsonNode node = codec.readTree(p);
+    public Map<String, UploadInfoDTO> deserialize(JsonParser p, DeserializationContext ctxt) {
+        JsonNode node = ctxt.readTree(p);
 
         if (node == null || node.isNull() || !node.isObject()) {
             return null;
@@ -27,7 +24,7 @@ public class SafeUploadInfoDeserializer extends JsonDeserializer<Map<String, Upl
 
         // Case 1:
         // ist a plain UploadInfoDTO
-        UploadInfoDTO single = tryParse(codec, node);
+        UploadInfoDTO single = tryParse(ctxt, node);
         if (single != null) {
             result.put(ConnectorFileUploadInfoDTO.DEFAULT_SHEET_NAME, single);
             return result;
@@ -36,7 +33,7 @@ public class SafeUploadInfoDeserializer extends JsonDeserializer<Map<String, Upl
         // Fall 2:
         // case two Map<String, UploadInfoDTO>
         for (Map.Entry<String, JsonNode> entry : node.properties()) {
-            UploadInfoDTO dto = tryParse(codec, entry.getValue());
+            UploadInfoDTO dto = tryParse(ctxt, entry.getValue());
             if (dto != null) {
                 result.put(entry.getKey(), dto);
             }
@@ -45,12 +42,12 @@ public class SafeUploadInfoDeserializer extends JsonDeserializer<Map<String, Upl
         return result.isEmpty() ? null : result;
     }
 
-    private UploadInfoDTO tryParse(ObjectCodec codec, JsonNode node) {
+    private UploadInfoDTO tryParse(DeserializationContext ctxt, JsonNode node) {
         try {
             if (node == null || node.isNull() || !node.isObject()) {
                 return null;
             }
-            return codec.treeToValue(node, UploadInfoDTO.class);
+            return ctxt.readTreeAsValue(node, UploadInfoDTO.class);
         } catch (Exception e) {
             return null;
         }

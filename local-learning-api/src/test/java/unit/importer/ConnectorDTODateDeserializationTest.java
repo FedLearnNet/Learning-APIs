@@ -1,7 +1,8 @@
 package unit.importer;
 
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -10,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ConnectorDTODateDeserializationTest {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new JsonMapper();
 
     @Test
     void deserializesCreatedAtWithoutMilliseconds() throws Exception {

@@ -1,7 +1,8 @@
 package eval.agent.etl.harmonization.report;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 import eval.agent.etl.harmonization.pojo.HarmonizationFileResult;
 import eval.agent.etl.transform.report.TransformerWriterReport;
 import io.quarkus.logging.Log;
@@ -15,7 +16,9 @@ import java.util.List;
 public final class HarmonizationFileReport {
 
     public static final String RESULTS_FILE = "harmonization-file.json";
-    private static final ObjectMapper JSON = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    private static final ObjectMapper JSON = JsonMapper.builder()
+            .enable(SerializationFeature.INDENT_OUTPUT)
+            .build();
     /** From this shift on the harmonized values of a column are clearly not distributed like the reference ones. */
     private static final double SUSPICIOUS_SHIFT = 0.3;
 

@@ -5,7 +5,8 @@ import bio.cosy.feddb.core.api.model.workflow.chat.ModelWorkflowChatMessageDTO;
 import bio.cosy.feddb.core.api.model.workflow.chat.PlanStep;
 import bio.cosy.feddb.core.api.model.workflow.chat.ReasoningDTO;
 import bio.cosy.feddb.core.api.store.StoreDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import de.unihamburg.daibetes.agent.anlysis.bots.*;
 import de.unihamburg.daibetes.agent.anlysis.tools.*;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisBO;
@@ -69,7 +70,7 @@ public class PlanningAgent {
     @Inject
     HumanInTheLoopRequestBO humanInTheLoopRequestBO;
 
-    private final ObjectMapper om = new ObjectMapper();
+    private final ObjectMapper om = new JsonMapper();
 
     public AgentResult planAnswer(Long workflowId,
                                   String keycloakId,

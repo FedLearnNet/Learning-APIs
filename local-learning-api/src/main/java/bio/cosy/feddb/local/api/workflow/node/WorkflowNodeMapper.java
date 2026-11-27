@@ -6,18 +6,17 @@ import bio.cosy.feddb.core.api.workflow.node.WorkflowNodeDetailDTO;
 import bio.cosy.feddb.core.api.workflow.node.WorkflowPositionDTO;
 import bio.cosy.feddb.core.base.BaseMapper;
 import bio.cosy.feddb.local.helper.QuarkusMappingConfig;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
-
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
 
 @Mapper(config = QuarkusMappingConfig.class)
 public interface WorkflowNodeMapper extends BaseMapper<WorkflowNodeDTO, WorkflowNodeEntity> {
 
     HyperParamMapper hyperParamMapper = Mappers.getMapper(HyperParamMapper.class);
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = new JsonMapper();
 
     @Mappings({
             @Mapping(target = "workflow.id", source = "workflowId"),
@@ -64,7 +63,7 @@ public interface WorkflowNodeMapper extends BaseMapper<WorkflowNodeDTO, Workflow
         }
         try {
             return objectMapper.readValue(jsonString, WorkflowPositionDTO.class);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             return new WorkflowPositionDTO(0, 0);
         }
     }
@@ -76,7 +75,7 @@ public interface WorkflowNodeMapper extends BaseMapper<WorkflowNodeDTO, Workflow
         }
         try {
             return objectMapper.writeValueAsString(position);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return "";
         }
     }

@@ -11,7 +11,7 @@ import bio.cosy.feddb.local.api.query.QueryBO;
 import bio.cosy.feddb.local.api.statistics.request.RequestDataStatisticsBO;
 import bio.cosy.feddb.local.health.WebSocketClientState;
 import bio.cosy.feddb.local.services.orch.ComputingInfoBO;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.logging.Log;
 import io.quarkus.websockets.next.*;

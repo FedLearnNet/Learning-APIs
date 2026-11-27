@@ -7,13 +7,13 @@ import bio.cosy.feddb.local.api.importer.extract.PivotConfigDTO;
 import bio.cosy.feddb.local.api.importer.extract.SheetMergeResultDTO;
 import bio.cosy.feddb.local.api.importer.extract.UploadInfoDTO;
 import bio.cosy.feddb.local.api.importer.files.table.*;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import tools.jackson.core.JacksonException;
 
 import java.io.File;
 import java.util.*;
@@ -172,7 +172,7 @@ public class TabularFileReaderBO extends TableReaderSupport {
     public String getJson(TableData tableData) {
         try {
             return objectMapper.writeValueAsString(tableData == null ? List.of() : tableData.getRows());
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException("Could not serialize table data to JSON", e);
         }
     }
@@ -218,7 +218,7 @@ public class TabularFileReaderBO extends TableReaderSupport {
     }
 
     private TableData readJson(File file, TableReadSpec spec) {
-        try (JsonParser parser = objectMapper.getFactory().createParser(file)) {
+        try (JsonParser parser = objectMapper.createParser(file)) {
             if (parser.nextToken() != JsonToken.START_ARRAY) {
                 return TableData.empty();
             }

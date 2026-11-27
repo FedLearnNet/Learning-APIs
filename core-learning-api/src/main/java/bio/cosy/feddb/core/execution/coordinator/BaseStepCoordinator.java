@@ -17,7 +17,7 @@ import bio.cosy.feddb.core.execution.hyperparam.planner.SearchPlan;
 import bio.cosy.feddb.core.execution.run.types.RunStatusTypes;
 import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepAO;
 import bio.cosy.feddb.core.execution.step.BaseExecutionRunStepEntity;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;

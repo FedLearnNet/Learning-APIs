@@ -1,7 +1,7 @@
 package eval.agent.etl.gdc.pipeline;
 
 import bio.cosy.feddb.local.api.importer.connector.ConnectorDTO;
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.type.TypeReference;
 import eval.agent.etl.gdc.judge.GdcJudge;
 import eval.agent.etl.gdc.judge.GdcJudgement;
 import eval.agent.etl.gdc.pojo.GdcFieldResult;

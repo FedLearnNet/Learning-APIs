@@ -8,7 +8,8 @@ import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformationBO;
 import bio.cosy.feddb.local.api.importer.files.ConnectorFilesEntity;
 import bio.cosy.feddb.local.api.importer.files.read.TabularFileReaderBO;
 import bio.cosy.feddb.local.api.importer.files.table.TableData;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ class TransformedStatisticsBOTest {
         bo.fileHandlerBO = new StubReaderBO(profiles);
         bo.ao = new StubFilesAO(file);
         bo.transformationBO = new ConnectorTransformationBO();
-        bo.objectMapper = new ObjectMapper();
+        bo.objectMapper = new JsonMapper();
         bo.maxRows = 100;
         bo.maxPatients = 10;
         bo.maxDistinctPerColumn = 20;

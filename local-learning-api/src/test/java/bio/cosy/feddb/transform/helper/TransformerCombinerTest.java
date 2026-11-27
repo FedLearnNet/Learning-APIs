@@ -5,7 +5,8 @@ import bio.cosy.feddb.local.api.importer.functions.FunctionRegistry;
 import bio.cosy.feddb.local.api.importer.functions.managed.builtin.FilterRowsByValueFunction;
 import bio.cosy.feddb.local.api.importer.functions.managed.builtin.ReplaceValueFunction;
 import bio.cosy.feddb.local.api.importer.transformer.ConnectorTransformerDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +34,7 @@ class TransformerCombinerTest {
     FunctionRegistry functionRegistry;
 
     @Spy
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = new JsonMapper();
 
     @InjectMocks
     TransformerCombiner combiner;

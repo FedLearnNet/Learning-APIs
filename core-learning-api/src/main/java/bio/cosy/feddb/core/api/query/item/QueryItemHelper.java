@@ -1,10 +1,9 @@
 package bio.cosy.feddb.core.api.query.item;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import io.quarkus.logging.Log;
+import tools.jackson.core.JacksonException;
 
 import java.util.List;
 
@@ -12,9 +11,7 @@ import java.util.List;
 public final class QueryItemHelper {
 
     // dates as YYYY-MM-DD, like the REST API
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    private static final ObjectMapper OBJECT_MAPPER = new JsonMapper();
 
     private QueryItemHelper() {
     }
@@ -39,7 +36,7 @@ public final class QueryItemHelper {
         }
         try {
             return OBJECT_MAPPER.writeValueAsString(query);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             Log.error("Error converting query document to JSON string", e);
             return "";
         }

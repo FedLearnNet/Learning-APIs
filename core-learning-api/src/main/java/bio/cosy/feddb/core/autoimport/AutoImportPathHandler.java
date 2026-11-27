@@ -2,10 +2,10 @@ package bio.cosy.feddb.core.autoimport;
 
 import bio.cosy.feddb.core.helper.ResourceScanner;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.LaunchMode;
 import jakarta.annotation.PostConstruct;
@@ -41,7 +41,9 @@ public class AutoImportPathHandler {
 
     @PostConstruct
     void init() {
-        nonNullMapper = objectMapper.copy().setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
+        nonNullMapper = objectMapper.rebuild()
+                .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_NULL))
+                .build();
     }
 
     public <T> List<T> loadAll(String name, FLNetConfigPaths config, Class<T> type) {

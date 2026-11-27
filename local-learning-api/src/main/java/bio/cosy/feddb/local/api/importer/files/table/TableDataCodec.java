@@ -1,12 +1,13 @@
 package bio.cosy.feddb.local.api.importer.files.table;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.smile.SmileConstants;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.smile.SmileConstants;
+import tools.jackson.dataformat.smile.SmileFactory;
+import tools.jackson.dataformat.smile.SmileMapper;
+import tools.jackson.dataformat.smile.SmileReadFeature;
+import tools.jackson.dataformat.smile.SmileWriteFeature;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -48,11 +49,11 @@ public final class TableDataCodec {
      * header carries no information in that setup, so it is switched off on both sides.
      */
     private static final SmileFactory FACTORY = SmileFactory.builder()
-            .disable(SmileGenerator.Feature.WRITE_HEADER)
-            .disable(SmileParser.Feature.REQUIRE_HEADER)
+            .disable(SmileWriteFeature.WRITE_HEADER)
+            .disable(SmileReadFeature.REQUIRE_HEADER)
             .build();
 
-    private static final ObjectMapper MAPPER = new ObjectMapper(FACTORY);
+    private static final ObjectMapper MAPPER = new SmileMapper();
 
     /** Marks a value the row did not contain at all, as opposed to one that was present and null. */
     private static final Object ABSENT = new Object();
@@ -174,7 +175,7 @@ public final class TableDataCodec {
             if (parser.nextToken() != JsonToken.START_OBJECT) {
                 return "null";
             }
-            while (parser.nextToken() == JsonToken.FIELD_NAME) {
+            while (parser.nextToken() == JsonToken.PROPERTY_NAME) {
                 boolean wanted = column.equals(parser.currentName());
                 parser.nextToken();
                 if (wanted) {
@@ -217,7 +218,7 @@ public final class TableDataCodec {
         }
         return switch (token) {
             case VALUE_NULL -> "null";
-            case VALUE_STRING -> parser.getText();
+            case VALUE_STRING -> parser.getString();
             case VALUE_NUMBER_INT, VALUE_NUMBER_FLOAT -> String.valueOf(parser.getNumberValue());
             case VALUE_TRUE, VALUE_FALSE -> String.valueOf(parser.getBooleanValue());
             default -> String.valueOf(parser.readValueAs(Object.class));

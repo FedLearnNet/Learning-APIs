@@ -1,10 +1,9 @@
 package bio.cosy.feddb.local.api.importer.extract;
 
 import bio.cosy.feddb.local.api.importer.connector.input.AppBasedUploadSettingsDTO;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
@@ -158,7 +157,6 @@ public class AppBasedExtractorBO {
 
     private ObjectMapper canonicalObjectMapper() {
         return JsonMapper.builder()
-                .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
                 .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
                 .build();
     }

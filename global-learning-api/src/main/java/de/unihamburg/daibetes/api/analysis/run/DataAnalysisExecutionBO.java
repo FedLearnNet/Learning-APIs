@@ -5,8 +5,7 @@ import bio.cosy.feddb.core.execution.executor.ExecutionStartDTO;
 import bio.cosy.feddb.core.execution.orchestrator.DataAnalysisCreatePredictionDTO;
 import bio.cosy.feddb.core.execution.run.dto.AppRunUploadData;
 import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisAO;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisBO;
 import de.unihamburg.daibetes.api.analysis.DataAnalysisEntity;
@@ -24,6 +23,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
+import tools.jackson.core.JacksonException;
 
 import java.util.LinkedHashMap;
 
@@ -154,7 +154,7 @@ public class DataAnalysisExecutionBO {
     private String toJson(LinkedHashMap<String, Object> fields) {
         try {
             return objectMapper.writeValueAsString(fields);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             Log.warnf(e, "Could not store the uploaded result");
             return null;
         }

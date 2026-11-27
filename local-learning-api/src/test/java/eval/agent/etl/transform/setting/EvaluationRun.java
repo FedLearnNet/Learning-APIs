@@ -1,14 +1,15 @@
 package eval.agent.etl.transform.setting;
 
 import bio.cosy.feddb.local.agent.etl.transform.organizer.TransformerOrganizer;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import eval.agent.etl.transform.judge.TransformerWriterVerdict;
 import eval.agent.etl.transform.pojo.TransformerWriterEffort;
 import eval.agent.etl.transform.pojo.TransformerWriterReview;
 import io.quarkus.logging.Log;
 import org.eclipse.microprofile.config.ConfigProvider;
+import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -20,7 +21,7 @@ import java.util.Map;
 
 public final class EvaluationRun {
 
-    private static final ObjectMapper JSON = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    private static final ObjectMapper JSON = new JsonMapper();
 
     private EvaluationRun() {
     }
@@ -41,8 +42,8 @@ public final class EvaluationRun {
             T results = JSON.readValue(file.toFile(), type);
             Log.infof("[Eval] Continuing the results of %s", file.toAbsolutePath());
             return results;
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        } catch (JacksonException e) {
+            throw e;
         }
     }
 

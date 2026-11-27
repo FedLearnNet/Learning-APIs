@@ -7,7 +7,7 @@ import bio.cosy.feddb.core.execution.run.dto.FinishRunDTO;
 import bio.cosy.feddb.core.execution.run.dto.StartRunDTO;
 import bio.cosy.feddb.core.execution.run.dto.UpdateRunDTO;
 import bio.cosy.feddb.core.execution.run.types.AppRunTypeEnum;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
 

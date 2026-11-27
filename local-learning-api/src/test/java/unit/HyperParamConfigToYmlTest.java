@@ -1,7 +1,6 @@
 package unit;
 
 import bio.cosy.feddb.local.api.workflow.node.HyperParamConfigToYml;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class HyperParamConfigToYmlTest {
 
     @Test
-    void testWriteYamlGeneratesExpectedStructure() throws JsonProcessingException {
+    void testWriteYamlGeneratesExpectedStructure() {
         LinkedHashMap<String, Object> hyperParams = new LinkedHashMap<>();
         hyperParams.put("fc_random_forest.input.train", "data.csv");
         hyperParams.put("fc_random_forest.input.test", "data.csv");

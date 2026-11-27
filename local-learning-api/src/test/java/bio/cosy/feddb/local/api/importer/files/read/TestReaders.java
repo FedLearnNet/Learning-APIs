@@ -3,7 +3,8 @@ package bio.cosy.feddb.local.api.importer.files.read;
 import bio.cosy.feddb.core.api.file.analytics.FileAnalytics;
 import bio.cosy.feddb.local.api.importer.files.table.TableDataPivotBO;
 import bio.cosy.feddb.local.api.importer.files.table.TableDataUploadInfoBO;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Wires the file readers the way CDI would, for the tests that exercise them without a container.
@@ -26,7 +27,7 @@ public final class TestReaders {
         ExcelTableReaderBO excelReader = new ExcelTableReaderBO(null, profiles, merges);
 
         TabularFileReaderBO reader = new TabularFileReaderBO();
-        reader.objectMapper = new ObjectMapper();
+        reader.objectMapper = new JsonMapper();
         reader.delimitedReader = delimitedReader;
         reader.excelReader = excelReader;
         reader.tableDataPivotBO = new TableDataPivotBO();
