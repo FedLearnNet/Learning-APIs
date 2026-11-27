@@ -30,6 +30,8 @@ public interface GlobalSchemaServiceMapper {
             @Mapping(target = "childNodes", ignore = true),
             @Mapping(target = "globalId", source = "id"),
             @Mapping(target = "globalVersion", source = "version"),
+            @Mapping(target = "globalCreatedAt", source = "createdAt"),
+            @Mapping(target = "globalUpdatedAt", source = "updatedAt"),
     })
     LocalSchemaRootNodeDTO globalHeadRootToLocalRootDto(SchemaNodeDetailDTO globalSchemaNode);
 
@@ -91,6 +93,8 @@ public interface GlobalSchemaServiceMapper {
             @Mapping(target = "childNodes", source = "globalRootSchemaInfoDTO", qualifiedByName = "mapGlobalToLocalSchemaChildren"),
             @Mapping(target = "globalId", source = "id", qualifiedByName = "mapUUIDToString"),
             @Mapping(target = "globalVersion", source = "version"),
+            @Mapping(target = "globalCreatedAt", source = "createdAt"),
+            @Mapping(target = "globalUpdatedAt", source = "updatedAt"),
             @Mapping(target = "name", source = "name"),
             @Mapping(target = "description", source = "description"),
     })
