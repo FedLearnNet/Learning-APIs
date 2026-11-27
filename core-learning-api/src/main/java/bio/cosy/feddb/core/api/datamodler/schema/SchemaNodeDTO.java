@@ -38,7 +38,7 @@ public class SchemaNodeDTO extends BaseNodeDTO {
     private UUID dataTypeId;
     private UUID ontologyId;
 
-    //only root
+    // only root
     private List<String> subscriptions;
     private String createdBy;
 

@@ -204,8 +204,11 @@ public class RunResultRequestBO extends BaseBo<RunResultRequestDTO, RunResultReq
      *  payload size, averaged across sites. Returns null when no timing series were reported. */
     private EvaluationSummaryDTO.ScalabilitySummary buildScalability(List<SiteParsed> sites, int maxRound) {
         List<EvaluationSummaryDTO.RoundTiming> timings = new ArrayList<>();
-        double totalRound = 0, totalComm = 0, cumulative = 0;
-        int roundCount = 0, commCount = 0;
+        double totalRound = 0;
+        double totalComm = 0;
+        double cumulative = 0;
+        int roundCount = 0;
+        int commCount = 0;
         for (int round = 1; round <= maxRound; round++) {
             Double rs = meanAcrossSites(sites, SiteDescriptor.ROUND_SECONDS.key(), round);
             Double cs = meanAcrossSites(sites, SiteDescriptor.COMM_SECONDS.key(), round);

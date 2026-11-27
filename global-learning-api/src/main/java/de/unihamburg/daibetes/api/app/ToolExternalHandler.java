@@ -130,8 +130,9 @@ public class ToolExternalHandler {
             JsonNode version = StreamSupport.stream(root.path("versions").spliterator(), false)
                     .filter(value -> Objects.equals(value.path("appVersion").asString(), tool.getLatestVersion()))
                     .findFirst().orElse(root.path("versions").path(0));
-            if (!(version instanceof ObjectNode target) || tool.getPublishInfo() == null || tool.getImageName() == null)
+            if (!(version instanceof ObjectNode target) || tool.getPublishInfo() == null || tool.getImageName() == null) {
                 return Optional.empty();
+            }
             target.set("publishInfo", objectMapper.valueToTree(tool.getPublishInfo()));
             target.put("imageName", tool.getImageName());
             makeImageReferencesPortable((ObjectNode) root);

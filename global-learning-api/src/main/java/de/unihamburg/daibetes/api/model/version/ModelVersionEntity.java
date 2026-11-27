@@ -26,12 +26,12 @@ public class ModelVersionEntity extends BaseStoreVersionEntity {
     private ModelEntity model;
 
 
-    //TRAINING
+    // TRAINING
     /*@ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "federated_app_version_id")
     private FederatedAppVersionEntity appVersion; */
 
-    //TRAINING
+    // TRAINING
     /*@ManyToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "federated_training_id")
     private ExecutionExperimentEntity federatedExperiment; */

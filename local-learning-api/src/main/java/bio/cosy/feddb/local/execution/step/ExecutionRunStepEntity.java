@@ -33,7 +33,7 @@ public class ExecutionRunStepEntity extends BaseExecutionRunStepEntity<Execution
     @JoinColumn(name = "transformer_id")
     private ConnectorTransformerEntity transformer;
 
-    //if run is a fl run
+    // if run is a fl run
     @OneToOne(mappedBy = "step", cascade = CascadeType.ALL, orphanRemoval = true)
     private ExecutionFederationEntity federation;
 

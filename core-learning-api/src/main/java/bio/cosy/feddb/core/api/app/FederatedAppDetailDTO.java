@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 public class FederatedAppDetailDTO extends FederatedAppDTO {
 
-    //workflow
+    // workflow
     private int addedToWorkflowCount;
     private Date lastAddedToWorkflow;
 
@@ -26,11 +26,13 @@ public class FederatedAppDetailDTO extends FederatedAppDTO {
         if (this.getName() == null && other.getName() != null) return false;
         if (this.getName() != null && !this.getName().equals(other.getName())) return false;
         if (this.getShortDescription() == null && other.getShortDescription() != null) return false;
-        if (this.getShortDescription() != null && !this.getShortDescription().equals(other.getShortDescription()))
+        if (this.getShortDescription() != null && !this.getShortDescription().equals(other.getShortDescription())) {
             return false;
+        }
         if (this.getLongDescription() == null && other.getLongDescription() != null) return false;
-        if (this.getLongDescription() != null && !this.getLongDescription().equals(other.getLongDescription()))
+        if (this.getLongDescription() != null && !this.getLongDescription().equals(other.getLongDescription())) {
             return false;
+        }
         if (this.getSlug() == null && other.getSlug() != null) return false;
         if (this.getSlug() != null && !this.getSlug().equals(other.getSlug())) return false;
         if (this.getType() == null && other.getType() != null) return false;

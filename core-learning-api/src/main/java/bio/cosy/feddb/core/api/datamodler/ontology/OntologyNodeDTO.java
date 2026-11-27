@@ -15,7 +15,7 @@ import java.util.Set;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OntologyNodeDTO extends BaseNodeDTO {
 
-    //Some properties related to https://www.nlm.nih.gov/research/umls/new_users/online_learning/Meta_005.html
+    // Some properties related to https://www.nlm.nih.gov/research/umls/new_users/online_learning/Meta_005.html
     private Set<String> names;
     private String description;
     private Set<String> codes;
@@ -26,28 +26,28 @@ public class OntologyNodeDTO extends BaseNodeDTO {
 
 
     public void addName(String name) {
-        if(this.names == null) {
+        if (this.names == null) {
             this.names = new HashSet<>();
         }
         this.names.add(name);
     }
 
     public void addCode(String code) {
-        if(this.codes == null) {
+        if (this.codes == null) {
             this.codes = new HashSet<>();
         }
         this.codes.add(code);
     }
 
     public void addSab(String sab) {
-        if(this.sabs == null) {
+        if (this.sabs == null) {
             this.sabs = new HashSet<>();
         }
         this.sabs.add(sab);
     }
 
     public void addAui(String aui) {
-        if(this.auis == null) {
+        if (this.auis == null) {
             this.auis = new HashSet<>();
         }
         this.auis.add(aui);

@@ -16,7 +16,7 @@ public class ModelAccessAO implements PanacheRepository<ModelAccessEntity> {
     }
 
     public List<ModelAccessEntity> getAllAccessibleModel(String keycloakId) {
-        //TODO rethink list("keycloakId", keycloakId)
+        // TODO rethink list("keycloakId", keycloakId)
         return findAll().list();
     }
 
@@ -25,12 +25,12 @@ public class ModelAccessAO implements PanacheRepository<ModelAccessEntity> {
     }
 
     public Optional<ModelAccessEntity> byUserAnyRights(String keycloakId, Long modelId) {
-        //TODO  why and whats the idea         return find("keycloakId = ?1 and model.id = ?2", keycloakId, modelId).firstResultOptional();
+        // TODO  why and whats the idea         return find("keycloakId = ?1 and model.id = ?2", keycloakId, modelId).firstResultOptional();
         return find("model.id = ?1", modelId).firstResultOptional();
     }
 
     public List<ModelAccessEntity> getAllForModel(Long modelId) {
-        //DONT SHOW ModelAccess.PARTICIPANT cause there a hidden (clinics)
+        // DONT SHOW ModelAccess.PARTICIPANT cause there a hidden (clinics)
         return list("model.id = ?1 and access != ?2", modelId, ModelAccess.PARTICIPANT);
     }
 

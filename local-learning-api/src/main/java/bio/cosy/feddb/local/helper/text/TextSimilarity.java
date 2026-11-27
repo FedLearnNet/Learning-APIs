@@ -30,7 +30,7 @@ public class TextSimilarity {
         );
     }
 
-    //just Levenshtein
+    // just Levenshtein
     public static double editSimilarity(String a, String b) {
         return 1 - (double) LevenshteinDistance.getDefaultInstance()
                 .apply(a, b) / Math.max(a.length(), b.length());

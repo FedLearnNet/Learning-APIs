@@ -44,7 +44,7 @@ public record ReportView(
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    //To set later in aftermapping has to be a class
+    // To set later in aftermapping has to be a class
     public static class RunView {
         String type;                 // PREDICTION / WORKFLOW_PREDICTION
         String status;               // SUCCESS/FAILED/...

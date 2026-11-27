@@ -117,7 +117,7 @@ public class SchemaBO {
         // This is used to retrieve the schema after it has been persisted
         Set<SchemaNodeEntity> schemaNodes = new HashSet<>();
         schemaNodes.add(nodeEntity);
-        if(nodeEntity.getChildren() == null || nodeEntity.getChildren().isEmpty()) {
+        if (nodeEntity.getChildren() == null || nodeEntity.getChildren().isEmpty()) {
             return schemaNodes; // No children, return just the root
         }
         // Recursively add all children of the root node

@@ -16,8 +16,6 @@ public abstract class BaseValidationBO {
      * Normalizes and validates a value against the provided data type.
      * If the value is invalid, returns false instead of throwing an exception.
      *
-     * @param value
-     * @param dataType
      * @return boolean indicating whether the value is valid for the given data type.
      */
     public boolean normalizeValidateValueSilent(Object value, DataTypeNodeDTO dataType) {
@@ -33,10 +31,6 @@ public abstract class BaseValidationBO {
      * Normalizes a value to the correct type based on the provided data type definition.
      * WARNING: If the input is null this just returns null as in theory null values might be valid
      * Be careful what you do with the output!
-     *
-     * @param value
-     * @param dataType
-     * @return
      */
     public Object normalizeValue(Object value, DataTypeNodeDTO dataType) {
         // The object can be any Object and should be the object corresponding to the DataType

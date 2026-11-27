@@ -89,7 +89,9 @@ public class TableDataGroupingBO {
         return bucketFiles;
     }
 
-    /** @return the column order the rows were written in */
+    /**
+     * @return the column order the rows were written in
+     */
     private List<String> writeRowsAndReferences(
             TableData data,
             String column,

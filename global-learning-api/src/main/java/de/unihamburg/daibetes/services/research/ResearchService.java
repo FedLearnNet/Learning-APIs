@@ -9,7 +9,7 @@ import jakarta.inject.Inject;
 
 import java.util.List;
 
-//If other research services are added, they can be injected and their results combined here. like pubmed
+// If other research services are added, they can be injected and their results combined here. like pubmed
 @ApplicationScoped
 public class ResearchService {
 

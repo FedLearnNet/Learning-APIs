@@ -13,7 +13,7 @@ public class FileUploadSettingsDTO extends ConnectorInputConfigDTO {
 
     /**
      * @deprecated Parsing settings are file-owned and are retained here only for
-     * existing persisted connector configurations.
+     *     existing persisted connector configurations.
      */
     @Deprecated
     private FileParsingType fileType; // EXCEL | CSV | JSON
@@ -31,7 +31,7 @@ public class FileUploadSettingsDTO extends ConnectorInputConfigDTO {
 
     private Boolean deleteUnneededFileAfterSuccess = false;
 
-    //only for get connector for the FE
+    // only for get connector for the FE
     private boolean fileExists = false;
 
     /**

@@ -85,20 +85,20 @@ public abstract class DataAnalysisReportMapper {
             @Mapping(target = "outputs", source = "run.outputFiles", qualifiedByName = "filesToCards"),
             @Mapping(target = "inputs", source = "run.inputFiles", qualifiedByName = "filesToCards"),
             @Mapping(target = "resultJson", source = "run.result", qualifiedByName = "mapToJson"),
-            @Mapping(target = "toolDescription", ignore = true), //after mapping
-            @Mapping(target = "toolName", ignore = true), //after mapping
+            @Mapping(target = "toolDescription", ignore = true), // after mapping
+            @Mapping(target = "toolName", ignore = true), // after mapping
             @Mapping(target = "type", ignore = true),
-            @Mapping(target = "hyperParamsConfig", ignore = true), //after mapping
-            @Mapping(target = "inputConfig", ignore = true), //after mapping
-            @Mapping(target = "resultConfig", ignore = true), //after mapping
-            @Mapping(target = "runtimeMs", ignore = true), //after mapping
-            @Mapping(target = "hasOverhead", ignore = true), //after mapping
-            @Mapping(target = "runtimeLabel", ignore = true), //after mapping
-            @Mapping(target = "startupLabel", ignore = true), //after mapping
-            @Mapping(target = "teardownLabel", ignore = true), //after mapping
-            @Mapping(target = "totalOverheadLabel", ignore = true), //after mapping
-            @Mapping(target = "wallTotalLabel", ignore = true), //after mapping
-            @Mapping(target = "overheadPercentLabel", ignore = true), //after mapping
+            @Mapping(target = "hyperParamsConfig", ignore = true), // after mapping
+            @Mapping(target = "inputConfig", ignore = true), // after mapping
+            @Mapping(target = "resultConfig", ignore = true), // after mapping
+            @Mapping(target = "runtimeMs", ignore = true), // after mapping
+            @Mapping(target = "hasOverhead", ignore = true), // after mapping
+            @Mapping(target = "runtimeLabel", ignore = true), // after mapping
+            @Mapping(target = "startupLabel", ignore = true), // after mapping
+            @Mapping(target = "teardownLabel", ignore = true), // after mapping
+            @Mapping(target = "totalOverheadLabel", ignore = true), // after mapping
+            @Mapping(target = "wallTotalLabel", ignore = true), // after mapping
+            @Mapping(target = "overheadPercentLabel", ignore = true), // after mapping
             @Mapping(target = "hyperParamsEven", expression = "java(run.getHyperParams().size() % 2 == 0)"),
             @Mapping(target = "inputConfigEven", expression = "java(run.getInputs().size() % 2 == 0)"),
             @Mapping(target = "resultConfigEven", expression = "java(run.getResult().size() % 2 == 0)"),

@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @Nullable
-public class FileProfile{
+public class FileProfile {
     private String fileName;
     private long rowsScanned;
     private List<ColumnProfile> columns;

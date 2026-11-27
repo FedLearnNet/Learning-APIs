@@ -16,7 +16,7 @@ public interface QueryPatientMapper extends BaseMapper<QueryPatientDTO, QueryPat
     })
     QueryPatientDTO entityToDto(QueryPatientEntity entity);
 
-    //IGORE CUZ INTERNAL VALUES NOT PK
+    // IGORE CUZ INTERNAL VALUES NOT PK
     @Mappings({
             @Mapping(target = "patient.id", ignore = true),
             @Mapping(target = "query.id", ignore = true),

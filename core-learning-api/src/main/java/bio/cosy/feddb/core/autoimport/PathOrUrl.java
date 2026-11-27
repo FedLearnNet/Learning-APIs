@@ -95,6 +95,7 @@ public class PathOrUrl {
                 }
             }
         } catch (IllegalArgumentException ignored) {
+            // not a URI, tried as a path below
         }
 
         try (InputStream in = Files.newInputStream(Path.of(spec))) {

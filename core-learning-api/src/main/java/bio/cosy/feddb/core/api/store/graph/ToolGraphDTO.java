@@ -12,7 +12,7 @@ public class ToolGraphDTO {
     private List<ToolGraphEdgeDTO> edges = new ArrayList<>();
 
     public void addNode(ToolGraphNodeDTO node) {
-        if(nodes == null) {
+        if (nodes == null) {
             nodes = new ArrayList<>();
         }
         this.nodes.add(node);

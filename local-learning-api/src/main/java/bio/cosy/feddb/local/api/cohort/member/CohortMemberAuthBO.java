@@ -38,8 +38,8 @@ public class CohortMemberAuthBO {
         Set<CohortMemberEntity> members = cohort.getMembers();
         return members.stream()
                 .filter(member -> member
-                        .getKeycloakId().equals(keycloakId)).
-                findFirst().map(CohortMemberEntity::getType);
+                        .getKeycloakId().equals(keycloakId))
+                .findFirst().map(CohortMemberEntity::getType);
     }
 
     public boolean isMember(Long cohortId, String keycloakId) {

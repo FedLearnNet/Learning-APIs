@@ -51,6 +51,7 @@ public enum TimeSeriesReductionMethod {
 
     /**
      * Parse reduction method from string value for numeric data
+     *
      * @param value the string value
      * @return the corresponding enum value
      * @throws IllegalArgumentException if the value is not recognized or not applicable to numeric data
@@ -63,6 +64,7 @@ public enum TimeSeriesReductionMethod {
 
     /**
      * Parse reduction method from string value for non-numeric data
+     *
      * @param value the string value
      * @return the corresponding enum value
      * @throws IllegalArgumentException if the value is not recognized or not applicable to non-numeric data
@@ -78,6 +80,7 @@ public enum TimeSeriesReductionMethod {
 
     /**
      * Parse reduction method from string value
+     *
      * @param value the string value
      * @return the corresponding enum value
      * @throws IllegalArgumentException if the value is not recognized

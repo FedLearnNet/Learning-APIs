@@ -14,7 +14,7 @@ public class SymptomsSplitFunction extends AbstractSplitFlagsFunction {
 
     static final Map<String, String> INPUT_TO_OUTPUT = Map.of(
         "diarrhoea",   "diarrhoea",
-        "constipation","constipation",
+        "constipation", "constipation",
         "pr bleeding", "pr_bleeding",
         "pr_bleeding", "pr_bleeding",
         "bleeding",    "pr_bleeding"
@@ -22,7 +22,12 @@ public class SymptomsSplitFunction extends AbstractSplitFlagsFunction {
 
     static final List<String> RETURNKEYS = List.of("diarrhoea", "constipation", "pr_bleeding");
     static final Set<String> NO_VALUES = Set.of("none", "no");
-    @Override public String methodName()  { return "GI Symptoms Split"; }
+
+    @Override
+    public String methodName() {
+        return "GI Symptoms Split";
+    }
+
     @Override
     public String description() {
         return "Split a combined GI symptom column into individual symptom columns. " +
@@ -33,10 +38,25 @@ public class SymptomsSplitFunction extends AbstractSplitFlagsFunction {
                "The function is case insensitive and trims whitespace, e.g. 'diarrhoea ' is valid";
     }
 
-    @Override public String paramColumn() { return PARAM_COLUMN; }
-    @Override public List<String> returnKeys() { return RETURNKEYS; }
-    @Override public Set<String> noValues()    { return NO_VALUES; }
-    @Override public Map<String, String> inputToOutput() { return INPUT_TO_OUTPUT; }
+    @Override
+    public String paramColumn() {
+        return PARAM_COLUMN;
+    }
+
+    @Override
+    public List<String> returnKeys() {
+        return RETURNKEYS;
+    }
+
+    @Override
+    public Set<String> noValues() {
+        return NO_VALUES;
+    }
+
+    @Override
+    public Map<String, String> inputToOutput() {
+        return INPUT_TO_OUTPUT;
+    }
 
     @Override
     public List<FunctionParameterDTO> parameters() {

@@ -18,7 +18,7 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @ClientQueryParam(name = "apiKey", value = "${umls.api.key}")
-//https://documentation.uts.nlm.nih.gov/rest/search/
+// https://documentation.uts.nlm.nih.gov/rest/search/
 public interface UMLSSearchService {
 
     @GET

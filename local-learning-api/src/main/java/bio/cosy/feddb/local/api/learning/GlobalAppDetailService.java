@@ -22,5 +22,5 @@ public interface GlobalAppDetailService {
             @APIResponse(responseCode = "200", description = "See global service"),
             @APIResponse(responseCode = "404", description = "Schema not found")
     })
-    public FederatedAppDetailDTO getAppDetail(@PathParam("id") Long id);
+    FederatedAppDetailDTO getAppDetail(@PathParam("id") Long id);
 }

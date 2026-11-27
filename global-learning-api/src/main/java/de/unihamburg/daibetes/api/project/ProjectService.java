@@ -32,7 +32,7 @@ public interface ProjectService {
     @Operation(summary = "Lists all projects.")
     @APIResponse(responseCode = "200", description = "List of Projects")
     @Transactional
-    public List<ProjectDTO> list();
+    List<ProjectDTO> list();
 
     @POST
     @Operation(summary = "Creates a new Project.")
@@ -43,13 +43,13 @@ public interface ProjectService {
             ))
     @APIResponse(responseCode = "400", description = "Invalid data")
     @Transactional
-    public Response create(@RequestBody @Valid ProjectCreateDTO createDTO);
+    Response create(@RequestBody @Valid ProjectCreateDTO createDTO);
 
     @GET
     @Path("/platform-aggregator-supported")
     @Operation(summary = "Returns whether this platform deployment supports running the FL aggregator on the platform itself.")
     @APIResponse(responseCode = "200", description = "Platform aggregator capability flag")
-    public boolean isPlatformAggregatorSupported();
+    boolean isPlatformAggregatorSupported();
 
     @GET
     @Path("/{id}")
@@ -57,7 +57,7 @@ public interface ProjectService {
     @APIResponse(responseCode = "200", description = "Project found")
     @APIResponse(responseCode = "404", description = "Project not found")
     @Transactional
-    public ProjectDetailDTO retrieve(@PathParam("id") Long id);
+    ProjectDetailDTO retrieve(@PathParam("id") Long id);
 
     @PUT
     @Path("/{id}")
@@ -66,7 +66,7 @@ public interface ProjectService {
     @APIResponse(responseCode = "400", description = "Invalid data")
     @APIResponse(responseCode = "404", description = "Project not found")
     @Transactional
-    public ProjectDTO update(@PathParam("id") Long id, @RequestBody @Valid ProjectDetailDTO projectDTO);
+    ProjectDTO update(@PathParam("id") Long id, @RequestBody @Valid ProjectDetailDTO projectDTO);
 
     @GET
     @Path("/{id}/export-config/schema")
@@ -84,7 +84,7 @@ public interface ProjectService {
     @APIResponse(responseCode = "400", description = "Project export configuration is missing required features")
     @APIResponse(responseCode = "404", description = "Project not found")
     @Transactional
-    public Response generateExportConfigTestCsv(
+    Response generateExportConfigTestCsv(
             @PathParam("id") Long id,
             @DefaultValue("25") @QueryParam("amount") Integer amount
     );
@@ -95,7 +95,7 @@ public interface ProjectService {
     @APIResponse(responseCode = "200", description = "Project deleted")
     @APIResponse(responseCode = "404", description = "Project not found")
     @Transactional
-    public Response delete(@PathParam("id") Long id);
+    Response delete(@PathParam("id") Long id);
 
     @POST
     @Path("/{id}/files/upload")

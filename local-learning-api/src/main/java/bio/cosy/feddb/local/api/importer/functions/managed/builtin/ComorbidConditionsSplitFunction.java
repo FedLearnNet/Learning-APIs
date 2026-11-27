@@ -24,7 +24,11 @@ public class ComorbidConditionsSplitFunction extends AbstractSplitFlagsFunction 
     );
     static final Set<String> NO_VALUES = Set.of("none", "no");
 
-    @Override public String methodName()  { return "Comorbid Conditions Split"; }
+    @Override
+    public String methodName() {
+        return "Comorbid Conditions Split";
+    }
+
     @Override
     public String description() {
         return "Split a combined comorbid conditions column into individual disease flag columns. " +
@@ -35,9 +39,21 @@ public class ComorbidConditionsSplitFunction extends AbstractSplitFlagsFunction 
                "Null/nil or empty values result in all columns being Unknown. " +
                "No/None results in all columns being No.";
     }
-    @Override public String paramColumn() { return PARAM_COLUMN; }
-    @Override public Set<String> noValues()          { return NO_VALUES; }
-    @Override public Map<String, String> inputToOutput() { return INPUT_TO_OUTPUT; }
+
+    @Override
+    public String paramColumn() {
+        return PARAM_COLUMN;
+    }
+
+    @Override
+    public Set<String> noValues() {
+        return NO_VALUES;
+    }
+
+    @Override
+    public Map<String, String> inputToOutput() {
+        return INPUT_TO_OUTPUT;
+    }
 
     @Override
     public List<String> returnKeys() {

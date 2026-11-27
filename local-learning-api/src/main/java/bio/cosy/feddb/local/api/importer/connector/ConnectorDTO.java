@@ -45,7 +45,7 @@ public class ConnectorDTO extends BaseDTO {
     private TriggerSettingsDTO triggerSettings;
     private ScheduleSettingsDTO scheduleSettings;
 
-    //based on runs
+    // based on runs
     private ConnectorRunDTO lastRun;
 
     public List<ConnectorMappingDTO> getSchemaMapping() {

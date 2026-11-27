@@ -25,7 +25,7 @@ import java.util.Optional;
  * - If a reduction method fails, it returns Optional.empty()
  * - The calling code (BO layer) is responsible for fallback logic
  */
-//TODO Use Java map reduce features from java itself instead of stream operations
+// TODO Use Java map reduce features from java itself instead of stream operations
 @ApplicationScoped
 public class TimeSeriesReducer {
 

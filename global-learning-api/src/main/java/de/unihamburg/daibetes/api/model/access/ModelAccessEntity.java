@@ -20,7 +20,7 @@ public class ModelAccessEntity extends BaseAuthEntity {
     @JoinColumn(name = "model_id", nullable = false)
     private ModelEntity model;
 
-    //TODO?
+    // TODO?
     @Column(name = "group_name")
     private String groupName;
 }

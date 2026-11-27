@@ -24,6 +24,7 @@ public class ConnectorAppRunBO {
 
     @Inject
     ConnectorAppRunCleanupBO cleanupBO;
+
     @Transactional
     public ExecutionRunDTO startTransactional(ConnectorTransformerDTO app, LinkedHashMap<String, Object> hyperParams, Long connectorRunId,
                                               Long cohortId, String keycloakId, boolean session) {

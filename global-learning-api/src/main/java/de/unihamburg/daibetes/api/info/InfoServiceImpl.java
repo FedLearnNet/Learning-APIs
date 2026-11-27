@@ -9,7 +9,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 public class InfoServiceImpl implements InfoService {
 
     @ConfigProperty(name = "quarkus.application.version")
-    String version; //its the version of pom.xml
+    String version; // its the version of pom.xml
 
     @Inject
     StartupImportsBO startupImportsBO;

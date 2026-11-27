@@ -90,7 +90,9 @@ abstract class AbstractSplitFlagsFunction extends AbstractManagedRowFunction {
     }
 
     protected abstract String paramColumn();
+
     protected abstract Set<String> noValues();
+
     protected abstract Map<String, String> inputToOutput();
 
     /*
@@ -104,7 +106,15 @@ abstract class AbstractSplitFlagsFunction extends AbstractManagedRowFunction {
         return Pattern.compile("\\s*(,|;|and)\\s*");
     }
 
-    protected String nullLabel() { return "Unknown"; }
-    protected String noLabel()   { return "No"; }
-    protected String yesLabel()  { return "Yes"; }
+    protected String nullLabel() {
+        return "Unknown";
+    }
+
+    protected String noLabel() {
+        return "No";
+    }
+
+    protected String yesLabel() {
+        return "Yes";
+    }
 }

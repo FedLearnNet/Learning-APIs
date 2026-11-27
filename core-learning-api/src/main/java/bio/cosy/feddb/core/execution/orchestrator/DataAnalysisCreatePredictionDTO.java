@@ -26,14 +26,14 @@ public class DataAnalysisCreatePredictionDTO extends BaseAuthDTO {
     @NotNull(message = "Inputs must not be null")
     private LinkedHashMap<String, Object> inputs;
 
-    //if executing tool is a model
+    // if executing tool is a model
     private Long modelSubId;
     private Long modelVersionId;
 
-    //if executing tool is an app
+    // if executing tool is an app
     private Long appVersionId;
 
-    //if executing tool is a workflow
+    // if executing tool is a workflow
     private Long workflowId;
 }
 

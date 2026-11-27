@@ -13,7 +13,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
-//BFF is here: bio.cosy.feddb.core.security.bff.BffConfig
+// BFF is here: bio.cosy.feddb.core.security.bff.BffConfig
 
 @ConfigMapping(prefix = "flnet")
 public interface FLNetClientConfig {

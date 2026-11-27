@@ -30,10 +30,10 @@ public interface WorkflowNodeMapper extends BaseMapper<WorkflowNodeDTO, Workflow
 
     @Mappings({
             @Mapping(target = "workflowId", source = "workflow.id"),
-            @Mapping(target = "appVersion", ignore = true),  //IN BO
+            @Mapping(target = "appVersion", ignore = true),  // IN BO
             @Mapping(target = "hasChildren", ignore = true),
             @Mapping(target = "hasParent", ignore = true),
-            @Mapping(target = "imageName", ignore = true),  //IN BO
+            @Mapping(target = "imageName", ignore = true),  // IN BO
             @Mapping(target = "hyperParams", expression = "java(hyperParamMapper.jsonStringToHyperparams(entity.getHyperParams()))"),
             @Mapping(target = "position", expression = "java(jsonStringToPosition(entity.getPosition()))"),
     })

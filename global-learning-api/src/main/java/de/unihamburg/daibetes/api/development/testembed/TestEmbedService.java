@@ -236,6 +236,7 @@ public class TestEmbedService {
                 break;
             case NOTIFY_START_EXPERIMENT:
                 testRunLauncher.launchPending(appId);
+                break;
             default:
                 break;
 

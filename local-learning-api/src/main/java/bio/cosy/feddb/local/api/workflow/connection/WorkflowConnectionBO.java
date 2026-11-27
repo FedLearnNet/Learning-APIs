@@ -37,7 +37,7 @@ public class WorkflowConnectionBO extends BaseBo<WorkflowConnectionDTO, Workflow
 
     @Override
     public WorkflowConnectionEntity mergeEntity(WorkflowConnectionEntity foundEntity, WorkflowConnectionEntity entity) {
-        //TODO IF WE HAVE SOME PROP LATERS
+        // TODO IF WE HAVE SOME PROP LATERS
         return foundEntity;
     }
 
@@ -64,6 +64,7 @@ public class WorkflowConnectionBO extends BaseBo<WorkflowConnectionDTO, Workflow
         ao.deleteByWorkflowAndNegativeIds(dto.getId(), edgesId);
         return edges;
     }
+
     public Set<WorkflowConnectionEntity> createFoRequest(WorkflowDTO dto, Set<WorkflowNodeEntity> nodes) {
         if (dto.getId() == null || dto.getConnections() == null) {
             return Set.of();

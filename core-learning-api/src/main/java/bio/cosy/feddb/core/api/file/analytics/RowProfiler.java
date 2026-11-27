@@ -328,7 +328,9 @@ public final class RowProfiler {
             if (c >= '0' && c <= '9') continue;
             switch (c) {
                 case '-', ':' -> separator = true;
-                case '.', '+', 'T', 'Z', 't', 'z', ' ' -> { /* allowed */ }
+                case '.', '+', 'T', 'Z', 't', 'z', ' ' -> {
+                    // allowed
+                }
                 // A zone region suffix such as [Europe/Berlin] may hold arbitrary
                 // text; leave the rest of the token to the parsers.
                 case '[' -> {
@@ -375,6 +377,7 @@ public final class RowProfiler {
                 }
                 return true;
             } catch (Exception ignore) {
+                // not this format, next one tried
             }
         }
         return false;
@@ -770,7 +773,13 @@ public final class RowProfiler {
                 type = "TEXT";
             }
 
-            Double mean = null, std = null, min = null, p25 = null, median = null, p75 = null, max = null;
+            Double mean = null;
+            Double std = null;
+            Double min = null;
+            Double p25 = null;
+            Double median = null;
+            Double p75 = null;
+            Double max = null;
             List<Map.Entry<String, Integer>> top = null;
             List<Map.Entry<String, Integer>> valueCounts = valueCounts();
 

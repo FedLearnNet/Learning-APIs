@@ -17,7 +17,7 @@ public class BaseExecutionAttemptDTO extends BaseExecutionStatusDTO {
     private UUID stepPublicId;
     private Long runId;
     private UUID runPublicId;
-    private int trialIndex; //which parameter set this attempt runs
+    private int trialIndex; // which parameter set this attempt runs
     private LinkedHashMap<String, Object> params;
     // Payload of the attempt's score message; its value ranks the trial.
     private ExecutionMessageMetricDTO scoreMetric;

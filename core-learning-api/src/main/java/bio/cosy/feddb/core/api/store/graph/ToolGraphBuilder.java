@@ -93,6 +93,7 @@ public abstract class ToolGraphBuilder {
         if (cfg.getVariableName() != null && !cfg.getVariableName().isBlank()) return cfg.getVariableName();
         return cfg.getName();
     }
+
     /**
      * Kernregel: OutputType muss InputType bedienen können.
      * Standard: gleich.
@@ -122,7 +123,9 @@ public abstract class ToolGraphBuilder {
     }
 
     private boolean isOneOf(ToolConfigDataType x, ToolConfigDataType... xs) {
-        for (ToolConfigDataType v : xs) if (v == x) return true;
+        for (ToolConfigDataType v : xs) {
+            if (v == x) return true;
+        }
         return false;
     }
 

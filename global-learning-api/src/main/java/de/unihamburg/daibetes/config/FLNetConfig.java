@@ -9,8 +9,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
-//Intended for all custom properties with a "flnet" prefix
-//BFF is here: bio.cosy.feddb.core.security.bff.BffConfig
+// Intended for all custom properties with a "flnet" prefix
+// BFF is here: bio.cosy.feddb.core.security.bff.BffConfig
 @ConfigMapping(prefix = "flnet")
 public interface FLNetConfig {
 

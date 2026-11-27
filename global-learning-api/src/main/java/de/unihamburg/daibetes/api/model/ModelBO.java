@@ -234,7 +234,7 @@ public class ModelBO extends BaseBo<ModelDTO, ModelEntity, ModelAO, ModelMapper>
             entity.setFederatedAppVersion(appVersionOpt.get());
             ao.persist(entity);
         } else {
-            //entity = existingAppOptional.get();
+            // entity = existingAppOptional.get();
             Log.infof("External app with unique id %s already exists", external.getUniqueModelId());
             return;
         }
@@ -245,7 +245,7 @@ public class ModelBO extends BaseBo<ModelDTO, ModelEntity, ModelAO, ModelMapper>
             author.setModelId(newModelId);
             accessBO.create(author);
         }
-        //Save basic config for new app version
+        // Save basic config for new app version
         for (ModelVersionDTO version : external.getModelVersions()) {
             String modelVersionName = external.getName() + " (" + version.getModelVersion() + ")";
             version.setModelId(newModelId);

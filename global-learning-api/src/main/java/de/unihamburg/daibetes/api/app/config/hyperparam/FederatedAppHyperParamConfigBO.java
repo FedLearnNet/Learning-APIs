@@ -54,7 +54,7 @@ public class FederatedAppHyperParamConfigBO {
     }
 
     public List<ToolHyperParamConfigDTO> create(FederatedAppVersionEntity app, List<ToolHyperParamConfigDTO> dtos) {
-        if(dtos == null || dtos.isEmpty()) {
+        if (dtos == null || dtos.isEmpty()) {
             return new ArrayList<>();
         }
         return dtos.stream()

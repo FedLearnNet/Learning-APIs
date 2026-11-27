@@ -18,11 +18,11 @@ public class CreatePermissionDTO {
     private Boolean isAllowedToQuery;
     private Integer querySampleThreshold;
 
-    //For Fl-Net
+    // For Fl-Net
     private AutoTrainingAccess federatedAutoTrainingAccess;
     private TrainingAccess federatedTrainingAccess;
 
-    //for SiteCoffer (TRE (Trusted Research Environment))
+    // for SiteCoffer (TRE (Trusted Research Environment))
     private AutoTrainingAccess treAutoTrainingAccess;
     private TrainingAccess treTrainingAccess;
     private Boolean treShareName;

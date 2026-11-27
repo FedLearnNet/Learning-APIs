@@ -22,15 +22,34 @@ public class LynchPolyposisSplitFunction extends AbstractSplitFlagsFunction {
         "lynch",                      "Lynch",
         "fap",                        "FAP",
         "sps",                        "SPS",
-        "serrated polyposis syndrome","SPS",
+        "serrated polyposis syndrome", "SPS",
         "other",                      "other Lynch/Polyposis-related diagnosis"
     );
 
-    @Override public String methodName()  { return "Lynch/Polyposis Syndrome Split"; }
-    @Override public String paramColumn() { return PARAM_COLUMN; }
-    @Override public List<String> returnKeys()        { return RETURNKEYS; }
-    @Override public Set<String> noValues()           { return NO_VALUES; }
-    @Override public Map<String, String> inputToOutput() { return INPUT_TO_OUTPUT; }
+    @Override
+    public String methodName() {
+        return "Lynch/Polyposis Syndrome Split";
+    }
+
+    @Override
+    public String paramColumn() {
+        return PARAM_COLUMN;
+    }
+
+    @Override
+    public List<String> returnKeys() {
+        return RETURNKEYS;
+    }
+
+    @Override
+    public Set<String> noValues() {
+        return NO_VALUES;
+    }
+
+    @Override
+    public Map<String, String> inputToOutput() {
+        return INPUT_TO_OUTPUT;
+    }
 
     @Override
     public List<FunctionParameterDTO> parameters() {

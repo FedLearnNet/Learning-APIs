@@ -7,6 +7,7 @@ import bio.cosy.feddb.core.base.BaseValidationResultDTO;
 
 public interface ToolConfigEvaluator {
     BaseValidationResultDTO evaluateProfile(ToolConfigDTO config, FileDTO file, FileProfile profile);
+
     BaseValidationResultDTO evaluateContent(ToolConfigDTO config, FileDTO file, String content);
 
 }

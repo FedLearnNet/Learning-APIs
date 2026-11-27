@@ -14,10 +14,10 @@ public class ModelDetailDTO extends ModelDTO {
 
     private ModelAccessDTO creator;
 
-    //Content relay of user access rights
+    // Content relay of user access rights
     private List<ModelVersionDTO> modelVersions;
 
-    //Only if user is owner
+    // Only if user is owner
     private List<ModelAccessDTO> accesses;
 }
 

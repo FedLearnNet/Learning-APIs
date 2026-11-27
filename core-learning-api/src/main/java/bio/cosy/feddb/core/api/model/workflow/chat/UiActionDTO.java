@@ -16,7 +16,7 @@ public class UiActionDTO {
 
     private String label;
 
-    //modelId, fileId e.g.
+    // modelId, fileId e.g.
     private Long relatedId;
 
     public void setKind(String kind) {

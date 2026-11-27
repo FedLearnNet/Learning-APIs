@@ -64,7 +64,7 @@ public class PatientDataEntryEntity extends BaseEntity {
     @Column(name = "value_date_time")
     private Instant valueDateTime;
 
-    //If allow null values is set, we need to be able to distinguish between an empty value and a null value, as both are accepted
+    // If allow null values is set, we need to be able to distinguish between an empty value and a null value, as both are accepted
     @Column(name = "is_null_value")
     private Boolean isNullValue = false;
     // All Meta information

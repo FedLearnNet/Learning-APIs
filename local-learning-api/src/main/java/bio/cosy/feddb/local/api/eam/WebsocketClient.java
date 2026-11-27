@@ -110,7 +110,7 @@ public class WebsocketClient {
                     state.markMessage();
                     return processMessage(m);
                 })
-                //.ifNoItem().after(Duration.ofSeconds(30)).fail()
+                // .ifNoItem().after(Duration.ofSeconds(30)).fail()
                 .onFailure().invoke(t -> {
                     logger.error("Error in message processing: {}", t.getMessage(), t);
                     state.markError(t.getMessage());
@@ -144,7 +144,7 @@ public class WebsocketClient {
             if (m.getMessageType().equals(FedDBClientTypeEnum.LEARNING_QUERY)) {
                 ProjectFederatedExperimentForLocalDTO requestLearning = objectMapper.convertValue(m.getMessage(), ProjectFederatedExperimentForLocalDTO.class);
                 Optional<LearningQueryClientResponseDTO> responseData = federatedLearningRequestBO.handleLearningRequest(requestLearning);
-                //if Successful, response will be asychronously sent to the client, so here only error handling
+                // if Successful, response will be asychronously sent to the client, so here only error handling
                 if (responseData.isPresent()) {
                     FedDBClientDataDTO<LearningQueryClientResponseDTO> response = new FedDBClientDataDTO<>();
                     response.setMessageType(FedDBClientTypeEnum.LEARNING_QUERY);
@@ -152,7 +152,7 @@ public class WebsocketClient {
                     Log.info("Sending learning query response: " + responseData.get());
                     return response;
                 } else {
-                    //SUCCESSFUL HANDLING, NO RESPONSE NEEDED
+                    // SUCCESSFUL HANDLING, NO RESPONSE NEEDED
                     FedDBClientDataDTO<Object> response = new FedDBClientDataDTO<>();
                     response.setMessageType(FedDBClientTypeEnum.NO_RESPONSE);
                     return response;

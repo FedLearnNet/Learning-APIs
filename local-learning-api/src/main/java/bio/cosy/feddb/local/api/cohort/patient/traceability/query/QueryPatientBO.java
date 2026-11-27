@@ -43,7 +43,7 @@ public class QueryPatientBO extends BaseBo<QueryPatientDTO, QueryPatientEntity, 
             return;
         }
 
-        //TODO set lastQueriedAt on the matched patients, also set-based
+        // TODO set lastQueriedAt on the matched patients, also set-based
         int stored = ao.insertMatchedPatients(patientMatchSql, queryId, allowedCohortIds);
         Log.infof("Stored %d matched patients for query %s", stored, queryId);
     }

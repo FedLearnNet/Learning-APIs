@@ -72,7 +72,7 @@ public class ModelWorkflowAgent {
     public String getContext(String keycloakId, Long workflowId, ModelWorkflowChatMessageDTO dto, String message, MultiEmitter<? super ModelWorkflowChatMessageDTO> em) {
         List<ModelWorkflowChatMessageDTO> states = dataAnalysisChatMessageBO.findByDataAnalysis(workflowId, keycloakId);
         String context = "";
-        //first user request, second empty message, which will be filled here
+        // first user request, second empty message, which will be filled here
         if (states.size() >= 2) {
             states.subList(states.size() - 2, states.size()).clear();
         }

@@ -13,9 +13,9 @@ public record BarChartConfig(
         Boolean stacked
 ) implements CustomStatisticConfig {
 
-    public enum Orientation {VERTICAL, HORIZONTAL}
+    public enum Orientation { VERTICAL, HORIZONTAL }
 
-    public enum SortBy {VALUE_DESC, VALUE_ASC, LABEL}
+    public enum SortBy { VALUE_DESC, VALUE_ASC, LABEL }
 
     @Override
     public CustomStatisticType type() {

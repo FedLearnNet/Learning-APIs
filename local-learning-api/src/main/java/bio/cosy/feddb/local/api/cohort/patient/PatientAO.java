@@ -159,7 +159,7 @@ public class PatientAO implements PanacheRepository<PatientEntity> {
         return find("cohort.id = ?1 and externalPatientId = ?2", cohortId, externalPatientId).firstResultOptional();
     }
 
-    public void increaseDataEntriesVersion(Long id){
+    public void increaseDataEntriesVersion(Long id) {
         // Increases the dataEntryVersion of the patient entity by 1
         // This is used to track changes in the patient data
         findByIdOptional(id).ifPresent(patient -> {

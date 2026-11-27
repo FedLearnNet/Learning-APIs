@@ -16,7 +16,7 @@ public class FileDTO extends BaseDTO {
 
     @JsonIgnore
     public String getDownloadContentUrlSecret() {
-        if(getDownloadUrl() == null || getSecret() == null) {
+        if (getDownloadUrl() == null || getSecret() == null) {
             return null;
         }
         return getDownloadUrl() + "/download?secret=" + getSecret();

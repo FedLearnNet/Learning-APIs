@@ -236,6 +236,7 @@ public abstract class PatientMapper {
             return validationBO.convertToInstant(visitTimestamp, DataTypes.DATE);
         }
     }
+
     // AfterMapping methods needed for the dto to entity mappings as in comparison
     // to the entity to dto mappings we have to setup the relationships
     // between the meta patient, data entry and meta data entry

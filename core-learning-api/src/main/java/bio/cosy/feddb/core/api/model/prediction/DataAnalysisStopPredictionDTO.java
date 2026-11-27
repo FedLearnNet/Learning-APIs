@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 public class DataAnalysisStopPredictionDTO {
 
-    //if executing tool is a workflow
+    // if executing tool is a workflow
     private Long workflowId;
 }
 

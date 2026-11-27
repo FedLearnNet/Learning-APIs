@@ -235,7 +235,9 @@ public final class TableDataCodec {
         ByteBuffer.wrap(target).putInt(length);
     }
 
-    /** @return the payload length, or {@code -1} at a clean end of stream */
+    /**
+     * @return the payload length, or {@code -1} at a clean end of stream
+     */
     private static int readFrameHeader(InputStream in) throws IOException {
         byte[] header = in.readNBytes(FRAME_HEADER_BYTES);
         if (header.length == 0) {

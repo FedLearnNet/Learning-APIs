@@ -56,7 +56,7 @@ public class DataAnalysisLLMBO {
         if (prediction == null || prediction.getAppVersionId() == null) {
             Log.infof("No associated app found for file %d in data analysis %d, performing raw file analysis", fileId, id);
             FileResultAnalyzer fileResultAnalyzer = new FileResultAnalyzer();
-            fileResultAnalyzer.setToolName(null); //will use subquestion if tool name is null
+            fileResultAnalyzer.setToolName(null); // will use subquestion if tool name is null
             fileResultAnalyzer.setFileType(fileEntity.getFile().getContentType());
             fileResultAnalyzer.setFileContent(fileContent);
             fileResultAnalyzer.setFileProfile(fileBO.getFileStatistics(fileEntity.getFile()));

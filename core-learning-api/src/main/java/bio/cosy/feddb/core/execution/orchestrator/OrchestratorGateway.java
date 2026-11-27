@@ -186,7 +186,7 @@ public class OrchestratorGateway {
         }
     }
 
-    public VolumeServiceClient getVolumeClient(){
+    public VolumeServiceClient getVolumeClient() {
         return this.volumes;
     }
 }

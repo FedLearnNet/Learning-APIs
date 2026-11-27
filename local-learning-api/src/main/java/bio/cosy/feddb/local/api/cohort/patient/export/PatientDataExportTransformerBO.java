@@ -97,16 +97,21 @@ public class PatientDataExportTransformerBO {
 
     private void putJoinColumns(Map<String, Object> row, PatientDataEntryExportDTO dto, PatientDataPivot.Options options) {
         EnumSet<PatientDataPivotJoinField> jf = options.getJoinFields();
-        if (jf.contains(PatientDataPivotJoinField.PATIENT_ID))
+        if (jf.contains(PatientDataPivotJoinField.PATIENT_ID)) {
             row.put("patient_id", dto.getPatientId());
-        if (jf.contains(PatientDataPivotJoinField.VISIT_ID))
+        }
+        if (jf.contains(PatientDataPivotJoinField.VISIT_ID)) {
             row.put("visit_id", dto.getVisitId());
-        if (jf.contains(PatientDataPivotJoinField.VISIT_TIMESTAMP))
+        }
+        if (jf.contains(PatientDataPivotJoinField.VISIT_TIMESTAMP)) {
             row.put("visit_timestamp", dto.getVisitTimestamp());
-        if (jf.contains(PatientDataPivotJoinField.IMPORT_SCHEMA_GROUP_ID))
+        }
+        if (jf.contains(PatientDataPivotJoinField.IMPORT_SCHEMA_GROUP_ID)) {
             row.put("import_schema_group_id", dto.getImportSchemaGroupId());
-        if (jf.contains(PatientDataPivotJoinField.VISIT_TIMESTAMP_FORMAT))
+        }
+        if (jf.contains(PatientDataPivotJoinField.VISIT_TIMESTAMP_FORMAT)) {
             row.put("visit_timestamp_format", dto.getVisitTimestampFormat());
+        }
     }
 
     private void mergeValue(

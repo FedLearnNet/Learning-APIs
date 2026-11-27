@@ -146,7 +146,7 @@ public class PlanningAgent {
                     state.setPapers(researchBot.answer(workflowId.toString(), currentSubQuestion, context));
                 }
                 case EXTERNAL_AGENT -> {
-                    //FOR FUTURE USE, NOT IMPLEMENTED YET, NOT PLANNED SOON
+                    // FOR FUTURE USE, NOT IMPLEMENTED YET, NOT PLANNED SOON
                 }
                 case HUMAN_IN_THE_LOOP -> {
                     humanInTheLoopRequestBO.createTransactional(currentSubQuestion, current, state);

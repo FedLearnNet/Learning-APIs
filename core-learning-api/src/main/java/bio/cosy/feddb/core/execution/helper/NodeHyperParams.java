@@ -7,7 +7,7 @@ import tools.jackson.core.JacksonException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-//TODO CHANGE THAT THEIR ARE ALSO SAVED IN THE NEW FORMAT
+// TODO CHANGE THAT THEIR ARE ALSO SAVED IN THE NEW FORMAT
 /** Reads a workflow node's hyper parameters, which Local and Global store as a JSON string; none without a node. */
 public final class NodeHyperParams {
 

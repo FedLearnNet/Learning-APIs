@@ -18,11 +18,11 @@ public class PermissionDTO extends BaseDTO {
     private Boolean isAllowedToQuery;
     private Integer querySampleThreshold;
 
-    //for FL-Net
+    // for FL-Net
     private AutoTrainingAccess federatedAutoTrainingAccess;
     private TrainingAccess federatedTrainingAccess;
 
-    //for SiteCoffer (TRE (Trusted Research Environment))
+    // for SiteCoffer (TRE (Trusted Research Environment))
     private AutoTrainingAccess treAutoTrainingAccess;
     private TrainingAccess treTrainingAccess;
     private Boolean treShareName;

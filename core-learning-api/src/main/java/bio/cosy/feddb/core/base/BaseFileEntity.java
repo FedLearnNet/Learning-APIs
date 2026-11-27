@@ -10,7 +10,7 @@ import lombok.Setter;
 @MappedSuperclass
 public abstract class BaseFileEntity extends BaseAuthEntity {
 
-    //nullable is default true, but for clarity set here
+    // nullable is default true, but for clarity set here
     @Column(nullable = true)
     public String fileName;
 

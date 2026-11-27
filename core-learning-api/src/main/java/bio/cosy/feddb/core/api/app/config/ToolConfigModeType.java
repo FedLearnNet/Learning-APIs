@@ -5,7 +5,7 @@ package bio.cosy.feddb.core.api.app.config;
 
 
         public static boolean isTraining(ToolConfigModeType mode) {
-            //Default mode is both
+            // Default mode is both
             if (mode == null) {
                 return true;
             }
@@ -13,7 +13,7 @@ package bio.cosy.feddb.core.api.app.config;
         }
 
         public static boolean isPrediction(ToolConfigModeType mode) {
-            //Default mode is both
+            // Default mode is both
             if (mode == null) {
                 return true;
             }

@@ -2,15 +2,15 @@ package bio.cosy.feddb.local.api.importer.files.progress;
 
 public enum ImportPhase {
 
-    //just by browser, never here
+    // just by browser, never here
     TRANSFER,
 
     PARSING,
 
-    //Get data for preview
+    // Get data for preview
     SAMPLING,
 
-    //Reupload Validation
+    // Reupload Validation
     COMPARING,
 
     SUCCEEDED,

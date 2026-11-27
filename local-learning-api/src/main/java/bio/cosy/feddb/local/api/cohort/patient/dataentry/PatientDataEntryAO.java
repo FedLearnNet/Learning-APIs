@@ -130,7 +130,7 @@ public class PatientDataEntryAO implements PanacheRepository<PatientDataEntryEnt
         }
 
         // entry.setUpdatedAt(new Date());
-        //TODO CHECK AND FIX LATER; SHOUDNT BE NEEDED
+        // TODO CHECK AND FIX LATER; SHOUDNT BE NEEDED
         // entry.setVersion(entry.getVersion() + 1);
         entry = getEntityManager().merge(entry);
         flush();
@@ -164,7 +164,7 @@ public class PatientDataEntryAO implements PanacheRepository<PatientDataEntryEnt
         String query = queryBuilder.toString();
         Log.debugf("Executing query: " + query + " with params: " + dataFilterParams);
 
-        //Executing query: id in :ids AND (  ( schemaNode.dataType.globalDataTypeId = :type0 AND
+        // Executing query: id in :ids AND (  ( schemaNode.dataType.globalDataTypeId = :type0 AND
         // schemaNode.ontology.globalId = :onto0 ) OR  ( schemaNode.dataType.globalDataTypeId = :type1
         // AND schemaNode.ontology.globalId = :onto1 ) )
         // with params: {onto1=C0239081, ids=[9], onto0=C0920688, type1=Yes_No:boolean, type0=Yes_No:boolean}

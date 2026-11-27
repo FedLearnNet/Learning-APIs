@@ -160,12 +160,12 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         logger.infof("Processing query: %s", query);
         String queryGlobalUniqueId = query.getGlobalUniqueId();
 
-        //Check if query with this ID already exists and if so return 0 for security reasons
+        // Check if query with this ID already exists and if so return 0 for security reasons
         Optional<Integer> foundQueryCount = findCountByGlobalIdOptionalTransactional(queryGlobalUniqueId);
         if (foundQueryCount.isPresent()) {
             Integer count = foundQueryCount.get();
             if (QuarkusModeService.isDevMode()) {
-                //TODO check if there is a better way for local development e.g. regen. for fire the ID or so
+                // TODO check if there is a better way for local development e.g. regen. for fire the ID or so
                 logger.infof("Query with ID %s already processed, returning cached count %s (dev/staging)", queryGlobalUniqueId, count);
                 return QueryClientResponseDTO.createResponse(count.longValue(), queryGlobalUniqueId);
             }
@@ -174,7 +174,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         }
 
 
-        //TODO GROUP_ID
+        // TODO GROUP_ID
         List<PermissionDTO> allowedCohorts = permissionBO.getAllowedToQueryCohortIds(query.getKeycloakId());
         List<Long> allowedCohortIds = allowedCohorts.stream()
                 .map(PermissionDTO::getCohortId)
@@ -308,7 +308,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
     }
 
     public QueryResultWrapperDTO runQuery(LocalQueryDTO query, String keycloakId) {
-        //TODO GROUP_ID
+        // TODO GROUP_ID
         List<PermissionDTO> allowedCohorts = permissionBO.getAllowedToQueryCohortIds(keycloakId);
         List<Long> allowedCohortIds = allowedCohorts.stream()
                 .map(PermissionDTO::getCohortId)

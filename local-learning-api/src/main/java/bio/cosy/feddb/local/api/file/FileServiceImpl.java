@@ -18,7 +18,7 @@ import java.util.List;
 
 @ApplicationScoped
 public class FileServiceImpl implements FileService {
-    //All need Transactional because of renew Secret in all get method
+    // All need Transactional because of renew Secret in all get method
 
     @Inject
     FileBO bo;

@@ -37,7 +37,7 @@ public abstract class BaseAppServer {
     protected abstract void logMessage(Long runId, ExecutionMessageLogDTO runMessage, AppRunTypeEnum runType);
 
     protected void consoleMessage(Long runId, ConsoleStdOutDTO runMessage, AppRunTypeEnum runType) {
-        //ignoring console messages for now, can be implemented in the future if needed
+        // ignoring console messages for now, can be implemented in the future if needed
     }
 
 

@@ -30,6 +30,7 @@ public class ModelSubAO implements PanacheRepository<ModelSubEntity> {
         return find("modelVersion.id = ?1 and federatedExperiment.id = ?2",
                 modelVersionId, experimentId).firstResultOptional();
     }
+
     public Optional<ModelSubEntity> findByModelVersionAndEx(Long modelVersionId, Long experimentId) {
         return find("modelVersion.id = ?1 and experimentRun.id = ?2",
                 modelVersionId, experimentId).firstResultOptional();

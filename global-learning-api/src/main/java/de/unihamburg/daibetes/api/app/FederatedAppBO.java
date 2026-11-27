@@ -250,7 +250,7 @@ public class FederatedAppBO extends BaseBo<FederatedAppDTO, FederatedAppEntity, 
         // Save author
         authorBO.create(newAppId, keycloakId);
 
-        //Save basic config for new app version
+        // Save basic config for new app version
         ao.flush();
         ToolConfigsDTO initialConfig = configBO.create(updatedVersionEntity, entity.getType());
         FederatedAppVersionDTO updatedVersion = versionBO.entityToDto(updatedVersionEntity);
@@ -292,7 +292,7 @@ public class FederatedAppBO extends BaseBo<FederatedAppDTO, FederatedAppEntity, 
 
     public FederatedAppDetailDTO update(FederatedAppDetailDTO data) {
         if (data.getIcon() != null) {
-            //data.setIcon(decodeBase64File(data.getIcon()));
+            // data.setIcon(decodeBase64File(data.getIcon()));
         }
         if (data.getTags() == null) {
             data.setTags(new HashSet<>());
@@ -421,7 +421,7 @@ public class FederatedAppBO extends BaseBo<FederatedAppDTO, FederatedAppEntity, 
                     && external.getVersions() != null && external.getVersions().size() == 1
                     && versionAO.findAllByAppId(entity.getId()).size() == 1;
         }
-        //Save basic config for new app version
+        // Save basic config for new app version
         boolean overrodeExistingVersion = false;
         for (FederatedAppVersionDTO version : external.getVersions()) {
             String appNameVersion = external.getName() + " (" + version.getVersion() + ")";

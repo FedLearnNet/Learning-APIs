@@ -26,7 +26,7 @@ import java.util.List;
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Cohort", description = "Service for managing Cohorts")
 public interface CohortService {
-    public static final String PATH = "/cohort";
+    String PATH = "/cohort";
 
     @GET
     @Operation(summary = "List all cohorts", description = "Returns a list of all cohort records")

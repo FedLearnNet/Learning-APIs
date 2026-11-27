@@ -42,7 +42,7 @@ public enum AppMessageTypeEnum {
     TRANSFORMATION_SAVE,
     TRANSFORMATION_SAVE_RESULT,
 
-    //JUST SERVER
+    // JUST SERVER
     DO_NOTHING
 
 }
