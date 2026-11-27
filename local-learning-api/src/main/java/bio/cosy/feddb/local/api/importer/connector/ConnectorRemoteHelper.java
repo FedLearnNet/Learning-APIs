@@ -25,7 +25,7 @@ public class ConnectorRemoteHelper {
         try {
             return ResourceLoader.loadAsString(remoteUrl);
         } catch (IOException e) {
-            throw new NotFoundException("Unable to load remote resource: " + e.getMessage(), e);
+            throw new NotFoundException("Unable to load remote resource", e);
         }
     }
 
@@ -39,7 +39,7 @@ public class ConnectorRemoteHelper {
 
             return root;
         } catch (JacksonException e) {
-            throw new BadRequestException("Invalid JSON: " + e.getMessage(), e);
+            throw new BadRequestException("Invalid JSON", e);
         }
     }
 }

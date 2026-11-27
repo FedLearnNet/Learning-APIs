@@ -96,9 +96,9 @@ public class PatientServiceImpl implements PatientService {
             // This will throw an exception if the patient already exists in the cohort
             return patientBO.createPatientData(cohortId, createPatientDataDTO);
         } catch (IllegalStateException e) {
-            throw new ClientErrorException(e.getMessage(), Response.Status.CONFLICT, e);
+            throw new ClientErrorException("Patient already exists in the cohort", Response.Status.CONFLICT, e);
         } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Invalid input data: " + e.getMessage(), e);
+            throw new BadRequestException("Invalid input data", e);
         }
     }
 

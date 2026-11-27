@@ -13,7 +13,8 @@ public class UnhandledExceptionMapper implements ExceptionMapper<Exception> {
     @Override
     public Response toResponse(Exception ex) {
         Log.errorf(ex, "Unhandled exception occurred: %s", ex.getMessage());
-        var body = new ErrorResponseDTO(500, "Internal Server Error", ex.getMessage());
+        // Details stay in the log
+        var body = new ErrorResponseDTO(500, "Internal Server Error", "Unexpected server error");
         return Response.status(500)
                 .type(MediaType.APPLICATION_JSON)
                 .entity(body)

@@ -29,7 +29,7 @@ public class ControllerLiveness implements HealthCheck {
             return HealthCheckResponse.named("controller")
                     .status(false)
                     .withData("latencyMs", ms)
-                    .withData("error", e.getClass().getSimpleName() + ": " + e.getMessage())
+                    .withData("error", "Controller unreachable")
                     .build();
         }
     }

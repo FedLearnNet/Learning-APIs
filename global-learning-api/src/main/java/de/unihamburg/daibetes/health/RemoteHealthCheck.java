@@ -23,7 +23,7 @@ public abstract class RemoteHealthCheck implements HealthCheck {
             return HealthCheckResponse.named(name())
                     .status(false)
                     .withData("latencyMs", elapsedMs(start))
-                    .withData("error", e.getClass().getSimpleName() + ": " + e.getMessage())
+                    .withData("error", "Remote service unreachable")
                     .build();
         }
     }

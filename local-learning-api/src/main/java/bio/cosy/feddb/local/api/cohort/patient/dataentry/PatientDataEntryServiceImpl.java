@@ -30,11 +30,11 @@ public class PatientDataEntryServiceImpl implements PatientDataEntryService {
             List<PatientDataEntryDTO> updated = patientDataEntryBO.updateDataEntries(cohortId, internalPatientId, updateDTOs);
             return Response.ok(updated).build();
         } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid data entries").build();
         } catch (NotFoundException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+            return Response.status(Response.Status.NOT_FOUND).entity("Cohort or patient not found").build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("Data entries update failed: " + e.getMessage()).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Data entries update failed").build();
         }
     }
 
@@ -47,12 +47,12 @@ public class PatientDataEntryServiceImpl implements PatientDataEntryService {
             List<PatientDataEntryDTO> created = patientDataEntryBO.createMultipleDataEntries(cohortId, internalPatientId, createDTOs);
             return Response.status(Response.Status.CREATED).entity(created).build();
         } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid data entries").build();
         } catch (NotFoundException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+            return Response.status(Response.Status.NOT_FOUND).entity("Cohort or patient not found").build();
         } catch (Exception e) {
             // Handle other unexpected errors (including constraint violations)
-            return Response.status(Response.Status.BAD_REQUEST).entity("Data entries creation failed: " + e.getMessage()).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Data entries creation failed").build();
         }
     }
 
@@ -64,12 +64,12 @@ public class PatientDataEntryServiceImpl implements PatientDataEntryService {
             PatientDataEntryDTO created = patientDataEntryBO.createSingleDataEntries(cohortId, internalPatientId, createDTO);
             return Response.status(Response.Status.CREATED).entity(created).build();
         } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid data entries").build();
         } catch (NotFoundException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+            return Response.status(Response.Status.NOT_FOUND).entity("Cohort or patient not found").build();
         } catch (Exception e) {
             // Handle other unexpected errors (including constraint violations)
-            return Response.status(Response.Status.BAD_REQUEST).entity("Data entries creation failed: " + e.getMessage()).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Data entries creation failed").build();
         }
     }
 
@@ -81,9 +81,9 @@ public class PatientDataEntryServiceImpl implements PatientDataEntryService {
             PatientDataEntryDTO updated = patientDataEntryBO.updateDataEntry(cohortId, internalPatientId, id, updateDto);
             return Response.ok(updated).build();
         } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid data entries").build();
         } catch (NotFoundException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+            return Response.status(Response.Status.NOT_FOUND).entity("Cohort or patient not found").build();
         }
     }
 
@@ -94,12 +94,12 @@ public class PatientDataEntryServiceImpl implements PatientDataEntryService {
         try {
             patientDataEntryBO.deleteMultipleDataEntries(cohortId, internalPatientId, deleteIds);
         } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid data entries").build();
         } catch (NotFoundException e) {
             // We just return 200 OK
         } catch (Exception e) {
             // Handle other unexpected errors
-            return Response.status(Response.Status.BAD_REQUEST).entity("Data entries deletion failed: " + e.getMessage()).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Data entries deletion failed").build();
         }
         return Response.ok().build();
     }

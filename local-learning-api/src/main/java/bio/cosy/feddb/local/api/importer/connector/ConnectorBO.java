@@ -245,7 +245,7 @@ public class ConnectorBO extends BaseBo<ConnectorDTO, ConnectorEntity, Connector
         try {
             connectorDTO = mapper.treeToValue(root, ConnectorDTO.class);
         } catch (JacksonException e) {
-            throw new BadRequestException("Invalid connector payload: " + e.getMessage(), e);
+            throw new BadRequestException("Invalid connector payload", e);
         }
 
         if (connectorDTO == null) {

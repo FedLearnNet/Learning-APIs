@@ -61,7 +61,7 @@ public class AuditServiceImpl implements AuditService {
             );
         } catch (IllegalArgumentException e) {
             Log.warn("Bad request for audit logs query: " + e.getMessage());
-            throw new BadRequestException("Invalid request parameters: " + e.getMessage(), e);
+            throw new BadRequestException("Invalid request parameters", e);
         } catch (Exception e) {
             Log.error("Unexpected error querying audit logs for cohort " + cohortId + ": " + e.getMessage(), e);
             throw e; // Let other exceptions bubble up to be handled by general exception mappers
