@@ -8,7 +8,6 @@ import bio.cosy.feddb.core.api.query.item.ConnectingOperator;
 import bio.cosy.feddb.core.api.query.item.IntervalPartDTO;
 import bio.cosy.feddb.core.api.query.item.IntervalUnit;
 import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
-import bio.cosy.feddb.core.api.query.item.QueryItemHelper;
 import bio.cosy.feddb.core.api.query.item.TemporalRelationDTO;
 import bio.cosy.feddb.core.api.query.item.TemporalRelationship;
 import bio.cosy.feddb.core.api.query.item.TimeAggregationMethod;
@@ -60,7 +59,7 @@ class QueryBuilderBOTest {
 
     @Test
     void plainLeafReadsOneColumn() {
-        String sql = build(QueryItemHelper.andGroup(leaf("string", QueryOperatorTypes.EQUAL, "Diabetes Type 1")));
+        String sql = build(QueryItemDTO.andGroup(leaf("string", QueryOperatorTypes.EQUAL, "Diabetes Type 1")));
 
         assertEquals("SELECT DISTINCT patient_id FROM ((SELECT DISTINCT patient_id FROM "
                 + "((SELECT patient_id, schema_node_id, visit_timestamp, id, occurrence_key, visit_id, import_schema_group_id "
@@ -71,7 +70,7 @@ class QueryBuilderBOTest {
 
     @Test
     void emptyQueryMatchesNothing() {
-        assertEquals("SELECT DISTINCT patient_id FROM patient_data WHERE 1 = 0", build(QueryItemHelper.andGroup()));
+        assertEquals("SELECT DISTINCT patient_id FROM patient_data WHERE 1 = 0", build(QueryItemDTO.andGroup()));
         assertEquals("SELECT DISTINCT patient_id FROM patient_data WHERE 1 = 0", build(null));
     }
 

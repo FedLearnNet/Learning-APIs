@@ -6,7 +6,6 @@ import bio.cosy.feddb.core.api.query.item.ConnectingOperator;
 import bio.cosy.feddb.core.api.query.item.IntervalPartDTO;
 import bio.cosy.feddb.core.api.query.item.IntervalUnit;
 import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
-import bio.cosy.feddb.core.api.query.item.QueryItemHelper;
 import bio.cosy.feddb.core.api.query.item.TemporalRelationDTO;
 import bio.cosy.feddb.core.api.query.item.TemporalRelationship;
 import bio.cosy.feddb.core.api.query.item.TimeAggregationMethod;
@@ -60,7 +59,7 @@ public class QueryBuilderTest {
                 + "WHERE agg_value = 'Diabetes Type 1'))))) AS query_result";
         QueryItemDTO item = leaf("2001", "1001", QueryOperatorTypes.EQUAL, "Diabetes Type 1");
         QueryDTO queryDTO = new QueryDTO();
-        queryDTO.setQuery(QueryItemHelper.andGroup(item));
+        queryDTO.setQuery(QueryItemDTO.andGroup(item));
 
 
         String query = queryBuilderBO.buildCountDistinctSql(queryDTO, COHORT_IDS);
@@ -95,7 +94,7 @@ public class QueryBuilderTest {
     @Order(3)
     void testEmptyQueryReturnsNoResults() {
         QueryDTO queryDTO = new QueryDTO();
-        queryDTO.setQuery(QueryItemHelper.andGroup());
+        queryDTO.setQuery(QueryItemDTO.andGroup());
 
         String query = queryBuilderBO.buildCountDistinctSql(queryDTO, COHORT_IDS);
         Assertions.assertEquals(
@@ -129,7 +128,7 @@ public class QueryBuilderTest {
         QueryDTO queryDTO = new QueryDTO();
         // Two patiennts exist, one with age 25,26,27, diagnosis diabetes and one with age 30, 31, daignosis asthma
         // Find only the younger one
-        queryDTO.setQuery(QueryItemHelper.andGroup(
+        queryDTO.setQuery(QueryItemDTO.andGroup(
                 leaf("2001", "1001", QueryOperatorTypes.EXISTS, null),
                 leaf("2002", "1002", QueryOperatorTypes.SMALLER, "28")
         ));
@@ -143,7 +142,7 @@ public class QueryBuilderTest {
 
         // find both
         QueryDTO queryDTO2 = new QueryDTO();
-        queryDTO2.setQuery(QueryItemHelper.andGroup(
+        queryDTO2.setQuery(QueryItemDTO.andGroup(
                 leaf("2001", "1001", QueryOperatorTypes.EXISTS, null),
                 leaf("2002", "1002", QueryOperatorTypes.SMALLER, "50")
         ));
@@ -1040,7 +1039,7 @@ public class QueryBuilderTest {
     }
 
     private QueryDTO singleItemQuery(String ontologyId, String dataTypeId, QueryOperatorTypes operator, String value) {
-        return queryTree(QueryItemHelper.andGroup(leaf(ontologyId, dataTypeId, operator, value)));
+        return queryTree(QueryItemDTO.andGroup(leaf(ontologyId, dataTypeId, operator, value)));
     }
 
     private void assertSqlExecutes(String sql) {

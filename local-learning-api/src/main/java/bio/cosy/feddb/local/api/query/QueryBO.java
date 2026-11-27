@@ -3,7 +3,7 @@ package bio.cosy.feddb.local.api.query;
 import bio.cosy.feddb.core.api.query.QueryClientResponseDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.query.QueryRejectedException;
-import bio.cosy.feddb.core.api.query.item.QueryItemHelper;
+import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
 import bio.cosy.feddb.core.base.BaseBo;
 import bio.cosy.feddb.local.api.cohort.member.CohortMemberAuthBO;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.query.QueryPatientBO;
@@ -133,7 +133,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         // Enhance the query with additional information if needed
         // This is a placeholder for any future enhancements
 
-        List<LocalQueryItemDTO> enhanced = QueryItemHelper.leavesOf(query.getQuery()).stream()
+        List<LocalQueryItemDTO> enhanced = QueryItemDTO.leavesOf(query.getQuery()).stream()
                 .map(q -> {
                     List<SchemaNodeEntity> schemaNodeEntities = schemaNodeAO.findByOntologyAndDatatypeGlobalId(q.getOntologyId(), q.getDataTypeId());
                     List<LocalSchemaNodeDTO> schemaNodes = schemaNodeMapper.entitiesToDtos(schemaNodeEntities);
@@ -185,7 +185,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
             createTransactional(query, message, QueryStatusEnum.REJECTED_EAM_PRE_HARMONIZED);
             return QueryClientResponseDTO.createErrorResponse(queryGlobalUniqueId);
         }
-        allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(QueryItemHelper.leavesOf(query.getQuery()), allowedCohortIds);
+        allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(QueryItemDTO.leavesOf(query.getQuery()), allowedCohortIds);
 
         if (allowedCohortIds.isEmpty()) {
             String message = "Cohort QueryAbility is rejecting the query";
@@ -319,7 +319,7 @@ public class QueryBO extends BaseBo<LocalQueryDTO, QueryEntity, QueryAO, QueryMa
         }
 
         allowedCohortIds = cohortQueryAbilityBO.filterQueryableCohortIds(
-                QueryItemHelper.leavesOf(query.getQuery()),
+                QueryItemDTO.leavesOf(query.getQuery()),
                 allowedCohortIds);
         if (allowedCohortIds.isEmpty()) {
             logger.warn("Cohort QueryAbility is rejecting the query");

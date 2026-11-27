@@ -3,7 +3,6 @@ package eval;
 import bio.cosy.feddb.core.api.datamodler.schema.SchemaStructureDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
-import bio.cosy.feddb.core.api.query.item.QueryItemHelper;
 import bio.cosy.feddb.core.api.query.QueryOperatorTypes;
 import bio.cosy.feddb.local.api.cohort.AutoSubscriberBO;
 import bio.cosy.feddb.local.api.cohort.CohortAO;
@@ -341,7 +340,7 @@ public class QueryEvalTest {
 
     private QueryDTO query(QueryItemDTO... items) {
         QueryDTO dto = new QueryDTO();
-        dto.setQuery(QueryItemHelper.andGroup(items));
+        dto.setQuery(QueryItemDTO.andGroup(items));
         return dto;
     }
 

@@ -3,7 +3,6 @@ package unit;
 import bio.cosy.feddb.core.api.query.QueryClientResponseDTO;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
-import bio.cosy.feddb.core.api.query.item.QueryItemHelper;
 import bio.cosy.feddb.core.api.query.QueryOperatorTypes;
 import bio.cosy.feddb.core.api.socket.FedDBClientResponseType;
 import bio.cosy.feddb.local.api.cohort.permission.PermissionBO;
@@ -52,7 +51,7 @@ class QueryPermissionScopeTest {
         QueryDTO query = new QueryDTO();
         query.setGlobalUniqueId(UUID.randomUUID().toString());
         query.setKeycloakId("query-ability-user");
-        query.setQuery(QueryItemHelper.andGroup(item));
+        query.setQuery(QueryItemDTO.andGroup(item));
 
         QueryClientResponseDTO response = queryBO.handleQuery(query);
 

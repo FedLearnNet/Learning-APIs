@@ -1,5 +1,6 @@
 package rest;
 
+import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
 import bio.cosy.feddb.local.api.cohort.CohortAO;
 import bio.cosy.feddb.local.api.cohort.CohortEntity;
 import bio.cosy.feddb.local.api.cohort.permission.AutoTrainingAccess;
@@ -74,7 +75,7 @@ public class QueryRetryTimeTest {
     private QueryEntity buildQuery(QueryStatusEnum status, LocalDateTime receivedAt) {
         QueryEntity q = new QueryEntity();
         q.setGlobalQueryId("retry-test-" + System.nanoTime());
-        q.setQueryString("[]");
+        q.setQuery(QueryItemDTO.andGroup());
         q.setStatus(status);
         q.setKeycloakId(USER_ID);
         q.setReceivedAt(receivedAt);

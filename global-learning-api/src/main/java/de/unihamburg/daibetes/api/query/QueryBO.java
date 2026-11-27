@@ -8,7 +8,6 @@ import bio.cosy.feddb.core.api.query.QueryRejectedException;
 import bio.cosy.feddb.core.api.query.QueryValidationBO;
 import bio.cosy.feddb.core.api.query.item.EnhancedQueryItemDTO;
 import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
-import bio.cosy.feddb.core.api.query.item.QueryItemHelper;
 import bio.cosy.feddb.core.api.socket.ProjectFederatedRequestDataStatisticsDTO;
 import bio.cosy.feddb.core.base.BaseBo;
 import de.unihamburg.daibetes.api.feddbclient.FLNetClientBroadcastBO;
@@ -71,7 +70,7 @@ public class QueryBO extends BaseBo<QueryDTO, QueryEntity, QueryAO, QueryMapper>
         QueryEntity entity = findOwned(id, keycloakId);
         QueryDetailDTO detailed = mapper.entityToDetailDto(entity);
         detailed.setOlderQueries(olderVersions(entity, keycloakId));
-        List<QueryItemDTO> leaves = QueryItemHelper.leavesOf(detailed.getQuery());
+        List<QueryItemDTO> leaves = QueryItemDTO.leavesOf(detailed.getQuery());
         if (!leaves.isEmpty()) {
             detailed.setEnhancedQuery(namedLeaves(leaves, id));
         }

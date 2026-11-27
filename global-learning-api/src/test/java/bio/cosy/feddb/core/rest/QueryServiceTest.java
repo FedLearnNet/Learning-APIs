@@ -4,7 +4,6 @@ import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.query.QueryDetailDTO;
 import bio.cosy.feddb.core.api.query.QueryOperatorTypes;
 import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
-import bio.cosy.feddb.core.api.query.item.QueryItemHelper;
 import bio.cosy.feddb.core.rest.helper.RestAssuredConfigUtil;
 import de.unihamburg.daibetes.api.project.ProjectAO;
 import de.unihamburg.daibetes.api.project.ProjectEntity;
@@ -62,7 +61,7 @@ public class QueryServiceTest {
         updatedItem.setOntologyId("updated-ontology");
         updatedItem.setDataTypeId("updated-datatype");
         updatedItem.setOperator(QueryOperatorTypes.EXISTS);
-        baseQuery.setQuery(QueryItemHelper.andGroup(updatedItem));
+        baseQuery.setQuery(QueryItemDTO.andGroup(updatedItem));
 
         QueryDTO updated = given()
                 .contentType(ContentType.JSON)
@@ -156,7 +155,7 @@ public class QueryServiceTest {
             QueryCreateDTO createDTO = new QueryCreateDTO();
             createDTO.setName("Project-safe query");
             createDTO.setDescription("Used to verify project merge isolation");
-            createDTO.setQuery(QueryItemHelper.andGroup());
+            createDTO.setQuery(QueryItemDTO.andGroup());
             QueryDTO query = queryBO.create(createDTO, "test");
 
             QueryEntity queryEntity = queryAO.findById(query.getId());

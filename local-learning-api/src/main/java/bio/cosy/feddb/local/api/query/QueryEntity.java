@@ -1,12 +1,15 @@
 package bio.cosy.feddb.local.api.query;
 
+import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
 import bio.cosy.feddb.core.base.BaseEntity;
 import bio.cosy.feddb.local.api.cohort.patient.traceability.query.QueryPatientEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -21,8 +24,9 @@ public class QueryEntity extends BaseEntity {
     @Column(name = "global_unique_query_id", nullable = false, unique = true)
     private String globalQueryId;
 
-    @Column(name = "query_string", nullable = false, columnDefinition = "TEXT")
-    private String queryString;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "query_string", columnDefinition = "jsonb")
+    private QueryItemDTO query;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

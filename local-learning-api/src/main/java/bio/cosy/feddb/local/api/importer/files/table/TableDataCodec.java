@@ -53,7 +53,7 @@ public final class TableDataCodec {
             .disable(SmileReadFeature.REQUIRE_HEADER)
             .build();
 
-    private static final ObjectMapper MAPPER = new SmileMapper();
+    private static final ObjectMapper MAPPER = new SmileMapper(FACTORY);
 
     /** Marks a value the row did not contain at all, as opposed to one that was present and null. */
     private static final Object ABSENT = new Object();
@@ -118,7 +118,7 @@ public final class TableDataCodec {
         }
         List<String> columns = layout == null ? List.of() : layout;
         Map<String, Object> row = new LinkedHashMap<>();
-        try (JsonParser parser = FACTORY.createParser(payload)) {
+        try (JsonParser parser = MAPPER.createParser(payload)) {
             parser.nextToken();
             int index = 0;
             while (parser.nextToken() != JsonToken.END_ARRAY) {
@@ -171,7 +171,7 @@ public final class TableDataCodec {
             return extractPositional(payload, wantedIndex);
         }
 
-        try (JsonParser parser = FACTORY.createParser(payload)) {
+        try (JsonParser parser = MAPPER.createParser(payload)) {
             if (parser.nextToken() != JsonToken.START_OBJECT) {
                 return "null";
             }
@@ -188,7 +188,7 @@ public final class TableDataCodec {
     }
 
     private static String extractPositional(byte[] payload, int wantedIndex) throws IOException {
-        try (JsonParser parser = FACTORY.createParser(payload)) {
+        try (JsonParser parser = MAPPER.createParser(payload)) {
             parser.nextToken();
             int index = 0;
             while (parser.nextToken() != JsonToken.END_ARRAY) {

@@ -7,7 +7,7 @@ VALUES (1, NOW(), NOW(), 0, 1, 'Project Description 1', false, 'Project1', NOW()
 INSERT INTO queries (id, created_at, updated_at, version, keycloak_id, name, description, query_string, result,
                      has_result, has_fired, global_unique_id, group_id)
 VALUES (1, '2024-11-01 12:00:00', '2024-11-01 12:00:00', 0, 'test', 'Query 1', 'Description for Query 1',
-        '', 150, true, true, '26dac9fe-af16-4293-93ab-320ba3e57e8a', '26dac9fe-af16-4293-93ab-320ba3e57e8a');
+        NULL, 150, true, true, '26dac9fe-af16-4293-93ab-320ba3e57e8a', '26dac9fe-af16-4293-93ab-320ba3e57e8a');
 
 
 INSERT INTO project_memberships (id, created_at, updated_at, version, project_id, keycloak_id)

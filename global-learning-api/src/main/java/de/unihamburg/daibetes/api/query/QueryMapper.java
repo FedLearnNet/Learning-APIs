@@ -1,17 +1,14 @@
 package de.unihamburg.daibetes.api.query;
 
 import bio.cosy.feddb.core.api.query.item.EnhancedQueryItemDTO;
-import bio.cosy.feddb.core.api.query.item.QueryItemHelper;
 import bio.cosy.feddb.core.api.query.QueryDTO;
 import bio.cosy.feddb.core.api.query.QueryDetailDTO;
 import bio.cosy.feddb.core.api.query.item.QueryItemDTO;
 import bio.cosy.feddb.core.base.BaseMapper;
 import de.unihamburg.daibetes.api.project.ProjectEntity;
 import de.unihamburg.daibetes.helper.QuarkusMappingConfig;
-import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 
@@ -20,7 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Maps stored queries to API DTOs. The query tree is read from and written to {@code query_string}.
+ * Maps stored queries to API DTOs.
  */
 @Mapper(config = QuarkusMappingConfig.class)
 public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
@@ -33,7 +30,6 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
      * @return the API query
      */
     @Mappings({
-            @Mapping(target = "query", ignore = true),
             @Mapping(target = "projectIds", source = "projects", qualifiedByName = "projectEntityToIds"),
             @Mapping(target = "roles", ignore = true)
     })
@@ -46,7 +42,6 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
      * @return the detailed API query
      */
     @Mappings({
-            @Mapping(target = "query", ignore = true),
             @Mapping(target = "projectIds", source = "projects", qualifiedByName = "projectEntityToIds"),
             @Mapping(target = "roles", ignore = true),
             @Mapping(target = "enhancedQuery", ignore = true),
@@ -60,6 +55,8 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
      * @param queryItem leaf to enhance
      * @return the enhanced leaf
      */
+    // named, so the query trees of DTO and entity are not mapped through it
+    @Named("queryToEnhanced")
     @Mappings({
             @Mapping(target = "ontologyName", ignore = true),
             @Mapping(target = "dataTypeName", ignore = true)
@@ -74,7 +71,6 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
      */
     @Mappings({
             @Mapping(target = "groupId", source = "groupId"),
-            @Mapping(target = "queryString", source = ".", qualifiedByName = "dtoToQueryString"),
             @Mapping(target = "projects", source = "projectIds", qualifiedByName = "queryDTOToProjectEntity"),
             @Mapping(target = "expectedAnswers", ignore = true)
     })
@@ -93,7 +89,6 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
             @Mapping(target = "hasResult", ignore = true),
             @Mapping(target = "latestDataStatisticsRequest", ignore = true),
             @Mapping(target = "latestDataStatisticsRequestTimestamp", ignore = true),
-            @Mapping(target = "queryString", source = ".", qualifiedByName = "dtoToQueryString"),
             @Mapping(target = "projects", ignore = true),
             @Mapping(target = "result", ignore = true),
             @Mapping(target = "expectedAnswers", ignore = true)
@@ -140,7 +135,7 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
             @Mapping(target = "globalUniqueId", ignore = true),
             @Mapping(target = "name", source = "request.name"),
             @Mapping(target = "description", source = "request.description"),
-            @Mapping(target = "queryString", source = "request", qualifiedByName = "dtoToQueryString"),
+            @Mapping(target = "query", source = "request.query"),
             @Mapping(target = "result", ignore = true),
             @Mapping(target = "hasResult", constant = "false"),
             @Mapping(target = "hasFired", constant = "false"),
@@ -149,39 +144,6 @@ public interface QueryMapper extends BaseMapper<QueryDTO, QueryEntity> {
             @Mapping(target = "expectedAnswers", ignore = true)
     })
     QueryEntity createVersionFromRequest(QueryEntity source, QueryDTO request);
-
-    /**
-     * Copies the stored query document onto the mapped DTO.
-     *
-     * @param entity source query row
-     * @param dto mapped query
-     */
-    @AfterMapping
-    default void readQueryDocument(final QueryEntity entity, @MappingTarget final QueryDTO dto) {
-        dto.setQuery(QueryItemHelper.fromJson(entity.getQueryString()));
-    }
-
-    /**
-     * Copies the stored query document onto the mapped detail DTO.
-     *
-     * @param entity source query row
-     * @param dto mapped query detail
-     */
-    @AfterMapping
-    default void readQueryDocument(final QueryEntity entity, @MappingTarget final QueryDetailDTO dto) {
-        dto.setQuery(QueryItemHelper.fromJson(entity.getQueryString()));
-    }
-
-    /**
-     * Serializes the query tree for the {@code query_string} column.
-     *
-     * @param dto query to store
-     * @return the JSON document
-     */
-    @Named("dtoToQueryString")
-    default String dtoToQueryString(final QueryDTO dto) {
-        return dto == null ? "" : QueryItemHelper.toJson(dto.getQuery());
-    }
 
     /**
      * Turns project ids into entity references for the query mapping.
