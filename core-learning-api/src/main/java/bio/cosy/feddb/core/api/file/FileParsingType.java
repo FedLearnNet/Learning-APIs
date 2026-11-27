@@ -4,5 +4,7 @@ public enum FileParsingType {
     EXCEL,
     CSV,
     JSON,
-    MULTIPLE_CSV_ZIP
+    MULTIPLE_CSV_ZIP,
+    /** Stored for tool PATH inputs without tabular profiling. */
+    OPAQUE
 }

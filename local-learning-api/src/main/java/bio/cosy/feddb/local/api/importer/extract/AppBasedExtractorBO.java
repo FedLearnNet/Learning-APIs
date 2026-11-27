@@ -96,9 +96,11 @@ public class AppBasedExtractorBO {
             String inFlightKey
     ) {
         AppBasedUploadSettingsDTO settings = new AppBasedUploadSettingsDTO();
+        settings.setMode("APP");
         settings.setAppImage(request.getAppImage());
         settings.setAppVersionId(request.getAppVersionId());
         settings.setHyperParams(request.getHyperParams());
+        settings.setInputData(request.getInputData());
 
         Multi<ConnectorExtractorStreamDTO> upstream = connectorExtractBO.startFromApp(
                 settings,

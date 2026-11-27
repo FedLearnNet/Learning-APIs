@@ -1,6 +1,7 @@
 package bio.cosy.feddb.local.api.importer.files;
 
 import bio.cosy.feddb.core.api.file.FileParsingSettingsDTO;
+import bio.cosy.feddb.core.api.file.FileParsingType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
@@ -23,6 +24,12 @@ public class ConnectorFileUploadSettingsDTO extends FileParsingSettingsDTO {
 
     private Boolean supportFile = false;
 
+    /**
+     * When true, store the bytes for a tool PATH input without tabular profiling.
+     * Prefer {@code fileType=OPAQUE}; this flag remains for older clients.
+     */
+    private Boolean opaque = false;
+
     @Min(1)
     @Max(MAX_PREVIEW_ROWS)
     private Integer previewRows = DEFAULT_PREVIEW_ROWS;
@@ -44,11 +51,15 @@ public class ConnectorFileUploadSettingsDTO extends FileParsingSettingsDTO {
 
     public FileParsingSettingsDTO toFileParsingSettings() {
         FileParsingSettingsDTO settings = new FileParsingSettingsDTO();
-        settings.setFileType(getFileType());
+        settings.setFileType(isOpaqueRequest() ? FileParsingType.OPAQUE : getFileType());
         settings.setDelimiter(getDelimiter());
         settings.setCustomDelimiter(getCustomDelimiter());
         settings.setHasHeader(isHasHeader());
         settings.setFirstSheetOnly(getFirstSheetOnly());
         return settings;
+    }
+
+    public boolean isOpaqueRequest() {
+        return Boolean.TRUE.equals(opaque) || getFileType() == FileParsingType.OPAQUE;
     }
 }

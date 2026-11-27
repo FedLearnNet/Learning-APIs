@@ -37,6 +37,18 @@ public class ConnectorAppRunSetupBO {
 
     public ExecutionRunDTO start(ConnectorTransformerDTO app, LinkedHashMap<String, Object> hyperParams, Long connectorRunId,
                                  Long cohortId, String keycloakId) {
+        return start(app, hyperParams, null, null, connectorRunId, cohortId, keycloakId);
+    }
+
+    public ExecutionRunDTO start(
+            ConnectorTransformerDTO app,
+            LinkedHashMap<String, Object> hyperParams,
+            LinkedHashMap<String, Object> inputs,
+            LinkedHashMap<String, String> inputFilePaths,
+            Long connectorRunId,
+            Long cohortId,
+            String keycloakId
+    ) {
         if (app.getAppSlug() != null && !app.getAppSlug().isBlank()) {
             appResolverBO.resolve(app);
         }
@@ -44,6 +56,12 @@ public class ConnectorAppRunSetupBO {
         ExecutionRunEntity run = workflowExecutionBO.executeAppTransactional(name, hyperParams, step -> {
             step.setAppImage(app.getAppImage());
             step.setGlobalAppVersionId(app.getAppVersionId());
+            if (inputs != null && !inputs.isEmpty()) {
+                step.setInputs(new LinkedHashMap<>(inputs));
+            }
+            if (inputFilePaths != null && !inputFilePaths.isEmpty()) {
+                step.setInputFilePaths(new LinkedHashMap<>(inputFilePaths));
+            }
             if (app.getId() != null) {
                 step.setTransformer(transformerAO.findById(app.getId()));
             }

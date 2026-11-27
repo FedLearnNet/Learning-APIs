@@ -71,6 +71,9 @@ public class ConnectorExtractBO {
     @Inject
     Instance<ConnectorBO> connectorBO;
 
+    @Inject
+    AppExtractorInputStaging inputStaging;
+
     public TableData loadConnectorData(ConnectorDTO connector, ConnectorRunDTO run) {
         if (connector == null) {
             return null;
@@ -422,9 +425,26 @@ public class ConnectorExtractBO {
             throw new BadRequestException("App-based extractor has no app image configured");
         }
         Log.infof("Starting app-based extractor (image: %s, import: %s)", appSettings.getAppImage(), connectorRunId);
+        AppExtractorInputStaging.StagedInputs staged;
         try {
-            ExecutionRunDTO run = appRunBO.startTransactional(appSettings.getExtractor(), appSettings.getHyperParams(), connectorRunId,
-                    cohortId, keycloakId, false);
+            staged = inputStaging.stage(cohortId, appSettings.getInputData());
+        } catch (RuntimeException e) {
+            Log.errorf(e, "Failed to stage PATH inputs for app-based extractor '%s'", appSettings.getAppImage());
+            throw new AppExtractorException("Failed to stage PATH inputs: " + e.getMessage(), e);
+        }
+        try {
+            // PATH inputs are volume objects in inputFilePaths only. Do not put cohort file ids
+            // into inputData — pyfedappwrap would treat those ints as Path values and fail.
+            ExecutionRunDTO run = appRunBO.startTransactional(
+                    appSettings.getExtractor(),
+                    appSettings.getHyperParams(),
+                    null,
+                    staged.volumePaths(),
+                    staged.filesByVolumeName(),
+                    connectorRunId,
+                    cohortId,
+                    keycloakId,
+                    false);
             // The import reads the table next, so it waits here; the timeout stops the run.
             ConnectorAppOutputDTO output = appRunBO.awaitOutput(run.getId(), APP_OUTPUT_TIMEOUT).await().indefinitely();
             recordStoredOutputs(appSettings, connectorId, output, keycloakId);
@@ -505,7 +525,25 @@ public class ConnectorExtractBO {
             Log.warn("App-based extractor has no appImage configured");
             return Multi.createFrom().empty();
         }
-        ExecutionRunDTO run = appRunBO.startTransactional(appSettings.getExtractor(), appSettings.getHyperParams(), null, cohortId, keycloakId, false);
+        AppExtractorInputStaging.StagedInputs staged;
+        try {
+            staged = inputStaging.stage(cohortId, appSettings.getInputData());
+        } catch (RuntimeException e) {
+            Log.errorf(e, "Failed to stage PATH inputs for app-based extractor '%s'", appSettings.getAppImage());
+            return Multi.createFrom().failure(e);
+        }
+        // PATH inputs are volume objects in inputFilePaths only. Do not put cohort file ids
+        // into inputData — pyfedappwrap would treat those ints as Path values and fail.
+        ExecutionRunDTO run = appRunBO.startTransactional(
+                appSettings.getExtractor(),
+                appSettings.getHyperParams(),
+                null,
+                staged.volumePaths(),
+                staged.filesByVolumeName(),
+                null,
+                cohortId,
+                keycloakId,
+                false);
         return Multi.createBy().concatenating().streams(
                 runBO.subscribe(run.getId()).map(this::streamOf),
                 Multi.createFrom().uni(previewOf(run, appSettings)));
@@ -520,17 +558,33 @@ public class ConnectorExtractBO {
                     if (previewData != outputData) {
                         outputData.close();
                     }
+                    String previewSheet = previewSheetName(output);
                     ConnectorExtractorStreamDTO done = streamOf(output.getRun());
-                    done.setUploadInfo(List.of(new ConnectorFileUploadInfoDTO(previewData, fileHandlerBO.getJson(previewData))));
+                    done.setUploadInfo(List.of(new ConnectorFileUploadInfoDTO(
+                            previewSheet, previewData, fileHandlerBO.getJson(previewData))));
+                    // Wizard extract may not persist inputConfig; hand file ids to the FE so
+                    // preview/validations can resolve stored outputs.
+                    if (output.getStoredOutputs() != null && !output.getStoredOutputs().isEmpty()) {
+                        done.setOutputParams(new LinkedHashMap<>(output.getStoredOutputs()));
+                        appSettings.setOutputParams(new LinkedHashMap<>(output.getStoredOutputs()));
+                    }
                     return done;
                 })
                 .onFailure().recoverWithItem(e -> {
                     Log.errorf(e, "App-based extractor with image '%s' failed", appSettings.getAppImage());
+                    appRunBO.forgetSession(run.getId());
                     ConnectorExtractorStreamDTO failed = streamOf(run);
                     failed.setStatus(RunStatusTypes.ERROR);
                     failed.setFailure(new ExecutionFailure(FailureCategory.TOOL, e.getMessage()));
                     return failed;
                 });
+    }
+
+    private static String previewSheetName(ConnectorAppOutputDTO output) {
+        if (output != null && output.getStoredOutputs() != null && !output.getStoredOutputs().isEmpty()) {
+            return output.getStoredOutputs().keySet().iterator().next();
+        }
+        return ConnectorFileUploadInfoDTO.DEFAULT_SHEET_NAME;
     }
 
     private ConnectorExtractorStreamDTO streamOf(ExecutionRunDTO run) {

@@ -61,6 +61,7 @@ public class TabularFileReaderBO extends TableReaderSupport {
             case MULTIPLE_CSV_ZIP -> ParsedTables.of(delimitedReader.readArchive(file, spec, mergeConfig));
             case JSON -> ParsedTables.single(readJson(file, spec));
             case EXCEL -> excelReader.read(file, spec, mergeConfig);
+            case OPAQUE -> ParsedTables.empty();
         };
     }
 

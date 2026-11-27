@@ -104,6 +104,10 @@ public class ConnectorFileImportRunner {
             String importId,
             String keycloakId
     ) {
+        if (request.getSettings() != null && request.getSettings().isOpaqueRequest() && connectorId != null) {
+            throw new BadRequestException(
+                    "Opaque PATH uploads cannot replace a tabular connector input; omit connectorId");
+        }
         if (connectorId == null) {
             return ConnectorFileImportResultDTO.stored(
                     uploadBO.uploadFileForCohort(cohortId, request, keycloakId, importId));
