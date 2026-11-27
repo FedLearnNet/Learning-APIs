@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.Set;
 
 
@@ -21,6 +22,8 @@ public class LocalSchemaRootNodeDTO extends BaseDTO {
 
     private String globalId;
     private Long globalVersion;
+    private LocalDate globalCreatedAt;
+    private LocalDate globalUpdatedAt;
     private String name;
     private String description;
 
